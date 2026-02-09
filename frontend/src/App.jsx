@@ -4,6 +4,8 @@ import LoginPage from './pages/LoginPage';
 import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import PersonsPage from './pages/PersonsPage';
+import AssetsPage from './pages/AssetsPage';
+import StockItemsPage from './pages/StockItemsPage';
 import './index.css';
 
 // Protected route wrapper
@@ -58,6 +60,8 @@ function App() {
                     >
                         <Route index element={<DashboardHome />} />
                         <Route path="persons" element={<PersonsPage />} />
+                        <Route path="assets" element={<AssetsPage />} />
+                        <Route path="stock-items" element={<StockItemsPage />} />
                     </Route>
 
                     {/* Redirect root to login */}

@@ -79,3 +79,103 @@ class UserAccount(models.Model):
             person=self.person,
             role__role_code='superuser'
         ).exists()
+
+
+class AssetType(models.Model):
+    """Maps to asset_type table"""
+    asset_type_id = models.AutoField(primary_key=True, db_column='asset_type_id')
+    asset_type_label = models.CharField(max_length=60, db_column='asset_type_label')
+    asset_type_code = models.CharField(max_length=18, db_column='asset_type_code')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_type'
+
+    def __str__(self):
+        return self.asset_type_label
+
+
+class AssetBrand(models.Model):
+    """Maps to asset_brand table"""
+    asset_brand_id = models.AutoField(primary_key=True, db_column='asset_brand_id')
+    brand_name = models.CharField(max_length=48, db_column='brand_name')
+    brand_code = models.CharField(max_length=16, db_column='brand_code')
+    is_active = models.BooleanField(db_column='is_active')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_brand'
+
+    def __str__(self):
+        return self.brand_name
+
+
+class AssetModel(models.Model):
+    """Maps to asset_model table"""
+    asset_model_id = models.AutoField(primary_key=True, db_column='asset_model_id')
+    asset_brand = models.ForeignKey(AssetBrand, on_delete=models.CASCADE, db_column='asset_brand_id')
+    asset_type = models.ForeignKey(AssetType, on_delete=models.CASCADE, db_column='asset_type_id')
+    model_name = models.CharField(max_length=48, blank=True, null=True, db_column='model_name')
+    model_code = models.CharField(max_length=16, blank=True, null=True, db_column='model_code')
+    release_year = models.IntegerField(blank=True, null=True, db_column='release_year')
+    discontinued_year = models.IntegerField(blank=True, null=True, db_column='discontinued_year')
+    is_active = models.BooleanField(default=True, db_column='is_active')
+    notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    warranty_expiry_in_months = models.IntegerField(blank=True, null=True, db_column='warranty_expiry_in_months')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_model'
+
+    def __str__(self):
+        return self.model_name
+
+
+class StockItemType(models.Model):
+    """Maps to stock_item_type table"""
+    stock_item_type_id = models.AutoField(primary_key=True, db_column='stock_item_type_id')
+    stock_item_type_label = models.CharField(max_length=60, db_column='stock_item_type_label')
+    stock_item_type_code = models.CharField(max_length=18, db_column='stock_item_type_code')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_type'
+
+    def __str__(self):
+        return self.stock_item_type_label
+
+
+class StockItemBrand(models.Model):
+    """Maps to stock_item_brand table"""
+    stock_item_brand_id = models.AutoField(primary_key=True, db_column='stock_item_brand_id')
+    brand_name = models.CharField(max_length=48, db_column='brand_name')
+    brand_code = models.CharField(max_length=16, db_column='brand_code')
+    is_active = models.BooleanField(db_column='is_active')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_brand'
+
+    def __str__(self):
+        return self.brand_name
+
+
+class StockItemModel(models.Model):
+    """Maps to stock_item_model table"""
+    stock_item_model_id = models.AutoField(primary_key=True, db_column='stock_item_model_id')
+    stock_item_brand = models.ForeignKey(StockItemBrand, on_delete=models.CASCADE, db_column='stock_item_brand_id')
+    stock_item_type = models.ForeignKey(StockItemType, on_delete=models.CASCADE, db_column='stock_item_type_id')
+    model_name = models.CharField(max_length=48, blank=True, null=True, db_column='model_name')
+    model_code = models.CharField(max_length=16, blank=True, null=True, db_column='model_code')
+    release_year = models.IntegerField(blank=True, null=True, db_column='release_year')
+    discontinued_year = models.IntegerField(blank=True, null=True, db_column='discontinued_year')
+    is_active = models.BooleanField(default=True, db_column='is_active')
+    notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    warranty_expiry_in_months = models.IntegerField(blank=True, null=True, db_column='warranty_expiry_in_months')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_model'
+
+    def __str__(self):
+        return self.model_name

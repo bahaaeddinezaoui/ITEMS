@@ -7,8 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer
 
 
 def hash_password(password):
@@ -123,3 +123,562 @@ class PersonViewSet(viewsets.ModelViewSet):
             with open(log_path, 'a') as f:
                 f.write(f"ERROR creating person: {str(e)}\n")
             raise
+
+
+class AssetTypeViewSet(viewsets.ModelViewSet):
+    """CRUD operations for AssetType model"""
+    queryset = AssetType.objects.all().order_by('asset_type_id')
+    serializer_class = AssetTypeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all asset types"""
+        return AssetType.objects.all().order_by('asset_type_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            # Try to get user_id from token claims
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        # Fallback: try to get from username if available
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new asset type - only superusers can create"""
+        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'api_debug.log')
+        
+        try:
+            with open(log_path, 'a') as f:
+                f.write(f"\n--- Create Asset Type Request ---\n")
+                f.write(f"Data: {request.data}\n")
+            
+            user_account = self._get_user_account(request)
+            
+            if not user_account:
+                with open(log_path, 'a') as f:
+                    f.write(f"User account not found\n")
+                return Response(
+                    {'error': 'User account not found'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            if not user_account.is_superuser():
+                with open(log_path, 'a') as f:
+                    f.write(f"User {user_account.username} is not superuser\n")
+                return Response(
+                    {'error': 'Only superusers can create asset types'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            
+            # Get the next asset_type_id (since it's not auto-generated in PostgreSQL)
+            last_asset_type = AssetType.objects.order_by('-asset_type_id').first()
+            next_id = (last_asset_type.asset_type_id + 1) if last_asset_type else 1
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Calculated next asset_type_id: {next_id}\n")
+            
+            # Create asset type with explicit ID
+            asset_type = AssetType.objects.create(
+                asset_type_id=next_id,
+                **serializer.validated_data
+            )
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Successfully created asset type ID: {asset_type.asset_type_id}\n")
+            
+            return Response(
+                AssetTypeSerializer(asset_type).data,
+                status=status.HTTP_201_CREATED
+            )
+        
+        except Exception as e:
+            with open(log_path, 'a') as f:
+                f.write(f"ERROR creating asset type: {str(e)}\n")
+                import traceback
+                f.write(f"Traceback: {traceback.format_exc()}\n")
+            raise
+
+    def update(self, request, *args, **kwargs):
+        """Update asset type - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account:
+            return Response(
+                {'error': 'User account not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        if not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update asset types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete asset type - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account:
+            return Response(
+                {'error': 'User account not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        if not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete asset types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class AssetBrandViewSet(viewsets.ModelViewSet):
+    """CRUD operations for AssetBrand model"""
+    queryset = AssetBrand.objects.all().order_by('asset_brand_id')
+    serializer_class = AssetBrandSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all asset brands"""
+        return AssetBrand.objects.all().order_by('asset_brand_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new asset brand - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create asset brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next asset_brand_id
+        last_brand = AssetBrand.objects.order_by('-asset_brand_id').first()
+        next_id = (last_brand.asset_brand_id + 1) if last_brand else 1
+        
+        brand = AssetBrand.objects.create(asset_brand_id=next_id, **serializer.validated_data)
+        return Response(AssetBrandSerializer(brand).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update asset brand - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update asset brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete asset brand - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete asset brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class AssetModelViewSet(viewsets.ModelViewSet):
+    """CRUD operations for AssetModel model"""
+    queryset = AssetModel.objects.all().order_by('asset_model_id')
+    serializer_class = AssetModelSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all asset models, optionally filtered by asset_type"""
+        queryset = AssetModel.objects.all().order_by('asset_model_id')
+        asset_type_id = self.request.query_params.get('asset_type', None)
+        if asset_type_id is not None:
+            queryset = queryset.filter(asset_type_id=asset_type_id)
+        return queryset
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new asset model - only superusers can create"""
+        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'api_debug.log')
+        
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create asset models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            with open(log_path, 'a') as f:
+                f.write(f"\n--- Create Asset Model Request ---\n")
+                f.write(f"Data: {request.data}\n")
+            
+            serializer = self.get_serializer(data=request.data)
+            if not serializer.is_valid():
+                with open(log_path, 'a') as f:
+                    f.write(f"Serializer errors: {serializer.errors}\n")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get the next asset_model_id
+            last_model = AssetModel.objects.order_by('-asset_model_id').first()
+            next_id = (last_model.asset_model_id + 1) if last_model else 1
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Calculated next asset_model_id: {next_id}\n")
+            
+            model = AssetModel.objects.create(asset_model_id=next_id, **serializer.validated_data)
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Successfully created asset model ID: {model.asset_model_id}\n")
+            
+            return Response(AssetModelSerializer(model).data, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            with open(log_path, 'a') as f:
+                f.write(f"ERROR creating asset model: {str(e)}\n")
+                import traceback
+                f.write(f"Traceback: {traceback.format_exc()}\n")
+            raise
+
+    def update(self, request, *args, **kwargs):
+        """Update asset model - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update asset models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete asset model - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete asset models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class StockItemTypeViewSet(viewsets.ModelViewSet):
+    """CRUD operations for StockItemType model"""
+    queryset = StockItemType.objects.all().order_by('stock_item_type_id')
+    serializer_class = StockItemTypeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all stock item types"""
+        return StockItemType.objects.all().order_by('stock_item_type_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new stock item type - only superusers can create"""
+        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'api_debug.log')
+        
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create stock item types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            with open(log_path, 'a') as f:
+                f.write(f"\n--- Create Stock Item Type Request ---\n")
+                f.write(f"Data: {request.data}\n")
+            
+            serializer = self.get_serializer(data=request.data)
+            if not serializer.is_valid():
+                with open(log_path, 'a') as f:
+                    f.write(f"Serializer errors: {serializer.errors}\n")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get the next stock_item_type_id
+            last_type = StockItemType.objects.order_by('-stock_item_type_id').first()
+            next_id = (last_type.stock_item_type_id + 1) if last_type else 1
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Calculated next stock_item_type_id: {next_id}\n")
+            
+            stock_item_type = StockItemType.objects.create(stock_item_type_id=next_id, **serializer.validated_data)
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Successfully created stock item type ID: {stock_item_type.stock_item_type_id}\n")
+            
+            return Response(StockItemTypeSerializer(stock_item_type).data, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            with open(log_path, 'a') as f:
+                f.write(f"ERROR creating stock item type: {str(e)}\n")
+                import traceback
+                f.write(f"Traceback: {traceback.format_exc()}\n")
+            raise
+
+    def update(self, request, *args, **kwargs):
+        """Update stock item type - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update stock item types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete stock item type - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete stock item types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class StockItemBrandViewSet(viewsets.ModelViewSet):
+    """CRUD operations for StockItemBrand model"""
+    queryset = StockItemBrand.objects.all().order_by('stock_item_brand_id')
+    serializer_class = StockItemBrandSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all stock item brands"""
+        return StockItemBrand.objects.all().order_by('stock_item_brand_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new stock item brand - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create stock item brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next stock_item_brand_id
+        last_brand = StockItemBrand.objects.order_by('-stock_item_brand_id').first()
+        next_id = (last_brand.stock_item_brand_id + 1) if last_brand else 1
+        
+        brand = StockItemBrand.objects.create(stock_item_brand_id=next_id, **serializer.validated_data)
+        return Response(StockItemBrandSerializer(brand).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update stock item brand - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update stock item brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete stock item brand - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete stock item brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class StockItemModelViewSet(viewsets.ModelViewSet):
+    """CRUD operations for StockItemModel model"""
+    queryset = StockItemModel.objects.all().order_by('stock_item_model_id')
+    serializer_class = StockItemModelSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all stock item models, optionally filtered by stock_item_type"""
+        queryset = StockItemModel.objects.all().order_by('stock_item_model_id')
+        stock_item_type_id = self.request.query_params.get('stock_item_type', None)
+        if stock_item_type_id is not None:
+            queryset = queryset.filter(stock_item_type_id=stock_item_type_id)
+        return queryset
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new stock item model - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create stock item models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next stock_item_model_id
+        last_model = StockItemModel.objects.order_by('-stock_item_model_id').first()
+        next_id = (last_model.stock_item_model_id + 1) if last_model else 1
+        
+        model = StockItemModel.objects.create(stock_item_model_id=next_id, **serializer.validated_data)
+        return Response(StockItemModelSerializer(model).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update stock item model - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update stock item models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete stock item model - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete stock item models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+

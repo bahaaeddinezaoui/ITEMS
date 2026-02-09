@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -39,3 +39,65 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_roles(self, obj):
         role_mappings = obj.get_roles()
         return [RoleSerializer(rm.role).data for rm in role_mappings]
+
+
+class AssetTypeSerializer(serializers.ModelSerializer):
+    """Serializer for AssetType model"""
+    class Meta:
+        model = AssetType
+        fields = ['asset_type_id', 'asset_type_label', 'asset_type_code']
+        read_only_fields = ['asset_type_id']
+
+
+class AssetBrandSerializer(serializers.ModelSerializer):
+    """Serializer for AssetBrand model"""
+    class Meta:
+        model = AssetBrand
+        fields = ['asset_brand_id', 'brand_name', 'brand_code', 'is_active']
+        read_only_fields = ['asset_brand_id']
+
+
+class AssetModelSerializer(serializers.ModelSerializer):
+    """Serializer for AssetModel model"""
+    brand_name = serializers.CharField(source='asset_brand.brand_name', read_only=True)
+    asset_type_label = serializers.CharField(source='asset_type.asset_type_label', read_only=True)
+    
+    class Meta:
+        model = AssetModel
+        fields = [
+            'asset_model_id', 'asset_brand', 'brand_name', 'asset_type', 'asset_type_label',
+            'model_name', 'model_code', 'release_year', 'discontinued_year',
+            'is_active', 'notes', 'warranty_expiry_in_months'
+        ]
+        read_only_fields = ['asset_model_id']
+
+
+class StockItemTypeSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemType model"""
+    class Meta:
+        model = StockItemType
+        fields = ['stock_item_type_id', 'stock_item_type_label', 'stock_item_type_code']
+        read_only_fields = ['stock_item_type_id']
+
+
+class StockItemBrandSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemBrand model"""
+    class Meta:
+        model = StockItemBrand
+        fields = ['stock_item_brand_id', 'brand_name', 'brand_code', 'is_active']
+        read_only_fields = ['stock_item_brand_id']
+
+
+class StockItemModelSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemModel model"""
+    brand_name = serializers.CharField(source='stock_item_brand.brand_name', read_only=True)
+    stock_item_type_label = serializers.CharField(source='stock_item_type.stock_item_type_label', read_only=True)
+    
+    class Meta:
+        model = StockItemModel
+        fields = [
+            'stock_item_model_id', 'stock_item_brand', 'brand_name', 'stock_item_type', 'stock_item_type_label',
+            'model_name', 'model_code', 'release_year', 'discontinued_year',
+            'is_active', 'notes', 'warranty_expiry_in_months'
+        ]
+        read_only_fields = ['stock_item_model_id']

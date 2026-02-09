@@ -13,3 +13,13 @@ Headers: {'Content-Length': '107', 'Content-Type': 'application/json', 'Host': '
 Validated Data: {'first_name': 'Bahaa Eddine', 'last_name': 'ZAOUI', 'sex': 'Male', 'birth_date': datetime.date(2001, 8, 21), 'is_approved': True}
 Calculated next_id: 5
 Successfully created person ID: 5
+
+--- Create Asset Type Request ---
+Data: {'asset_type_label': 'Laptop', 'asset_type_code': 'LAP'}
+Calculated next asset_type_id: 1
+Successfully created asset type ID: 1
+
+--- Create Asset Model Request ---
+Data: {'model_name': 'Latitude 5531', 'model_code': 'L5531', 'asset_brand': 1, 'asset_type': 1, 'is_active': True, 'notes': '', 'release_year': 2022, 'discontinued_year': None, 'warranty_expiry_in_months': 22}
+Calculated next asset_model_id: 1
+Successfully created asset model ID: 1
