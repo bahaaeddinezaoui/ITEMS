@@ -1,0 +1,75 @@
+[2026-02-09 21:39:29.006639] START GET /admin/
+[2026-02-09 21:39:29.015383] END   GET /admin/ -> 302
+Response Body: 
+[2026-02-09 21:39:29.028398] START GET /admin/login/
+[2026-02-09 21:39:29.043938] END   GET /admin/login/ -> 200
+[2026-02-09 21:39:29.127573] START GET /favicon.ico
+[2026-02-09 21:39:29.130113] END   GET /favicon.ico -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /favicon.ico</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4
+[2026-02-09 21:39:41.215247] START POST /admin/login/
+[2026-02-09 21:39:41.615624] END   POST /admin/login/ -> 200
+[2026-02-09 21:39:56.921884] START POST /admin/login/
+[2026-02-09 21:39:57.592442] END   POST /admin/login/ -> 200
+[2026-02-09 21:40:14.094935] START POST /admin/login/
+[2026-02-09 21:40:14.702691] END   POST /admin/login/ -> 200
+[2026-02-09 21:41:22.084760] START POST /admin/login/
+[2026-02-09 21:41:22.478562] END   POST /admin/login/ -> 200
+[2026-02-09 21:41:28.792152] START POST /admin/login/
+[2026-02-09 21:41:29.204457] END   POST /admin/login/ -> 200
+[2026-02-09 21:41:39.569529] START POST /admin/login/
+[2026-02-09 21:41:39.966448] END   POST /admin/login/ -> 200
+[2026-02-09 21:41:52.132208] START POST /admin/login/
+[2026-02-09 21:41:52.518624] END   POST /admin/login/ -> 200
+[2026-02-09 21:42:43.477253] START POST /admin/login/
+[2026-02-09 21:42:43.878869] END   POST /admin/login/ -> 200
+[2026-02-09 21:42:49.378334] START POST /admin/login/
+[2026-02-09 21:42:49.785244] END   POST /admin/login/ -> 302
+Response Body: 
+[2026-02-09 21:42:49.790232] START GET /admin/
+[2026-02-09 21:42:49.826559] END   GET /admin/ -> 200
+[2026-02-09 21:44:29.266761] START POST /api/persons/
+[2026-02-09 21:44:29.315242] END   POST /api/persons/ -> 201
+[2026-02-09 21:44:38.927485] START GET /admin/
+[2026-02-09 21:44:38.972648] END   GET /admin/ -> 200
+[2026-02-09 21:44:39.988513] START GET /admin/auth/user/
+[2026-02-09 21:44:40.039252] END   GET /admin/auth/user/ -> 200
+[2026-02-09 21:44:40.063524] START GET /admin/jsi18n/
+[2026-02-09 21:44:40.093660] END   GET /admin/jsi18n/ -> 200
+[2026-02-09 21:44:41.982224] START GET /admin/auth/group/
+[2026-02-09 21:44:42.041029] END   GET /admin/auth/group/ -> 200
+[2026-02-09 21:44:42.055645] START GET /admin/jsi18n/
+[2026-02-09 21:44:42.101532] END   GET /admin/jsi18n/ -> 200
+[2026-02-09 21:44:42.891731] START GET /admin/auth/user/
+[2026-02-09 21:44:42.959737] END   GET /admin/auth/user/ -> 200
+[2026-02-09 21:44:42.974472] START GET /admin/jsi18n/
+[2026-02-09 21:44:43.019753] END   GET /admin/jsi18n/ -> 200
+[2026-02-09 21:45:18.484035] START POST /api/auth/login/
+[2026-02-09 21:45:18.558168] END   POST /api/auth/login/ -> 200
+[2026-02-09 21:45:20.335885] START GET /api/persons/
+[2026-02-09 21:45:20.379489] END   GET /api/persons/ -> 200
+[2026-02-09 21:45:20.386120] START GET /api/persons/
+[2026-02-09 21:45:20.421384] END   GET /api/persons/ -> 200
+[2026-02-09 21:45:31.167763] START POST /api/persons/
+[2026-02-09 21:45:31.225765] END   POST /api/persons/ -> 201
+[2026-02-09 21:45:31.238925] START GET /api/persons/
+[2026-02-09 21:45:31.288512] END   GET /api/persons/ -> 200
+[2026-02-09 21:45:55.623588] START GET /api/persons/
+[2026-02-09 21:45:55.672326] END   GET /api/persons/ -> 200
+[2026-02-09 21:45:55.678159] START GET /api/persons/
+[2026-02-09 21:45:55.724977] END   GET /api/persons/ -> 200
+[2026-02-09 21:45:56.502576] START GET /api/persons/
+[2026-02-09 21:45:56.655149] END   GET /api/persons/ -> 200
+[2026-02-09 21:45:56.661276] START GET /api/persons/
+[2026-02-09 21:45:56.809476] END   GET /api/persons/ -> 200

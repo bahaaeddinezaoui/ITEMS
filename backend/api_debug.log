@@ -1,0 +1,15 @@
+ 
+
+--- Create Person Request at 2026-02-09 20:44:29.268185+00:00 ---
+Data: {'first_name': 'John', 'last_name': 'Doe', 'sex': 'Male', 'birth_date': '1995-05-20', 'is_approved': True}
+Headers: {'Content-Length': '106', 'Content-Type': 'application/json', 'Accept-Encoding': 'identity', 'Host': 'localhost:8000', 'User-Agent': 'Python-urllib/3.13', 'Connection': 'close'}
+Validated Data: {'first_name': 'John', 'last_name': 'Doe', 'sex': 'Male', 'birth_date': datetime.date(1995, 5, 20), 'is_approved': True}
+Calculated next_id: 4
+Successfully created person ID: 4
+
+--- Create Person Request at 2026-02-09 20:45:31.213626+00:00 ---
+Data: {'first_name': 'Bahaa Eddine', 'last_name': 'ZAOUI', 'sex': 'Male', 'birth_date': '2001-08-21', 'is_approved': True}
+Headers: {'Content-Length': '107', 'Content-Type': 'application/json', 'Host': 'localhost:8000', 'Connection': 'close', 'Sec-Ch-Ua-Platform': '"Windows"', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwNjk4NzE4LCJpYXQiOjE3NzA2Njk5MTgsImp0aSI6IjE5Y2M1NmE0YjAzZDQ0ZTg4ZjM0MGIyMzgxNDIyNGMzIiwidXNlcl9pZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlzX3N1cGVydXNlciI6dHJ1ZX0.HRs-WioIphWO6qqqnupNXKW1_m1rmyhriDT0DabDXCM', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'Accept': 'application/json, text/plain, */*', 'Sec-Ch-Ua': '"Not(A:Brand";v="8", "Chromium";v="144", "Brave";v="144"', 'Sec-Ch-Ua-Mobile': '?0', 'Sec-Gpc': '1', 'Accept-Language': 'en-US,en;q=0.9', 'Origin': 'http://localhost:5173', 'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:5173/dashboard/persons', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Cookie': 'lang=ar; csrftoken=uJ7OCjB2UeMxshw0ubE7u3dKkUPZV1H1; sessionid=mwube6mtzimgwmghul5d0r6qos8lqeqe'}
+Validated Data: {'first_name': 'Bahaa Eddine', 'last_name': 'ZAOUI', 'sex': 'Male', 'birth_date': datetime.date(2001, 8, 21), 'is_approved': True}
+Calculated next_id: 5
+Successfully created person ID: 5

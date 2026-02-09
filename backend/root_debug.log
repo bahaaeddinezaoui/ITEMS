@@ -1,0 +1,129 @@
+  
+[2026-02-09 21:27:46.030838] START GET /api/persons/
+[2026-02-09 21:27:46.031756] START GET /api/persons/
+[2026-02-09 21:27:46.108659] END   GET /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvdd
+[2026-02-09 21:27:46.111790] END   GET /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvdd
+[2026-02-09 21:27:55.835160] START POST /api/auth/login/
+[2026-02-09 21:27:55.884464] END   POST /api/auth/login/ -> 200
+[2026-02-09 21:27:57.523777] START GET /api/persons/
+[2026-02-09 21:27:57.623634] END   GET /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvdd
+[2026-02-09 21:27:57.634688] START GET /api/persons/
+[2026-02-09 21:27:57.751276] END   GET /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvdd
+[2026-02-09 21:28:08.391772] START POST /api/persons/
+[2026-02-09 21:28:08.493560] END   POST /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvd
+[2026-02-09 21:29:08.340005] START POST /api/persons/
+[2026-02-09 21:29:08.447978] END   POST /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvd
+[2026-02-09 21:29:09.058895] START POST /api/persons/
+[2026-02-09 21:29:09.164330] END   POST /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvd
+[2026-02-09 21:29:09.284648] START POST /api/persons/
+[2026-02-09 21:29:09.390644] END   POST /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvd
+[2026-02-09 21:29:09.650190] START POST /api/persons/
+[2026-02-09 21:29:09.879112] END   POST /api/persons/ -> 500
+Response Body: ProgrammingError at /api/persons/
+relation "auth_user" does not exist
+LINE 1: ...user"."is_active", "auth_user"."date_joined" FROM "auth_user...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/persons/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvd

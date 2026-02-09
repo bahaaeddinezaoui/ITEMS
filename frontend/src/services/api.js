@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = '/api/';
 
 // Create axios instance
 const api = axios.create({
@@ -40,7 +40,7 @@ api.interceptors.response.use(
 // Auth functions
 export const authService = {
     login: async (username, password) => {
-        const response = await api.post('/auth/login/', { username, password });
+        const response = await api.post('auth/login/', { username, password });
         const { access, refresh, user } = response.data;
 
         localStorage.setItem('access_token', access);
@@ -74,27 +74,27 @@ export const authService = {
 // Person service
 export const personService = {
     getAll: async () => {
-        const response = await api.get('/persons/');
+        const response = await api.get('persons/');
         return response.data;
     },
 
     getById: async (id) => {
-        const response = await api.get(`/persons/${id}/`);
+        const response = await api.get(`persons/${id}/`);
         return response.data;
     },
 
     create: async (personData) => {
-        const response = await api.post('/persons/', personData);
+        const response = await api.post('persons/', personData);
         return response.data;
     },
 
     update: async (id, personData) => {
-        const response = await api.put(`/persons/${id}/`, personData);
+        const response = await api.put(`persons/${id}/`, personData);
         return response.data;
     },
 
     delete: async (id) => {
-        await api.delete(`/persons/${id}/`);
+        await api.delete(`persons/${id}/`);
     },
 };
 
