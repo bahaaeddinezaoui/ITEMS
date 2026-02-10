@@ -5,6 +5,7 @@ import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import PersonsPage from './pages/PersonsPage';
 import AssetsPage from './pages/AssetsPage';
+import MaintenancesPage from './pages/MaintenancesPage';
 import StockItemsPage from './pages/StockItemsPage';
 import ConsumablesPage from './pages/ConsumablesPage';
 import RoomsPage from './pages/RoomsPage';
@@ -61,6 +62,7 @@ function App() {
                         <Route index element={<DashboardHome />} />
                         <Route path="persons" element={<PersonsPage />} />
                         <Route path="assets" element={<AssetsPage />} />
+                        <Route path="maintenances" element={<MaintenancesPage />} />
                         <Route path="stock-items" element={<StockItemsPage />} />
                         <Route path="consumables" element={<ConsumablesPage />} />
                         <Route path="rooms" element={<RoomsPage />} />

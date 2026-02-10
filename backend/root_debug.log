@@ -2187,3 +2187,41 @@ Response Body: {"error":"Invalid credentials"}
 [2026-02-10 16:20:06.372313] END   GET /api/rooms/ -> 200
 [2026-02-10 16:20:12.390056] START POST /api/auth/login/
 [2026-02-10 16:20:12.439378] END   POST /api/auth/login/ -> 200
+[2026-02-10 20:55:03.380476] START POST /api/auth/login/
+[2026-02-10 20:55:03.452087] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 20:55:11.262954] START POST /api/auth/login/
+[2026-02-10 20:55:11.390169] END   POST /api/auth/login/ -> 200
+[2026-02-10 20:55:18.864789] START POST /api/auth/login/
+[2026-02-10 20:55:18.926504] END   POST /api/auth/login/ -> 200
+[2026-02-10 21:38:45.910097] START POST /api/login/
+[2026-02-10 21:38:45.965805] END   POST /api/login/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/login/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4e
+[2026-02-10 21:38:55.076759] START POST /api/auth/login/
+[2026-02-10 21:38:55.136779] END   POST /api/auth/login/ -> 200
+[2026-02-10 21:39:35.095617] START POST /api/auth/login/
+[2026-02-10 21:39:35.254797] END   POST /api/auth/login/ -> 200
+[2026-02-10 21:40:21.640031] START POST /api/auth/login/
+[2026-02-10 21:40:21.695804] END   POST /api/auth/login/ -> 200
+[2026-02-10 21:42:05.965853] START POST /api/auth/login/
+[2026-02-10 21:42:06.026963] END   POST /api/auth/login/ -> 200
+[2026-02-10 21:42:07.437324] START GET /api/maintenances/
+[2026-02-10 21:42:07.441999] START GET /api/persons/
+[2026-02-10 21:42:07.486406] END   GET /api/maintenances/ -> 200
+[2026-02-10 21:42:07.489761] END   GET /api/persons/ -> 200
+[2026-02-10 21:42:07.492664] START GET /api/maintenances/
+[2026-02-10 21:42:07.496839] START GET /api/persons/
+[2026-02-10 21:42:07.543899] END   GET /api/maintenances/ -> 200
+[2026-02-10 21:42:07.550482] END   GET /api/persons/ -> 200

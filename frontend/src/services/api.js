@@ -73,8 +73,8 @@ export const authService = {
 
 // Person service
 export const personService = {
-    getAll: async () => {
-        const response = await api.get('persons/');
+    getAll: async (params) => {
+        const response = await api.get('persons/', { params });
         return response.data;
     },
 
@@ -495,6 +495,60 @@ export const organizationalStructureRelationService = {
     delete: async (childId, parentId) => {
         // Use composite key for delete
         await api.delete(`organizational-structure-relations/${childId}/${parentId}/`);
+    },
+};
+
+// Asset service
+export const assetService = {
+    getAll: async () => {
+        const response = await api.get('assets/');
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`assets/${id}/`);
+        return response.data;
+    },
+
+    create: async (assetData) => {
+        const response = await api.post('assets/', assetData);
+        return response.data;
+    },
+
+    update: async (id, assetData) => {
+        const response = await api.put(`assets/${id}/`, assetData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`assets/${id}/`);
+    },
+};
+
+// Maintenance service
+export const maintenanceService = {
+    getAll: async () => {
+        const response = await api.get('maintenances/');
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`maintenances/${id}/`);
+        return response.data;
+    },
+
+    create: async (maintenanceData) => {
+        const response = await api.post('maintenances/', maintenanceData);
+        return response.data;
+    },
+
+    update: async (id, maintenanceData) => {
+        const response = await api.put(`maintenances/${id}/`, maintenanceData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`maintenances/${id}/`);
     },
 };
 

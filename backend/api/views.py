@@ -7,8 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer, AssetSerializer, MaintenanceSerializer
 
 
 def hash_password(password):
@@ -96,11 +96,16 @@ class PersonViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny] # Temporarily disable for debugging
 
     def get_queryset(self):
-        """Optionally filter by is_approved status"""
+        """Optionally filter by is_approved status or role_code"""
         queryset = Person.objects.all().order_by('person_id')
         is_approved = self.request.query_params.get('is_approved', None)
         if is_approved is not None:
             queryset = queryset.filter(is_approved=is_approved.lower() == 'true')
+            
+        role_code = self.request.query_params.get('role', None)
+        if role_code is not None:
+            queryset = queryset.filter(personrolemapping__role__role_code=role_code)
+            
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -267,6 +272,56 @@ class AssetTypeViewSet(viewsets.ModelViewSet):
             )
 
         return super().destroy(request, *args, **kwargs)
+
+
+class AssetViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Asset model"""
+    queryset = Asset.objects.all().order_by('asset_id')
+    serializer_class = AssetSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Asset.objects.all().order_by('asset_id')
+
+
+class MaintenanceViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Maintenance model"""
+    queryset = Maintenance.objects.all().order_by('maintenance_id')
+    serializer_class = MaintenanceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Filter maintenances based on query params.
+        Can filter by asset_id, performed_by_person_id, etc.
+        """
+        queryset = Maintenance.objects.all().order_by('-start_datetime')
+        
+        asset_id = self.request.query_params.get('asset', None)
+        if asset_id is not None:
+            queryset = queryset.filter(asset_id=asset_id)
+            
+        performed_by_person_id = self.request.query_params.get('performed_by_person', None)
+        if performed_by_person_id is not None:
+            queryset = queryset.filter(performed_by_person_id=performed_by_person_id)
+            
+        approved_by_maintenance_chief_id = self.request.query_params.get('approved_by_maintenance_chief', None)
+        if approved_by_maintenance_chief_id is not None:
+            queryset = queryset.filter(approved_by_maintenance_chief_id=approved_by_maintenance_chief_id)
+            
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        """Create a new maintenance record"""
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        except Exception as e:
+             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class AssetBrandViewSet(viewsets.ModelViewSet):

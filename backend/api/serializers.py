@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -205,4 +205,31 @@ class OrganizationalStructureRelationSerializer(serializers.ModelSerializer):
         # because Django doesn't handle changing PKs well.
         instance.save()
         return instance
+
+
+class AssetSerializer(serializers.ModelSerializer):
+    """Serializer for Asset model"""
+    class Meta:
+        model = Asset
+        fields = ['asset_id', 'asset_model', 'attribution_order_id', 'destruction_certificate_id', 
+                  'asset_serial_number', 'asset_fabrication_datetime', 'asset_inventory_number', 
+                  'asset_service_tag', 'asset_name', 'asset_name_in_the_administrative_certificate', 
+                  'asset_arrival_datetime', 'asset_status']
+        read_only_fields = ['asset_id']
+
+
+class MaintenanceSerializer(serializers.ModelSerializer):
+    """Serializer for Maintenance model"""
+    asset_name = serializers.CharField(source='asset.asset_name', read_only=True)
+    performed_by_person_name = serializers.StringRelatedField(source='performed_by_person', read_only=True)
+    approved_by_maintenance_chief_name = serializers.StringRelatedField(source='approved_by_maintenance_chief', read_only=True)
+
+    class Meta:
+        model = Maintenance
+        fields = ['maintenance_id', 'asset', 'asset_name', 'performed_by_person', 'performed_by_person_name',
+                  'approved_by_maintenance_chief', 'approved_by_maintenance_chief_name',
+                  'is_approved_by_maintenance_chief', 'start_datetime', 'end_datetime', 
+                  'description', 'is_successful']
+        read_only_fields = ['maintenance_id']
+
 

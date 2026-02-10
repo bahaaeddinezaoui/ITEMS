@@ -151,3 +151,26 @@ Login successful for: bahaaeddinezaoui
 
 [2026-02-10 15:20:12.391244+00:00] Login attempt for: bahaaeddinezaoui
 Login successful for: bahaaeddinezaoui
+
+[2026-02-10 19:55:03.392102+00:00] Login attempt for: admin
+Password mismatch for user: admin
+Provided hash: 83ca635afa1e2503d952...
+DB hash:       bed4efa1d4fdbd954bd3...
+
+[2026-02-10 19:55:11.264952+00:00] Login attempt for: admin
+Login successful for: admin
+
+[2026-02-10 19:55:18.867048+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-10 20:38:55.079066+00:00] Login attempt for: technician1
+Login successful for: technician1
+
+[2026-02-10 20:39:35.097364+00:00] Login attempt for: technician1
+Login successful for: technician1
+
+[2026-02-10 20:40:21.642453+00:00] Login attempt for: technician1
+Login successful for: technician1
+
+[2026-02-10 20:42:05.967590+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui

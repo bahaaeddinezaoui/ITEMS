@@ -1,0 +1,9 @@
+Technicians:
+technician1 - technician1
+technician2 - technician2
+
+Superuser:
+admin - password123
+
+Maintenance Chief:
+bahaaeddinezaoui - 08212001

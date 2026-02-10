@@ -327,3 +327,44 @@ class OrganizationalStructureRelation(models.Model):
 
     def __str__(self):
         return f"{self.organizational_structure.structure_name} -> {self.parent_organizational_structure.structure_name}"
+
+
+class Asset(models.Model):
+    """Maps to asset table"""
+    asset_id = models.AutoField(primary_key=True, db_column='asset_id')
+    asset_model = models.ForeignKey(AssetModel, on_delete=models.CASCADE, db_column='asset_model_id')
+    attribution_order_id = models.IntegerField(db_column='attribution_order_id')
+    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id')
+    asset_serial_number = models.CharField(max_length=48, db_column='asset_serial_number', blank=True, null=True)
+    asset_fabrication_datetime = models.DateTimeField(db_column='asset_fabrication_datetime', blank=True, null=True)
+    asset_inventory_number = models.CharField(max_length=6, db_column='asset_inventory_number', blank=True, null=True)
+    asset_service_tag = models.CharField(max_length=24, db_column='asset_service_tag', blank=True, null=True)
+    asset_name = models.CharField(max_length=48, db_column='asset_name', blank=True, null=True)
+    asset_name_in_the_administrative_certificate = models.CharField(max_length=48, db_column='asset_name_in_the_administrative_certificate', blank=True, null=True)
+    asset_arrival_datetime = models.DateTimeField(db_column='asset_arrival_datetime', blank=True, null=True)
+    asset_status = models.CharField(max_length=30, db_column='asset_status', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'asset'
+
+    def __str__(self):
+        return self.asset_name or f"Asset {self.asset_id}"
+
+
+class Maintenance(models.Model):
+    """Maps to maintenance table"""
+    maintenance_id = models.AutoField(primary_key=True, db_column='maintenance_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', blank=True, null=True)
+    performed_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='performed_by_person_id', blank=True, null=True, related_name='performed_maintenances')
+    approved_by_maintenance_chief = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='approved_by_maintenance_chief_id', related_name='approved_maintenances')
+    is_approved_by_maintenance_chief = models.BooleanField(db_column='is_approved_by_maintenance_chief', blank=True, null=True)
+    start_datetime = models.DateTimeField(db_column='start_datetime', blank=True, null=True)
+    end_datetime = models.DateTimeField(db_column='end_datetime', blank=True, null=True)
+    description = models.CharField(max_length=256, db_column='description', blank=True, null=True)
+    is_successful = models.BooleanField(db_column='is_successful', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'maintenance'
+
