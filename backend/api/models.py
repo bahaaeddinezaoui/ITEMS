@@ -272,3 +272,19 @@ class Position(models.Model):
 
     def __str__(self):
         return self.position_label
+
+
+class OrganizationalStructure(models.Model):
+    """Maps to organizational_structure table"""
+    organizational_structure_id = models.AutoField(primary_key=True, db_column='organizational_structure_id')
+    structure_code = models.CharField(max_length=50, db_column='structure_code')
+    structure_name = models.CharField(max_length=255, db_column='structure_name')
+    structure_type = models.CharField(max_length=30, db_column='structure_type')
+    is_active = models.BooleanField(db_column='is_active')
+
+    class Meta:
+        managed = False
+        db_table = 'organizational_structure'
+
+    def __str__(self):
+        return self.structure_name

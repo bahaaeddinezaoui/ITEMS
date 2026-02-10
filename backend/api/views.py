@@ -7,8 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer
 
 
 def hash_password(password):
@@ -1182,6 +1182,75 @@ class PositionViewSet(viewsets.ModelViewSet):
         if not user_account or not user_account.is_superuser():
             return Response(
                 {'error': 'Only superusers can delete positions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class OrganizationalStructureViewSet(viewsets.ModelViewSet):
+    """CRUD operations for OrganizationalStructure model"""
+    queryset = OrganizationalStructure.objects.all().order_by('organizational_structure_id')
+    serializer_class = OrganizationalStructureSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all organizational structures"""
+        return OrganizationalStructure.objects.all().order_by('organizational_structure_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create organizational structure - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create organizational structures'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next organizational_structure_id
+        last_org_struct = OrganizationalStructure.objects.order_by('-organizational_structure_id').first()
+        next_id = (last_org_struct.organizational_structure_id + 1) if last_org_struct else 1
+        
+        org_structure = OrganizationalStructure.objects.create(
+            organizational_structure_id=next_id,
+            **serializer.validated_data
+        )
+        return Response(OrganizationalStructureSerializer(org_structure).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update organizational structure - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update organizational structures'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete organizational structure - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete organizational structures'},
                 status=status.HTTP_403_FORBIDDEN
             )
 

@@ -1,0 +1,4 @@
+COPY room_type(room_type_id,room_type_label,room_type_code)
+FROM 'C:\Program Files\PostgreSQL\18\bin\room_type.csv' -- Update this path
+DELIMITER ',' 
+CSV HEADER;

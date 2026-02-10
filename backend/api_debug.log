@@ -58,3 +58,28 @@ Successfully created room type ID: 1
 Data: {'room_type_label': 'Storage Room', 'room_type_code': 'STORAGE'}
 Calculated next room_type_id: 1
 Successfully created room type ID: 1
+
+--- Create Asset Type Request ---
+Data: {'asset_type_label': 'Printer', 'asset_type_code': 'PRNT'}
+Calculated next asset_type_id: 4
+Successfully created asset type ID: 4
+
+--- Create Asset Type Request ---
+Data: {'asset_type_label': 'Scanner', 'asset_type_code': 'Scanner'}
+Calculated next asset_type_id: 5
+Successfully created asset type ID: 5
+
+--- Create Asset Type Request ---
+Data: {'asset_type_label': 'Monitor', 'asset_type_code': 'Monitor'}
+Calculated next asset_type_id: 6
+Successfully created asset type ID: 6
+
+--- Create Asset Type Request ---
+Data: {'asset_type_label': 'Projector', 'asset_type_code': 'PRJCT'}
+Calculated next asset_type_id: 7
+Successfully created asset type ID: 7
+
+--- Create Stock Item Type Request ---
+Data: {'stock_item_type_label': 'Keyboard', 'stock_item_type_code': 'Keyboard'}
+Calculated next stock_item_type_id: 2
+Successfully created stock item type ID: 2

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -156,3 +156,11 @@ class PositionSerializer(serializers.ModelSerializer):
         model = Position
         fields = ['position_id', 'position_code', 'position_label', 'description']
         read_only_fields = ['position_id']
+
+
+class OrganizationalStructureSerializer(serializers.ModelSerializer):
+    """Serializer for OrganizationalStructure model"""
+    class Meta:
+        model = OrganizationalStructure
+        fields = ['organizational_structure_id', 'structure_code', 'structure_name', 'structure_type', 'is_active']
+        read_only_fields = ['organizational_structure_id']

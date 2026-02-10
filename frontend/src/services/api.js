@@ -442,4 +442,31 @@ export const positionService = {
     },
 };
 
+// Organizational Structure service
+export const organizationalStructureService = {
+    getAll: async () => {
+        const response = await api.get('organizational-structures/');
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`organizational-structures/${id}/`);
+        return response.data;
+    },
+
+    create: async (orgStructData) => {
+        const response = await api.post('organizational-structures/', orgStructData);
+        return response.data;
+    },
+
+    update: async (id, orgStructData) => {
+        const response = await api.put(`organizational-structures/${id}/`, orgStructData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`organizational-structures/${id}/`);
+    },
+};
+
 export default api;
