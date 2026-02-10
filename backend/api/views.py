@@ -7,8 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer
 
 
 def hash_password(password):
@@ -1317,6 +1317,97 @@ class PositionViewSet(viewsets.ModelViewSet):
         if not user_account or not user_account.is_superuser():
             return Response(
                 {'error': 'Only superusers can delete positions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+class OrganizationalStructureRelationViewSet(viewsets.ModelViewSet):
+    """CRUD operations for OrganizationalStructureRelation model"""
+    queryset = OrganizationalStructureRelation.objects.all()
+    serializer_class = OrganizationalStructureRelationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all organizational structure relations"""
+        org_structure_id = self.request.query_params.get('org_structure_id')
+        if org_structure_id:
+            # Get both parent and child relationships for a specific organization
+            return OrganizationalStructureRelation.objects.filter(
+                organizational_structure_id=org_structure_id
+            ) | OrganizationalStructureRelation.objects.filter(
+                parent_organizational_structure_id=org_structure_id
+            )
+        return OrganizationalStructureRelation.objects.all()
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create organizational structure relation - only superusers can create"""
+        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'api_debug.log')
+        
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create organizational structure relations'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            with open(log_path, 'a') as f:
+                f.write(f"\n--- Create Relation Request ---\n")
+                f.write(f"Data: {request.data}\n")
+            
+            serializer = self.get_serializer(data=request.data)
+            if not serializer.is_valid():
+                with open(log_path, 'a') as f:
+                    f.write(f"Serializer errors: {serializer.errors}\n")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # The custom create() method in the serializer handles the manual PK saving
+            relation = serializer.save()
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Successfully created relation: {relation}\n")
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            
+        except Exception as e:
+            with open(log_path, 'a') as f:
+                f.write(f"ERROR creating relation: {str(e)}\n")
+                import traceback
+                f.write(f"Traceback: {traceback.format_exc()}\n")
+            raise
+
+    def update(self, request, *args, **kwargs):
+        """Update organizational structure relation - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update organizational structure relations'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete organizational structure relation - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete organizational structure relations'},
                 status=status.HTTP_403_FORBIDDEN
             )
 

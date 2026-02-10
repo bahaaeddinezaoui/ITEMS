@@ -469,4 +469,33 @@ export const organizationalStructureService = {
     },
 };
 
+// Organizational Structure Relation service
+export const organizationalStructureRelationService = {
+    getAll: async () => {
+        const response = await api.get('organizational-structure-relations/');
+        return response.data;
+    },
+
+    getByStructureId: async (structureId) => {
+        const response = await api.get(`organizational-structure-relations/?org_structure_id=${structureId}`);
+        return response.data;
+    },
+
+    create: async (relationData) => {
+        const response = await api.post('organizational-structure-relations/', relationData);
+        return response.data;
+    },
+
+    update: async (childId, parentId, relationData) => {
+        // Use composite key for update - the endpoint needs both ids
+        const response = await api.put(`organizational-structure-relations/${childId}/${parentId}/`, relationData);
+        return response.data;
+    },
+
+    delete: async (childId, parentId) => {
+        // Use composite key for delete
+        await api.delete(`organizational-structure-relations/${childId}/${parentId}/`);
+    },
+};
+
 export default api;

@@ -83,3 +83,42 @@ Successfully created asset type ID: 7
 Data: {'stock_item_type_label': 'Keyboard', 'stock_item_type_code': 'Keyboard'}
 Calculated next stock_item_type_id: 2
 Successfully created stock item type ID: 2
+
+--- Create Stock Item Type Request ---
+Data: {'stock_item_type_label': 'Random Access Memory', 'stock_item_type_code': 'RAM'}
+Calculated next stock_item_type_id: 7
+Successfully created stock item type ID: 7
+
+--- Create Relation Request ---
+Data: {'organizational_structure': 2, 'parent_organizational_structure': '1', 'relation_type': ''}
+ERROR creating relation: Cannot assign "2": "OrganizationalStructureRelation.organizational_structure" must be a "OrganizationalStructure" instance.
+Traceback: Traceback (most recent call last):
+  File "D:\Projects\Equipment Management System\backend\api\views.py", line 1377, in create
+    relation = serializer.save()
+  File "D:\Projects\Equipment Management System\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\venv\Lib\site-packages\rest_framework\serializers.py", line 991, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "D:\Projects\Equipment Management System\backend\venv\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\venv\Lib\site-packages\django\db\models\query.py", line 667, in create
+    obj = self.model(**kwargs)
+  File "D:\Projects\Equipment Management System\backend\venv\Lib\site-packages\django\db\models\base.py", line 566, in __init__
+    _setattr(self, field.name, rel_obj)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\venv\Lib\site-packages\django\db\models\fields\related_descriptors.py", line 287, in __set__
+    raise ValueError(
+    ...<7 lines>...
+    )
+ValueError: Cannot assign "2": "OrganizationalStructureRelation.organizational_structure" must be a "OrganizationalStructure" instance.
+
+
+--- Create Relation Request ---
+Data: {'organizational_structure': 2, 'parent_organizational_structure': '1', 'relation_type': ''}
+Successfully created relation: Maintenance -> Information Technology
+
+--- Create Relation Request ---
+Data: {'organizational_structure': 2, 'parent_organizational_structure': '1', 'relation_type': ''}
+Serializer errors: {'non_field_errors': [ErrorDetail(string='The fields organizational_structure, parent_organizational_structure must make a unique set.', code='unique')]}

@@ -1613,3 +1613,425 @@ Response Body: {"detail":"Authentication credentials were not provided."}
 [2026-02-10 14:12:42.241051] END   POST /api/organizational-structures/ -> 201
 [2026-02-10 14:12:42.251642] START GET /api/organizational-structures/
 [2026-02-10 14:12:42.300799] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:13:33.946067] START GET /api/organizational-structures/
+[2026-02-10 14:13:33.986495] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:13:33.990031] START GET /api/organizational-structures/
+[2026-02-10 14:13:34.022218] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:13:56.727476] START GET /api/organizational-structures/
+[2026-02-10 14:13:56.767922] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:13:56.772780] START GET /api/organizational-structures/
+[2026-02-10 14:13:56.812975] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:13:57.255624] START GET /api/organizational-structures/
+[2026-02-10 14:13:57.318459] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:13:57.328386] START GET /api/organizational-structures/
+[2026-02-10 14:13:57.373002] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:13:59.803095] START GET /api/stock-item-brands/
+[2026-02-10 14:13:59.807100] START GET /api/stock-item-types/
+[2026-02-10 14:13:59.862143] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 14:13:59.862285] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 14:13:59.873766] START GET /api/stock-item-brands/
+[2026-02-10 14:13:59.878169] START GET /api/stock-item-types/
+[2026-02-10 14:13:59.968037] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 14:13:59.974500] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 14:14:13.764614] START POST /api/stock-item-types/
+[2026-02-10 14:14:13.823925] END   POST /api/stock-item-types/ -> 201
+[2026-02-10 14:14:13.833811] START GET /api/stock-item-types/
+[2026-02-10 14:14:13.875558] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 14:22:04.959711] START GET /api/positions/
+[2026-02-10 14:22:04.999500] END   GET /api/positions/ -> 200
+[2026-02-10 14:22:05.003064] START GET /api/positions/
+[2026-02-10 14:22:05.031747] END   GET /api/positions/ -> 200
+[2026-02-10 14:22:06.318418] START GET /api/organizational-structures/
+[2026-02-10 14:22:06.349416] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:22:06.352948] START GET /api/organizational-structures/
+[2026-02-10 14:22:06.389603] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:22:09.857293] START GET /api/organizational-structures/
+[2026-02-10 14:22:09.901402] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:22:09.911273] START GET /api/organizational-structures/
+[2026-02-10 14:22:09.965938] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:00.839571] START GET /api/organizational-structures/
+[2026-02-10 14:24:00.880608] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:00.885749] START GET /api/organizational-structures/
+[2026-02-10 14:24:00.912884] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:18.583592] START GET /api/organizational-structures/
+[2026-02-10 14:24:18.618007] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:18.622509] START GET /api/organizational-structures/
+[2026-02-10 14:24:18.651905] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:19.134724] START GET /api/organizational-structures/
+[2026-02-10 14:24:19.166502] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:19.170674] START GET /api/organizational-structures/
+[2026-02-10 14:24:19.199103] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:19.549835] START GET /api/organizational-structures/
+[2026-02-10 14:24:19.581594] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:19.585858] START GET /api/organizational-structures/
+[2026-02-10 14:24:19.620106] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:19.996765] START GET /api/organizational-structures/
+[2026-02-10 14:24:20.027231] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:20.031228] START GET /api/organizational-structures/
+[2026-02-10 14:24:20.059544] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:20.418914] START GET /api/organizational-structures/
+[2026-02-10 14:24:20.450200] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:20.454248] START GET /api/organizational-structures/
+[2026-02-10 14:24:20.483173] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:20.869191] START GET /api/organizational-structures/
+[2026-02-10 14:24:21.016303] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:21.020135] START GET /api/organizational-structures/
+[2026-02-10 14:24:21.050916] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:21.285692] START GET /api/organizational-structures/
+[2026-02-10 14:24:21.422105] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:21.425869] START GET /api/organizational-structures/
+[2026-02-10 14:24:21.457624] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:21.802090] START GET /api/organizational-structures/
+[2026-02-10 14:24:21.847623] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:21.853150] START GET /api/organizational-structures/
+[2026-02-10 14:24:21.895648] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:22.357801] START GET /api/organizational-structures/
+[2026-02-10 14:24:22.403454] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:22.411542] START GET /api/organizational-structures/
+[2026-02-10 14:24:22.564023] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:22.826984] START GET /api/organizational-structures/
+[2026-02-10 14:24:22.877317] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:24:22.883861] START GET /api/organizational-structures/
+[2026-02-10 14:24:22.924261] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:25:25.797100] START GET /api/organizational-structures/
+[2026-02-10 14:25:25.931841] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:27:11.761402] START GET /api/organizational-structures/
+[2026-02-10 14:27:11.805503] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:27:11.811993] START GET /api/organizational-structures/
+[2026-02-10 14:27:11.856212] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:27:47.172553] START GET /api/organizational-structures/
+[2026-02-10 14:27:47.203980] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:27:47.208464] START GET /api/organizational-structures/
+[2026-02-10 14:27:47.337837] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:27:47.604496] START GET /api/organizational-structures/
+[2026-02-10 14:27:47.634584] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:27:47.638537] START GET /api/organizational-structures/
+[2026-02-10 14:27:47.666952] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:29:23.807873] START GET /api/organizational-structures/
+[2026-02-10 14:29:23.837722] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:03.772225] START GET /api/organizational-structures/
+[2026-02-10 14:30:03.811316] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:03.815225] START GET /api/organizational-structures/
+[2026-02-10 14:30:03.948727] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:04.195626] START GET /api/organizational-structures/
+[2026-02-10 14:30:04.231159] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:04.234963] START GET /api/organizational-structures/
+[2026-02-10 14:30:04.269127] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:04.703078] START GET /api/organizational-structures/
+[2026-02-10 14:30:04.735525] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:04.738961] START GET /api/organizational-structures/
+[2026-02-10 14:30:04.772323] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:05.114034] START GET /api/organizational-structures/
+[2026-02-10 14:30:05.144602] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:05.148484] START GET /api/organizational-structures/
+[2026-02-10 14:30:05.176248] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:11.954149] START GET /api/organizational-structures/
+[2026-02-10 14:30:11.956656] START GET /api/organizational-structures/
+[2026-02-10 14:30:12.001192] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:12.001345] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:43.221688] START GET /api/organizational-structures/
+[2026-02-10 14:30:43.363538] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:30:43.366643] START GET /api/organizational-structures/
+[2026-02-10 14:30:43.400810] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:31:43.801570] START GET /api/organizational-structures/
+[2026-02-10 14:31:43.830314] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:32:08.801651] START GET /api/organizational-structures/
+[2026-02-10 14:32:08.831068] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:32:46.028949] START GET /api/organizational-structures/
+[2026-02-10 14:32:46.060894] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:32:46.066348] START GET /api/organizational-structures/
+[2026-02-10 14:32:46.102733] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:35:17.823443] START GET /api/organizational-structures/
+[2026-02-10 14:35:17.854529] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:35:31.809456] START GET /api/organizational-structures/
+[2026-02-10 14:35:31.861799] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:36:01.809505] START GET /api/organizational-structures/
+[2026-02-10 14:36:01.856734] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:38:12.843768] START GET /api/organizational-structures/
+[2026-02-10 14:38:12.882129] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:38:12.886558] START GET /api/organizational-structures/
+[2026-02-10 14:38:12.915813] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:40:13.664198] START POST /api/organizational-structures/
+[2026-02-10 14:40:13.747182] END   POST /api/organizational-structures/ -> 201
+[2026-02-10 14:40:13.763135] START GET /api/organizational-structures/
+[2026-02-10 14:40:13.822716] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:40:19.303299] START GET /api/organizational-structure-relations/
+[2026-02-10 14:40:19.480156] END   GET /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: SELECT "organizational_structure_relation"."id", "organizati...
+               ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/organizational-structure-relations/?org_structure_id=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment 
+[2026-02-10 14:40:22.548820] START GET /api/organizational-structure-relations/
+[2026-02-10 14:40:22.647570] END   GET /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: SELECT "organizational_structure_relation"."id", "organizati...
+               ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/organizational-structure-relations/?org_structure_id=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment 
+[2026-02-10 14:40:26.549464] START POST /api/organizational-structure-relations/
+[2026-02-10 14:40:26.635097] END   POST /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: ...relation_type") VALUES (2, 1, NULL, '') RETURNING "organizat...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/organizational-structure-relations/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python P
+[2026-02-10 14:41:18.482980] START GET /api/organizational-structure-relations/
+[2026-02-10 14:41:18.583331] END   GET /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: SELECT "organizational_structure_relation"."id", "organizati...
+               ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/organizational-structure-relations/?org_structure_id=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment 
+[2026-02-10 14:49:37.005292] START POST /api/auth/login/
+[2026-02-10 14:49:37.073173] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 14:49:44.229498] START POST /api/auth/login/
+[2026-02-10 14:49:44.277747] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 14:51:00.471361] START POST /api/auth/login/
+[2026-02-10 14:51:00.589171] END   POST /api/auth/login/ -> 200
+[2026-02-10 14:51:02.992562] START GET /api/consumable-brands/
+[2026-02-10 14:51:02.993421] START GET /api/consumable-types/
+[2026-02-10 14:51:03.049876] END   GET /api/consumable-types/ -> 200
+[2026-02-10 14:51:03.050141] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 14:51:03.062580] START GET /api/consumable-brands/
+[2026-02-10 14:51:03.061686] START GET /api/consumable-types/
+[2026-02-10 14:51:03.110776] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 14:51:03.111817] END   GET /api/consumable-types/ -> 200
+[2026-02-10 14:51:04.305587] START GET /api/rooms/
+[2026-02-10 14:51:04.462403] END   GET /api/rooms/ -> 200
+[2026-02-10 14:51:04.469380] START GET /api/rooms/
+[2026-02-10 14:51:04.510113] END   GET /api/rooms/ -> 200
+[2026-02-10 14:51:05.703845] START GET /api/organizational-structures/
+[2026-02-10 14:51:05.748240] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:51:05.754024] START GET /api/organizational-structures/
+[2026-02-10 14:51:05.794158] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 14:51:12.122347] START GET /api/organizational-structure-relations/
+[2026-02-10 14:51:12.261125] END   GET /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: SELECT "organizational_structure_relation"."id", "organizati...
+               ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/organizational-structure-relations/?org_structure_id=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment 
+[2026-02-10 14:55:20.902673] START POST /api/organizational-structure-relations/
+[2026-02-10 14:55:21.035069] END   POST /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: ...relation_type") VALUES (2, 1, NULL, '') RETURNING "organizat...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/organizational-structure-relations/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python P
+[2026-02-10 15:01:05.109445] START GET /api/organizational-structures/
+[2026-02-10 15:01:05.156637] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:01:05.163611] START GET /api/organizational-structures/
+[2026-02-10 15:01:05.201474] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:01:13.475207] START GET /api/organizational-structure-relations/
+[2026-02-10 15:01:13.582614] END   GET /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: SELECT "organizational_structure_relation"."id", "organizati...
+               ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/organizational-structure-relations/?org_structure_id=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment 
+[2026-02-10 15:01:16.824733] START GET /api/rooms/
+[2026-02-10 15:01:16.869970] END   GET /api/rooms/ -> 200
+[2026-02-10 15:01:16.877660] START GET /api/rooms/
+[2026-02-10 15:01:16.922666] END   GET /api/rooms/ -> 200
+[2026-02-10 15:01:30.066078] START GET /api/organizational-structures/
+[2026-02-10 15:01:30.111712] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:01:30.117539] START GET /api/organizational-structures/
+[2026-02-10 15:01:30.160298] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:01:31.620439] START GET /api/organizational-structure-relations/
+[2026-02-10 15:01:31.721124] END   GET /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: SELECT "organizational_structure_relation"."id", "organizati...
+               ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/organizational-structure-relations/?org_structure_id=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment 
+[2026-02-10 15:01:34.144237] START POST /api/organizational-structure-relations/
+[2026-02-10 15:01:34.258003] END   POST /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: ...relation_type") VALUES (2, 1, NULL, '') RETURNING "organizat...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/organizational-structure-relations/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python P
+[2026-02-10 15:14:34.117333] START GET /api/organizational-structures/
+[2026-02-10 15:14:34.157079] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:14:34.163318] START GET /api/organizational-structures/
+[2026-02-10 15:14:34.214929] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:14:35.507661] START GET /api/organizational-structure-relations/
+[2026-02-10 15:14:35.600818] END   GET /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: SELECT "organizational_structure_relation"."id", "organizati...
+               ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/organizational-structure-relations/?org_structure_id=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment 
+[2026-02-10 15:14:38.675324] START GET /api/rooms/
+[2026-02-10 15:14:38.720693] END   GET /api/rooms/ -> 200
+[2026-02-10 15:14:38.727775] START GET /api/rooms/
+[2026-02-10 15:14:38.775274] END   GET /api/rooms/ -> 200
+[2026-02-10 15:14:39.996913] START GET /api/organizational-structures/
+[2026-02-10 15:14:40.046485] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:14:40.052325] START GET /api/organizational-structures/
+[2026-02-10 15:14:40.094845] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:14:41.852489] START GET /api/organizational-structure-relations/
+[2026-02-10 15:14:41.964675] END   GET /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: SELECT "organizational_structure_relation"."id", "organizati...
+               ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/organizational-structure-relations/?org_structure_id=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment 
+[2026-02-10 15:14:45.549041] START POST /api/organizational-structure-relations/
+[2026-02-10 15:14:45.677818] END   POST /api/organizational-structure-relations/ -> 500
+Response Body: ProgrammingError at /api/organizational-structure-relations/
+column organizational_structure_relation.id does not exist
+LINE 1: ...relation_type") VALUES (2, 1, NULL, '') RETURNING "organizat...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/organizational-structure-relations/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python P
+[2026-02-10 15:17:02.647160] START GET /api/organizational-structures/
+[2026-02-10 15:17:02.713330] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:17:02.719592] START GET /api/organizational-structures/
+[2026-02-10 15:17:02.761132] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:17:04.011000] START GET /api/organizational-structure-relations/
+[2026-02-10 15:17:04.048034] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:17:10.197517] START POST /api/organizational-structure-relations/
+[2026-02-10 15:17:10.352420] END   POST /api/organizational-structure-relations/ -> 500
+Response Body: ValueError at /api/organizational-structure-relations/
+Cannot assign "2": "OrganizationalStructureRelation.organizational_structure" must be a "OrganizationalStructure" instance.
+
+Request Method: POST
+Request URL: http://localhost:8000/api/organizational-structure-relations/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin
+[2026-02-10 15:23:51.223499] START GET /api/organizational-structures/
+[2026-02-10 15:23:51.286603] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:23:51.291966] START GET /api/organizational-structures/
+[2026-02-10 15:23:51.325719] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:23:52.434000] START GET /api/organizational-structure-relations/
+[2026-02-10 15:23:52.477218] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:23:54.970010] START POST /api/organizational-structure-relations/
+[2026-02-10 15:23:55.029462] END   POST /api/organizational-structure-relations/ -> 201
+[2026-02-10 15:23:55.038713] START GET /api/organizational-structure-relations/
+[2026-02-10 15:23:55.090309] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:31:30.770136] START POST /api/organizational-structure-relations/
+[2026-02-10 15:31:30.832305] END   POST /api/organizational-structure-relations/ -> 400
+Response Body: {"non_field_errors":["The fields organizational_structure, parent_organizational_structure must make a unique set."]}
+[2026-02-10 15:31:40.962990] START GET /api/organizational-structures/
+[2026-02-10 15:31:41.004745] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:31:41.010802] START GET /api/organizational-structures/
+[2026-02-10 15:31:41.053185] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:31:47.907409] START GET /api/organizational-structure-relations/
+[2026-02-10 15:31:47.953968] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:32:38.422347] START GET /api/organizational-structures/
+[2026-02-10 15:32:38.474014] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:32:38.481891] START GET /api/organizational-structures/
+[2026-02-10 15:32:38.523324] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:09.507310] START GET /api/organizational-structure-relations/
+[2026-02-10 15:36:09.594432] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:36:28.454916] START GET /api/organizational-structures/
+[2026-02-10 15:36:28.499202] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:28.506135] START GET /api/organizational-structures/
+[2026-02-10 15:36:28.549133] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:33.592674] START GET /api/organizational-structure-relations/
+[2026-02-10 15:36:33.646699] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:36:48.070751] START GET /api/rooms/
+[2026-02-10 15:36:48.114094] END   GET /api/rooms/ -> 200
+[2026-02-10 15:36:48.120954] START GET /api/rooms/
+[2026-02-10 15:36:48.166750] END   GET /api/rooms/ -> 200
+[2026-02-10 15:36:49.152114] START GET /api/organizational-structures/
+[2026-02-10 15:36:49.307744] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:49.314386] START GET /api/organizational-structures/
+[2026-02-10 15:36:49.360929] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:51.635180] START GET /api/persons/
+[2026-02-10 15:36:51.789905] END   GET /api/persons/ -> 200
+[2026-02-10 15:36:51.796112] START GET /api/persons/
+[2026-02-10 15:36:51.840183] END   GET /api/persons/ -> 200
+[2026-02-10 15:37:20.357596] START GET /api/organizational-structures/
+[2026-02-10 15:37:20.507642] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:37:20.513127] START GET /api/organizational-structures/
+[2026-02-10 15:37:20.660457] END   GET /api/organizational-structures/ -> 200

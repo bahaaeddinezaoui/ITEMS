@@ -288,3 +288,30 @@ class OrganizationalStructure(models.Model):
 
     def __str__(self):
         return self.structure_name
+
+
+class OrganizationalStructureRelation(models.Model):
+    """Maps to organizational_structure_relation table"""
+    organizational_structure = models.ForeignKey(
+        OrganizationalStructure,
+        on_delete=models.CASCADE,
+        db_column='organizational_structure_id',
+        related_name='child_relations',
+        primary_key=True
+    )
+    parent_organizational_structure = models.ForeignKey(
+        OrganizationalStructure,
+        on_delete=models.CASCADE,
+        db_column='parent_organizational_structure_id',
+        related_name='parent_relations'
+    )
+    relation_id = models.IntegerField(blank=True, null=True, db_column='relation_id')
+    relation_type = models.CharField(max_length=60, blank=True, null=True, db_column='relation_type')
+
+    class Meta:
+        managed = False
+        db_table = 'organizational_structure_relation'
+        unique_together = (('organizational_structure', 'parent_organizational_structure'),)
+
+    def __str__(self):
+        return f"{self.organizational_structure.structure_name} -> {self.parent_organizational_structure.structure_name}"

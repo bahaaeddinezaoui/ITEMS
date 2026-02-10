@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -164,3 +164,45 @@ class OrganizationalStructureSerializer(serializers.ModelSerializer):
         model = OrganizationalStructure
         fields = ['organizational_structure_id', 'structure_code', 'structure_name', 'structure_type', 'is_active']
         read_only_fields = ['organizational_structure_id']
+
+
+class OrganizationalStructureRelationSerializer(serializers.ModelSerializer):
+    """Serializer for OrganizationalStructureRelation model"""
+    # Use explicit fields to ensure we handle the primary_key=True case correctly
+    organizational_structure = serializers.PrimaryKeyRelatedField(queryset=OrganizationalStructure.objects.all())
+    parent_organizational_structure = serializers.PrimaryKeyRelatedField(queryset=OrganizationalStructure.objects.all())
+    
+    # Include nested data for better readability
+    organizational_structure_name = serializers.CharField(source='organizational_structure.structure_name', read_only=True)
+    parent_organizational_structure_name = serializers.CharField(source='parent_organizational_structure.structure_name', read_only=True)
+    
+    class Meta:
+        model = OrganizationalStructureRelation
+        fields = ['organizational_structure', 'parent_organizational_structure', 'organizational_structure_name', 
+                  'parent_organizational_structure_name', 'relation_id', 'relation_type']
+
+    def create(self, validated_data):
+        # Handle the assignment using _id suffixes to avoid instance checks on ForeignKey PKs
+        instance = OrganizationalStructureRelation()
+        org = validated_data.get('organizational_structure')
+        parent = validated_data.get('parent_organizational_structure')
+        
+        # Use .pk if it's an object, otherwise use the value itself
+        instance.organizational_structure_id = org.pk if hasattr(org, 'pk') else org
+        instance.parent_organizational_structure_id = parent.pk if hasattr(parent, 'pk') else parent
+        instance.relation_id = validated_data.get('relation_id')
+        instance.relation_type = validated_data.get('relation_type', '')
+        
+        # Must use force_insert=True since we are providing the manual PK
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        # Update fields that are not the primary key
+        instance.relation_id = validated_data.get('relation_id', instance.relation_id)
+        instance.relation_type = validated_data.get('relation_type', instance.relation_type)
+        # Note: If we wanted to update the primary key, we'd have to delete and recreate 
+        # because Django doesn't handle changing PKs well.
+        instance.save()
+        return instance
+
