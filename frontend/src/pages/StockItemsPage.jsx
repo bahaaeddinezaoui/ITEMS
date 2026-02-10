@@ -1,15 +1,24 @@
 import { useEffect, useState } from 'react';
-import { stockItemTypeService, stockItemModelService, stockItemBrandService } from '../services/api';
+import { stockItemTypeService, stockItemModelService, stockItemBrandService, stockItemService } from '../services/api';
 
 const StockItemsPage = () => {
     const [stockItemTypes, setStockItemTypes] = useState([]);
     const [stockItemBrands, setStockItemBrands] = useState([]);
     const [stockItemModels, setStockItemModels] = useState([]);
+    const [stockItems, setStockItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [showForm, setShowForm] = useState(false);
+    
+    // Form visibility states
+    const [showTypeForm, setShowTypeForm] = useState(false);
     const [showModelForm, setShowModelForm] = useState(false);
+    const [showStockItemForm, setShowStockItemForm] = useState(false);
+    
+    // Selection states
     const [selectedStockItemType, setSelectedStockItemType] = useState(null);
+    const [selectedStockItemModel, setSelectedStockItemModel] = useState(null);
+    
+    // Form data states
     const [formData, setFormData] = useState({
         stock_item_type_label: '',
         stock_item_type_code: '',
@@ -25,6 +34,17 @@ const StockItemsPage = () => {
         notes: '',
         warranty_expiry_in_months: '',
     });
+    const [stockItemFormData, setStockItemFormData] = useState({
+        stock_item_name: '',
+        stock_item_inventory_number: '',
+        stock_item_status: 'active',
+        stock_item_warranty_expiry_in_months: '',
+        stock_item_name_in_administrative_certificate: '',
+        destruction_certificate_id: 0,
+        maintenance_step_id: null
+    });
+    
+    const [editingStockItem, setEditingStockItem] = useState(null);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -35,8 +55,20 @@ const StockItemsPage = () => {
     useEffect(() => {
         if (selectedStockItemType) {
             fetchStockItemModels(selectedStockItemType.stock_item_type_id);
+            setSelectedStockItemModel(null);
+            setStockItems([]);
+        } else {
+            setStockItemModels([]);
         }
     }, [selectedStockItemType]);
+
+    useEffect(() => {
+        if (selectedStockItemModel) {
+            fetchStockItems(selectedStockItemModel.stock_item_model_id);
+        } else {
+            setStockItems([]);
+        }
+    }, [selectedStockItemModel]);
 
     const fetchStockItemTypes = async () => {
         setLoading(true);
@@ -72,12 +104,19 @@ const StockItemsPage = () => {
         }
     };
 
+    const fetchStockItems = async (stockItemModelId) => {
+        try {
+            const data = await stockItemService.getAll({ stock_item_model: stockItemModelId });
+            setStockItems(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch stock items: ' + err.message);
+            setStockItems([]);
+        }
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleModelInputChange = (e) => {
@@ -88,15 +127,19 @@ const StockItemsPage = () => {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleStockItemInputChange = (e) => {
+        const { name, value } = e.target;
+        setStockItemFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleTypeSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
-
         try {
             await stockItemTypeService.create(formData);
             setFormData({ stock_item_type_label: '', stock_item_type_code: '' });
-            setShowForm(false);
+            setShowTypeForm(false);
             await fetchStockItemTypes();
         } catch (err) {
             setError('Failed to create stock item type: ' + (err.response?.data?.error || err.message));
@@ -111,15 +154,12 @@ const StockItemsPage = () => {
             setError('Please select a stock item type first');
             return;
         }
-        
         if (!modelFormData.stock_item_brand) {
             setError('Please select a brand');
             return;
         }
-        
         setSaving(true);
         setError(null);
-
         try {
             const dataToSubmit = {
                 model_name: modelFormData.model_name,
@@ -132,7 +172,6 @@ const StockItemsPage = () => {
                 discontinued_year: modelFormData.discontinued_year ? parseInt(modelFormData.discontinued_year) : null,
                 warranty_expiry_in_months: modelFormData.warranty_expiry_in_months ? parseInt(modelFormData.warranty_expiry_in_months) : null,
             };
-            
             await stockItemModelService.create(dataToSubmit);
             setModelFormData({
                 model_name: '',
@@ -157,7 +196,61 @@ const StockItemsPage = () => {
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleStockItemSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedStockItemModel) {
+            setError('Please select a stock item model first');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const dataToSubmit = {
+                ...stockItemFormData,
+                stock_item_model: selectedStockItemModel.stock_item_model_id
+            };
+            if (editingStockItem) {
+                await stockItemService.update(editingStockItem, dataToSubmit);
+            } else {
+                await stockItemService.create(dataToSubmit);
+            }
+            setStockItemFormData({
+                stock_item_name: '',
+                stock_item_inventory_number: '',
+                stock_item_status: 'active',
+                stock_item_warranty_expiry_in_months: '',
+                stock_item_name_in_administrative_certificate: '',
+                destruction_certificate_id: 0,
+                maintenance_step_id: null
+            });
+            setEditingStockItem(null);
+            setShowStockItemForm(false);
+            await fetchStockItems(selectedStockItemModel.stock_item_model_id);
+        } catch (err) {
+            const errorMsg = err.response?.data ? 
+                (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) :
+                err.message;
+            setError(`Failed to ${editingStockItem ? 'update' : 'create'} stock item: ` + errorMsg);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleEditStockItem = (item) => {
+        setEditingStockItem(item.stock_item_id);
+        setStockItemFormData({
+            stock_item_name: item.stock_item_name || '',
+            stock_item_inventory_number: item.stock_item_inventory_number || '',
+            stock_item_status: item.stock_item_status || 'active',
+            stock_item_warranty_expiry_in_months: item.stock_item_warranty_expiry_in_months || '',
+            stock_item_name_in_administrative_certificate: item.stock_item_name_in_administrative_certificate || '',
+            destruction_certificate_id: item.destruction_certificate_id || 0,
+            maintenance_step_id: item.maintenance_step_id || null
+        });
+        setShowStockItemForm(true);
+    };
+
+    const handleDeleteType = async (id) => {
         if (window.confirm('Are you sure you want to delete this stock item type?')) {
             try {
                 await stockItemTypeService.delete(id);
@@ -184,11 +277,24 @@ const StockItemsPage = () => {
         }
     };
 
+    const handleDeleteStockItem = async (id) => {
+        if (window.confirm('Are you sure you want to delete this stock item?')) {
+            try {
+                await stockItemService.delete(id);
+                if (selectedStockItemModel) {
+                    await fetchStockItems(selectedStockItemModel.stock_item_model_id);
+                }
+            } catch (err) {
+                setError('Failed to delete stock item: ' + err.message);
+            }
+        }
+    };
+
     return (
-        <>
-            <div className="page-header">
-                <h1 className="page-title">Stock Items</h1>
-                <p className="page-subtitle">Manage stock items and models</p>
+        <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
+            <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
+                <h1 className="page-title">Stock Items Explorer</h1>
+                <p className="page-subtitle">Manage stock item types, models, and inventory</p>
             </div>
 
             {error && (
@@ -197,549 +303,367 @@ const StockItemsPage = () => {
                     color: '#c33',
                     padding: 'var(--space-4)',
                     borderRadius: 'var(--radius-sm)',
-                    marginBottom: 'var(--space-6)',
+                    marginBottom: 'var(--space-4)',
                     border: '1px solid #fcc'
                 }}>
                     {error}
                 </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'var(--space-6)' }}>
-                {/* Stock Item Types List */}
-                <div className="card" style={{ height: 'fit-content' }}>
+            <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: '300px 1fr', 
+                gap: 'var(--space-6)',
+                flex: 1,
+                minHeight: 0 // Important for nested scrolling
+            }}>
+                {/* Left Sidebar: Library (Types & Models) */}
+                <div className="card" style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    overflow: 'hidden',
+                    height: '100%'
+                }}>
                     <div className="card-header" style={{
+                        padding: 'var(--space-4)',
+                        borderBottom: '1px solid var(--color-border)',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        paddingBottom: 'var(--space-4)',
-                        borderBottom: '1px solid var(--color-border)'
+                        backgroundColor: 'var(--color-bg-secondary)'
                     }}>
-                        <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                            Stock Item Types
-                        </h2>
+                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Library</h2>
                         <button
-                            onClick={() => setShowForm(!showForm)}
+                            onClick={() => setShowTypeForm(!showTypeForm)}
                             style={{
-                                backgroundColor: showForm ? 'var(--color-text-secondary)' : 'var(--color-primary)',
-                                color: 'white',
+                                background: 'none',
                                 border: 'none',
-                                padding: 'var(--space-2) var(--space-4)',
-                                borderRadius: 'var(--radius-sm)',
                                 cursor: 'pointer',
-                                fontSize: 'var(--font-size-xs)',
-                                fontWeight: '500',
-                                whiteSpace: 'nowrap'
+                                fontSize: 'var(--font-size-lg)',
+                                color: 'var(--color-primary)',
+                                padding: '0 var(--space-2)'
                             }}
+                            title="Add Stock Item Type"
                         >
-                            {showForm ? 'Cancel' : '+'}
+                            +
                         </button>
                     </div>
 
-                    {showForm && (
-                        <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
-                            <form onSubmit={handleSubmit}>
-                                <div style={{ marginBottom: 'var(--space-4)' }}>
-                                    <label style={{
-                                        display: 'block',
-                                        marginBottom: 'var(--space-2)',
-                                        fontSize: 'var(--font-size-sm)',
-                                        fontWeight: '500'
-                                    }}>
-                                        Label *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="stock_item_type_label"
-                                        value={formData.stock_item_type_label}
-                                        onChange={handleInputChange}
-                                        required
-                                        placeholder="e.g., Cables"
-                                        style={{
-                                            width: '100%',
-                                            padding: 'var(--space-2) var(--space-3)',
-                                            border: '1px solid var(--color-border)',
-                                            borderRadius: 'var(--radius-sm)',
-                                            fontSize: 'var(--font-size-sm)',
-                                            boxSizing: 'border-box',
-                                            fontFamily: 'inherit'
-                                        }}
-                                    />
+                    {showTypeForm && (
+                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: '#f9f9f9' }}>
+                            <form onSubmit={handleTypeSubmit}>
+                                <input
+                                    type="text"
+                                    name="stock_item_type_label"
+                                    value={formData.stock_item_type_label}
+                                    onChange={handleInputChange}
+                                    placeholder="Type Name"
+                                    required
+                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                />
+                                <input
+                                    type="text"
+                                    name="stock_item_type_code"
+                                    value={formData.stock_item_type_code}
+                                    onChange={handleInputChange}
+                                    placeholder="Code (e.g. CBL)"
+                                    required
+                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                />
+                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                    <button type="button" onClick={() => setShowTypeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'white', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
                                 </div>
-
-                                <div style={{ marginBottom: 'var(--space-4)' }}>
-                                    <label style={{
-                                        display: 'block',
-                                        marginBottom: 'var(--space-2)',
-                                        fontSize: 'var(--font-size-sm)',
-                                        fontWeight: '500'
-                                    }}>
-                                        Code *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="stock_item_type_code"
-                                        value={formData.stock_item_type_code}
-                                        onChange={handleInputChange}
-                                        required
-                                        placeholder="e.g., CBL"
-                                        maxLength="18"
-                                        style={{
-                                            width: '100%',
-                                            padding: 'var(--space-2) var(--space-3)',
-                                            border: '1px solid var(--color-border)',
-                                            borderRadius: 'var(--radius-sm)',
-                                            fontSize: 'var(--font-size-sm)',
-                                            boxSizing: 'border-box',
-                                            fontFamily: 'inherit'
-                                        }}
-                                    />
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    style={{
-                                        width: '100%',
-                                        backgroundColor: saving ? 'var(--color-text-secondary)' : 'var(--color-primary)',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: 'var(--space-2) var(--space-4)',
-                                        borderRadius: 'var(--radius-sm)',
-                                        cursor: saving ? 'default' : 'pointer',
-                                        fontSize: 'var(--font-size-sm)',
-                                        fontWeight: '500',
-                                        opacity: saving ? 0.6 : 1
-                                    }}
-                                >
-                                    {saving ? 'Creating...' : 'Create'}
-                                </button>
                             </form>
                         </div>
                     )}
 
-                    <div className="card-body" style={{ padding: 0 }}>
-                        {loading ? (
-                            <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
-                                Loading...
-                            </div>
-                        ) : stockItemTypes.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
-                                No stock item types
-                            </div>
-                        ) : (
-                            <div>
-                                {stockItemTypes.map((stockItemType, index) => (
-                                    <div
-                                        key={stockItemType.stock_item_type_id}
-                                        onClick={() => setSelectedStockItemType(stockItemType)}
-                                        style={{
-                                            padding: 'var(--space-4)',
-                                            borderBottom: index < stockItemTypes.length - 1 ? '1px solid var(--color-border)' : 'none',
-                                            cursor: 'pointer',
-                                            backgroundColor: selectedStockItemType?.stock_item_type_id === stockItemType.stock_item_type_id ? 'var(--color-bg-secondary)' : 'transparent',
-                                            transition: 'background-color 0.2s',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (selectedStockItemType?.stock_item_type_id !== stockItemType.stock_item_type_id) {
-                                                e.currentTarget.style.backgroundColor = '#f5f5f5';
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (selectedStockItemType?.stock_item_type_id !== stockItemType.stock_item_type_id) {
-                                                e.currentTarget.style.backgroundColor = 'transparent';
-                                            }
-                                        }}
-                                    >
-                                        <div>
-                                            <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>
-                                                {stockItemType.stock_item_type_label}
-                                            </div>
-                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                                                {stockItemType.stock_item_type_code}
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(stockItemType.stock_item_type_id);
-                                            }}
-                                            style={{
-                                                backgroundColor: 'transparent',
-                                                color: '#c33',
-                                                border: 'none',
-                                                padding: 'var(--space-1) var(--space-2)',
-                                                cursor: 'pointer',
-                                                fontSize: 'var(--font-size-xs)',
-                                                opacity: 0.5,
-                                                transition: 'opacity 0.2s'
-                                            }}
-                                            onMouseEnter={(e) => { e.target.style.opacity = 1; }}
-                                            onMouseLeave={(e) => { e.target.style.opacity = 0.5; }}
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Stock Item Models Detail */}
-                <div className="card">
-                    {selectedStockItemType ? (
-                        <>
-                            <div className="card-header" style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                paddingBottom: 'var(--space-4)',
-                                borderBottom: '1px solid var(--color-border)'
-                            }}>
-                                <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                    Models for {selectedStockItemType.stock_item_type_label}
-                                </h2>
-                                <button
-                                    onClick={() => setShowModelForm(!showModelForm)}
+                    <div style={{ overflowY: 'auto', flex: 1 }}>
+                        {stockItemTypes.map(type => (
+                            <div key={type.stock_item_type_id}>
+                                <div
+                                    onClick={() => setSelectedStockItemType(selectedStockItemType?.stock_item_type_id === type.stock_item_type_id ? null : type)}
                                     style={{
-                                        backgroundColor: showModelForm ? 'var(--color-text-secondary)' : 'var(--color-primary)',
-                                        color: 'white',
-                                        border: 'none',
-                                        padding: 'var(--space-2) var(--space-4)',
-                                        borderRadius: 'var(--radius-sm)',
+                                        padding: 'var(--space-3) var(--space-4)',
                                         cursor: 'pointer',
-                                        fontSize: 'var(--font-size-sm)',
-                                        fontWeight: '500'
+                                        backgroundColor: selectedStockItemType?.stock_item_type_id === type.stock_item_type_id ? '#e0f2fe' : 'transparent',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        borderBottom: '1px solid var(--color-border-light)'
                                     }}
                                 >
-                                    {showModelForm ? 'Cancel' : '+ Add Model'}
-                                </button>
-                            </div>
-
-                            {showModelForm && (
-                                <div style={{ padding: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
-                                    {stockItemBrands.length === 0 ? (
-                                        <div style={{ color: '#c33', backgroundColor: '#fee', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)', border: '1px solid #fcc' }}>
-                                            No stock item brands found. Please create a brand first before creating a model.
-                                        </div>
-                                    ) : (
-                                        <form onSubmit={handleModelSubmit}>
-                                            <div style={{ marginBottom: 'var(--space-4)' }}>
-                                                <label style={{
-                                                    display: 'block',
-                                                    marginBottom: 'var(--space-2)',
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    fontWeight: '500'
-                                                }}>
-                                                    Brand *
-                                                </label>
-                                                <select
-                                                    name="stock_item_brand"
-                                                    value={modelFormData.stock_item_brand}
-                                                    onChange={handleModelInputChange}
-                                                    required
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: 'var(--space-2) var(--space-3)',
-                                                        border: '1px solid var(--color-border)',
-                                                        borderRadius: 'var(--radius-sm)',
-                                                        fontSize: 'var(--font-size-sm)',
-                                                        boxSizing: 'border-box',
-                                                        fontFamily: 'inherit'
-                                                    }}
-                                                >
-                                                    <option value="">Select a brand...</option>
-                                                    {stockItemBrands.map(brand => (
-                                                        <option key={brand.stock_item_brand_id} value={brand.stock_item_brand_id}>
-                                                            {brand.brand_name}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            <div style={{ marginBottom: 'var(--space-4)' }}>
-                                                <label style={{
-                                                    display: 'block',
-                                                    marginBottom: 'var(--space-2)',
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    fontWeight: '500'
-                                                }}>
-                                                    Model Name *
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="model_name"
-                                                    value={modelFormData.model_name}
-                                                    onChange={handleModelInputChange}
-                                                    required
-                                                    placeholder="e.g., CAT6 Ethernet"
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: 'var(--space-2) var(--space-3)',
-                                                        border: '1px solid var(--color-border)',
-                                                        borderRadius: 'var(--radius-sm)',
-                                                        fontSize: 'var(--font-size-sm)',
-                                                        boxSizing: 'border-box',
-                                                        fontFamily: 'inherit'
-                                                    }}
-                                                />
-                                            </div>
-
-                                            <div style={{ marginBottom: 'var(--space-4)' }}>
-                                                <label style={{
-                                                    display: 'block',
-                                                    marginBottom: 'var(--space-2)',
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    fontWeight: '500'
-                                                }}>
-                                                    Model Code *
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    name="model_code"
-                                                    value={modelFormData.model_code}
-                                                    onChange={handleModelInputChange}
-                                                    required
-                                                    placeholder="e.g., CAT6-10M"
-                                                    maxLength="16"
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: 'var(--space-2) var(--space-3)',
-                                                        border: '1px solid var(--color-border)',
-                                                        borderRadius: 'var(--radius-sm)',
-                                                        fontSize: 'var(--font-size-sm)',
-                                                        boxSizing: 'border-box',
-                                                        fontFamily: 'inherit'
-                                                    }}
-                                                />
-                                            </div>
-
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                                                <div>
-                                                    <label style={{
-                                                        display: 'block',
-                                                        marginBottom: 'var(--space-2)',
-                                                        fontSize: 'var(--font-size-sm)',
-                                                        fontWeight: '500'
-                                                    }}>
-                                                        Release Year
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        name="release_year"
-                                                        value={modelFormData.release_year}
-                                                        onChange={handleModelInputChange}
-                                                        min="2000"
-                                                        max={new Date().getFullYear()}
-                                                        style={{
-                                                            width: '100%',
-                                                            padding: 'var(--space-2) var(--space-3)',
-                                                            border: '1px solid var(--color-border)',
-                                                            borderRadius: 'var(--radius-sm)',
-                                                            fontSize: 'var(--font-size-sm)',
-                                                            boxSizing: 'border-box',
-                                                            fontFamily: 'inherit'
-                                                        }}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label style={{
-                                                        display: 'block',
-                                                        marginBottom: 'var(--space-2)',
-                                                        fontSize: 'var(--font-size-sm)',
-                                                        fontWeight: '500'
-                                                    }}>
-                                                        Warranty (Months)
-                                                    </label>
-                                                    <input
-                                                        type="number"
-                                                        name="warranty_expiry_in_months"
-                                                        value={modelFormData.warranty_expiry_in_months}
-                                                        onChange={handleModelInputChange}
-                                                        min="0"
-                                                        style={{
-                                                            width: '100%',
-                                                            padding: 'var(--space-2) var(--space-3)',
-                                                            border: '1px solid var(--color-border)',
-                                                            borderRadius: 'var(--radius-sm)',
-                                                            fontSize: 'var(--font-size-sm)',
-                                                            boxSizing: 'border-box',
-                                                            fontFamily: 'inherit'
-                                                        }}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div style={{ marginBottom: 'var(--space-4)' }}>
-                                                <label style={{
-                                                    display: 'block',
-                                                    marginBottom: 'var(--space-2)',
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    fontWeight: '500'
-                                                }}>
-                                                    Notes
-                                                </label>
-                                                <textarea
-                                                    name="notes"
-                                                    value={modelFormData.notes}
-                                                    onChange={handleModelInputChange}
-                                                    placeholder="Additional notes..."
-                                                    rows="3"
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: 'var(--space-2) var(--space-3)',
-                                                        border: '1px solid var(--color-border)',
-                                                        borderRadius: 'var(--radius-sm)',
-                                                        fontSize: 'var(--font-size-sm)',
-                                                        boxSizing: 'border-box',
-                                                        fontFamily: 'inherit'
-                                                    }}
-                                                />
-                                            </div>
-
-                                            <div style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="is_active"
-                                                    checked={modelFormData.is_active}
-                                                    onChange={handleModelInputChange}
-                                                    id="is_active"
-                                                    style={{
-                                                        width: '18px',
-                                                        height: '18px',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                />
-                                                <label htmlFor="is_active" style={{
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    fontWeight: '500',
-                                                    cursor: 'pointer'
-                                                }}>
-                                                    Active
-                                                </label>
-                                            </div>
-
-                                            <button
-                                                type="submit"
-                                                disabled={saving}
-                                                style={{
-                                                    width: '100%',
-                                                    backgroundColor: saving ? 'var(--color-text-secondary)' : 'var(--color-primary)',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    padding: 'var(--space-2) var(--space-4)',
-                                                    borderRadius: 'var(--radius-sm)',
-                                                    cursor: saving ? 'default' : 'pointer',
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    fontWeight: '500',
-                                                    opacity: saving ? 0.6 : 1
-                                                }}
-                                            >
-                                                {saving ? 'Creating...' : 'Create Model'}
-                                            </button>
-                                        </form>
-                                    )}
+                                    <span style={{ fontWeight: '500' }}>{type.stock_item_type_label}</span>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteType(type.stock_item_type_id); }}
+                                        style={{ border: 'none', background: 'none', color: '#999', cursor: 'pointer' }}
+                                    >
+                                        &times;
+                                    </button>
                                 </div>
-                            )}
-
-                            <div className="card-body">
-                                {stockItemModels.length === 0 ? (
-                                    <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
-                                        No models for this stock item type. Add one to get started!
-                                    </div>
-                                ) : (
-                                    <div style={{ display: 'grid', gap: 'var(--space-4)' }}>
+                                
+                                {/* Models List (Nested) */}
+                                {selectedStockItemType?.stock_item_type_id === type.stock_item_type_id && (
+                                    <div style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--color-border)' }}>
+                                        <div 
+                                            onClick={() => setShowModelForm(true)}
+                                            style={{
+                                                padding: 'var(--space-2) var(--space-4)',
+                                                fontSize: 'var(--font-size-xs)',
+                                                color: 'var(--color-primary)',
+                                                cursor: 'pointer',
+                                                borderBottom: '1px dashed var(--color-border-light)',
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            + Add Model
+                                        </div>
                                         {stockItemModels.map(model => (
                                             <div
                                                 key={model.stock_item_model_id}
+                                                onClick={() => setSelectedStockItemModel(model)}
                                                 style={{
-                                                    padding: 'var(--space-4)',
-                                                    border: '1px solid var(--color-border)',
-                                                    borderRadius: 'var(--radius-sm)',
+                                                    padding: 'var(--space-2) var(--space-4)',
+                                                    paddingLeft: 'var(--space-8)',
+                                                    cursor: 'pointer',
+                                                    backgroundColor: selectedStockItemModel?.stock_item_model_id === model.stock_item_model_id ? 'var(--color-primary)' : 'transparent',
+                                                    color: selectedStockItemModel?.stock_item_model_id === model.stock_item_model_id ? 'white' : 'var(--color-text)',
                                                     display: 'flex',
                                                     justifyContent: 'space-between',
-                                                    alignItems: 'start',
-                                                    gap: 'var(--space-4)'
+                                                    alignItems: 'center',
+                                                    fontSize: 'var(--font-size-sm)'
                                                 }}
                                             >
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-2)' }}>
-                                                        {model.model_name}
-                                                    </div>
-                                                    <div style={{
-                                                        display: 'grid',
-                                                        gridTemplateColumns: 'auto 1fr',
-                                                        gap: 'var(--space-2) var(--space-4)',
-                                                        fontSize: 'var(--font-size-sm)',
-                                                        color: 'var(--color-text-secondary)',
-                                                        marginBottom: 'var(--space-3)'
-                                                    }}>
-                                                        <span><strong>Code:</strong></span>
-                                                        <span style={{ fontFamily: 'monospace' }}>{model.model_code}</span>
-                                                        <span><strong>Brand:</strong></span>
-                                                        <span>{model.brand_name}</span>
-                                                        {model.release_year && (
-                                                            <>
-                                                                <span><strong>Released:</strong></span>
-                                                                <span>{model.release_year}</span>
-                                                            </>
-                                                        )}
-                                                        {model.warranty_expiry_in_months && (
-                                                            <>
-                                                                <span><strong>Warranty:</strong></span>
-                                                                <span>{model.warranty_expiry_in_months} months</span>
-                                                            </>
-                                                        )}
-                                                        <span><strong>Status:</strong></span>
-                                                        <span style={{ color: model.is_active ? '#10b981' : '#f59e0b' }}>
-                                                            {model.is_active ? 'Active' : 'Inactive'}
-                                                        </span>
-                                                    </div>
-                                                    {model.notes && (
-                                                        <div style={{ fontSize: 'var(--font-size-xs)', fontStyle: 'italic', color: 'var(--color-text-secondary)' }}>
-                                                            {model.notes}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <button
-                                                    onClick={() => handleDeleteModel(model.stock_item_model_id)}
-                                                    style={{
-                                                        backgroundColor: '#fee',
-                                                        color: '#c33',
-                                                        border: '1px solid #fcc',
-                                                        padding: 'var(--space-2) var(--space-3)',
-                                                        borderRadius: 'var(--radius-sm)',
-                                                        cursor: 'pointer',
-                                                        fontSize: 'var(--font-size-xs)',
-                                                        fontWeight: '500',
-                                                        whiteSpace: 'nowrap'
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.target.style.backgroundColor = '#fdd';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.target.style.backgroundColor = '#fee';
-                                                    }}
-                                                >
-                                                    Delete
-                                                </button>
+                                                <span>{model.model_name}</span>
+                                                {selectedStockItemModel?.stock_item_model_id === model.stock_item_model_id && (
+                                                     <button
+                                                     onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.stock_item_model_id); }}
+                                                     style={{ border: 'none', background: 'none', color: 'white', cursor: 'pointer', opacity: 0.8 }}
+                                                 >
+                                                     &times;
+                                                 </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
                                 )}
                             </div>
+                        ))}
+                        {stockItemTypes.length === 0 && !loading && (
+                            <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
+                                No stock item types.
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Right Content: Main Area */}
+                <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                    {showModelForm ? (
+                        <div style={{ padding: 'var(--space-6)', overflowY: 'auto' }}>
+                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
+                                <h2>Add New Model for {selectedStockItemType?.stock_item_type_label}</h2>
+                                <button onClick={() => setShowModelForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', background: 'white', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
+                             </div>
+                             {stockItemBrands.length === 0 ? (
+                                <div style={{ color: '#c33', backgroundColor: '#fee', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)' }}>
+                                    No stock item brands found. Please create a brand first.
+                                </div>
+                             ) : (
+                                <form onSubmit={handleModelSubmit} style={{ maxWidth: '600px' }}>
+                                    {/* Brand */}
+                                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                                        <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Brand *</label>
+                                        <select name="stock_item_brand" value={modelFormData.stock_item_brand} onChange={handleModelInputChange} required style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+                                            <option value="">Select a brand...</option>
+                                            {stockItemBrands.map(b => <option key={b.stock_item_brand_id} value={b.stock_item_brand_id}>{b.brand_name}</option>)}
+                                        </select>
+                                    </div>
+                                    {/* Model Name & Code */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Model Name *</label>
+                                            <input type="text" name="model_name" value={modelFormData.model_name} onChange={handleModelInputChange} required style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Model Code *</label>
+                                            <input type="text" name="model_code" value={modelFormData.model_code} onChange={handleModelInputChange} required style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
+                                        </div>
+                                    </div>
+                                    {/* Year & Warranty */}
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Release Year</label>
+                                            <input type="number" name="release_year" value={modelFormData.release_year} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
+                                        </div>
+                                        <div>
+                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Warranty (Months)</label>
+                                            <input type="number" name="warranty_expiry_in_months" value={modelFormData.warranty_expiry_in_months} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
+                                        </div>
+                                    </div>
+                                    {/* Notes */}
+                                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                                        <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Notes</label>
+                                        <textarea name="notes" value={modelFormData.notes} onChange={handleModelInputChange} rows="3" style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
+                                    </div>
+                                    {/* Active */}
+                                    <div style={{ marginBottom: 'var(--space-6)' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
+                                            <input type="checkbox" name="is_active" checked={modelFormData.is_active} onChange={handleModelInputChange} />
+                                            Active Model
+                                        </label>
+                                    </div>
+                                    <button type="submit" disabled={saving} style={{ padding: 'var(--space-2) var(--space-6)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
+                                        {saving ? 'Creating...' : 'Create Model'}
+                                    </button>
+                                </form>
+                             )}
+                        </div>
+                    ) : selectedStockItemModel ? (
+                        <>
+                            <div className="card-header" style={{
+                                padding: 'var(--space-4)',
+                                borderBottom: '1px solid var(--color-border)',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div>
+                                    <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
+                                        {selectedStockItemModel.model_name} <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)', fontWeight: 'normal' }}>({selectedStockItemModel.model_code})</span>
+                                    </h2>
+                                    <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
+                                        {selectedStockItemModel.brand_name} • {stockItems.length} Items
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setEditingStockItem(null);
+                                        setStockItemFormData({
+                                            stock_item_name: '',
+                                            stock_item_inventory_number: '',
+                                            stock_item_status: 'active',
+                                            stock_item_warranty_expiry_in_months: '',
+                                            stock_item_name_in_administrative_certificate: '',
+                                            destruction_certificate_id: 0,
+                                            maintenance_step_id: null
+                                        });
+                                        setShowStockItemForm(true);
+                                    }}
+                                    style={{
+                                        backgroundColor: 'var(--color-primary)',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: 'var(--space-2) var(--space-4)',
+                                        borderRadius: 'var(--radius-sm)',
+                                        cursor: 'pointer',
+                                        fontWeight: '500'
+                                    }}
+                                >
+                                    + Add Item
+                                </button>
+                            </div>
+
+                            <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-4)' }}>
+                                {showStockItemForm && (
+                                    <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: '#f9f9f9', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+                                        <div style={{ fontWeight: '600', marginBottom: 'var(--space-4)' }}>{editingStockItem ? 'Edit Stock Item' : 'New Stock Item'}</div>
+                                        <form onSubmit={handleStockItemSubmit}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Name</label>
+                                                    <input type="text" name="stock_item_name" value={stockItemFormData.stock_item_name} onChange={handleStockItemInputChange} placeholder="Stock Item Name" style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Status</label>
+                                                    <select name="stock_item_status" value={stockItemFormData.stock_item_status} onChange={handleStockItemInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}>
+                                                        <option value="active">Active</option>
+                                                        <option value="inactive">Inactive</option>
+                                                        <option value="maintenance">Maintenance</option>
+                                                        <option value="retired">Retired</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Inventory Number</label>
+                                                    <input type="text" name="stock_item_inventory_number" value={stockItemFormData.stock_item_inventory_number} onChange={handleStockItemInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Warranty (Months)</label>
+                                                    <input type="number" name="stock_item_warranty_expiry_in_months" value={stockItemFormData.stock_item_warranty_expiry_in_months} onChange={handleStockItemInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+                                                </div>
+                                            </div>
+                                            <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)' }}>
+                                                <button type="submit" style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Save Item</button>
+                                                <button type="button" onClick={() => setShowStockItemForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: '#fff', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                )}
+
+                                {stockItems.length === 0 ? (
+                                    <div style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-8)' }}>
+                                        No stock items found for this model.
+                                    </div>
+                                ) : (
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--font-size-sm)' }}>
+                                        <thead>
+                                            <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left' }}>
+                                                <th style={{ padding: 'var(--space-2)' }}>Name</th>
+                                                <th style={{ padding: 'var(--space-2)' }}>Inventory No.</th>
+                                                <th style={{ padding: 'var(--space-2)' }}>Status</th>
+                                                <th style={{ padding: 'var(--space-2)', textAlign: 'right' }}>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {stockItems.map(item => (
+                                                <tr key={item.stock_item_id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                                    <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                                                        <div style={{ fontWeight: '500' }}>{item.stock_item_name || 'Unnamed Item'}</div>
+                                                    </td>
+                                                    <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                                                        <div style={{ color: 'var(--color-text-secondary)' }}>{item.stock_item_inventory_number}</div>
+                                                    </td>
+                                                    <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                                                        <span style={{
+                                                            padding: '2px 8px',
+                                                            borderRadius: '12px',
+                                                            fontSize: 'var(--font-size-xs)',
+                                                            backgroundColor: item.stock_item_status === 'active' ? '#dcfce7' : '#f3f4f6',
+                                                            color: item.stock_item_status === 'active' ? '#166534' : '#374151'
+                                                        }}>
+                                                            {item.stock_item_status}
+                                                        </span>
+                                                    </td>
+                                                    <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                                                        <button 
+                                                            onClick={() => handleEditStockItem(item)}
+                                                            style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDeleteStockItem(item.stock_item_id)}
+                                                            style={{ background: 'none', border: 'none', color: '#c33', cursor: 'pointer', fontWeight: '500' }}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
                         </>
                     ) : (
-                        <div className="card-body" style={{ textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-                            Select a stock item type to view models
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-secondary)' }}>
+                            <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)', opacity: 0.2 }}>📦</div>
+                            <p>Select a stock item model from the sidebar to view inventory.</p>
                         </div>
                     )}
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

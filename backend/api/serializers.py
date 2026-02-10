@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance, StockItem, Consumable
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -231,5 +231,27 @@ class MaintenanceSerializer(serializers.ModelSerializer):
                   'is_approved_by_maintenance_chief', 'start_datetime', 'end_datetime', 
                   'description', 'is_successful']
         read_only_fields = ['maintenance_id']
+
+
+class StockItemSerializer(serializers.ModelSerializer):
+    """Serializer for StockItem model"""
+    class Meta:
+        model = StockItem
+        fields = ['stock_item_id', 'maintenance_step_id', 'stock_item_model', 'destruction_certificate_id',
+                  'stock_item_fabrication_datetime', 'stock_item_name', 'stock_item_inventory_number',
+                  'stock_item_warranty_expiry_in_months', 'stock_item_name_in_administrative_certificate',
+                  'stock_item_arrival_datetime', 'stock_item_status']
+        read_only_fields = ['stock_item_id']
+
+
+class ConsumableSerializer(serializers.ModelSerializer):
+    """Serializer for Consumable model"""
+    class Meta:
+        model = Consumable
+        fields = ['consumable_id', 'consumable_model', 'destruction_certificate_id', 'consumable_name',
+                  'consumable_serial_number', 'consumable_fabrication_datetime', 'consumable_inventory_number',
+                  'consumable_service_tag', 'consumable_name_in_administrative_certificate',
+                  'consumable_arrival_datetime', 'consumable_status']
+        read_only_fields = ['consumable_id']
 
 

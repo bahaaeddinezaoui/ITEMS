@@ -7,8 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer, AssetSerializer, MaintenanceSerializer
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance, StockItem, Consumable
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer, AssetSerializer, MaintenanceSerializer, StockItemSerializer, ConsumableSerializer
 
 
 def hash_password(password):
@@ -281,7 +281,39 @@ class AssetViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Asset.objects.all().order_by('asset_id')
+        queryset = Asset.objects.all().order_by('asset_id')
+        asset_model_id = self.request.query_params.get('asset_model', None)
+        if asset_model_id is not None:
+            queryset = queryset.filter(asset_model_id=asset_model_id)
+        return queryset
+
+
+class StockItemViewSet(viewsets.ModelViewSet):
+    """CRUD operations for StockItem model"""
+    queryset = StockItem.objects.all().order_by('stock_item_id')
+    serializer_class = StockItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = StockItem.objects.all().order_by('stock_item_id')
+        stock_item_model_id = self.request.query_params.get('stock_item_model', None)
+        if stock_item_model_id is not None:
+            queryset = queryset.filter(stock_item_model_id=stock_item_model_id)
+        return queryset
+
+
+class ConsumableViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Consumable model"""
+    queryset = Consumable.objects.all().order_by('consumable_id')
+    serializer_class = ConsumableSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Consumable.objects.all().order_by('consumable_id')
+        consumable_model_id = self.request.query_params.get('consumable_model', None)
+        if consumable_model_id is not None:
+            queryset = queryset.filter(consumable_model_id=consumable_model_id)
+        return queryset
 
 
 class MaintenanceViewSet(viewsets.ModelViewSet):

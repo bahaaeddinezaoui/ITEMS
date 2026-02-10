@@ -500,8 +500,8 @@ export const organizationalStructureRelationService = {
 
 // Asset service
 export const assetService = {
-    getAll: async () => {
-        const response = await api.get('assets/');
+    getAll: async (params) => {
+        const response = await api.get('assets/', { params });
         return response.data;
     },
 
@@ -522,6 +522,60 @@ export const assetService = {
 
     delete: async (id) => {
         await api.delete(`assets/${id}/`);
+    },
+};
+
+// Stock Item service
+export const stockItemService = {
+    getAll: async (params) => {
+        const response = await api.get('stock-items/', { params });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`stock-items/${id}/`);
+        return response.data;
+    },
+
+    create: async (stockItemData) => {
+        const response = await api.post('stock-items/', stockItemData);
+        return response.data;
+    },
+
+    update: async (id, stockItemData) => {
+        const response = await api.put(`stock-items/${id}/`, stockItemData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`stock-items/${id}/`);
+    },
+};
+
+// Consumable service
+export const consumableService = {
+    getAll: async (params) => {
+        const response = await api.get('consumables/', { params });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`consumables/${id}/`);
+        return response.data;
+    },
+
+    create: async (consumableData) => {
+        const response = await api.post('consumables/', consumableData);
+        return response.data;
+    },
+
+    update: async (id, consumableData) => {
+        const response = await api.put(`consumables/${id}/`, consumableData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`consumables/${id}/`);
     },
 };
 

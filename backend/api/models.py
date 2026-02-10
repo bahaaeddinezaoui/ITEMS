@@ -368,3 +368,47 @@ class Maintenance(models.Model):
         managed = False
         db_table = 'maintenance'
 
+
+class StockItem(models.Model):
+    """Maps to stock_item table"""
+    stock_item_id = models.AutoField(primary_key=True, db_column='stock_item_id')
+    maintenance_step_id = models.IntegerField(db_column='maintenance_step_id', blank=True, null=True)
+    stock_item_model = models.ForeignKey(StockItemModel, on_delete=models.CASCADE, db_column='stock_item_model_id')
+    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id')
+    stock_item_fabrication_datetime = models.DateTimeField(db_column='stock_item_fabrication_datetime', blank=True, null=True)
+    stock_item_name = models.CharField(max_length=48, db_column='stock_item_name', blank=True, null=True)
+    stock_item_inventory_number = models.CharField(max_length=6, db_column='stock_item_inventory_number', blank=True, null=True)
+    stock_item_warranty_expiry_in_months = models.IntegerField(db_column='stock_item_warranty_expiry_in_months', blank=True, null=True)
+    stock_item_name_in_administrative_certificate = models.CharField(max_length=48, db_column='stock_item_name_in_administrative_certificate', blank=True, null=True)
+    stock_item_arrival_datetime = models.DateTimeField(db_column='stock_item_arrival_datetime', blank=True, null=True)
+    stock_item_status = models.CharField(max_length=30, db_column='stock_item_status', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item'
+
+    def __str__(self):
+        return self.stock_item_name or f"Stock Item {self.stock_item_id}"
+
+
+class Consumable(models.Model):
+    """Maps to consumable table"""
+    consumable_id = models.AutoField(primary_key=True, db_column='consumable_id')
+    consumable_model = models.ForeignKey(ConsumableModel, on_delete=models.CASCADE, db_column='consumable_model_id')
+    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id')
+    consumable_name = models.CharField(max_length=48, db_column='consumable_name', blank=True, null=True)
+    consumable_serial_number = models.CharField(max_length=48, db_column='consumable_serial_number', blank=True, null=True)
+    consumable_fabrication_datetime = models.DateTimeField(db_column='consumable_fabrication_datetime', blank=True, null=True)
+    consumable_inventory_number = models.CharField(max_length=6, db_column='consumable_inventory_number', blank=True, null=True)
+    consumable_service_tag = models.CharField(max_length=48, db_column='consumable_service_tag', blank=True, null=True)
+    consumable_name_in_administrative_certificate = models.CharField(max_length=48, db_column='consumable_name_in_administrative_certificate', blank=True, null=True)
+    consumable_arrival_datetime = models.DateTimeField(db_column='consumable_arrival_datetime', blank=True, null=True)
+    consumable_status = models.CharField(max_length=30, db_column='consumable_status', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'consumable'
+
+    def __str__(self):
+        return self.consumable_name or f"Consumable {self.consumable_id}"
+

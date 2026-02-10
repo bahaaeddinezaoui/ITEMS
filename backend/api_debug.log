@@ -174,3 +174,17 @@ Login successful for: technician1
 
 [2026-02-10 20:42:05.967590+00:00] Login attempt for: bahaaeddinezaoui
 Login successful for: bahaaeddinezaoui
+
+[2026-02-10 20:46:18.878558+00:00] Login attempt for: admin
+Login successful for: admin
+
+--- Create Asset Model Request ---
+Data: {'model_name': 'Latitude 5531', 'model_code': 'L5531', 'asset_brand': 10, 'asset_type': 1, 'is_active': True, 'notes': '', 'release_year': 2022, 'discontinued_year': None, 'warranty_expiry_in_months': 23}
+Calculated next asset_model_id: 1
+Successfully created asset model ID: 1
+
+[2026-02-10 21:32:57.244556+00:00] Login attempt for: admin
+Login successful for: admin
+
+[2026-02-10 21:46:16.457773+00:00] Login attempt for: admin
+Login successful for: admin
