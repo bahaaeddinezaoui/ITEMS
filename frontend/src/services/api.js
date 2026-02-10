@@ -270,4 +270,176 @@ export const stockItemModelService = {
     },
 };
 
+// Consumable Type service
+export const consumableTypeService = {
+    getAll: async () => {
+        const response = await api.get('consumable-types/');
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`consumable-types/${id}/`);
+        return response.data;
+    },
+
+    create: async (consumableTypeData) => {
+        const response = await api.post('consumable-types/', consumableTypeData);
+        return response.data;
+    },
+
+    update: async (id, consumableTypeData) => {
+        const response = await api.put(`consumable-types/${id}/`, consumableTypeData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`consumable-types/${id}/`);
+    },
+};
+
+// Consumable Brand service
+export const consumableBrandService = {
+    getAll: async () => {
+        const response = await api.get('consumable-brands/');
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`consumable-brands/${id}/`);
+        return response.data;
+    },
+
+    create: async (consumableBrandData) => {
+        const response = await api.post('consumable-brands/', consumableBrandData);
+        return response.data;
+    },
+
+    update: async (id, consumableBrandData) => {
+        const response = await api.put(`consumable-brands/${id}/`, consumableBrandData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`consumable-brands/${id}/`);
+    },
+};
+
+// Consumable Model service
+export const consumableModelService = {
+    getAll: async () => {
+        const response = await api.get('consumable-models/');
+        return response.data;
+    },
+
+    getByConsumableType: async (consumableTypeId) => {
+        const response = await api.get(`consumable-models/?consumable_type=${consumableTypeId}`);
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`consumable-models/${id}/`);
+        return response.data;
+    },
+
+    create: async (consumableModelData) => {
+        const response = await api.post('consumable-models/', consumableModelData);
+        return response.data;
+    },
+
+    update: async (id, consumableModelData) => {
+        const response = await api.put(`consumable-models/${id}/`, consumableModelData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`consumable-models/${id}/`);
+    },
+};
+
+// Room Type service
+export const roomTypeService = {
+    getAll: async () => {
+        const response = await api.get('room-types/');
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`room-types/${id}/`);
+        return response.data;
+    },
+
+    create: async (roomTypeData) => {
+        const response = await api.post('room-types/', roomTypeData);
+        return response.data;
+    },
+
+    update: async (id, roomTypeData) => {
+        const response = await api.put(`room-types/${id}/`, roomTypeData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`room-types/${id}/`);
+    },
+};
+
+// Room service
+export const roomService = {
+    getAll: async () => {
+        const response = await api.get('rooms/');
+        return response.data;
+    },
+
+    getByRoomType: async (roomTypeId) => {
+        const response = await api.get(`rooms/?room_type=${roomTypeId}`);
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`rooms/${id}/`);
+        return response.data;
+    },
+
+    create: async (roomData) => {
+        const response = await api.post('rooms/', roomData);
+        return response.data;
+    },
+
+    update: async (id, roomData) => {
+        const response = await api.put(`rooms/${id}/`, roomData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`rooms/${id}/`);
+    },
+};
+
+// Position service
+export const positionService = {
+    getAll: async () => {
+        const response = await api.get('positions/');
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`positions/${id}/`);
+        return response.data;
+    },
+
+    create: async (positionData) => {
+        const response = await api.post('positions/', positionData);
+        return response.data;
+    },
+
+    update: async (id, positionData) => {
+        const response = await api.put(`positions/${id}/`, positionData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`positions/${id}/`);
+    },
+};
+
 export default api;

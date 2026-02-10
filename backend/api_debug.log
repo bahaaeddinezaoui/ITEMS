@@ -23,3 +23,38 @@ Successfully created asset type ID: 1
 Data: {'model_name': 'Latitude 5531', 'model_code': 'L5531', 'asset_brand': 1, 'asset_type': 1, 'is_active': True, 'notes': '', 'release_year': 2022, 'discontinued_year': None, 'warranty_expiry_in_months': 22}
 Calculated next asset_model_id: 1
 Successfully created asset model ID: 1
+
+--- Create Stock Item Type Request ---
+Data: {'stock_item_type_label': 'Mouse', 'stock_item_type_code': 'MS'}
+Calculated next stock_item_type_id: 1
+Successfully created stock item type ID: 1
+
+--- Create Consumable Type Request ---
+Data: {'consumable_type_label': 'Pen', 'consumable_type_code': 'PEN'}
+Calculated next consumable_type_id: 1
+Successfully created consumable type ID: 1
+
+--- Create Room Type Request ---
+Data: {'room_type_label': 'Room 1', 'room_type_code': 'R1'}
+Calculated next room_type_id: 1
+Successfully created room type ID: 1
+
+--- Create Room Type Request ---
+Data: {'room_type_label': 'Storage Room', 'room_type_code': 'STORAGE'}
+Calculated next room_type_id: 1
+Successfully created room type ID: 1
+
+--- Create Room Type Request ---
+Data: {'room_type_label': 'Storage Room', 'room_type_code': 'STORAGE'}
+Calculated next room_type_id: 1
+Successfully created room type ID: 1
+
+--- Create Room Type Request ---
+Data: {'room_type_label': 'Storage Room', 'room_type_code': 'STORAGE'}
+Calculated next room_type_id: 1
+Successfully created room type ID: 1
+
+--- Create Room Type Request ---
+Data: {'room_type_label': 'Storage Room', 'room_type_code': 'STORAGE'}
+Calculated next room_type_id: 1
+Successfully created room type ID: 1

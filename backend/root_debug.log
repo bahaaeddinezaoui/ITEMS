@@ -465,3 +465,512 @@ Response Body: {"discontinued_year":["A valid integer is required."]}
 [2026-02-09 23:27:59.949725] START GET /api/stock-item-brands/
 [2026-02-09 23:27:59.989499] END   GET /api/stock-item-types/ -> 200
 [2026-02-09 23:27:59.993634] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:28:50.840003] START GET /api/stock-item-types/
+[2026-02-09 23:28:50.840963] START GET /api/stock-item-brands/
+[2026-02-09 23:28:50.901979] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:28:50.906356] START GET /api/stock-item-brands/
+[2026-02-09 23:28:50.953578] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:28:51.019979] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:28:51.025015] START GET /api/stock-item-types/
+[2026-02-09 23:28:51.071904] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:28:51.633304] START GET /api/stock-item-types/
+[2026-02-09 23:28:51.634148] START GET /api/stock-item-brands/
+[2026-02-09 23:28:51.681789] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:28:51.683421] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:28:51.687128] START GET /api/stock-item-types/
+[2026-02-09 23:28:51.688958] START GET /api/stock-item-brands/
+[2026-02-09 23:28:51.728449] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:28:51.732279] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:28:52.523987] START GET /api/asset-types/
+[2026-02-09 23:28:52.528465] START GET /api/asset-brands/
+[2026-02-09 23:28:52.587987] END   GET /api/asset-types/ -> 200
+[2026-02-09 23:28:52.588121] END   GET /api/asset-brands/ -> 200
+[2026-02-09 23:28:52.596183] START GET /api/asset-types/
+[2026-02-09 23:28:52.597839] START GET /api/asset-brands/
+[2026-02-09 23:28:52.656960] END   GET /api/asset-types/ -> 200
+[2026-02-09 23:28:52.657079] END   GET /api/asset-brands/ -> 200
+[2026-02-09 23:28:53.090339] START GET /api/stock-item-types/
+[2026-02-09 23:28:53.091696] START GET /api/stock-item-brands/
+[2026-02-09 23:28:53.161078] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:28:53.162398] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:28:53.169443] START GET /api/stock-item-brands/
+[2026-02-09 23:28:53.168628] START GET /api/stock-item-types/
+[2026-02-09 23:28:53.226269] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:28:53.332207] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:29:02.567196] START POST /api/stock-item-types/
+[2026-02-09 23:29:02.683070] END   POST /api/stock-item-types/ -> 201
+[2026-02-09 23:29:02.703810] START GET /api/stock-item-types/
+[2026-02-09 23:29:02.793177] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:29:04.528270] START GET /api/stock-item-models/
+[2026-02-09 23:29:04.634127] END   GET /api/stock-item-models/ -> 200
+[2026-02-09 23:29:45.753638] START GET /api/stock-item-types/
+[2026-02-09 23:29:45.754917] START GET /api/stock-item-brands/
+[2026-02-09 23:29:45.817616] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:29:45.817736] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:29:45.825962] START GET /api/stock-item-types/
+[2026-02-09 23:29:45.827029] START GET /api/stock-item-brands/
+[2026-02-09 23:29:45.882325] END   GET /api/stock-item-types/ -> 200
+[2026-02-09 23:29:45.884111] END   GET /api/stock-item-brands/ -> 200
+[2026-02-09 23:29:46.748893] START GET /api/stock-item-models/
+[2026-02-09 23:29:46.819234] END   GET /api/stock-item-models/ -> 200
+[2026-02-09 23:30:01.146141] START POST /api/stock-item-models/
+[2026-02-09 23:30:01.284207] END   POST /api/stock-item-models/ -> 201
+[2026-02-09 23:30:01.302813] START GET /api/stock-item-models/
+[2026-02-09 23:30:01.401100] END   GET /api/stock-item-models/ -> 200
+[2026-02-09 23:30:08.798798] START DELETE /api/stock-item-models/1/
+[2026-02-09 23:30:08.916030] END   DELETE /api/stock-item-models/1/ -> 204
+[2026-02-09 23:30:08.939931] START GET /api/stock-item-models/
+[2026-02-09 23:30:09.028315] END   GET /api/stock-item-models/ -> 200
+[2026-02-10 09:19:09.974320] START POST /api/auth/login/
+[2026-02-10 09:19:10.139349] END   POST /api/auth/login/ -> 200
+[2026-02-10 09:19:14.837435] START GET /api/stock-item-types/
+[2026-02-10 09:19:14.838185] START GET /api/stock-item-brands/
+[2026-02-10 09:19:14.891525] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 09:19:14.891729] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 09:19:14.902711] START GET /api/stock-item-types/
+[2026-02-10 09:19:14.906278] START GET /api/stock-item-brands/
+[2026-02-10 09:19:14.953146] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 09:19:15.053214] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 09:19:16.109550] START GET /api/asset-types/
+[2026-02-10 09:19:16.112722] START GET /api/asset-brands/
+[2026-02-10 09:19:16.161601] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:19:16.161884] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:19:16.173397] START GET /api/asset-brands/
+[2026-02-10 09:19:16.174906] START GET /api/asset-types/
+[2026-02-10 09:19:16.221615] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:19:16.331431] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:21:28.183149] START GET /api/asset-types/
+[2026-02-10 09:21:28.184011] START GET /api/asset-brands/
+[2026-02-10 09:21:28.225475] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:21:28.225975] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:21:28.232315] START GET /api/asset-brands/
+[2026-02-10 09:21:28.234179] START GET /api/asset-types/
+[2026-02-10 09:21:28.267049] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:21:28.267090] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:22:45.922284] START GET /api/consumable-types/
+[2026-02-10 09:22:45.923090] START GET /api/consumable-brands/
+[2026-02-10 09:22:45.959214] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 09:22:45.959254] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:22:45.963990] START GET /api/consumable-brands/
+[2026-02-10 09:22:45.965593] START GET /api/consumable-types/
+[2026-02-10 09:22:45.992444] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 09:22:45.997514] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:23:11.028109] START POST /api/consumable-types/
+[2026-02-10 09:23:11.079954] END   POST /api/consumable-types/ -> 201
+[2026-02-10 09:23:11.086896] START GET /api/consumable-types/
+[2026-02-10 09:23:11.122924] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:23:12.511107] START GET /api/consumable-models/
+[2026-02-10 09:23:12.668192] END   GET /api/consumable-models/ -> 200
+[2026-02-10 09:23:19.082179] START GET /api/persons/
+[2026-02-10 09:23:19.224309] END   GET /api/persons/ -> 200
+[2026-02-10 09:23:19.228997] START GET /api/persons/
+[2026-02-10 09:23:19.258523] END   GET /api/persons/ -> 200
+[2026-02-10 09:23:20.656216] START GET /api/asset-types/
+[2026-02-10 09:23:20.657533] START GET /api/asset-brands/
+[2026-02-10 09:23:20.697149] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:23:20.699522] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:23:20.701337] START GET /api/asset-types/
+[2026-02-10 09:23:20.702890] START GET /api/asset-brands/
+[2026-02-10 09:23:20.732233] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:23:20.733586] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:23:23.662344] START GET /api/stock-item-types/
+[2026-02-10 09:23:23.664163] START GET /api/stock-item-brands/
+[2026-02-10 09:23:23.696075] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 09:23:23.696170] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 09:23:23.700533] START GET /api/stock-item-types/
+[2026-02-10 09:23:23.700961] START GET /api/stock-item-brands/
+[2026-02-10 09:23:23.733083] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 09:23:23.733124] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 09:23:24.655137] START GET /api/consumable-types/
+[2026-02-10 09:23:24.655390] START GET /api/consumable-brands/
+[2026-02-10 09:23:24.688970] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 09:23:24.689554] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:23:24.692542] START GET /api/consumable-brands/
+[2026-02-10 09:23:24.694005] START GET /api/consumable-types/
+[2026-02-10 09:23:24.740216] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:23:24.840577] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 09:23:26.357902] START GET /api/stock-item-types/
+[2026-02-10 09:23:26.359263] START GET /api/stock-item-brands/
+[2026-02-10 09:23:26.394323] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 09:23:26.394352] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 09:23:26.398995] START GET /api/stock-item-brands/
+[2026-02-10 09:23:26.399448] START GET /api/stock-item-types/
+[2026-02-10 09:23:26.429606] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 09:23:26.430135] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 09:23:26.984672] START GET /api/asset-types/
+[2026-02-10 09:23:26.985553] START GET /api/asset-brands/
+[2026-02-10 09:23:27.019913] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:23:27.023410] START GET /api/asset-types/
+[2026-02-10 09:23:27.052452] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:23:27.122022] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:23:27.125305] START GET /api/asset-brands/
+[2026-02-10 09:23:27.155678] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:23:27.622014] START GET /api/persons/
+[2026-02-10 09:23:27.758373] END   GET /api/persons/ -> 200
+[2026-02-10 09:23:27.762468] START GET /api/persons/
+[2026-02-10 09:23:27.792687] END   GET /api/persons/ -> 200
+[2026-02-10 09:23:28.666817] START GET /api/consumable-types/
+[2026-02-10 09:23:28.668699] START GET /api/consumable-brands/
+[2026-02-10 09:23:28.700616] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:23:28.703950] START GET /api/consumable-types/
+[2026-02-10 09:23:28.731861] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:23:28.802253] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 09:23:28.805102] START GET /api/consumable-brands/
+[2026-02-10 09:23:28.833552] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 09:25:11.184958] START GET /api/consumable-types/
+[2026-02-10 09:25:11.186536] START GET /api/consumable-brands/
+[2026-02-10 09:25:11.239733] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:25:11.240180] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 09:25:11.248145] START GET /api/consumable-types/
+[2026-02-10 09:25:11.248469] START GET /api/consumable-brands/
+[2026-02-10 09:25:11.279845] END   GET /api/consumable-types/ -> 200
+[2026-02-10 09:25:11.280124] END   GET /api/consumable-brands/ -> 200
+[2026-02-10 09:27:19.305094] START GET /api/room-types/
+[2026-02-10 09:27:19.643445] END   GET /api/room-types/ -> 500
+Response Body: ProgrammingError at /api/room-types/
+relation "room_type" does not exist
+LINE 1: ...om_type_label", "room_type"."room_type_code" FROM "room_type...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/room-types/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\
+[2026-02-10 09:27:19.649520] START GET /api/room-types/
+[2026-02-10 09:27:19.744555] END   GET /api/room-types/ -> 500
+Response Body: ProgrammingError at /api/room-types/
+relation "room_type" does not exist
+LINE 1: ...om_type_label", "room_type"."room_type_code" FROM "room_type...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/room-types/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\
+[2026-02-10 09:30:34.421165] START GET /api/room-types/
+[2026-02-10 09:30:34.455327] END   GET /api/room-types/ -> 200
+[2026-02-10 09:30:34.459960] START GET /api/room-types/
+[2026-02-10 09:30:34.488859] END   GET /api/room-types/ -> 200
+[2026-02-10 09:30:43.584930] START POST /api/room-types/
+[2026-02-10 09:30:43.658450] END   POST /api/room-types/ -> 201
+[2026-02-10 09:30:43.673785] START GET /api/room-types/
+[2026-02-10 09:30:43.736398] END   GET /api/room-types/ -> 200
+[2026-02-10 09:31:06.715510] START POST /api/auth/login/
+[2026-02-10 09:31:06.892907] END   POST /api/auth/login/ -> 200
+[2026-02-10 09:31:08.336938] START GET /api/room-types/
+[2026-02-10 09:31:08.389355] END   GET /api/room-types/ -> 200
+[2026-02-10 09:31:08.396094] START GET /api/room-types/
+[2026-02-10 09:31:08.437326] END   GET /api/room-types/ -> 200
+[2026-02-10 09:34:12.385232] START GET /admin/
+[2026-02-10 09:34:12.510841] END   GET /admin/ -> 200
+[2026-02-10 09:34:12.616075] START GET /favicon.ico
+[2026-02-10 09:34:12.636483] END   GET /favicon.ico -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /favicon.ico</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4
+[2026-02-10 09:34:17.918753] START GET /admin/auth/user/
+[2026-02-10 09:34:18.389592] END   GET /admin/auth/user/ -> 200
+[2026-02-10 09:34:18.421966] START GET /admin/jsi18n/
+[2026-02-10 09:34:18.596373] END   GET /admin/jsi18n/ -> 200
+[2026-02-10 09:34:23.039026] START GET /admin/
+[2026-02-10 09:34:23.112316] END   GET /admin/ -> 200
+[2026-02-10 09:34:25.535669] START GET /admin/auth/group/
+[2026-02-10 09:34:25.574828] END   GET /admin/auth/group/ -> 200
+[2026-02-10 09:34:25.599185] START GET /admin/jsi18n/
+[2026-02-10 09:34:25.630154] END   GET /admin/jsi18n/ -> 200
+[2026-02-10 09:34:27.254723] START GET /admin/
+[2026-02-10 09:34:27.292986] END   GET /admin/ -> 200
+[2026-02-10 09:34:30.698794] START GET /
+[2026-02-10 09:34:30.707608] END   GET / -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:.4em; }
+    h
+[2026-02-10 09:34:33.367562] START GET /admin/
+[2026-02-10 09:34:33.422862] END   GET /admin/ -> 200
+[2026-02-10 09:34:37.644905] START GET /admin/
+[2026-02-10 09:34:37.689486] END   GET /admin/ -> 200
+[2026-02-10 09:35:42.412959] START GET /api/room-types/
+[2026-02-10 09:35:42.461782] END   GET /api/room-types/ -> 200
+[2026-02-10 09:35:42.465516] START GET /api/room-types/
+[2026-02-10 09:35:42.495219] END   GET /api/room-types/ -> 200
+[2026-02-10 09:35:42.921299] START GET /api/room-types/
+[2026-02-10 09:35:42.953261] END   GET /api/room-types/ -> 200
+[2026-02-10 09:35:42.957465] START GET /api/room-types/
+[2026-02-10 09:35:42.995946] END   GET /api/room-types/ -> 200
+[2026-02-10 09:35:50.302534] START GET /api/room-types/
+[2026-02-10 09:35:50.355381] END   GET /api/room-types/ -> 200
+[2026-02-10 09:35:50.363560] START GET /api/room-types/
+[2026-02-10 09:35:50.406779] END   GET /api/room-types/ -> 200
+[2026-02-10 09:36:29.524981] START GET /api/room-types/
+[2026-02-10 09:36:29.557984] END   GET /api/room-types/ -> 200
+[2026-02-10 09:36:29.562608] START GET /api/room-types/
+[2026-02-10 09:36:29.591723] END   GET /api/room-types/ -> 200
+[2026-02-10 09:36:45.083827] START GET /api/room-types/
+[2026-02-10 09:36:45.135121] END   GET /api/room-types/ -> 200
+[2026-02-10 09:36:45.140804] START GET /api/room-types/
+[2026-02-10 09:36:45.291115] END   GET /api/room-types/ -> 200
+[2026-02-10 09:36:45.998351] START GET /api/positions/
+[2026-02-10 09:36:46.028215] END   GET /api/positions/ -> 200
+[2026-02-10 09:36:46.032367] START GET /api/positions/
+[2026-02-10 09:36:46.060432] END   GET /api/positions/ -> 200
+[2026-02-10 09:37:08.111507] START GET /api/room-types/
+[2026-02-10 09:37:08.157871] END   GET /api/room-types/ -> 200
+[2026-02-10 09:37:08.163660] START GET /api/room-types/
+[2026-02-10 09:37:08.332166] END   GET /api/room-types/ -> 200
+[2026-02-10 09:37:10.339353] START DELETE /api/room-types/1/
+[2026-02-10 09:37:10.401565] END   DELETE /api/room-types/1/ -> 204
+[2026-02-10 09:37:10.415021] START GET /api/room-types/
+[2026-02-10 09:37:10.462669] END   GET /api/room-types/ -> 200
+[2026-02-10 09:37:27.768045] START POST /api/room-types/
+[2026-02-10 09:37:27.825204] END   POST /api/room-types/ -> 201
+[2026-02-10 09:37:27.834121] START GET /api/room-types/
+[2026-02-10 09:37:27.988525] END   GET /api/room-types/ -> 200
+[2026-02-10 09:37:28.797129] START GET /api/rooms/
+[2026-02-10 09:37:28.939542] END   GET /api/rooms/ -> 500
+Response Body: ProgrammingError at /api/rooms/
+column room.room_code does not exist
+LINE 1: ...m_id", "room"."room_type_id", "room"."room_name", "room"."ro...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/rooms/?room_type=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\User
+[2026-02-10 09:38:05.114891] START POST /api/rooms/
+[2026-02-10 09:38:05.210116] END   POST /api/rooms/ -> 500
+Response Body: ProgrammingError at /api/rooms/
+column room.room_code does not exist
+LINE 1: ...m_id", "room"."room_type_id", "room"."room_name", "room"."ro...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/rooms/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin
+[2026-02-10 09:38:14.658822] START GET /api/positions/
+[2026-02-10 09:38:14.707141] END   GET /api/positions/ -> 200
+[2026-02-10 09:38:14.714652] START GET /api/positions/
+[2026-02-10 09:38:14.758539] END   GET /api/positions/ -> 200
+[2026-02-10 09:38:34.991139] START POST /api/positions/
+[2026-02-10 09:38:35.033476] END   POST /api/positions/ -> 201
+[2026-02-10 09:38:35.040698] START GET /api/positions/
+[2026-02-10 09:38:35.068282] END   GET /api/positions/ -> 200
+[2026-02-10 09:38:47.547033] START GET /api/room-types/
+[2026-02-10 09:38:47.586415] END   GET /api/room-types/ -> 200
+[2026-02-10 09:38:47.590433] START GET /api/room-types/
+[2026-02-10 09:38:47.617713] END   GET /api/room-types/ -> 200
+[2026-02-10 09:38:55.203849] START GET /api/rooms/
+[2026-02-10 09:38:55.248918] END   GET /api/rooms/ -> 500
+Response Body: ProgrammingError at /api/rooms/
+column room.room_code does not exist
+LINE 1: ...m_id", "room"."room_type_id", "room"."room_name", "room"."ro...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/rooms/?room_type=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\User
+[2026-02-10 09:39:13.588422] START DELETE /api/room-types/1/
+[2026-02-10 09:39:13.632057] END   DELETE /api/room-types/1/ -> 204
+[2026-02-10 09:39:13.640680] START GET /api/room-types/
+[2026-02-10 09:39:13.667955] END   GET /api/room-types/ -> 200
+[2026-02-10 09:39:18.211406] START POST /api/room-types/
+[2026-02-10 09:39:18.355157] END   POST /api/room-types/ -> 201
+[2026-02-10 09:39:18.361581] START GET /api/room-types/
+[2026-02-10 09:39:18.389237] END   GET /api/room-types/ -> 200
+[2026-02-10 09:39:19.393768] START GET /api/rooms/
+[2026-02-10 09:39:19.441681] END   GET /api/rooms/ -> 500
+Response Body: ProgrammingError at /api/rooms/
+column room.room_code does not exist
+LINE 1: ...m_id", "room"."room_type_id", "room"."room_name", "room"."ro...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/rooms/?room_type=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\User
+[2026-02-10 09:41:39.274739] START GET /api/room-types/
+[2026-02-10 09:41:39.319177] END   GET /api/room-types/ -> 200
+[2026-02-10 09:41:39.324193] START GET /api/room-types/
+[2026-02-10 09:41:39.352203] END   GET /api/room-types/ -> 200
+[2026-02-10 09:41:39.837762] START GET /api/room-types/
+[2026-02-10 09:41:39.869209] END   GET /api/room-types/ -> 200
+[2026-02-10 09:41:39.874415] START GET /api/room-types/
+[2026-02-10 09:41:39.902671] END   GET /api/room-types/ -> 200
+[2026-02-10 09:41:40.109161] START GET /api/room-types/
+[2026-02-10 09:41:40.247853] END   GET /api/room-types/ -> 200
+[2026-02-10 09:41:40.251398] START GET /api/room-types/
+[2026-02-10 09:41:40.390571] END   GET /api/room-types/ -> 200
+[2026-02-10 09:41:42.069108] START DELETE /api/room-types/1/
+[2026-02-10 09:41:42.119719] END   DELETE /api/room-types/1/ -> 204
+[2026-02-10 09:41:42.128433] START GET /api/room-types/
+[2026-02-10 09:41:42.158199] END   GET /api/room-types/ -> 200
+[2026-02-10 09:41:45.566058] START POST /api/room-types/
+[2026-02-10 09:41:45.621756] END   POST /api/room-types/ -> 201
+[2026-02-10 09:41:45.631873] START GET /api/room-types/
+[2026-02-10 09:41:45.674892] END   GET /api/room-types/ -> 200
+[2026-02-10 09:41:46.380148] START GET /api/rooms/
+[2026-02-10 09:41:46.618914] END   GET /api/rooms/ -> 500
+Response Body: ProgrammingError at /api/rooms/
+column room.room_code does not exist
+LINE 1: ...m_id", "room"."room_type_id", "room"."room_name", "room"."ro...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/rooms/?room_type=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\User
+[2026-02-10 09:41:57.015119] START POST /api/rooms/
+[2026-02-10 09:41:57.119186] END   POST /api/rooms/ -> 500
+Response Body: ProgrammingError at /api/rooms/
+column room.room_code does not exist
+LINE 1: ...m_id", "room"."room_type_id", "room"."room_name", "room"."ro...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/rooms/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin
+[2026-02-10 09:43:49.555754] START GET /api/room-types/
+[2026-02-10 09:43:49.644083] END   GET /api/room-types/ -> 200
+[2026-02-10 09:43:49.650913] START GET /api/room-types/
+[2026-02-10 09:43:49.690436] END   GET /api/room-types/ -> 200
+[2026-02-10 09:43:50.223608] START GET /api/room-types/
+[2026-02-10 09:43:50.264569] END   GET /api/room-types/ -> 200
+[2026-02-10 09:43:50.269923] START GET /api/room-types/
+[2026-02-10 09:43:50.303726] END   GET /api/room-types/ -> 200
+[2026-02-10 09:43:52.301554] START DELETE /api/room-types/1/
+[2026-02-10 09:43:52.361675] END   DELETE /api/room-types/1/ -> 204
+[2026-02-10 09:43:52.372114] START GET /api/room-types/
+[2026-02-10 09:43:52.414604] END   GET /api/room-types/ -> 200
+[2026-02-10 09:43:56.833312] START POST /api/room-types/
+[2026-02-10 09:43:56.889533] END   POST /api/room-types/ -> 201
+[2026-02-10 09:43:56.899934] START GET /api/room-types/
+[2026-02-10 09:43:57.063214] END   GET /api/room-types/ -> 200
+[2026-02-10 09:43:57.755491] START GET /api/rooms/
+[2026-02-10 09:43:57.888965] END   GET /api/rooms/ -> 500
+Response Body: ProgrammingError at /api/rooms/
+column room.room_code does not exist
+LINE 1: ...m_id", "room"."room_type_id", "room"."room_name", "room"."ro...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/rooms/?room_type=1
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\User
+[2026-02-10 09:46:30.260861] START DELETE /api/room-types/1/
+[2026-02-10 09:46:30.303201] END   DELETE /api/room-types/1/ -> 204
+[2026-02-10 09:46:30.311850] START GET /api/room-types/
+[2026-02-10 09:46:30.341676] END   GET /api/room-types/ -> 200
+[2026-02-10 09:46:32.024185] START GET /api/room-types/
+[2026-02-10 09:46:32.056801] END   GET /api/room-types/ -> 200
+[2026-02-10 09:46:32.060858] START GET /api/room-types/
+[2026-02-10 09:46:32.090644] END   GET /api/room-types/ -> 200
+[2026-02-10 09:46:32.461394] START GET /api/room-types/
+[2026-02-10 09:46:32.600504] END   GET /api/room-types/ -> 200
+[2026-02-10 09:46:32.604346] START GET /api/room-types/
+[2026-02-10 09:46:32.634817] END   GET /api/room-types/ -> 200
+[2026-02-10 09:48:02.187382] START GET /api/rooms/
+[2026-02-10 09:48:02.230705] END   GET /api/rooms/ -> 200
+[2026-02-10 09:48:02.235335] START GET /api/rooms/
+[2026-02-10 09:48:02.262161] END   GET /api/rooms/ -> 200
+[2026-02-10 09:49:10.828693] START GET /api/rooms/
+[2026-02-10 09:49:10.859587] END   GET /api/rooms/ -> 200
+[2026-02-10 09:49:10.862943] START GET /api/rooms/
+[2026-02-10 09:49:10.892384] END   GET /api/rooms/ -> 200
+[2026-02-10 09:49:11.339138] START GET /api/rooms/
+[2026-02-10 09:49:11.367692] END   GET /api/rooms/ -> 200
+[2026-02-10 09:49:11.371224] START GET /api/rooms/
+[2026-02-10 09:49:11.511400] END   GET /api/rooms/ -> 200
+[2026-02-10 09:49:23.893414] START POST /api/rooms/
+[2026-02-10 09:49:23.963008] END   POST /api/rooms/ -> 201
+[2026-02-10 09:49:23.976617] START GET /api/rooms/
+[2026-02-10 09:49:24.029833] END   GET /api/rooms/ -> 200
+[2026-02-10 09:49:29.337950] START GET /api/positions/
+[2026-02-10 09:49:29.381922] END   GET /api/positions/ -> 200
+[2026-02-10 09:49:29.389467] START GET /api/positions/
+[2026-02-10 09:49:29.432817] END   GET /api/positions/ -> 200
+[2026-02-10 09:49:33.123089] START GET /api/persons/
+[2026-02-10 09:49:33.167772] END   GET /api/persons/ -> 200
+[2026-02-10 09:49:33.174903] START GET /api/persons/
+[2026-02-10 09:49:33.218302] END   GET /api/persons/ -> 200
+[2026-02-10 09:49:34.126028] START GET /api/asset-types/
+[2026-02-10 09:49:34.129154] START GET /api/asset-brands/
+[2026-02-10 09:49:34.178600] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:49:34.178793] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:49:34.188516] START GET /api/asset-types/
+[2026-02-10 09:49:34.190182] START GET /api/asset-brands/
+[2026-02-10 09:49:34.241064] END   GET /api/asset-brands/ -> 200
+[2026-02-10 09:49:34.342695] END   GET /api/asset-types/ -> 200
+[2026-02-10 09:49:34.878044] START GET /api/stock-item-types/
+[2026-02-10 09:49:34.881736] START GET /api/stock-item-brands/
+[2026-02-10 09:49:34.934953] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 09:49:34.935093] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 09:49:34.942586] START GET /api/stock-item-types/
+[2026-02-10 09:49:34.946797] START GET /api/stock-item-brands/
+[2026-02-10 09:49:34.989191] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 09:49:34.993760] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 09:49:35.475554] START GET /api/rooms/
+[2026-02-10 09:49:35.515669] END   GET /api/rooms/ -> 200
+[2026-02-10 09:49:35.522858] START GET /api/rooms/
+[2026-02-10 09:49:35.674827] END   GET /api/rooms/ -> 200
+[2026-02-10 09:49:36.289449] START GET /api/positions/
+[2026-02-10 09:49:36.332350] END   GET /api/positions/ -> 200
+[2026-02-10 09:49:36.338778] START GET /api/positions/
+[2026-02-10 09:49:36.384835] END   GET /api/positions/ -> 200
+[2026-02-10 09:49:36.924982] START GET /api/persons/
+[2026-02-10 09:49:36.969195] END   GET /api/persons/ -> 200
+[2026-02-10 09:49:36.974858] START GET /api/persons/
+[2026-02-10 09:49:37.016891] END   GET /api/persons/ -> 200
+[2026-02-10 09:49:43.076172] START GET /api/positions/
+[2026-02-10 09:49:43.229331] END   GET /api/positions/ -> 200
+[2026-02-10 09:49:43.236497] START GET /api/positions/
+[2026-02-10 09:49:43.281370] END   GET /api/positions/ -> 200

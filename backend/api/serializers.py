@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -101,3 +101,58 @@ class StockItemModelSerializer(serializers.ModelSerializer):
             'is_active', 'notes', 'warranty_expiry_in_months'
         ]
         read_only_fields = ['stock_item_model_id']
+
+
+class ConsumableTypeSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableType model"""
+    class Meta:
+        model = ConsumableType
+        fields = ['consumable_type_id', 'consumable_type_label', 'consumable_type_code']
+        read_only_fields = ['consumable_type_id']
+
+
+class ConsumableBrandSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableBrand model"""
+    class Meta:
+        model = ConsumableBrand
+        fields = ['consumable_brand_id', 'brand_name', 'brand_code', 'is_active']
+        read_only_fields = ['consumable_brand_id']
+
+
+class ConsumableModelSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableModel model"""
+    brand_name = serializers.CharField(source='consumable_brand.brand_name', read_only=True)
+    consumable_type_label = serializers.CharField(source='consumable_type.consumable_type_label', read_only=True)
+    
+    class Meta:
+        model = ConsumableModel
+        fields = [
+            'consumable_model_id', 'consumable_brand', 'brand_name', 'consumable_type', 'consumable_type_label',
+            'model_name', 'model_code', 'release_year', 'discontinued_year',
+            'is_active', 'notes', 'warranty_expiry_in_months'
+        ]
+        read_only_fields = ['consumable_model_id']
+
+
+class RoomTypeSerializer(serializers.ModelSerializer):
+    """Serializer for RoomType model"""
+    class Meta:
+        model = RoomType
+        fields = ['room_type_id', 'room_type_label', 'room_type_code']
+        read_only_fields = ['room_type_id']
+
+
+class RoomSerializer(serializers.ModelSerializer):
+    """Serializer for Room model"""
+    class Meta:
+        model = Room
+        fields = ['room_id', 'room_name', 'room_type']
+        read_only_fields = ['room_id']
+
+
+class PositionSerializer(serializers.ModelSerializer):
+    """Serializer for Position model"""
+    class Meta:
+        model = Position
+        fields = ['position_id', 'position_code', 'position_label', 'description']
+        read_only_fields = ['position_id']

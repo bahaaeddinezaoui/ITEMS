@@ -179,3 +179,96 @@ class StockItemModel(models.Model):
 
     def __str__(self):
         return self.model_name
+
+
+class ConsumableType(models.Model):
+    """Maps to consumable_type table"""
+    consumable_type_id = models.AutoField(primary_key=True, db_column='consumable_type_id')
+    consumable_type_label = models.CharField(max_length=60, db_column='consumable_type_label')
+    consumable_type_code = models.CharField(max_length=18, db_column='consumable_type_code')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_type'
+
+    def __str__(self):
+        return self.consumable_type_label
+
+
+class ConsumableBrand(models.Model):
+    """Maps to consumable_brand table"""
+    consumable_brand_id = models.AutoField(primary_key=True, db_column='consumable_brand_id')
+    brand_name = models.CharField(max_length=48, db_column='brand_name')
+    brand_code = models.CharField(max_length=16, db_column='brand_code')
+    is_active = models.BooleanField(db_column='is_active')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_brand'
+
+    def __str__(self):
+        return self.brand_name
+
+
+class ConsumableModel(models.Model):
+    """Maps to consumable_model table"""
+    consumable_model_id = models.AutoField(primary_key=True, db_column='consumable_model_id')
+    consumable_brand = models.ForeignKey(ConsumableBrand, on_delete=models.CASCADE, db_column='consumable_brand_id')
+    consumable_type = models.ForeignKey(ConsumableType, on_delete=models.CASCADE, db_column='consumable_type_id')
+    model_name = models.CharField(max_length=48, blank=True, null=True, db_column='model_name')
+    model_code = models.CharField(max_length=16, blank=True, null=True, db_column='model_code')
+    release_year = models.IntegerField(blank=True, null=True, db_column='release_year')
+    discontinued_year = models.IntegerField(blank=True, null=True, db_column='discontinued_year')
+    is_active = models.BooleanField(default=True, db_column='is_active')
+    notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    warranty_expiry_in_months = models.IntegerField(blank=True, null=True, db_column='warranty_expiry_in_months')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_model'
+
+    def __str__(self):
+        return self.model_name
+
+
+class RoomType(models.Model):
+    """Maps to room_type table"""
+    room_type_id = models.AutoField(primary_key=True, db_column='room_type_id')
+    room_type_label = models.CharField(max_length=60, db_column='room_type_label')
+    room_type_code = models.CharField(max_length=18, db_column='room_type_code')
+
+    class Meta:
+        managed = False
+        db_table = 'room_type'
+
+    def __str__(self):
+        return self.room_type_label
+
+
+class Room(models.Model):
+    """Maps to room table"""
+    room_id = models.AutoField(primary_key=True, db_column='room_id')
+    room_name = models.CharField(max_length=30, db_column='room_name')
+    room_type = models.CharField(max_length=24, db_column='room_type')
+
+    class Meta:
+        managed = False
+        db_table = 'room'
+
+    def __str__(self):
+        return self.room_name
+
+
+class Position(models.Model):
+    """Maps to position table"""
+    position_id = models.AutoField(primary_key=True, db_column='position_id')
+    position_code = models.CharField(max_length=48, db_column='position_code')
+    position_label = models.CharField(max_length=60, db_column='position_label')
+    description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+
+    class Meta:
+        managed = False
+        db_table = 'position'
+
+    def __str__(self):
+        return self.position_label

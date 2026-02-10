@@ -7,8 +7,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer
 
 
 def hash_password(password):
@@ -335,10 +335,14 @@ class AssetModelViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Get all asset models, optionally filtered by asset_type"""
-        queryset = AssetModel.objects.all().order_by('asset_model_id')
+        queryset = AssetModel.objects.select_related('asset_brand', 'asset_type').order_by('asset_model_id')
         asset_type_id = self.request.query_params.get('asset_type', None)
         if asset_type_id is not None:
-            queryset = queryset.filter(asset_type_id=asset_type_id)
+            try:
+                asset_type_id = int(asset_type_id)
+                queryset = queryset.filter(asset_type_id=asset_type_id)
+            except (ValueError, TypeError):
+                pass
         return queryset
 
     def _get_user_account(self, request):
@@ -612,10 +616,14 @@ class StockItemModelViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Get all stock item models, optionally filtered by stock_item_type"""
-        queryset = StockItemModel.objects.all().order_by('stock_item_model_id')
+        queryset = StockItemModel.objects.select_related('stock_item_brand', 'stock_item_type').order_by('stock_item_model_id')
         stock_item_type_id = self.request.query_params.get('stock_item_type', None)
         if stock_item_type_id is not None:
-            queryset = queryset.filter(stock_item_type_id=stock_item_type_id)
+            try:
+                stock_item_type_id = int(stock_item_type_id)
+                queryset = queryset.filter(stock_item_type_id=stock_item_type_id)
+            except (ValueError, TypeError):
+                pass
         return queryset
 
     def _get_user_account(self, request):
@@ -682,3 +690,565 @@ class StockItemModelViewSet(viewsets.ModelViewSet):
 
         return super().destroy(request, *args, **kwargs)
 
+
+class ConsumableTypeViewSet(viewsets.ModelViewSet):
+    """CRUD operations for ConsumableType model"""
+    queryset = ConsumableType.objects.all().order_by('consumable_type_id')
+    serializer_class = ConsumableTypeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all consumable types"""
+        return ConsumableType.objects.all().order_by('consumable_type_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new consumable type - only superusers can create"""
+        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'api_debug.log')
+        
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create consumable types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            with open(log_path, 'a') as f:
+                f.write(f"\n--- Create Consumable Type Request ---\n")
+                f.write(f"Data: {request.data}\n")
+            
+            serializer = self.get_serializer(data=request.data)
+            if not serializer.is_valid():
+                with open(log_path, 'a') as f:
+                    f.write(f"Serializer errors: {serializer.errors}\n")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get the next consumable_type_id
+            last_type = ConsumableType.objects.order_by('-consumable_type_id').first()
+            next_id = (last_type.consumable_type_id + 1) if last_type else 1
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Calculated next consumable_type_id: {next_id}\n")
+            
+            consumable_type = ConsumableType.objects.create(consumable_type_id=next_id, **serializer.validated_data)
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Successfully created consumable type ID: {consumable_type.consumable_type_id}\n")
+            
+            return Response(ConsumableTypeSerializer(consumable_type).data, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            with open(log_path, 'a') as f:
+                f.write(f"ERROR creating consumable type: {str(e)}\n")
+                import traceback
+                f.write(f"Traceback: {traceback.format_exc()}\n")
+            raise
+
+    def update(self, request, *args, **kwargs):
+        """Update consumable type - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update consumable types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete consumable type - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete consumable types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class ConsumableBrandViewSet(viewsets.ModelViewSet):
+    """CRUD operations for ConsumableBrand model"""
+    queryset = ConsumableBrand.objects.all().order_by('consumable_brand_id')
+    serializer_class = ConsumableBrandSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all consumable brands"""
+        return ConsumableBrand.objects.all().order_by('consumable_brand_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new consumable brand - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create consumable brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next consumable_brand_id
+        last_brand = ConsumableBrand.objects.order_by('-consumable_brand_id').first()
+        next_id = (last_brand.consumable_brand_id + 1) if last_brand else 1
+        
+        brand = ConsumableBrand.objects.create(consumable_brand_id=next_id, **serializer.validated_data)
+        return Response(ConsumableBrandSerializer(brand).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update consumable brand - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update consumable brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete consumable brand - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete consumable brands'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class ConsumableModelViewSet(viewsets.ModelViewSet):
+    """CRUD operations for ConsumableModel model"""
+    queryset = ConsumableModel.objects.all().order_by('consumable_model_id')
+    serializer_class = ConsumableModelSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all consumable models, optionally filtered by consumable_type"""
+        queryset = ConsumableModel.objects.select_related('consumable_brand', 'consumable_type').order_by('consumable_model_id')
+        consumable_type_id = self.request.query_params.get('consumable_type', None)
+        if consumable_type_id is not None:
+            try:
+                consumable_type_id = int(consumable_type_id)
+                queryset = queryset.filter(consumable_type_id=consumable_type_id)
+            except (ValueError, TypeError):
+                pass
+        return queryset
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new consumable model - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create consumable models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next consumable_model_id
+        last_model = ConsumableModel.objects.order_by('-consumable_model_id').first()
+        next_id = (last_model.consumable_model_id + 1) if last_model else 1
+        
+        model = ConsumableModel.objects.create(consumable_model_id=next_id, **serializer.validated_data)
+        return Response(ConsumableModelSerializer(model).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update consumable model - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update consumable models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete consumable model - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete consumable models'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class RoomTypeViewSet(viewsets.ModelViewSet):
+    """CRUD operations for RoomType model"""
+    queryset = RoomType.objects.all().order_by('room_type_id')
+    serializer_class = RoomTypeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all room types"""
+        return RoomType.objects.all().order_by('room_type_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new room type - only superusers can create"""
+        log_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'api_debug.log')
+        
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create room types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            with open(log_path, 'a') as f:
+                f.write(f"\n--- Create Room Type Request ---\n")
+                f.write(f"Data: {request.data}\n")
+            
+            serializer = self.get_serializer(data=request.data)
+            if not serializer.is_valid():
+                with open(log_path, 'a') as f:
+                    f.write(f"Serializer errors: {serializer.errors}\n")
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get the next room_type_id
+            last_type = RoomType.objects.order_by('-room_type_id').first()
+            next_id = (last_type.room_type_id + 1) if last_type else 1
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Calculated next room_type_id: {next_id}\n")
+            
+            room_type = RoomType.objects.create(room_type_id=next_id, **serializer.validated_data)
+            
+            with open(log_path, 'a') as f:
+                f.write(f"Successfully created room type ID: {room_type.room_type_id}\n")
+            
+            return Response(RoomTypeSerializer(room_type).data, status=status.HTTP_201_CREATED)
+        
+        except Exception as e:
+            with open(log_path, 'a') as f:
+                f.write(f"ERROR creating room type: {str(e)}\n")
+                import traceback
+                f.write(f"Traceback: {traceback.format_exc()}\n")
+            raise
+
+    def update(self, request, *args, **kwargs):
+        """Update room type - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update room types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete room type - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete room types'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class RoomViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Room model"""
+    queryset = Room.objects.all().order_by('room_id')
+    serializer_class = RoomSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all rooms"""
+        return Room.objects.all().order_by('room_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new room - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create rooms'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next room_id
+        last_room = Room.objects.order_by('-room_id').first()
+        next_id = (last_room.room_id + 1) if last_room else 1
+        
+        room = Room.objects.create(room_id=next_id, **serializer.validated_data)
+        return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update room - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update rooms'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete room - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete rooms'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class PositionViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Position model"""
+    queryset = Position.objects.all().order_by('position_id')
+    serializer_class = PositionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all positions"""
+        return Position.objects.all().order_by('position_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create position - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create positions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next position_id
+        last_position = Position.objects.order_by('-position_id').first()
+        next_id = (last_position.position_id + 1) if last_position else 1
+        
+        position = Position.objects.create(position_id=next_id, **serializer.validated_data)
+        return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update position - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update positions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete position - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete positions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class PositionViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Position model"""
+    queryset = Position.objects.all().order_by('position_id')
+    serializer_class = PositionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all positions"""
+        return Position.objects.all().order_by('position_id')
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create position - only superusers can create"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create positions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the next position_id
+        last_position = Position.objects.order_by('-position_id').first()
+        next_id = (last_position.position_id + 1) if last_position else 1
+        
+        position = Position.objects.create(position_id=next_id, **serializer.validated_data)
+        return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update position - only superusers can update"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update positions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete position - only superusers can delete"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete positions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)

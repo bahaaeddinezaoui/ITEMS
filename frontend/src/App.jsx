@@ -6,6 +6,9 @@ import DashboardHome from './pages/DashboardHome';
 import PersonsPage from './pages/PersonsPage';
 import AssetsPage from './pages/AssetsPage';
 import StockItemsPage from './pages/StockItemsPage';
+import ConsumablesPage from './pages/ConsumablesPage';
+import RoomsPage from './pages/RoomsPage';
+import PositionsPage from './pages/PositionsPage';
 import './index.css';
 
 // Protected route wrapper
@@ -62,6 +65,9 @@ function App() {
                         <Route path="persons" element={<PersonsPage />} />
                         <Route path="assets" element={<AssetsPage />} />
                         <Route path="stock-items" element={<StockItemsPage />} />
+                        <Route path="consumables" element={<ConsumablesPage />} />
+                        <Route path="rooms" element={<RoomsPage />} />
+                        <Route path="positions" element={<PositionsPage />} />
                     </Route>
 
                     {/* Redirect root to login */}
