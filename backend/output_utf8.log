@@ -1,0 +1,156 @@
+﻿Starting Maintenance Chief creation with manual IDs...
+Role Maintenance Chief already exists
+Person Bahaaeddine Zaoui already exists
+.\venv\Scripts\python.exe : Traceback (most recent call 
+last):
+At line:1 char:1
++ .\venv\Scripts\python.exe create_maintenance_chief.py > 
+output.log 2> ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (mo 
+   st recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\backends\utils.py", line 
+105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.NotNullViolation: null value in column 
+"disabled_at_datetime" of relation "user_account" violates 
+not-null constraint
+DETAIL:  Failing row contains (2, 6, bahaaeddinezaoui, 9780
+eb93119bb629dc9062dc2611bd6bd17532b18a3b8a9ad0290e937000901
+1..., 2026-02-10 14:45:11.077629, null, null, Active, 0, 
+2026-02-10 14:45:11.077629, null, null, null).
+
+
+The above exception was the direct cause of the following 
+exception:
+
+Traceback (most recent call last):
+  File "D:\Projects\Equipment Management 
+System\backend\create_maintenance_chief.py", line 94, in 
+<module>
+    create_chief()
+    ~~~~~~~~~~~~^^
+  File "D:\Projects\Equipment Management 
+System\backend\create_maintenance_chief.py", line 64, in 
+create_chief
+    user = UserAccount.objects.create(
+        user_id=USER_ID,
+    ...<6 lines>...
+        failed_login_attempts=0
+    )
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\manager.py", line 87, 
+in manager_method
+    return getattr(self.get_queryset(), name)(*args, 
+**kwargs)
+           
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\query.py", line 669, 
+in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\base.py", line 874, 
+in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\base.py", line 966, 
+in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\base.py", line 1169, 
+in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, insert_fields, 
+returning_fields, raw
+    )
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\base.py", line 1220, 
+in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\manager.py", line 87, 
+in manager_method
+    return getattr(self.get_queryset(), name)(*args, 
+**kwargs)
+           
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\query.py", line 1918, 
+in _insert
+    return query.get_compiler(using=using).execute_sql(retu
+rning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\models\sql\compiler.py", 
+line 1925, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\backends\utils.py", line 
+122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\backends\utils.py", line 79, 
+in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\backends\utils.py", line 92, 
+in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\backends\utils.py", line 
+100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Equipment Management 
+System\backend\venv\Lib\site-packages\django\db\utils.py", 
+line 94, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from 
+exc_value
+  File "D:\Projects\Equipment Management System\backend\ven
+v\Lib\site-packages\django\db\backends\utils.py", line 
+105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.IntegrityError: null value in column 
+"disabled_at_datetime" of relation "user_account" violates 
+not-null constraint
+DETAIL:  Failing row contains (2, 6, bahaaeddinezaoui, 9780
+eb93119bb629dc9062dc2611bd6bd17532b18a3b8a9ad0290e937000901
+1..., 2026-02-10 14:45:11.077629, null, null, Active, 0, 
+2026-02-10 14:45:11.077629, null, null, null).
+

@@ -122,3 +122,32 @@ Successfully created relation: Maintenance -> Information Technology
 --- Create Relation Request ---
 Data: {'organizational_structure': 2, 'parent_organizational_structure': '1', 'relation_type': ''}
 Serializer errors: {'non_field_errors': [ErrorDetail(string='The fields organizational_structure, parent_organizational_structure must make a unique set.', code='unique')]}
+
+[2026-02-10 14:55:56.285717+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-10 14:56:05.509737+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-10 14:58:43.438817+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-10 15:03:13.220550+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-10 15:03:21.051964+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-10 15:10:01.035164+00:00] Login attempt for: bahaaeddinezaoui
+Password mismatch for user: bahaaeddinezaoui
+Provided hash: 9c7535a35757a97cc56d...
+DB hash:       9780eb93119bb629dc90...
+
+[2026-02-10 15:15:52.582423+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-10 15:16:10.379760+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-10 15:20:12.391244+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui

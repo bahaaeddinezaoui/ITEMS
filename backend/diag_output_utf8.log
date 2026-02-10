@@ -1,0 +1,16 @@
+﻿--- Diagnosing user: bahaaeddinezaoui ---
+User ID: 2
+Username: bahaaeddinezaoui
+Person ID: 6
+Person: Bahaa Eddine Zaoui
+is_superuser() returns: False
+Associated Roles:
+  - maintenance_chief (ID: 2)
+
+Serializer Output:
+  user_id: 2
+  username: bahaaeddinezaoui
+  person: {'person_id': 6, 'first_name': 'Bahaa Eddine', 'last_name': 'Zaoui', 'sex': 'Male  ', 'birth_date': '2001-08-21', 'is_approved': True}
+  is_superuser: False
+  roles: [{'role_id': 2, 'role_code': 'maintenance_chief', 'role_label': 'Maintenance Chief', 'description': 'Responsible for maintenance operations'}]
+  last_login: 2026-02-10T15:03:21.100854Z

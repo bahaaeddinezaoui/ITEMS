@@ -1,0 +1,100 @@
+﻿[2026-02-10 15:23:51.291966] START GET /api/organizational-structures/
+[2026-02-10 15:23:51.325719] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:23:52.434000] START GET /api/organizational-structure-relations/
+[2026-02-10 15:23:52.477218] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:23:54.970010] START POST /api/organizational-structure-relations/
+[2026-02-10 15:23:55.029462] END   POST /api/organizational-structure-relations/ -> 201
+[2026-02-10 15:23:55.038713] START GET /api/organizational-structure-relations/
+[2026-02-10 15:23:55.090309] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:31:30.770136] START POST /api/organizational-structure-relations/
+[2026-02-10 15:31:30.832305] END   POST /api/organizational-structure-relations/ -> 400
+Response Body: {"non_field_errors":["The fields organizational_structure, parent_organizational_structure must make a unique set."]}
+[2026-02-10 15:31:40.962990] START GET /api/organizational-structures/
+[2026-02-10 15:31:41.004745] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:31:41.010802] START GET /api/organizational-structures/
+[2026-02-10 15:31:41.053185] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:31:47.907409] START GET /api/organizational-structure-relations/
+[2026-02-10 15:31:47.953968] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:32:38.422347] START GET /api/organizational-structures/
+[2026-02-10 15:32:38.474014] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:32:38.481891] START GET /api/organizational-structures/
+[2026-02-10 15:32:38.523324] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:09.507310] START GET /api/organizational-structure-relations/
+[2026-02-10 15:36:09.594432] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:36:28.454916] START GET /api/organizational-structures/
+[2026-02-10 15:36:28.499202] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:28.506135] START GET /api/organizational-structures/
+[2026-02-10 15:36:28.549133] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:33.592674] START GET /api/organizational-structure-relations/
+[2026-02-10 15:36:33.646699] END   GET /api/organizational-structure-relations/ -> 200
+[2026-02-10 15:36:48.070751] START GET /api/rooms/
+[2026-02-10 15:36:48.114094] END   GET /api/rooms/ -> 200
+[2026-02-10 15:36:48.120954] START GET /api/rooms/
+[2026-02-10 15:36:48.166750] END   GET /api/rooms/ -> 200
+[2026-02-10 15:36:49.152114] START GET /api/organizational-structures/
+[2026-02-10 15:36:49.307744] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:49.314386] START GET /api/organizational-structures/
+[2026-02-10 15:36:49.360929] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:36:51.635180] START GET /api/persons/
+[2026-02-10 15:36:51.789905] END   GET /api/persons/ -> 200
+[2026-02-10 15:36:51.796112] START GET /api/persons/
+[2026-02-10 15:36:51.840183] END   GET /api/persons/ -> 200
+[2026-02-10 15:37:20.357596] START GET /api/organizational-structures/
+[2026-02-10 15:37:20.507642] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:37:20.513127] START GET /api/organizational-structures/
+[2026-02-10 15:37:20.660457] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:41:22.697885] START POST /api/auth/login/
+[2026-02-10 15:41:22.862680] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 15:41:35.557168] START POST /api/auth/login/
+[2026-02-10 15:41:35.595899] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 15:48:57.999700] START POST /api/auth/login/
+[2026-02-10 15:48:58.051642] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 15:49:08.574672] START POST /api/auth/login/
+[2026-02-10 15:49:08.663100] END   POST /api/auth/login/ -> 200
+[2026-02-10 15:49:15.411815] START POST /api/auth/login/
+[2026-02-10 15:49:15.458246] END   POST /api/auth/login/ -> 401
+Response Body: {"detail":"User not found","code":"user_not_found"}
+[2026-02-10 15:49:47.064981] START POST /api/auth/login/
+[2026-02-10 15:49:47.116504] END   POST /api/auth/login/ -> 200
+[2026-02-10 15:51:22.920495] START POST /api/auth/login/
+[2026-02-10 15:51:22.967503] END   POST /api/auth/login/ -> 401
+Response Body: {"detail":"User not found","code":"user_not_found"}
+[2026-02-10 15:53:50.253711] START POST /api/auth/login/
+[2026-02-10 15:53:50.545726] END   POST /api/auth/login/ -> 500
+Response Body: AttributeError at /api/auth/login/
+'UserAccount' object has no attribute 'id'
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python313\\python313.zip', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python
+[2026-02-10 15:53:52.685232] START POST /api/auth/login/
+[2026-02-10 15:53:52.766042] END   POST /api/auth/login/ -> 500
+Response Body: AttributeError at /api/auth/login/
+'UserAccount' object has no attribute 'id'
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python313\\python313.zip', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python
+[2026-02-10 15:54:08.567172] START POST /api/auth/login/
+[2026-02-10 15:54:08.614731] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 15:54:17.658020] START POST /api/auth/login/
+[2026-02-10 15:54:17.734725] END   POST /api/auth/login/ -> 500
+Response Body: AttributeError at /api/auth/login/
+'UserAccount' object has no attribute 'id'
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python313\\python313.zip', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python

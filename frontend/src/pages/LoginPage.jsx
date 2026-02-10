@@ -16,14 +16,8 @@ const LoginPage = () => {
         setLoading(true);
 
         try {
-            const user = await login(username, password);
-
-            // Redirect based on role
-            if (user.is_superuser) {
-                navigate('/dashboard');
-            } else {
-                navigate('/');
-            }
+            await login(username, password);
+            navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.error || 'Login failed. Please try again.');
         } finally {

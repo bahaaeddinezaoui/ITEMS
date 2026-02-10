@@ -2035,3 +2035,155 @@ Response Body: {"non_field_errors":["The fields organizational_structure, parent
 [2026-02-10 15:37:20.507642] END   GET /api/organizational-structures/ -> 200
 [2026-02-10 15:37:20.513127] START GET /api/organizational-structures/
 [2026-02-10 15:37:20.660457] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 15:41:22.697885] START POST /api/auth/login/
+[2026-02-10 15:41:22.862680] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 15:41:35.557168] START POST /api/auth/login/
+[2026-02-10 15:41:35.595899] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 15:48:57.999700] START POST /api/auth/login/
+[2026-02-10 15:48:58.051642] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 15:49:08.574672] START POST /api/auth/login/
+[2026-02-10 15:49:08.663100] END   POST /api/auth/login/ -> 200
+[2026-02-10 15:49:15.411815] START POST /api/auth/login/
+[2026-02-10 15:49:15.458246] END   POST /api/auth/login/ -> 401
+Response Body: {"detail":"User not found","code":"user_not_found"}
+[2026-02-10 15:49:47.064981] START POST /api/auth/login/
+[2026-02-10 15:49:47.116504] END   POST /api/auth/login/ -> 200
+[2026-02-10 15:51:22.920495] START POST /api/auth/login/
+[2026-02-10 15:51:22.967503] END   POST /api/auth/login/ -> 401
+Response Body: {"detail":"User not found","code":"user_not_found"}
+[2026-02-10 15:53:50.253711] START POST /api/auth/login/
+[2026-02-10 15:53:50.545726] END   POST /api/auth/login/ -> 500
+Response Body: AttributeError at /api/auth/login/
+'UserAccount' object has no attribute 'id'
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python313\\python313.zip', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python
+[2026-02-10 15:53:52.685232] START POST /api/auth/login/
+[2026-02-10 15:53:52.766042] END   POST /api/auth/login/ -> 500
+Response Body: AttributeError at /api/auth/login/
+'UserAccount' object has no attribute 'id'
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python313\\python313.zip', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python
+[2026-02-10 15:54:08.567172] START POST /api/auth/login/
+[2026-02-10 15:54:08.614731] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 15:54:17.658020] START POST /api/auth/login/
+[2026-02-10 15:54:17.734725] END   POST /api/auth/login/ -> 500
+Response Body: AttributeError at /api/auth/login/
+'UserAccount' object has no attribute 'id'
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.13.5
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python313\\python313.zip', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python
+[2026-02-10 15:55:56.274131] START POST /api/auth/login/
+[2026-02-10 15:55:56.413873] END   POST /api/auth/login/ -> 200
+[2026-02-10 15:56:05.507245] START POST /api/auth/login/
+[2026-02-10 15:56:05.569701] END   POST /api/auth/login/ -> 200
+[2026-02-10 15:58:43.436915] START POST /api/auth/login/
+[2026-02-10 15:58:43.498902] END   POST /api/auth/login/ -> 200
+[2026-02-10 16:03:13.218276] START POST /api/auth/login/
+[2026-02-10 16:03:13.281164] END   POST /api/auth/login/ -> 200
+[2026-02-10 16:03:15.759489] START GET /api/organizational-structures/
+[2026-02-10 16:03:15.805171] END   GET /api/organizational-structures/ -> 401
+Response Body: {"detail":"User not found","code":"user_not_found"}
+[2026-02-10 16:03:15.813483] START GET /api/organizational-structures/
+[2026-02-10 16:03:15.853512] END   GET /api/organizational-structures/ -> 401
+Response Body: {"detail":"User not found","code":"user_not_found"}
+[2026-02-10 16:03:21.049950] START POST /api/auth/login/
+[2026-02-10 16:03:21.112908] END   POST /api/auth/login/ -> 200
+[2026-02-10 16:03:24.719571] START GET /api/organizational-structures/
+[2026-02-10 16:03:24.760458] END   GET /api/organizational-structures/ -> 401
+Response Body: {"detail":"User not found","code":"user_not_found"}
+[2026-02-10 16:03:24.767049] START GET /api/organizational-structures/
+[2026-02-10 16:03:24.804955] END   GET /api/organizational-structures/ -> 401
+Response Body: {"detail":"User not found","code":"user_not_found"}
+[2026-02-10 16:10:01.026751] START POST /api/auth/login/
+[2026-02-10 16:10:01.084666] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-10 16:15:52.580210] START POST /api/auth/login/
+[2026-02-10 16:15:52.695063] END   POST /api/auth/login/ -> 200
+[2026-02-10 16:15:56.746260] START GET /api/organizational-structures/
+[2026-02-10 16:15:56.796490] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 16:15:56.803349] START GET /api/organizational-structures/
+[2026-02-10 16:15:56.843071] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 16:15:57.549514] START GET /api/persons/
+[2026-02-10 16:15:57.594566] END   GET /api/persons/ -> 200
+[2026-02-10 16:15:57.600874] START GET /api/persons/
+[2026-02-10 16:15:57.641793] END   GET /api/persons/ -> 200
+[2026-02-10 16:15:58.146627] START GET /api/asset-types/
+[2026-02-10 16:15:58.149800] START GET /api/asset-brands/
+[2026-02-10 16:15:58.194871] END   GET /api/asset-brands/ -> 200
+[2026-02-10 16:15:58.199971] START GET /api/asset-brands/
+[2026-02-10 16:15:58.240048] END   GET /api/asset-brands/ -> 200
+[2026-02-10 16:15:58.295605] END   GET /api/asset-types/ -> 200
+[2026-02-10 16:15:58.301246] START GET /api/asset-types/
+[2026-02-10 16:15:58.341589] END   GET /api/asset-types/ -> 200
+[2026-02-10 16:15:58.742148] START GET /api/stock-item-types/
+[2026-02-10 16:15:58.744491] START GET /api/stock-item-brands/
+[2026-02-10 16:15:58.805834] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 16:15:58.806025] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 16:15:58.812571] START GET /api/stock-item-types/
+[2026-02-10 16:15:58.813242] START GET /api/stock-item-brands/
+[2026-02-10 16:15:58.862857] END   GET /api/stock-item-types/ -> 200
+[2026-02-10 16:15:58.867383] END   GET /api/stock-item-brands/ -> 200
+[2026-02-10 16:15:59.335855] START GET /api/rooms/
+[2026-02-10 16:15:59.387852] END   GET /api/rooms/ -> 200
+[2026-02-10 16:15:59.394083] START GET /api/rooms/
+[2026-02-10 16:15:59.441005] END   GET /api/rooms/ -> 200
+[2026-02-10 16:16:00.014850] START GET /api/positions/
+[2026-02-10 16:16:00.049226] END   GET /api/positions/ -> 200
+[2026-02-10 16:16:00.053825] START GET /api/positions/
+[2026-02-10 16:16:00.095712] END   GET /api/positions/ -> 200
+[2026-02-10 16:16:00.646005] START GET /api/organizational-structures/
+[2026-02-10 16:16:00.685725] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 16:16:00.691695] START GET /api/organizational-structures/
+[2026-02-10 16:16:00.734096] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 16:16:10.378061] START POST /api/auth/login/
+[2026-02-10 16:16:10.435234] END   POST /api/auth/login/ -> 200
+[2026-02-10 16:16:12.063385] START GET /api/positions/
+[2026-02-10 16:16:12.110977] END   GET /api/positions/ -> 200
+[2026-02-10 16:16:12.117432] START GET /api/positions/
+[2026-02-10 16:16:12.158546] END   GET /api/positions/ -> 200
+[2026-02-10 16:16:12.748955] START GET /api/organizational-structures/
+[2026-02-10 16:16:12.792220] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 16:16:12.798952] START GET /api/organizational-structures/
+[2026-02-10 16:16:12.841429] END   GET /api/organizational-structures/ -> 200
+[2026-02-10 16:16:13.983909] START GET /api/asset-types/
+[2026-02-10 16:16:13.985660] START GET /api/asset-brands/
+[2026-02-10 16:16:14.034681] END   GET /api/asset-types/ -> 200
+[2026-02-10 16:16:14.037723] END   GET /api/asset-brands/ -> 200
+[2026-02-10 16:16:14.041589] START GET /api/asset-types/
+[2026-02-10 16:16:14.044264] START GET /api/asset-brands/
+[2026-02-10 16:16:14.085495] END   GET /api/asset-types/ -> 200
+[2026-02-10 16:16:14.091839] END   GET /api/asset-brands/ -> 200
+[2026-02-10 16:16:14.472212] START GET /api/rooms/
+[2026-02-10 16:16:14.521488] END   GET /api/rooms/ -> 200
+[2026-02-10 16:16:14.526894] START GET /api/rooms/
+[2026-02-10 16:16:14.570915] END   GET /api/rooms/ -> 200
+[2026-02-10 16:18:22.812530] START GET /api/rooms/
+[2026-02-10 16:18:22.860121] END   GET /api/rooms/ -> 200
+[2026-02-10 16:20:05.594779] START GET /api/rooms/
+[2026-02-10 16:20:05.636772] END   GET /api/rooms/ -> 200
+[2026-02-10 16:20:05.642951] START GET /api/rooms/
+[2026-02-10 16:20:05.691969] END   GET /api/rooms/ -> 200
+[2026-02-10 16:20:06.169424] START GET /api/rooms/
+[2026-02-10 16:20:06.213560] END   GET /api/rooms/ -> 200
+[2026-02-10 16:20:06.219332] START GET /api/rooms/
+[2026-02-10 16:20:06.372313] END   GET /api/rooms/ -> 200
+[2026-02-10 16:20:12.390056] START POST /api/auth/login/
+[2026-02-10 16:20:12.439378] END   POST /api/auth/login/ -> 200

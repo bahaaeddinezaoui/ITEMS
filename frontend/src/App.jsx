@@ -14,13 +14,9 @@ import './index.css';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, isSuperuser } = useAuth();
+    const { isAuthenticated } = useAuth();
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
-
-    if (!isSuperuser) {
         return <Navigate to="/login" replace />;
     }
 
@@ -29,9 +25,9 @@ const ProtectedRoute = ({ children }) => {
 
 // Public route wrapper (redirect to dashboard if already logged in)
 const PublicRoute = ({ children }) => {
-    const { isAuthenticated, isSuperuser } = useAuth();
+    const { isAuthenticated } = useAuth();
 
-    if (isAuthenticated && isSuperuser) {
+    if (isAuthenticated) {
         return <Navigate to="/dashboard" replace />;
     }
 

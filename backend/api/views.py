@@ -19,6 +19,7 @@ def hash_password(password):
 class LoginView(APIView):
     """Handle user authentication"""
     permission_classes = [AllowAny]
+    authentication_classes = [] # Disable authentication for login endpoint to prevent stale token issues
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -28,9 +29,15 @@ class LoginView(APIView):
         username = serializer.validated_data['username']
         password = serializer.validated_data['password']
 
+        # Log for debugging (ensure sensitive data isn't logged in production)
+        with open('api_debug.log', 'a') as f:
+            f.write(f"\n[{timezone.now()}] Login attempt for: {username}\n")
+
         try:
             user = UserAccount.objects.select_related('person').get(username=username)
         except UserAccount.DoesNotExist:
+            with open('api_debug.log', 'a') as f:
+                f.write(f"User not found: {username}\n")
             return Response(
                 {'error': 'Invalid credentials'},
                 status=status.HTTP_401_UNAUTHORIZED
@@ -39,6 +46,11 @@ class LoginView(APIView):
         # Check password (assuming SHA-512 hash in database)
         password_hash = hash_password(password)
         if user.password_hash != password_hash:
+            with open('api_debug.log', 'a') as f:
+                f.write(f"Password mismatch for user: {username}\n")
+                f.write(f"Provided hash: {password_hash[:20]}...\n")
+                f.write(f"DB hash:       {user.password_hash[:20]}...\n")
+            
             # Increment failed login attempts
             user.failed_login_attempts += 1
             user.save(update_fields=['failed_login_attempts'])
@@ -49,6 +61,8 @@ class LoginView(APIView):
 
         # Check if account is active
         if user.account_status != 'active':
+            with open('api_debug.log', 'a') as f:
+                f.write(f"Account not active: {user.account_status}\n")
             return Response(
                 {'error': 'Account is not active'},
                 status=status.HTTP_403_FORBIDDEN
@@ -59,11 +73,14 @@ class LoginView(APIView):
         user.failed_login_attempts = 0
         user.save(update_fields=['last_login', 'failed_login_attempts'])
 
-        # Generate JWT tokens
+        # Generate JWT tokens manually to avoid PK name issues with SimpleJWT
         refresh = RefreshToken()
-        refresh['user_id'] = user.user_id
+        refresh['user_id'] = user.user_id # Explicitly set user_id
         refresh['username'] = user.username
         refresh['is_superuser'] = user.is_superuser()
+
+        with open('api_debug.log', 'a') as f:
+            f.write(f"Login successful for: {username}\n")
 
         return Response({
             'access': str(refresh.access_token),
