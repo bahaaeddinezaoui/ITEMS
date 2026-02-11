@@ -356,6 +356,8 @@ class Maintenance(models.Model):
     """Maps to maintenance table"""
     maintenance_id = models.AutoField(primary_key=True, db_column='maintenance_id')
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', blank=True, null=True)
+    stock_item = models.ForeignKey('StockItem', on_delete=models.CASCADE, db_column='stock_item_id', blank=True, null=True)
+    consumable = models.ForeignKey('Consumable', on_delete=models.CASCADE, db_column='consumable_id', blank=True, null=True)
     performed_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='performed_by_person_id', blank=True, null=True, related_name='performed_maintenances')
     approved_by_maintenance_chief = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='approved_by_maintenance_chief_id', related_name='approved_maintenances')
     is_approved_by_maintenance_chief = models.BooleanField(db_column='is_approved_by_maintenance_chief', blank=True, null=True)

@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, UserAccountViewSet, ProblemReportViewSet, MyItemsViewSet, AssetAssignmentViewSet, StockItemAssignmentViewSet, ConsumableAssignmentViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, AssetViewSet, MaintenanceViewSet, StockItemViewSet, ConsumableViewSet
+from .views import LoginView, PersonViewSet, UserAccountViewSet, ProblemReportViewSet, CreateMaintenanceFromReportView, MyItemsViewSet, AssetAssignmentViewSet, StockItemAssignmentViewSet, ConsumableAssignmentViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, AssetViewSet, MaintenanceViewSet, StockItemViewSet, ConsumableViewSet
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
@@ -31,5 +31,6 @@ router.register(r'maintenances', MaintenanceViewSet, basename='maintenance')
 
 urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
+    path('problem-reports/create-maintenance/', CreateMaintenanceFromReportView.as_view(), name='create-maintenance-from-report'),
     path('', include(router.urls)),
 ]

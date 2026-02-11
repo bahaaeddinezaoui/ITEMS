@@ -7,3 +7,6 @@ admin - password123
 
 Maintenance Chief:
 bahaaeddinezaoui - 08212001
+
+Other users:
+mohamednedjouh - 123456

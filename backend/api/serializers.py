@@ -264,12 +264,15 @@ class AssetSerializer(serializers.ModelSerializer):
 class MaintenanceSerializer(serializers.ModelSerializer):
     """Serializer for Maintenance model"""
     asset_name = serializers.CharField(source='asset.asset_name', read_only=True)
+    stock_item_name = serializers.CharField(source='stock_item.stock_item_name', read_only=True)
+    consumable_name = serializers.CharField(source='consumable.consumable_name', read_only=True)
     performed_by_person_name = serializers.StringRelatedField(source='performed_by_person', read_only=True)
     approved_by_maintenance_chief_name = serializers.StringRelatedField(source='approved_by_maintenance_chief', read_only=True)
 
     class Meta:
         model = Maintenance
-        fields = ['maintenance_id', 'asset', 'asset_name', 'performed_by_person', 'performed_by_person_name',
+        fields = ['maintenance_id', 'asset', 'asset_name', 'stock_item', 'stock_item_name', 
+                  'consumable', 'consumable_name', 'performed_by_person', 'performed_by_person_name',
                   'approved_by_maintenance_chief', 'approved_by_maintenance_chief_name',
                   'is_approved_by_maintenance_chief', 'start_datetime', 'end_datetime', 
                   'description', 'is_successful']

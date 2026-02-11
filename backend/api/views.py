@@ -16,29 +16,83 @@ def hash_password(password):
     return hashlib.sha512(password.encode()).hexdigest()
 
 
-def _get_user_account_from_request(request):
-    """Extract user account from JWT token"""
-    try:
-        if hasattr(request, 'auth') and request.auth is not None:
-            user_id = request.auth.get('user_id')
-            if user_id:
-                return UserAccount.objects.get(user_id=user_id)
-    except (UserAccount.DoesNotExist, AttributeError, KeyError):
-        pass
-
-    try:
-        if hasattr(request, 'auth') and request.auth is not None:
-            username = request.auth.get('username')
-            if username:
-                return UserAccount.objects.get(username=username)
-    except (UserAccount.DoesNotExist, AttributeError, KeyError):
-        pass
-
-    return None
-
-
+# Helper functions
 def _has_role(user_account, role_code):
     return PersonRoleMapping.objects.filter(person=user_account.person, role__role_code=role_code).exists()
+
+
+class CreateMaintenanceFromReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_account = request.user
+        if not user_account or user_account.is_anonymous:
+            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not (user_account.is_superuser() or _has_role(user_account, 'maintenance_chief')):
+            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
+
+        item_type = request.data.get('item_type')
+        report_id = request.data.get('report_id')
+        technician_person_id = request.data.get('technician_person_id')
+        description = request.data.get('description')
+
+        if item_type not in ('asset', 'stock_item', 'consumable'):
+            return Response({'error': 'Invalid item_type'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not report_id:
+            return Response({'error': 'report_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not technician_person_id:
+            return Response({'error': 'technician_person_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            technician_person_id = int(technician_person_id)
+        except (TypeError, ValueError):
+            return Response({'error': 'technician_person_id must be an integer'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not PersonRoleMapping.objects.filter(person_id=technician_person_id, role__role_code='maintenance_technician').exists():
+            return Response({'error': 'Selected person is not a maintenance technician'}, status=status.HTTP_400_BAD_REQUEST)
+
+        report = None
+        item_id = None
+
+        if item_type == 'asset':
+            report = PersonReportsProblemOnAsset.objects.filter(report_id=report_id).first()
+            item_id = report.asset_id if report else None
+        elif item_type == 'stock_item':
+            report = PersonReportsProblemOnStockItem.objects.filter(report_id=report_id).first()
+            item_id = report.stock_item_id if report else None
+        elif item_type == 'consumable':
+            report = PersonReportsProblemOnConsumable.objects.filter(report_id=report_id).first()
+            item_id = report.consumable_id if report else None
+
+        if not report:
+            return Response({'error': 'Report not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        now = timezone.now()
+        if not description:
+            description = f"From report #{report_id} ({item_type} #{item_id}): {report.owner_observation}"
+
+        last = Maintenance.objects.order_by('-maintenance_id').first()
+        next_id = (last.maintenance_id + 1) if last else 1
+
+        maintenance = Maintenance(
+            maintenance_id=next_id,
+            asset_id=item_id if item_type == 'asset' else None,
+            stock_item_id=item_id if item_type == 'stock_item' else None,
+            consumable_id=item_id if item_type == 'consumable' else None,
+            performed_by_person_id=technician_person_id,
+            approved_by_maintenance_chief_id=user_account.person_id,
+            is_approved_by_maintenance_chief=True,
+            start_datetime=now,
+            end_datetime=None,
+            description=description,
+            is_successful=None,
+        )
+        maintenance.save(force_insert=True)
+
+        return Response(MaintenanceSerializer(maintenance).data, status=status.HTTP_201_CREATED)
 
 
 class ProblemReportViewSet(viewsets.ViewSet):
@@ -800,9 +854,23 @@ class MaintenanceViewSet(viewsets.ModelViewSet):
         """
         Filter maintenances based on query params.
         Can filter by asset_id, performed_by_person_id, etc.
+        Role-based: Technicians only see their assigned maintenances.
         """
         queryset = Maintenance.objects.all().order_by('-start_datetime')
         
+        user_account = self.request.user
+        if user_account and not user_account.is_anonymous:
+            # Check if user is a chief or superuser
+            is_chief = (
+                user_account.is_superuser()
+                or _has_role(user_account, 'maintenance_chief')
+                or _has_role(user_account, 'exploitation_chief')
+            )
+            
+            # If not chief, but technician, filter by their person record
+            if not is_chief and _has_role(user_account, 'maintenance_technician'):
+                queryset = queryset.filter(performed_by_person=user_account.person)
+
         asset_id = self.request.query_params.get('asset', None)
         if asset_id is not None:
             queryset = queryset.filter(asset_id=asset_id)

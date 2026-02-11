@@ -124,6 +124,10 @@ export const problemReportService = {
         const response = await api.post('problem-reports/', data);
         return response.data;
     },
+    createMaintenance: async (data) => {
+        const response = await api.post('problem-reports/create-maintenance/', data);
+        return response.data;
+    },
 };
 
 // Asset Type service

@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { maintenanceService, personService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const MaintenancesPage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const [maintenances, setMaintenances] = useState([]);
     const [technicians, setTechnicians] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -13,10 +13,21 @@ const MaintenancesPage = () => {
     const [selectedTechnician, setSelectedTechnician] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
+    const isChief = useMemo(() => {
+        if (isSuperuser) return true;
+        return user?.roles?.some(r => r.role_code === 'maintenance_chief' || r.role_code === 'exploitation_chief') || false;
+    }, [isSuperuser, user]);
+
+    const isTechnician = useMemo(() => {
+        return user?.roles?.some(r => r.role_code === 'maintenance_technician') || false;
+    }, [user]);
+
     useEffect(() => {
         loadMaintenances();
-        loadTechnicians();
-    }, []);
+        if (isChief) {
+            loadTechnicians();
+        }
+    }, [isChief]);
 
     const loadMaintenances = async () => {
         try {
@@ -81,13 +92,15 @@ const MaintenancesPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Maintenances</h1>
+                <h1 className="page-title">Maintenance</h1>
                 <p className="page-subtitle">Manage maintenance tasks and assignments</p>
             </div>
 
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title">All Maintenances</h2>
+                    <h2 className="card-title">
+                        {isChief ? 'All Maintenances' : 'My Maintenances'}
+                    </h2>
                     {/* Add Create Maintenance Button if needed later */}
                 </div>
 
@@ -122,7 +135,15 @@ const MaintenancesPage = () => {
                                 {maintenances.map((maintenance) => (
                                     <tr key={maintenance.maintenance_id}>
                                         <td>{maintenance.maintenance_id}</td>
-                                        <td>{maintenance.asset_name || `Asset ${maintenance.asset}`}</td>
+                                        <td>
+                                            {maintenance.asset_name || 
+                                             maintenance.stock_item_name || 
+                                             maintenance.consumable_name || 
+                                             (maintenance.asset ? `Asset ${maintenance.asset}` : 
+                                              maintenance.stock_item ? `Stock Item ${maintenance.stock_item}` : 
+                                              maintenance.consumable ? `Consumable ${maintenance.consumable}` : 
+                                              'Unknown')}
+                                        </td>
                                         <td>{maintenance.description}</td>
                                         <td>{formatDate(maintenance.start_datetime)}</td>
                                         <td>
@@ -138,12 +159,14 @@ const MaintenancesPage = () => {
                                             {maintenance.is_successful === null && <span className="badge">Pending</span>}
                                         </td>
                                         <td>
-                                            <button 
-                                                className="btn btn-sm btn-secondary"
-                                                onClick={() => handleAssignClick(maintenance)}
-                                            >
-                                                Assign
-                                            </button>
+                                            {isChief && (
+                                                <button 
+                                                    className="btn btn-sm btn-secondary"
+                                                    onClick={() => handleAssignClick(maintenance)}
+                                                >
+                                                    Assign
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
