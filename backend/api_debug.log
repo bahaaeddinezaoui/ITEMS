@@ -188,3 +188,98 @@ Login successful for: admin
 
 [2026-02-10 21:46:16.457773+00:00] Login attempt for: admin
 Login successful for: admin
+
+[2026-02-11 08:36:55.711768+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-11 08:38:25.723968+00:00] Login attempt for: admin
+Password mismatch for user: admin
+Provided hash: 15fb9dbeae2f3fb789c3...
+DB hash:       bed4efa1d4fdbd954bd3...
+
+[2026-02-11 08:38:31.773087+00:00] Login attempt for: admin
+Login successful for: admin
+
+--- Create Person Request at 2026-02-11 08:41:36.063977+00:00 ---
+Data: {'first_name': 'Mohamed', 'last_name': 'NEDJOUH', 'sex': 'Male', 'birth_date': '1994-02-05', 'is_approved': False}
+Headers: {'Content-Length': '105', 'Content-Type': 'application/json', 'Host': 'localhost:8000', 'Connection': 'close', 'Sec-Ch-Ua-Platform': '"Windows"', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwODI3OTExLCJpYXQiOjE3NzA3OTkxMTEsImp0aSI6ImE1MzZlYTVkZmEwODQ5ZWE4NGU2Y2Y2ZTJiYjgyYzg2IiwidXNlcl9pZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlzX3N1cGVydXNlciI6dHJ1ZX0.aa6Zv_YFyhQp8WnmS00f5mLaIixZfztXymcRnd2Y-FA', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'Accept': 'application/json, text/plain, */*', 'Sec-Ch-Ua': '"Not(A:Brand";v="8", "Chromium";v="144", "Brave";v="144"', 'Sec-Ch-Ua-Mobile': '?0', 'Sec-Gpc': '1', 'Accept-Language': 'en-US,en;q=0.9', 'Origin': 'http://localhost:5173', 'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:5173/dashboard/persons', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Cookie': 'lang=ar'}
+Validated Data: {'first_name': 'Mohamed', 'last_name': 'NEDJOUH', 'sex': 'Male', 'birth_date': datetime.date(1994, 2, 5), 'is_approved': False}
+Calculated next_id: 9
+Successfully created person ID: 9
+
+[2026-02-11 09:26:39.103746+00:00] Login attempt for: admin
+Login successful for: admin
+
+--- Create Person Request at 2026-02-11 10:45:36.124921+00:00 ---
+Data: {'first_name': 'Daoud', 'last_name': 'BEN SI Messaoud', 'sex': 'Male', 'birth_date': '2002-02-27', 'is_approved': True}
+Headers: {'Content-Length': '110', 'Content-Type': 'application/json', 'Host': 'localhost:8000', 'Connection': 'close', 'Sec-Ch-Ua-Platform': '"Windows"', 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzcwODMwNzk5LCJpYXQiOjE3NzA4MDE5OTksImp0aSI6IjlhZjY1ZTRjZTNhZDQ5ZGFiYzA3YTdhMDgxY2IwYTUzIiwidXNlcl9pZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsImlzX3N1cGVydXNlciI6dHJ1ZX0.1DcoyHJUherRHi13xKslpY53jS1UIqwOSdrOMM0ZRCQ', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 'Accept': 'application/json, text/plain, */*', 'Sec-Ch-Ua': '"Not(A:Brand";v="8", "Chromium";v="144", "Brave";v="144"', 'Sec-Ch-Ua-Mobile': '?0', 'Sec-Gpc': '1', 'Accept-Language': 'en-US,en;q=0.9', 'Origin': 'http://localhost:5174', 'Sec-Fetch-Site': 'same-origin', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Dest': 'empty', 'Referer': 'http://localhost:5174/dashboard/persons', 'Accept-Encoding': 'gzip, deflate, br, zstd', 'Cookie': 'lang=ar'}
+Validated Data: {'first_name': 'Daoud', 'last_name': 'BEN SI Messaoud', 'sex': 'Male', 'birth_date': datetime.date(2002, 2, 27), 'is_approved': True}
+Calculated next_id: 10
+Successfully created person ID: 10
+
+[2026-02-11 10:51:01.432322+00:00] Login attempt for: benisimessaouddaoud
+User not found: benisimessaouddaoud
+
+[2026-02-11 10:51:25.140284+00:00] Login attempt for: bensimessaouddaoud
+Login successful for: bensimessaouddaoud
+
+[2026-02-11 10:53:35.155526+00:00] Login attempt for: benisimessaouddaoud
+User not found: benisimessaouddaoud
+
+[2026-02-11 10:53:46.359782+00:00] Login attempt for: bensimessaouddaoud
+Password mismatch for user: bensimessaouddaoud
+Provided hash: 2b3e215b9d44e604136d...
+DB hash:       1d3005bd778154738f48...
+
+[2026-02-11 10:54:22.888765+00:00] Login attempt for: bensimessaouddaoud
+Password mismatch for user: bensimessaouddaoud
+Provided hash: d31246ff252b57ddb25b...
+DB hash:       1d3005bd778154738f48...
+
+[2026-02-11 10:54:32.963665+00:00] Login attempt for: bensimessaouddaoud
+Login successful for: bensimessaouddaoud
+
+[2026-02-11 10:59:50.434625+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-11 11:02:38.675373+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-11 11:13:53.035708+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-11 11:46:27.495240+00:00] Login attempt for: YOUR_USERNAME
+User not found: YOUR_USERNAME
+
+[2026-02-11 11:48:05.902172+00:00] Login attempt for: bensimessaouddaoud
+Login successful for: bensimessaouddaoud
+
+[2026-02-11 11:49:37.065025+00:00] Login attempt for: admin
+Login successful for: admin
+
+[2026-02-11 11:50:48.973448+00:00] Login attempt for: mohamednedjouh
+Login successful for: mohamednedjouh
+
+[2026-02-11 11:51:55.025812+00:00] Login attempt for: admin
+Login successful for: admin
+
+[2026-02-11 12:11:33.842761+00:00] Login attempt for: admin
+Login successful for: admin
+
+[2026-02-11 17:40:56.612454+00:00] Login attempt for: admin
+Login successful for: admin
+
+[2026-02-11 18:20:46.216474+00:00] Login attempt for: mohamednedjouh
+Login successful for: mohamednedjouh
+
+[2026-02-11 18:24:25.560883+00:00] Login attempt for: admin
+Login successful for: admin
+
+[2026-02-11 18:24:46.597758+00:00] Login attempt for: bahaaeddinezaoui
+Login successful for: bahaaeddinezaoui
+
+[2026-02-11 18:30:25.995656+00:00] Login attempt for: bensimessaouddaoud
+Login successful for: bensimessaouddaoud
+
+[2026-02-11 18:33:21.480550+00:00] Login attempt for: mohamednedjouh
+Login successful for: mohamednedjouh

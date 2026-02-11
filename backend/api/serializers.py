@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance, StockItem, Consumable
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance, StockItem, Consumable, AssetAssignment, StockItemAssignment, ConsumableAssignment, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -39,6 +39,40 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_roles(self, obj):
         role_mappings = obj.get_roles()
         return [RoleSerializer(rm.role).data for rm in role_mappings]
+
+
+class UserAccountSerializer(serializers.ModelSerializer):
+    """Serializer for UserAccount model"""
+    person = PersonSerializer(read_only=True)
+    roles = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserAccount
+        fields = [
+            'user_id',
+            'username',
+            'person',
+            'account_status',
+            'failed_login_attempts',
+            'created_at_datetime',
+            'last_login',
+            'disabled_at_datetime',
+            'password_last_changed_datetime',
+            'roles',
+        ]
+
+    def get_roles(self, obj):
+        role_mappings = obj.get_roles()
+        return [RoleSerializer(rm.role).data for rm in role_mappings]
+
+
+class UserAccountCreateSerializer(serializers.Serializer):
+    """Create a login account for an existing person (superuser-only)."""
+    person_id = serializers.IntegerField()
+    username = serializers.CharField(max_length=20)
+    password = serializers.CharField(max_length=128, write_only=True)
+    account_status = serializers.ChoiceField(choices=['active', 'disabled'], default='active')
+    role_code = serializers.CharField(max_length=24, required=False, allow_blank=True)
 
 
 class AssetTypeSerializer(serializers.ModelSerializer):
@@ -209,6 +243,15 @@ class OrganizationalStructureRelationSerializer(serializers.ModelSerializer):
 
 class AssetSerializer(serializers.ModelSerializer):
     """Serializer for Asset model"""
+
+    def create(self, validated_data):
+        last = Asset.objects.order_by('-asset_id').first()
+        next_id = (last.asset_id + 1) if last else 1
+        instance = Asset(**validated_data)
+        instance.asset_id = next_id
+        instance.save(force_insert=True)
+        return instance
+
     class Meta:
         model = Asset
         fields = ['asset_id', 'asset_model', 'attribution_order_id', 'destruction_certificate_id', 
@@ -235,6 +278,15 @@ class MaintenanceSerializer(serializers.ModelSerializer):
 
 class StockItemSerializer(serializers.ModelSerializer):
     """Serializer for StockItem model"""
+
+    def create(self, validated_data):
+        last = StockItem.objects.order_by('-stock_item_id').first()
+        next_id = (last.stock_item_id + 1) if last else 1
+        instance = StockItem(**validated_data)
+        instance.stock_item_id = next_id
+        instance.save(force_insert=True)
+        return instance
+
     class Meta:
         model = StockItem
         fields = ['stock_item_id', 'maintenance_step_id', 'stock_item_model', 'destruction_certificate_id',
@@ -246,6 +298,15 @@ class StockItemSerializer(serializers.ModelSerializer):
 
 class ConsumableSerializer(serializers.ModelSerializer):
     """Serializer for Consumable model"""
+
+    def create(self, validated_data):
+        last = Consumable.objects.order_by('-consumable_id').first()
+        next_id = (last.consumable_id + 1) if last else 1
+        instance = Consumable(**validated_data)
+        instance.consumable_id = next_id
+        instance.save(force_insert=True)
+        return instance
+
     class Meta:
         model = Consumable
         fields = ['consumable_id', 'consumable_model', 'destruction_certificate_id', 'consumable_name',
@@ -253,5 +314,95 @@ class ConsumableSerializer(serializers.ModelSerializer):
                   'consumable_service_tag', 'consumable_name_in_administrative_certificate',
                   'consumable_arrival_datetime', 'consumable_status']
         read_only_fields = ['consumable_id']
+
+
+class PersonReportsProblemOnAssetSerializer(serializers.ModelSerializer):
+    """Serializer for person_reports_problem_on_asset table"""
+
+    class Meta:
+        model = PersonReportsProblemOnAsset
+        fields = ['report_id', 'asset', 'person', 'report_datetime', 'owner_observation']
+
+
+class PersonReportsProblemOnStockItemSerializer(serializers.ModelSerializer):
+    """Serializer for person_reports_problem_on_stock_item table"""
+
+    class Meta:
+        model = PersonReportsProblemOnStockItem
+        fields = ['report_id', 'stock_item', 'person', 'report_datetime', 'owner_observation']
+
+
+class PersonReportsProblemOnConsumableSerializer(serializers.ModelSerializer):
+    """Serializer for person_reports_problem_on_consumable table"""
+
+    class Meta:
+        model = PersonReportsProblemOnConsumable
+        fields = ['report_id', 'consumable', 'person', 'report_datetime', 'owner_observation']
+
+
+class AssetAssignmentSerializer(serializers.ModelSerializer):
+    """Serializer for AssetAssignment model"""
+
+    class Meta:
+        model = AssetAssignment
+        fields = [
+            'assignment_id',
+            'person',
+            'asset',
+            'assigned_by_person_id',
+            'start_datetime',
+            'end_datetime',
+            'condition_on_assignment',
+            'is_active',
+        ]
+
+
+class StockItemAssignmentSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemAssignment model"""
+
+    class Meta:
+        model = StockItemAssignment
+        fields = [
+            'assignment_id',
+            'person',
+            'stock_item',
+            'assigned_by_person_id',
+            'start_datetime',
+            'end_datetime',
+            'condition_on_assignment',
+            'is_active',
+        ]
+
+
+class ConsumableAssignmentSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableAssignment model"""
+
+    class Meta:
+        model = ConsumableAssignment
+        fields = [
+            'assignment_id',
+            'person',
+            'consumable',
+            'assigned_by_person_id',
+            'start_datetime',
+            'end_datetime',
+            'condition_on_assignment',
+            'is_active',
+        ]
+
+
+class ProblemReportCreateSerializer(serializers.Serializer):
+    item_type = serializers.ChoiceField(choices=['asset', 'stock_item', 'consumable'])
+    item_id = serializers.IntegerField()
+    owner_observation = serializers.CharField(max_length=256)
+
+
+class ProblemReportListItemSerializer(serializers.Serializer):
+    item_type = serializers.ChoiceField(choices=['asset', 'stock_item', 'consumable'])
+    item_id = serializers.IntegerField()
+    report_id = serializers.IntegerField()
+    report_datetime = serializers.DateTimeField()
+    owner_observation = serializers.CharField(max_length=256)
+    person_id = serializers.IntegerField()
 
 

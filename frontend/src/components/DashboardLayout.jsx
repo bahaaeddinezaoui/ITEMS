@@ -34,6 +34,8 @@ const DashboardLayout = () => {
 
     const isMaintenanceChief = user?.roles?.some(role => role.role_code === 'maintenance_chief');
     const isMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'maintenance_technician');
+    const isExploitationChief = user?.roles?.some(role => role.role_code === 'exploitation_chief');
+    const canViewReports = isSuperuser || isMaintenanceChief || isExploitationChief;
 
     return (
         <div className="dashboard-layout">
@@ -133,6 +135,72 @@ const DashboardLayout = () => {
                                 </NavLink>
                             </div>
                         </>
+                    )}
+
+                    <div className="nav-section">
+                        <span className="nav-section-title">My</span>
+                        <NavLink to="/dashboard/my-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                            My Items
+                        </NavLink>
+                    </div>
+
+                    {canViewReports && (
+                        <div className="nav-section">
+                            <span className="nav-section-title">Reports</span>
+                            <NavLink to="/dashboard/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M3 3h18v18H3z" />
+                                    <path d="M7 7h10" />
+                                    <path d="M7 12h10" />
+                                    <path d="M7 17h6" />
+                                </svg>
+                                Reports
+                            </NavLink>
+                        </div>
+                    )}
+
+                    {isExploitationChief && (
+                        <div className="nav-section">
+                            <span className="nav-section-title">Inventory</span>
+
+                            <NavLink to="/dashboard" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect x="3" y="3" width="7" height="7" />
+                                    <rect x="14" y="3" width="7" height="7" />
+                                    <rect x="14" y="14" width="7" height="7" />
+                                    <rect x="3" y="14" width="7" height="7" />
+                                </svg>
+                                Dashboard
+                            </NavLink>
+
+                            <NavLink to="/dashboard/assets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                                </svg>
+                                Assets
+                            </NavLink>
+
+                            <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="9" cy="21" r="1" />
+                                    <circle cx="20" cy="21" r="1" />
+                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                </svg>
+                                Stock Items
+                            </NavLink>
+
+                            <NavLink to="/dashboard/consumables" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                                </svg>
+                                Consumables
+                            </NavLink>
+                        </div>
                     )}
 
                     {(isSuperuser || isMaintenanceChief) && (

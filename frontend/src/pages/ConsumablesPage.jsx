@@ -40,7 +40,7 @@ const ConsumablesPage = () => {
         consumable_status: 'active',
         consumable_warranty_expiry_in_months: '',
         consumable_name_in_administrative_certificate: '',
-        destruction_certificate_id: 0,
+        destruction_certificate_id: '',
         maintenance_step_id: null
     });
     
@@ -207,7 +207,8 @@ const ConsumablesPage = () => {
         try {
             const dataToSubmit = {
                 ...consumableFormData,
-                consumable_model: selectedConsumableModel.consumable_model_id
+                consumable_model: selectedConsumableModel.consumable_model_id,
+                destruction_certificate_id: consumableFormData.destruction_certificate_id ? Number(consumableFormData.destruction_certificate_id) : null,
             };
             if (editingConsumable) {
                 await consumableService.update(editingConsumable, dataToSubmit);
@@ -220,7 +221,7 @@ const ConsumablesPage = () => {
                 consumable_status: 'active',
                 consumable_warranty_expiry_in_months: '',
                 consumable_name_in_administrative_certificate: '',
-                destruction_certificate_id: 0,
+                destruction_certificate_id: '',
                 maintenance_step_id: null
             });
             setEditingConsumable(null);
@@ -244,7 +245,7 @@ const ConsumablesPage = () => {
             consumable_status: item.consumable_status || 'active',
             consumable_warranty_expiry_in_months: item.consumable_warranty_expiry_in_months || '',
             consumable_name_in_administrative_certificate: item.consumable_name_in_administrative_certificate || '',
-            destruction_certificate_id: item.destruction_certificate_id || 0,
+            destruction_certificate_id: item.destruction_certificate_id ?? '',
             maintenance_step_id: item.maintenance_step_id || null
         });
         setShowConsumableForm(true);
@@ -350,7 +351,7 @@ const ConsumablesPage = () => {
                     </div>
 
                     {showTypeForm && (
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: '#f9f9f9' }}>
+                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
                             <form onSubmit={handleTypeSubmit}>
                                 <input
                                     type="text"
@@ -372,7 +373,7 @@ const ConsumablesPage = () => {
                                 />
                                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                     <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                    <button type="button" onClick={() => setShowTypeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'white', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                    <button type="button" onClick={() => setShowTypeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
                                 </div>
                             </form>
                         </div>
@@ -386,11 +387,11 @@ const ConsumablesPage = () => {
                                     style={{
                                         padding: 'var(--space-3) var(--space-4)',
                                         cursor: 'pointer',
-                                        backgroundColor: selectedConsumableType?.consumable_type_id === type.consumable_type_id ? '#e0f2fe' : 'transparent',
+                                        backgroundColor: selectedConsumableType?.consumable_type_id === type.consumable_type_id ? 'var(--color-bg-secondary)' : 'transparent',
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
-                                        borderBottom: '1px solid var(--color-border-light)'
+                                        borderBottom: '1px solid var(--color-border)'
                                     }}
                                 >
                                     <span style={{ fontWeight: '500' }}>{type.consumable_type_label}</span>
@@ -404,7 +405,7 @@ const ConsumablesPage = () => {
                                 
                                 {/* Models List (Nested) */}
                                 {selectedConsumableType?.consumable_type_id === type.consumable_type_id && (
-                                    <div style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--color-border)' }}>
+                                    <div style={{ backgroundColor: 'var(--color-bg-secondary)', borderBottom: '1px solid var(--color-border)' }}>
                                         <div 
                                             onClick={() => setShowModelForm(true)}
                                             style={{
@@ -412,7 +413,7 @@ const ConsumablesPage = () => {
                                                 fontSize: 'var(--font-size-xs)',
                                                 color: 'var(--color-primary)',
                                                 cursor: 'pointer',
-                                                borderBottom: '1px dashed var(--color-border-light)',
+                                                borderBottom: '1px dashed var(--color-border)',
                                                 textAlign: 'center'
                                             }}
                                         >
@@ -463,7 +464,7 @@ const ConsumablesPage = () => {
                         <div style={{ padding: 'var(--space-6)', overflowY: 'auto' }}>
                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
                                 <h2>Add New Model for {selectedConsumableType?.consumable_type_label}</h2>
-                                <button onClick={() => setShowModelForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', background: 'white', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
+                                <button onClick={() => setShowModelForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
                              </div>
                              {consumableBrands.length === 0 ? (
                                 <div style={{ color: '#c33', backgroundColor: '#fee', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)' }}>
@@ -566,7 +567,7 @@ const ConsumablesPage = () => {
 
                             <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-4)' }}>
                                 {showConsumableForm && (
-                                    <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: '#f9f9f9', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+                                    <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
                                         <div style={{ fontWeight: '600', marginBottom: 'var(--space-4)' }}>{editingConsumable ? 'Edit Consumable' : 'New Consumable'}</div>
                                         <form onSubmit={handleConsumableSubmit}>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
@@ -594,7 +595,7 @@ const ConsumablesPage = () => {
                                             </div>
                                             <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)' }}>
                                                 <button type="submit" style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Save Item</button>
-                                                <button type="button" onClick={() => setShowConsumableForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: '#fff', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
+                                                <button type="button" onClick={() => setShowConsumableForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
                                             </div>
                                         </form>
                                     </div>
@@ -628,8 +629,8 @@ const ConsumablesPage = () => {
                                                             padding: '2px 8px',
                                                             borderRadius: '12px',
                                                             fontSize: 'var(--font-size-xs)',
-                                                            backgroundColor: item.consumable_status === 'active' ? '#dcfce7' : '#f3f4f6',
-                                                            color: item.consumable_status === 'active' ? '#166534' : '#374151'
+                                                            backgroundColor: item.consumable_status === 'active' ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-bg-secondary)',
+                                                            color: item.consumable_status === 'active' ? 'var(--color-success)' : 'var(--color-text-secondary)'
                                                         }}>
                                                             {item.consumable_status}
                                                         </span>

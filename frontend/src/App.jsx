@@ -11,6 +11,8 @@ import ConsumablesPage from './pages/ConsumablesPage';
 import RoomsPage from './pages/RoomsPage';
 import PositionsPage from './pages/PositionsPage';
 import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
+import MyItemsPage from './pages/MyItemsPage';
+import ReportsPage from './pages/ReportsPage';
 import './index.css';
 
 // Protected route wrapper
@@ -65,6 +67,8 @@ function App() {
                         <Route path="maintenances" element={<MaintenancesPage />} />
                         <Route path="stock-items" element={<StockItemsPage />} />
                         <Route path="consumables" element={<ConsumablesPage />} />
+                        <Route path="my-items" element={<MyItemsPage />} />
+                        <Route path="reports" element={<ReportsPage />} />
                         <Route path="rooms" element={<RoomsPage />} />
                         <Route path="positions" element={<PositionsPage />} />
                         <Route path="organizational-structure" element={<OrganizationalStructurePage />} />

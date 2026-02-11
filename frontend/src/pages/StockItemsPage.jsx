@@ -40,7 +40,7 @@ const StockItemsPage = () => {
         stock_item_status: 'active',
         stock_item_warranty_expiry_in_months: '',
         stock_item_name_in_administrative_certificate: '',
-        destruction_certificate_id: 0,
+        destruction_certificate_id: '',
         maintenance_step_id: null
     });
     
@@ -207,7 +207,8 @@ const StockItemsPage = () => {
         try {
             const dataToSubmit = {
                 ...stockItemFormData,
-                stock_item_model: selectedStockItemModel.stock_item_model_id
+                stock_item_model: selectedStockItemModel.stock_item_model_id,
+                destruction_certificate_id: stockItemFormData.destruction_certificate_id ? Number(stockItemFormData.destruction_certificate_id) : null,
             };
             if (editingStockItem) {
                 await stockItemService.update(editingStockItem, dataToSubmit);
@@ -220,7 +221,7 @@ const StockItemsPage = () => {
                 stock_item_status: 'active',
                 stock_item_warranty_expiry_in_months: '',
                 stock_item_name_in_administrative_certificate: '',
-                destruction_certificate_id: 0,
+                destruction_certificate_id: '',
                 maintenance_step_id: null
             });
             setEditingStockItem(null);
@@ -244,7 +245,7 @@ const StockItemsPage = () => {
             stock_item_status: item.stock_item_status || 'active',
             stock_item_warranty_expiry_in_months: item.stock_item_warranty_expiry_in_months || '',
             stock_item_name_in_administrative_certificate: item.stock_item_name_in_administrative_certificate || '',
-            destruction_certificate_id: item.destruction_certificate_id || 0,
+            destruction_certificate_id: item.destruction_certificate_id ?? '',
             maintenance_step_id: item.maintenance_step_id || null
         });
         setShowStockItemForm(true);
@@ -350,7 +351,7 @@ const StockItemsPage = () => {
                     </div>
 
                     {showTypeForm && (
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: '#f9f9f9' }}>
+                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
                             <form onSubmit={handleTypeSubmit}>
                                 <input
                                     type="text"
@@ -372,7 +373,7 @@ const StockItemsPage = () => {
                                 />
                                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                     <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                    <button type="button" onClick={() => setShowTypeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'white', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                    <button type="button" onClick={() => setShowTypeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
                                 </div>
                             </form>
                         </div>
@@ -386,11 +387,11 @@ const StockItemsPage = () => {
                                     style={{
                                         padding: 'var(--space-3) var(--space-4)',
                                         cursor: 'pointer',
-                                        backgroundColor: selectedStockItemType?.stock_item_type_id === type.stock_item_type_id ? '#e0f2fe' : 'transparent',
+                                        backgroundColor: selectedStockItemType?.stock_item_type_id === type.stock_item_type_id ? 'var(--color-bg-secondary)' : 'transparent',
                                         display: 'flex',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
-                                        borderBottom: '1px solid var(--color-border-light)'
+                                        borderBottom: '1px solid var(--color-border)'
                                     }}
                                 >
                                     <span style={{ fontWeight: '500' }}>{type.stock_item_type_label}</span>
@@ -404,7 +405,7 @@ const StockItemsPage = () => {
                                 
                                 {/* Models List (Nested) */}
                                 {selectedStockItemType?.stock_item_type_id === type.stock_item_type_id && (
-                                    <div style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--color-border)' }}>
+                                    <div style={{ backgroundColor: 'var(--color-bg-secondary)', borderBottom: '1px solid var(--color-border)' }}>
                                         <div 
                                             onClick={() => setShowModelForm(true)}
                                             style={{
@@ -412,7 +413,7 @@ const StockItemsPage = () => {
                                                 fontSize: 'var(--font-size-xs)',
                                                 color: 'var(--color-primary)',
                                                 cursor: 'pointer',
-                                                borderBottom: '1px dashed var(--color-border-light)',
+                                                borderBottom: '1px dashed var(--color-border)',
                                                 textAlign: 'center'
                                             }}
                                         >
@@ -463,7 +464,7 @@ const StockItemsPage = () => {
                         <div style={{ padding: 'var(--space-6)', overflowY: 'auto' }}>
                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
                                 <h2>Add New Model for {selectedStockItemType?.stock_item_type_label}</h2>
-                                <button onClick={() => setShowModelForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', background: 'white', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
+                                <button onClick={() => setShowModelForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
                              </div>
                              {stockItemBrands.length === 0 ? (
                                 <div style={{ color: '#c33', backgroundColor: '#fee', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)' }}>
@@ -566,7 +567,7 @@ const StockItemsPage = () => {
 
                             <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-4)' }}>
                                 {showStockItemForm && (
-                                    <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: '#f9f9f9', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+                                    <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
                                         <div style={{ fontWeight: '600', marginBottom: 'var(--space-4)' }}>{editingStockItem ? 'Edit Stock Item' : 'New Stock Item'}</div>
                                         <form onSubmit={handleStockItemSubmit}>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
@@ -594,7 +595,7 @@ const StockItemsPage = () => {
                                             </div>
                                             <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)' }}>
                                                 <button type="submit" style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Save Item</button>
-                                                <button type="button" onClick={() => setShowStockItemForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: '#fff', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
+                                                <button type="button" onClick={() => setShowStockItemForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
                                             </div>
                                         </form>
                                     </div>
@@ -628,8 +629,8 @@ const StockItemsPage = () => {
                                                             padding: '2px 8px',
                                                             borderRadius: '12px',
                                                             fontSize: 'var(--font-size-xs)',
-                                                            backgroundColor: item.stock_item_status === 'active' ? '#dcfce7' : '#f3f4f6',
-                                                            color: item.stock_item_status === 'active' ? '#166534' : '#374151'
+                                                            backgroundColor: item.stock_item_status === 'active' ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-bg-secondary)',
+                                                            color: item.stock_item_status === 'active' ? 'var(--color-success)' : 'var(--color-text-secondary)'
                                                         }}>
                                                             {item.stock_item_status}
                                                         </span>

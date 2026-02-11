@@ -98,6 +98,34 @@ export const personService = {
     },
 };
 
+// User Account service (superuser-only operations)
+export const userAccountService = {
+    create: async (data) => {
+        const response = await api.post('user-accounts/', data);
+        return response.data;
+    },
+};
+
+// My Items service
+export const myItemsService = {
+    get: async () => {
+        const response = await api.get('my-items/');
+        return response.data;
+    },
+};
+
+// Problem Reports service
+export const problemReportService = {
+    getAll: async () => {
+        const response = await api.get('problem-reports/');
+        return response.data;
+    },
+    create: async (data) => {
+        const response = await api.post('problem-reports/', data);
+        return response.data;
+    },
+};
+
 // Asset Type service
 export const assetTypeService = {
     getAll: async () => {

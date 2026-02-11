@@ -333,8 +333,8 @@ class Asset(models.Model):
     """Maps to asset table"""
     asset_id = models.AutoField(primary_key=True, db_column='asset_id')
     asset_model = models.ForeignKey(AssetModel, on_delete=models.CASCADE, db_column='asset_model_id')
-    attribution_order_id = models.IntegerField(db_column='attribution_order_id')
-    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id')
+    attribution_order_id = models.IntegerField(db_column='attribution_order_id', blank=True, null=True)
+    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id', blank=True, null=True)
     asset_serial_number = models.CharField(max_length=48, db_column='asset_serial_number', blank=True, null=True)
     asset_fabrication_datetime = models.DateTimeField(db_column='asset_fabrication_datetime', blank=True, null=True)
     asset_inventory_number = models.CharField(max_length=6, db_column='asset_inventory_number', blank=True, null=True)
@@ -374,7 +374,7 @@ class StockItem(models.Model):
     stock_item_id = models.AutoField(primary_key=True, db_column='stock_item_id')
     maintenance_step_id = models.IntegerField(db_column='maintenance_step_id', blank=True, null=True)
     stock_item_model = models.ForeignKey(StockItemModel, on_delete=models.CASCADE, db_column='stock_item_model_id')
-    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id')
+    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id', blank=True, null=True)
     stock_item_fabrication_datetime = models.DateTimeField(db_column='stock_item_fabrication_datetime', blank=True, null=True)
     stock_item_name = models.CharField(max_length=48, db_column='stock_item_name', blank=True, null=True)
     stock_item_inventory_number = models.CharField(max_length=6, db_column='stock_item_inventory_number', blank=True, null=True)
@@ -395,7 +395,7 @@ class Consumable(models.Model):
     """Maps to consumable table"""
     consumable_id = models.AutoField(primary_key=True, db_column='consumable_id')
     consumable_model = models.ForeignKey(ConsumableModel, on_delete=models.CASCADE, db_column='consumable_model_id')
-    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id')
+    destruction_certificate_id = models.IntegerField(db_column='destruction_certificate_id', blank=True, null=True)
     consumable_name = models.CharField(max_length=48, db_column='consumable_name', blank=True, null=True)
     consumable_serial_number = models.CharField(max_length=48, db_column='consumable_serial_number', blank=True, null=True)
     consumable_fabrication_datetime = models.DateTimeField(db_column='consumable_fabrication_datetime', blank=True, null=True)
@@ -411,4 +411,91 @@ class Consumable(models.Model):
 
     def __str__(self):
         return self.consumable_name or f"Consumable {self.consumable_id}"
+
+
+class AssetAssignment(models.Model):
+    """Maps to asset_is_assigned_to_person table"""
+    assignment_id = models.IntegerField(primary_key=True, db_column='assignment_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id')
+    assigned_by_person_id = models.IntegerField(db_column='assigned_by_person_id')
+    start_datetime = models.DateTimeField(db_column='start_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime')
+    condition_on_assignment = models.CharField(max_length=48, db_column='condition_on_assignment')
+    is_active = models.BooleanField(db_column='is_active')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_is_assigned_to_person'
+
+
+class StockItemAssignment(models.Model):
+    """Maps to stock_item_is_assigned_to_person table"""
+    assignment_id = models.IntegerField(primary_key=True, db_column='assignment_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id')
+    assigned_by_person_id = models.IntegerField(db_column='assigned_by_person_id')
+    start_datetime = models.DateTimeField(db_column='start_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime')
+    condition_on_assignment = models.CharField(max_length=48, db_column='condition_on_assignment')
+    is_active = models.BooleanField(db_column='is_active')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_is_assigned_to_person'
+
+
+class ConsumableAssignment(models.Model):
+    """Maps to consumable_is_assigned_to_person table"""
+    assignment_id = models.IntegerField(primary_key=True, db_column='assignment_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id')
+    assigned_by_person_id = models.IntegerField(db_column='assigned_by_person_id')
+    start_datetime = models.DateTimeField(db_column='start_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime')
+    condition_on_assignment = models.CharField(max_length=48, db_column='condition_on_assignment')
+    is_active = models.BooleanField(db_column='is_active')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_is_assigned_to_person'
+
+
+class PersonReportsProblemOnAsset(models.Model):
+    """Maps to person_reports_problem_on_asset table"""
+    report_id = models.IntegerField(primary_key=True, db_column='report_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    report_datetime = models.DateTimeField(db_column='report_datetime')
+    owner_observation = models.CharField(max_length=256, db_column='owner_observation')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_asset'
+
+
+class PersonReportsProblemOnStockItem(models.Model):
+    """Maps to person_reports_problem_on_stock_item table"""
+    report_id = models.IntegerField(primary_key=True, db_column='report_id')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    report_datetime = models.DateTimeField(db_column='report_datetime')
+    owner_observation = models.CharField(max_length=256, db_column='owner_observation')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_stock_item'
+
+
+class PersonReportsProblemOnConsumable(models.Model):
+    """Maps to person_reports_problem_on_consumable table"""
+    report_id = models.IntegerField(primary_key=True, db_column='report_id')
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    report_datetime = models.DateTimeField(db_column='report_datetime')
+    owner_observation = models.CharField(max_length=256, db_column='owner_observation')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_consumable'
 
