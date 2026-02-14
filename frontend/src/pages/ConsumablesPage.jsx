@@ -1,13 +1,38 @@
-import { useEffect, useState } from 'react';
-import { consumableTypeService, consumableModelService, consumableBrandService, consumableService } from '../services/api';
+import { useEffect, useMemo, useState } from 'react';
+import {
+    consumableTypeService,
+    consumableModelService,
+    consumableBrandService,
+    consumableService,
+    consumableAttributeDefinitionService,
+    consumableTypeAttributeService
+} from '../services/api';
 
 const ConsumablesPage = () => {
     const [consumableTypes, setConsumableTypes] = useState([]);
     const [consumableBrands, setConsumableBrands] = useState([]);
     const [consumableModels, setConsumableModels] = useState([]);
     const [consumables, setConsumables] = useState([]);
+    const [consumableAttributeDefinitions, setConsumableAttributeDefinitions] = useState([]);
+    const [consumableTypeAttributes, setConsumableTypeAttributes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Attribute forms visibility
+    const [showAttributeDefinitionForm, setShowAttributeDefinitionForm] = useState(false);
+    const [showTypeAttributeForm, setShowTypeAttributeForm] = useState(false);
+
+    // Attribute form data
+    const [attributeDefinitionForm, setAttributeDefinitionForm] = useState({
+        description: '',
+        data_type: '',
+        unit: ''
+    });
+    const [typeAttributeForm, setTypeAttributeForm] = useState({
+        consumable_attribute_definition: '',
+        is_mandatory: false,
+        default_value: ''
+    });
     
     // Form visibility states
     const [showTypeForm, setShowTypeForm] = useState(false);
@@ -50,15 +75,18 @@ const ConsumablesPage = () => {
     useEffect(() => {
         fetchConsumableTypes();
         fetchConsumableBrands();
+        fetchConsumableAttributeDefinitions();
     }, []);
 
     useEffect(() => {
         if (selectedConsumableType) {
             fetchConsumableModels(selectedConsumableType.consumable_type_id);
+            fetchConsumableTypeAttributes(selectedConsumableType.consumable_type_id);
             setSelectedConsumableModel(null);
             setConsumables([]);
         } else {
             setConsumableModels([]);
+            setConsumableTypeAttributes([]);
         }
     }, [selectedConsumableType]);
 
@@ -114,9 +142,50 @@ const ConsumablesPage = () => {
         }
     };
 
+    const definitionLookup = useMemo(() => {
+        const map = new Map();
+        consumableAttributeDefinitions.forEach((def) => {
+            map.set(def.consumable_attribute_definition_id, def);
+        });
+        return map;
+    }, [consumableAttributeDefinitions]);
+
+    const fetchConsumableAttributeDefinitions = async () => {
+        try {
+            const data = await consumableAttributeDefinitionService.getAll();
+            setConsumableAttributeDefinitions(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch attribute definitions: ' + err.message);
+            setConsumableAttributeDefinitions([]);
+        }
+    };
+
+    const fetchConsumableTypeAttributes = async (consumableTypeId) => {
+        try {
+            const data = await consumableTypeAttributeService.getByConsumableType(consumableTypeId);
+            setConsumableTypeAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch type attributes: ' + err.message);
+            setConsumableTypeAttributes([]);
+        }
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAttributeDefinitionInputChange = (e) => {
+        const { name, value } = e.target;
+        setAttributeDefinitionForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleTypeAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setTypeAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleModelInputChange = (e) => {
@@ -130,6 +199,81 @@ const ConsumablesPage = () => {
     const handleConsumableInputChange = (e) => {
         const { name, value } = e.target;
         setConsumableFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAttributeDefinitionSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                description: attributeDefinitionForm.description || null,
+                data_type: attributeDefinitionForm.data_type || null,
+                unit: attributeDefinitionForm.unit || null
+            };
+            await consumableAttributeDefinitionService.create(payload);
+            setAttributeDefinitionForm({ description: '', data_type: '', unit: '' });
+            setShowAttributeDefinitionForm(false);
+            await fetchConsumableAttributeDefinitions();
+        } catch (err) {
+            setError('Failed to create attribute definition: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleTypeAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedConsumableType) {
+            setError('Please select a consumable type first');
+            return;
+        }
+        if (!typeAttributeForm.consumable_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                consumable_type: selectedConsumableType.consumable_type_id,
+                consumable_attribute_definition: Number(typeAttributeForm.consumable_attribute_definition),
+                is_mandatory: typeAttributeForm.is_mandatory,
+                default_value: typeAttributeForm.default_value || null
+            };
+            await consumableTypeAttributeService.create(payload);
+            setTypeAttributeForm({ consumable_attribute_definition: '', is_mandatory: false, default_value: '' });
+            setShowTypeAttributeForm(false);
+            await fetchConsumableTypeAttributes(selectedConsumableType.consumable_type_id);
+        } catch (err) {
+            setError('Failed to assign attribute to type: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteAttributeDefinition = async (id) => {
+        if (window.confirm('Delete this attribute definition?')) {
+            try {
+                await consumableAttributeDefinitionService.delete(id);
+                await fetchConsumableAttributeDefinitions();
+            } catch (err) {
+                setError('Failed to delete attribute definition: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteTypeAttribute = async (consumableTypeId, definitionId) => {
+        if (window.confirm('Remove this attribute from the consumable type?')) {
+            try {
+                await consumableTypeAttributeService.delete(consumableTypeId, definitionId);
+                if (selectedConsumableType) {
+                    await fetchConsumableTypeAttributes(selectedConsumableType.consumable_type_id);
+                }
+            } catch (err) {
+                setError('Failed to remove type attribute: ' + err.message);
+            }
+        }
     };
 
     const handleTypeSubmit = async (e) => {

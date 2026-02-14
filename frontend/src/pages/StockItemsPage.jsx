@@ -1331,14 +1331,20 @@ const StockItemsPage = () => {
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setSelectedStockItem(item); }}
+                                                            style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontWeight: '500' }}
+                                                        >
+                                                            Attributes
+                                                        </button>
                                                         <button 
-                                                            onClick={() => handleEditStockItem(item)}
+                                                            onClick={(e) => { e.stopPropagation(); handleEditStockItem(item); }}
                                                             style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
                                                         >
                                                             Edit
                                                         </button>
                                                         <button 
-                                                            onClick={() => handleDeleteStockItem(item.stock_item_id)}
+                                                            onClick={(e) => { e.stopPropagation(); handleDeleteStockItem(item.stock_item_id); }}
                                                             style={{ background: 'none', border: 'none', color: '#c33', cursor: 'pointer', fontWeight: '500' }}
                                                         >
                                                             Delete
@@ -1349,6 +1355,174 @@ const StockItemsPage = () => {
                                         </tbody>
                                     </table>
                                 )}
+                            </div>
+                        </>
+                    ) : selectedStockItemType ? (
+                        <>
+                            <div className="card-header" style={{
+                                padding: 'var(--space-4)',
+                                borderBottom: '1px solid var(--color-border)',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
+                            }}>
+                                <div>
+                                    <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
+                                        {selectedStockItemType.stock_item_type_label}
+                                    </h2>
+                                </div>
+                            </div>
+                            <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-4)' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                    <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                            <div style={{ fontWeight: '600' }}>Attribute Definitions</div>
+                                            <button
+                                                onClick={() => setShowAttributeDefinitionForm(!showAttributeDefinitionForm)}
+                                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                            >
+                                                + Add
+                                            </button>
+                                        </div>
+                                        {showAttributeDefinitionForm && (
+                                            <form onSubmit={handleAttributeDefinitionSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                                <input
+                                                    type="text"
+                                                    name="description"
+                                                    placeholder="Description"
+                                                    value={attributeDefinitionForm.description}
+                                                    onChange={handleAttributeDefinitionInputChange}
+                                                    required
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                />
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                                                    <select
+                                                        name="data_type"
+                                                        value={attributeDefinitionForm.data_type}
+                                                        onChange={handleAttributeDefinitionInputChange}
+                                                        style={{ padding: 'var(--space-2)' }}
+                                                    >
+                                                        <option value="">Data Type</option>
+                                                        <option value="string">String</option>
+                                                        <option value="number">Number</option>
+                                                        <option value="bool">Boolean</option>
+                                                        <option value="date">Date</option>
+                                                    </select>
+                                                    <input
+                                                        type="text"
+                                                        name="unit"
+                                                        placeholder="Unit"
+                                                        value={attributeDefinitionForm.unit}
+                                                        onChange={handleAttributeDefinitionInputChange}
+                                                        style={{ padding: 'var(--space-2)' }}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                    <button type="button" onClick={() => setShowAttributeDefinitionForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                            {stockItemAttributeDefinitions.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No attribute definitions.</div>
+                                            ) : (
+                                                stockItemAttributeDefinitions.map((def) => (
+                                                    <div key={def.stock_item_attribute_definition_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: '500' }}>{def.description || `Attribute ${def.stock_item_attribute_definition_id}`}</div>
+                                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{def.data_type || 'type'}{def.unit ? ` • ${def.unit}` : ''}</div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteAttributeDefinition(def.stock_item_attribute_definition_id)}
+                                                            style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                            <div style={{ fontWeight: '600' }}>Stock Item Type Attributes</div>
+                                            <button
+                                                onClick={() => setShowTypeAttributeForm(!showTypeAttributeForm)}
+                                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                            >
+                                                + Assign
+                                            </button>
+                                        </div>
+                                        {showTypeAttributeForm && (
+                                            <form onSubmit={handleTypeAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                                <select
+                                                    name="stock_item_attribute_definition"
+                                                    value={typeAttributeForm.stock_item_attribute_definition}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    required
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                >
+                                                    <option value="">Select attribute definition...</option>
+                                                    {stockItemAttributeDefinitions.map((def) => (
+                                                        <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
+                                                            {def.description || `Attribute ${def.stock_item_attribute_definition_id}`}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="text"
+                                                    name="default_value"
+                                                    placeholder="Default value"
+                                                    value={typeAttributeForm.default_value}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                />
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        name="is_mandatory"
+                                                        checked={typeAttributeForm.is_mandatory}
+                                                        onChange={handleTypeAttributeInputChange}
+                                                    />
+                                                    Mandatory
+                                                </label>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                    <button type="button" onClick={() => setShowTypeAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                            {stockItemTypeAttributes.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned.</div>
+                                            ) : (
+                                                stockItemTypeAttributes.map((attr) => {
+                                                    const definition = attr.definition || definitionLookup.get(attr.stock_item_attribute_definition);
+                                                    return (
+                                                        <div key={`${attr.stock_item_type}-${attr.stock_item_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                            <div>
+                                                                <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.stock_item_attribute_definition}`}</div>
+                                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                    {definition?.data_type || 'type'}{definition?.unit ? ` • ${definition.unit}` : ''}
+                                                                    {attr.is_mandatory ? ' • mandatory' : ''}
+                                                                    {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleDeleteTypeAttribute(attr.stock_item_type, attr.stock_item_attribute_definition)}
+                                                                style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                            >
+                                                                &times;
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </>
                     ) : (
