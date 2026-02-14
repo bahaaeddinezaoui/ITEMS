@@ -638,4 +638,51 @@ export const maintenanceService = {
     },
 };
 
+// Maintenance Step service
+export const maintenanceStepService = {
+    getAll: async (params) => {
+        const response = await api.get('maintenance-steps/', { params });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`maintenance-steps/${id}/`);
+        return response.data;
+    },
+
+    create: async (stepData) => {
+        const response = await api.post('maintenance-steps/', stepData);
+        return response.data;
+    },
+
+    update: async (id, stepData) => {
+        const response = await api.put(`maintenance-steps/${id}/`, stepData);
+        return response.data;
+    },
+
+    patch: async (id, stepData) => {
+        const response = await api.patch(`maintenance-steps/${id}/`, stepData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`maintenance-steps/${id}/`);
+    },
+};
+
+// Maintenance Typical Step service
+export const maintenanceTypicalStepService = {
+    getAll: async () => {
+        const response = await api.get('maintenance-typical-steps/'); // Assuming this endpoint exists or will exist. If not, I might need to create it or fetching typical steps might be different.
+        // Wait, I didn't check if TypicalStep has a viewset. 
+        // Let's check backend/api/urls.py again mentally. 
+        // It wasn't in the list I saw earlier. 
+        // I should probably check if I need to create it or if I can just use raw data/hardcode for now or if I missed it.
+        // Re-reading urls.py content from earlier log... 
+        // It was NOT in urls.py. 
+        // I'll add the service but might need to implement the backend endpoint if it's missing.
+        return response.data;
+    },
+};
+
 export default api;

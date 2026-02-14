@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -284,3 +284,33 @@ class PersonReportsProblemOnConsumableSerializer(serializers.ModelSerializer):
         fields = ['report_id', 'consumable', 'person', 'report_datetime', 'owner_observation']
         read_only_fields = ['report_id', 'report_datetime']
 
+
+class MaintenanceTypicalStepSerializer(serializers.ModelSerializer):
+    """Serializer for MaintenanceTypicalStep model"""
+    class Meta:
+        model = MaintenanceTypicalStep
+        fields = ['maintenance_typical_step_id', 'estimated_cost', 'actual_cost', 'description', 'maintenance_type']
+        read_only_fields = ['maintenance_typical_step_id']
+
+
+class MaintenanceStepSerializer(serializers.ModelSerializer):
+    """Serializer for MaintenanceStep model"""
+    # Nested fields for read-only details
+    person_id = serializers.PrimaryKeyRelatedField(
+        queryset=Person.objects.all(), source='person', write_only=True
+    )
+    person = PersonSerializer(read_only=True)
+    maintenance_typical_step_id = serializers.PrimaryKeyRelatedField(
+        queryset=MaintenanceTypicalStep.objects.all(), source='maintenance_typical_step', write_only=True
+    )
+    maintenance_typical_step = MaintenanceTypicalStepSerializer(read_only=True)
+    
+    class Meta:
+        model = MaintenanceStep
+        fields = [
+            'maintenance_step_id', 'maintenance', 'maintenance_typical_step', 'maintenance_typical_step_id',
+            'person', 'person_id',
+            'asset_condition_history', 'stock_item_condition_history', 'consumable_condition_history',
+            'start_datetime', 'end_datetime', 'is_successful'
+        ]
+        read_only_fields = ['maintenance_step_id']

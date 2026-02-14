@@ -9,7 +9,7 @@ import hashlib
 import os
 
 from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, Maintenance, MaintenanceStep, MaintenanceTypicalStep
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer, MaintenanceTypicalStepSerializer, MaintenanceStepSerializer
 
 
 def hash_password(password):
@@ -1161,7 +1161,12 @@ class PositionViewSet(viewsets.ModelViewSet):
         return Position.objects.all().order_by('position_id')
 
     def _get_user_account(self, request):
-        """Extract user account from JWT token"""
+        """Extract user account from JWT token or request.user"""
+        # For tests using force_authenticate, request.user is set directly
+        if hasattr(request, 'user') and request.user and request.user.is_authenticated:
+             if isinstance(request.user, UserAccount):
+                 return request.user
+
         try:
             if hasattr(request, 'auth') and request.auth is not None:
                 user_id = request.auth.get('user_id')
@@ -1227,7 +1232,12 @@ class OrganizationalStructureViewSet(viewsets.ModelViewSet):
         return OrganizationalStructure.objects.all().order_by('organizational_structure_id')
 
     def _get_user_account(self, request):
-        """Extract user account from JWT token"""
+        """Extract user account from JWT token or request.user"""
+        # For tests using force_authenticate, request.user is set directly
+        if hasattr(request, 'user') and request.user and request.user.is_authenticated:
+             if isinstance(request.user, UserAccount):
+                 return request.user
+
         try:
             if hasattr(request, 'auth') and request.auth is not None:
                 user_id = request.auth.get('user_id')
@@ -1296,7 +1306,12 @@ class PositionViewSet(viewsets.ModelViewSet):
         return Position.objects.all().order_by('position_id')
 
     def _get_user_account(self, request):
-        """Extract user account from JWT token"""
+        """Extract user account from JWT token or request.user"""
+        # For tests using force_authenticate, request.user is set directly
+        if hasattr(request, 'user') and request.user and request.user.is_authenticated:
+             if isinstance(request.user, UserAccount):
+                 return request.user
+
         try:
             if hasattr(request, 'auth') and request.auth is not None:
                 user_id = request.auth.get('user_id')
@@ -1369,7 +1384,12 @@ class OrganizationalStructureRelationViewSet(viewsets.ModelViewSet):
         return OrganizationalStructureRelation.objects.all()
 
     def _get_user_account(self, request):
-        """Extract user account from JWT token"""
+        """Extract user account from JWT token or request.user"""
+        # For tests using force_authenticate, request.user is set directly
+        if hasattr(request, 'user') and request.user and request.user.is_authenticated:
+             if isinstance(request.user, UserAccount):
+                 return request.user
+
         try:
             if hasattr(request, 'auth') and request.auth is not None:
                 user_id = request.auth.get('user_id')
@@ -1448,7 +1468,12 @@ class MaintenanceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def _get_user_account(self, request):
-        """Extract user account from JWT token"""
+        """Extract user account from JWT token or request.user"""
+        # For tests using force_authenticate, request.user is set directly
+        if hasattr(request, 'user') and request.user and request.user.is_authenticated:
+             if isinstance(request.user, UserAccount):
+                 return request.user
+
         try:
             if hasattr(request, 'auth') and request.auth is not None:
                 user_id = request.auth.get('user_id')
@@ -2120,3 +2145,130 @@ class CreateMaintenanceView(APIView):
                 {'error': f'Error creating maintenance: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class MaintenanceStepViewSet(viewsets.ModelViewSet):
+    """CRUD operations for MaintenanceStep model with strict permissions"""
+    serializer_class = MaintenanceStepSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token or request.user"""
+        # For tests using force_authenticate, request.user is set directly
+        if hasattr(request, 'user') and request.user and request.user.is_authenticated:
+             if isinstance(request.user, UserAccount):
+                 return request.user
+
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        return None
+
+    def get_queryset(self):
+        """Filter maintenance steps based on user role"""
+        user_account = self._get_user_account(self.request)
+        if not user_account:
+            return MaintenanceStep.objects.none()
+
+        person = user_account.person
+        is_chief = user_account.is_superuser() or PersonRoleMapping.objects.filter(
+            person=person,
+            role__role_code__in=['maintenance_chief', 'exploitation_chief']
+        ).exists()
+
+        if is_chief:
+            # Chiefs see all steps
+            return MaintenanceStep.objects.all().order_by('maintenance_step_id')
+        else:
+            # Technicians see steps assigned to them OR steps of maintenances assigned to them
+            return MaintenanceStep.objects.filter(
+                models.Q(person=person) | 
+                models.Q(maintenance__performed_by_person=person)
+            ).distinct().order_by('maintenance_step_id')
+
+    def create(self, request, *args, **kwargs):
+        """Create a new maintenance step"""
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        # Check permissions for assigning person
+        # Logic: Only Maintenance Chief and Main Technician (of the maintenance) can assign people
+        
+        maintenance_id = request.data.get('maintenance')
+        try:
+            maintenance = Maintenance.objects.get(maintenance_id=maintenance_id)
+        except Maintenance.DoesNotExist:
+             return Response({'error': 'Maintenance not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        is_chief = user_account.is_superuser() or PersonRoleMapping.objects.filter(
+            person=user_account.person,
+            role__role_code__in=['maintenance_chief', 'exploitation_chief']
+        ).exists()
+        
+        is_main_technician = maintenance.performed_by_person == user_account.person
+        
+        # Validate person assignment
+        target_person_id = request.data.get('person_id') or request.data.get('person')
+        if target_person_id:
+            if not (is_chief or is_main_technician):
+                 return Response(
+                    {'error': 'Only Maintenance Chief or Main Maintenance Technician can assign technicians to steps.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        # Generate new ID
+        max_id = MaintenanceStep.objects.aggregate(models.Max('maintenance_step_id'))['maintenance_step_id__max']
+        next_id = (max_id or 0) + 1
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(maintenance_step_id=next_id)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        """Update maintenance step"""
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        step = self.get_object()
+        maintenance = step.maintenance
+        
+        is_chief = user_account.is_superuser() or PersonRoleMapping.objects.filter(
+            person=user_account.person,
+            role__role_code__in=['maintenance_chief', 'exploitation_chief']
+        ).exists()
+        
+        is_main_technician = maintenance.performed_by_person == user_account.person
+        is_assigned_technician = step.person == user_account.person
+
+        # Check if attempting to change person
+        new_person_id = request.data.get('person_id') or request.data.get('person')
+        
+        if new_person_id and str(new_person_id) != str(step.person_id):
+            # Changing assignment
+            if not (is_chief or is_main_technician):
+                 return Response(
+                    {'error': 'Only Maintenance Chief or Main Maintenance Technician can reassign steps.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        # Check general update permissions
+        if not (is_chief or is_main_technician or is_assigned_technician):
+             return Response(
+                {'error': 'You do not have permission to update this step.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+class MaintenanceTypicalStepViewSet(viewsets.ReadOnlyModelViewSet):
+    """ReadOnly ViewSet for MaintenanceTypicalStep"""
+    queryset = MaintenanceTypicalStep.objects.all()
+    serializer_class = MaintenanceTypicalStepSerializer
+    permission_classes = [IsAuthenticated]

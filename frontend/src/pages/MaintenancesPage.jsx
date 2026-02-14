@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import { maintenanceService, personService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import MaintenanceSteps from '../components/MaintenanceSteps';
 
 const MaintenancesPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -12,6 +13,10 @@ const MaintenancesPage = () => {
     const [selectedMaintenance, setSelectedMaintenance] = useState(null);
     const [selectedTechnician, setSelectedTechnician] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    // Steps Modal State
+    // Steps Expansion State
+    const [expandedMaintenanceId, setExpandedMaintenanceId] = useState(null);
 
     const isChief = useMemo(() => {
         if (isSuperuser) return true;
@@ -56,6 +61,10 @@ const MaintenancesPage = () => {
         setSelectedMaintenance(maintenance);
         setSelectedTechnician(maintenance.performed_by_person || '');
         setShowAssignModal(true);
+    };
+
+    const toggleSteps = (maintenanceId) => {
+        setExpandedMaintenanceId(current => current === maintenanceId ? null : maintenanceId);
     };
 
     const handleAssignSubmit = async (e) => {
@@ -132,42 +141,64 @@ const MaintenancesPage = () => {
                             </thead>
                             <tbody>
                                 {maintenances.map((maintenance) => (
-                                    <tr key={maintenance.maintenance_id}>
-                                        <td>{maintenance.maintenance_id}</td>
-                                        <td>
-                                            {maintenance.asset_name || 
-                                             maintenance.stock_item_name || 
-                                             maintenance.consumable_name || 
-                                             (maintenance.asset ? `Asset ${maintenance.asset}` : 
-                                              maintenance.stock_item ? `Stock Item ${maintenance.stock_item}` : 
-                                              maintenance.consumable ? `Consumable ${maintenance.consumable}` : 
-                                              'Unknown')}
-                                        </td>
-                                        <td>{maintenance.description}</td>
-                                        <td>{formatDate(maintenance.start_datetime)}</td>
-                                        <td>
-                                            {maintenance.performed_by_person_name ? (
-                                                <span className="badge badge-info">{maintenance.performed_by_person_name}</span>
-                                            ) : (
-                                                <span className="badge badge-warning">Unassigned</span>
-                                            )}
-                                        </td>
-                                        <td>
-                                            {maintenance.performed_by_person && isChief && (
-                                                <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                                                    Assigned
-                                                </span>
-                                            )}
-                                            {!maintenance.performed_by_person && isChief && (
-                                                <button 
-                                                    className="btn btn-sm btn-secondary"
-                                                    onClick={() => handleAssignClick(maintenance)}
-                                                >
-                                                    Assign
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
+                                    <Fragment key={maintenance.maintenance_id}>
+                                        <tr>
+                                            <td>{maintenance.maintenance_id}</td>
+                                            <td>
+                                                {maintenance.asset_name ||
+                                                    maintenance.stock_item_name ||
+                                                    maintenance.consumable_name ||
+                                                    (maintenance.asset ? `Asset ${maintenance.asset}` :
+                                                        maintenance.stock_item ? `Stock Item ${maintenance.stock_item}` :
+                                                            maintenance.consumable ? `Consumable ${maintenance.consumable}` :
+                                                                'Unknown')}
+                                            </td>
+                                            <td>{maintenance.description}</td>
+                                            <td>{formatDate(maintenance.start_datetime)}</td>
+                                            <td>
+                                                {maintenance.performed_by_person_name ? (
+                                                    <span className="badge badge-info">{maintenance.performed_by_person_name}</span>
+                                                ) : (
+                                                    <span className="badge badge-warning">Unassigned</span>
+                                                )}
+                                            </td>
+                                            <td>
+                                                <div className="d-flex align-items-center">
+                                                    {maintenance.performed_by_person && isChief && (
+                                                        <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginRight: '0.5rem' }}>
+                                                            Assigned
+                                                        </span>
+                                                    )}
+                                                    {!maintenance.performed_by_person && isChief && (
+                                                        <button
+                                                            className="btn btn-sm btn-secondary"
+                                                            onClick={() => handleAssignClick(maintenance)}
+                                                        >
+                                                            Assign
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        className="btn btn-sm btn-info ml-2"
+                                                        onClick={() => toggleSteps(maintenance.maintenance_id)}
+                                                        style={{ marginLeft: '0.5rem' }}
+                                                    >
+                                                        {expandedMaintenanceId === maintenance.maintenance_id ? 'Hide Steps' : 'Steps'}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {expandedMaintenanceId === maintenance.maintenance_id && (
+                                            <tr>
+                                                <td colSpan="6" style={{ padding: 0 }}>
+                                                    <MaintenanceSteps
+                                                        maintenanceId={maintenance.maintenance_id}
+                                                        maintenancePerformedBy={maintenance.performed_by_person}
+                                                        isChief={isChief}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </Fragment>
                                 ))}
                             </tbody>
                         </table>
@@ -194,7 +225,7 @@ const MaintenancesPage = () => {
                                 <div className="form-group">
                                     <label className="form-label">Maintenance Task</label>
                                     <div className="form-input" style={{ backgroundColor: '#f5f5f5' }}>
-                                        {selectedMaintenance?.description || 'No description'} 
+                                        {selectedMaintenance?.description || 'No description'}
                                         ({selectedMaintenance?.asset_name})
                                     </div>
                                 </div>
@@ -229,6 +260,7 @@ const MaintenancesPage = () => {
                     </div>
                 </div>
             )}
+
         </>
     );
 };

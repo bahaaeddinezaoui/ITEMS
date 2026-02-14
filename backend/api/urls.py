@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, MaintenanceViewSet, MyItemsView, ProblemReportView, CreateMaintenanceView
+from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, MyItemsView, ProblemReportView, CreateMaintenanceView
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
@@ -19,6 +19,8 @@ router.register(r'positions', PositionViewSet, basename='position')
 router.register(r'organizational-structures', OrganizationalStructureViewSet, basename='organizationalstructure')
 router.register(r'organizational-structure-relations', OrganizationalStructureRelationViewSet, basename='organizationalstructurerelation')
 router.register(r'maintenances', MaintenanceViewSet, basename='maintenance')
+router.register(r'maintenance-steps', MaintenanceStepViewSet, basename='maintenancestep')
+router.register(r'maintenance-typical-steps', MaintenanceTypicalStepViewSet, basename='maintenancetypicalstep')
 
 urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
