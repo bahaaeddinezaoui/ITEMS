@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.db import models
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -7,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, Maintenance
 from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer
 
 
@@ -96,11 +97,21 @@ class PersonViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny] # Temporarily disable for debugging
 
     def get_queryset(self):
-        """Optionally filter by is_approved status"""
+        """Optionally filter by is_approved status or role"""
         queryset = Person.objects.all().order_by('person_id')
+        
+        # Filter by is_approved status
         is_approved = self.request.query_params.get('is_approved', None)
         if is_approved is not None:
             queryset = queryset.filter(is_approved=is_approved.lower() == 'true')
+        
+        # Filter by role
+        role = self.request.query_params.get('role', None)
+        if role is not None:
+            queryset = queryset.filter(
+                personrolemapping__role__role_code=role
+            ).distinct()
+        
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -1431,6 +1442,140 @@ class OrganizationalStructureRelationViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
+class MaintenanceViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Maintenance model"""
+    queryset = Maintenance.objects.all().order_by('-maintenance_id')
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        return None
+
+    def get_queryset(self):
+        """Filter maintenance records based on user role"""
+        user_account = self._get_user_account(self.request)
+        
+        if not user_account:
+            return Maintenance.objects.none()
+
+        person = user_account.person
+        is_chief = user_account.is_superuser() or PersonRoleMapping.objects.filter(
+            person=person,
+            role__role_code__in=['maintenance_chief', 'exploitation_chief']
+        ).exists()
+
+        if is_chief:
+            # Chiefs see all maintenance records
+            return Maintenance.objects.all().select_related('asset', 'performed_by_person', 'approved_by_maintenance_chief').order_by('-maintenance_id')
+        else:
+            # Technicians see only their own maintenance tasks
+            return Maintenance.objects.filter(performed_by_person=person).select_related('asset', 'performed_by_person', 'approved_by_maintenance_chief').order_by('-maintenance_id')
+
+    def list(self, request, *args, **kwargs):
+        """Override list to return custom format"""
+        queryset = self.get_queryset()
+        
+        maintenances = []
+        for maintenance in queryset:
+            maintenances.append({
+                'maintenance_id': maintenance.maintenance_id,
+                'asset_id': maintenance.asset.asset_id,
+                'asset_name': maintenance.asset.asset_name or f'Asset {maintenance.asset.asset_id}',
+                'performed_by_person': maintenance.performed_by_person.person_id,
+                'performed_by_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
+                'approved_by_maintenance_chief': maintenance.approved_by_maintenance_chief.person_id,
+                'is_approved_by_maintenance_chief': maintenance.is_approved_by_maintenance_chief,
+                'start_datetime': maintenance.start_datetime,
+                'end_datetime': maintenance.end_datetime,
+                'description': maintenance.description,
+                'is_successful': maintenance.is_successful,
+            })
+
+        return Response(maintenances)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Get a single maintenance record"""
+        maintenance = self.get_object()
+        
+        return Response({
+            'maintenance_id': maintenance.maintenance_id,
+            'asset_id': maintenance.asset.asset_id,
+            'asset_name': maintenance.asset.asset_name or f'Asset {maintenance.asset.asset_id}',
+            'performed_by_person': maintenance.performed_by_person.person_id,
+            'performed_by_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
+            'approved_by_maintenance_chief': maintenance.approved_by_maintenance_chief.person_id,
+            'is_approved_by_maintenance_chief': maintenance.is_approved_by_maintenance_chief,
+            'start_datetime': maintenance.start_datetime,
+            'end_datetime': maintenance.end_datetime,
+            'description': maintenance.description,
+            'is_successful': maintenance.is_successful,
+        })
+
+    def update(self, request, *args, **kwargs):
+        """Update maintenance record"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account:
+            return Response(
+                {'error': 'Could not identify user'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        maintenance = self.get_object()
+        person = user_account.person
+        
+        # Only chiefs can update maintenance, or the assigned technician can update their own
+        is_chief = user_account.is_superuser() or PersonRoleMapping.objects.filter(
+            person=person,
+            role__role_code__in=['maintenance_chief', 'exploitation_chief']
+        ).exists()
+        
+        is_assigned_technician = maintenance.performed_by_person == person
+
+        if not (is_chief or is_assigned_technician):
+            return Response(
+                {'error': 'You do not have permission to update this maintenance record'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Update allowed fields
+        if 'performed_by_person' in request.data and is_chief:
+            maintenance.performed_by_person_id = request.data['performed_by_person']
+        if 'is_approved_by_maintenance_chief' in request.data and is_chief:
+            maintenance.is_approved_by_maintenance_chief = request.data['is_approved_by_maintenance_chief']
+        if 'start_datetime' in request.data:
+            maintenance.start_datetime = request.data['start_datetime']
+        if 'end_datetime' in request.data:
+            maintenance.end_datetime = request.data['end_datetime']
+        if 'description' in request.data:
+            maintenance.description = request.data['description']
+        if 'is_successful' in request.data:
+            maintenance.is_successful = request.data['is_successful']
+
+        maintenance.save()
+
+        return Response({
+            'maintenance_id': maintenance.maintenance_id,
+            'asset_id': maintenance.asset.asset_id,
+            'asset_name': maintenance.asset.asset_name or f'Asset {maintenance.asset.asset_id}',
+            'performed_by_person': maintenance.performed_by_person.person_id,
+            'performed_by_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
+            'approved_by_maintenance_chief': maintenance.approved_by_maintenance_chief.person_id,
+            'is_approved_by_maintenance_chief': maintenance.is_approved_by_maintenance_chief,
+            'start_datetime': maintenance.start_datetime,
+            'end_datetime': maintenance.end_datetime,
+            'description': maintenance.description,
+            'is_successful': maintenance.is_successful,
+        })
+
+
 class MyItemsView(APIView):
     """View to get all items assigned to the current user"""
     permission_classes = [IsAuthenticated]
@@ -1594,3 +1739,327 @@ class MyItemsView(APIView):
                 'history': consumable_history_data,
             }
         })
+
+
+class ProblemReportView(APIView):
+    """View to handle problem reports for items (assets, stock items, consumables)"""
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            # Try to get user_id from token claims
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        # Fallback: try to get from username if available
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def get(self, request):
+        """Get problem reports - all reports for maintenance chiefs/superusers, personal reports for others"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account:
+            return Response(
+                {'error': 'Could not identify user'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        person = user_account.person
+        is_chief = user_account.is_superuser() or PersonRoleMapping.objects.filter(
+            person=person,
+            role__role_code__in=['maintenance_chief', 'exploitation_chief']
+        ).exists()
+
+        # Collect all reports
+        all_reports = []
+
+        if is_chief:
+            # Maintenance chief sees all reports
+            asset_reports = PersonReportsProblemOnAsset.objects.all().select_related('asset', 'person')
+            for report in asset_reports:
+                all_reports.append({
+                    'report_id': report.report_id,
+                    'item_type': 'asset',
+                    'item_id': report.asset.asset_id,
+                    'person_id': report.person.person_id,
+                    'person_name': f"{report.person.first_name} {report.person.last_name}",
+                    'report_datetime': report.report_datetime,
+                    'owner_observation': report.owner_observation,
+                })
+
+            stock_item_reports = PersonReportsProblemOnStockItem.objects.all().select_related('stock_item', 'person')
+            for report in stock_item_reports:
+                all_reports.append({
+                    'report_id': report.report_id,
+                    'item_type': 'stock_item',
+                    'item_id': report.stock_item.stock_item_id,
+                    'person_id': report.person.person_id,
+                    'person_name': f"{report.person.first_name} {report.person.last_name}",
+                    'report_datetime': report.report_datetime,
+                    'owner_observation': report.owner_observation,
+                })
+
+            consumable_reports = PersonReportsProblemOnConsumable.objects.all().select_related('consumable', 'person')
+            for report in consumable_reports:
+                all_reports.append({
+                    'report_id': report.report_id,
+                    'item_type': 'consumable',
+                    'item_id': report.consumable.consumable_id,
+                    'person_id': report.person.person_id,
+                    'person_name': f"{report.person.first_name} {report.person.last_name}",
+                    'report_datetime': report.report_datetime,
+                    'owner_observation': report.owner_observation,
+                })
+        else:
+            # Regular users see only their own reports
+            asset_reports = PersonReportsProblemOnAsset.objects.filter(person=person).select_related('asset')
+            for report in asset_reports:
+                all_reports.append({
+                    'report_id': report.report_id,
+                    'item_type': 'asset',
+                    'item_id': report.asset.asset_id,
+                    'person_id': report.person.person_id,
+                    'person_name': f"{person.first_name} {person.last_name}",
+                    'report_datetime': report.report_datetime,
+                    'owner_observation': report.owner_observation,
+                })
+
+            stock_item_reports = PersonReportsProblemOnStockItem.objects.filter(person=person).select_related('stock_item')
+            for report in stock_item_reports:
+                all_reports.append({
+                    'report_id': report.report_id,
+                    'item_type': 'stock_item',
+                    'item_id': report.stock_item.stock_item_id,
+                    'person_id': report.person.person_id,
+                    'person_name': f"{person.first_name} {person.last_name}",
+                    'report_datetime': report.report_datetime,
+                    'owner_observation': report.owner_observation,
+                })
+
+            consumable_reports = PersonReportsProblemOnConsumable.objects.filter(person=person).select_related('consumable')
+            for report in consumable_reports:
+                all_reports.append({
+                    'report_id': report.report_id,
+                    'item_type': 'consumable',
+                    'item_id': report.consumable.consumable_id,
+                    'person_id': report.person.person_id,
+                    'person_name': f"{person.first_name} {person.last_name}",
+                    'report_datetime': report.report_datetime,
+                    'owner_observation': report.owner_observation,
+                })
+
+        # Sort by report_datetime descending (newest first)
+        all_reports.sort(key=lambda x: x['report_datetime'], reverse=True)
+
+        return Response(all_reports)
+
+    def post(self, request):
+        """Create a new problem report"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account:
+            return Response(
+                {'error': 'Could not identify user'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        person = user_account.person
+        item_type = request.data.get('item_type')
+        item_id = request.data.get('item_id')
+        owner_observation = request.data.get('owner_observation', '')
+
+        if not item_type or not item_id:
+            return Response(
+                {'error': 'item_type and item_id are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Helper function to get next report_id
+            def get_next_report_id(model_class):
+                max_id = model_class.objects.aggregate(models.Max('report_id'))['report_id__max']
+                return (max_id or 0) + 1
+            
+            if item_type == 'asset':
+                asset = Asset.objects.get(asset_id=item_id)
+                next_id = get_next_report_id(PersonReportsProblemOnAsset)
+                report = PersonReportsProblemOnAsset.objects.create(
+                    report_id=next_id,
+                    asset=asset,
+                    person=person,
+                    report_datetime=timezone.now(),
+                    owner_observation=owner_observation
+                )
+                return Response(
+                    {'report_id': report.report_id, 'message': 'Asset problem report created successfully'},
+                    status=status.HTTP_201_CREATED
+                )
+            
+            elif item_type == 'stock_item':
+                stock_item = StockItem.objects.get(stock_item_id=item_id)
+                next_id = get_next_report_id(PersonReportsProblemOnStockItem)
+                report = PersonReportsProblemOnStockItem.objects.create(
+                    report_id=next_id,
+                    stock_item=stock_item,
+                    person=person,
+                    report_datetime=timezone.now(),
+                    owner_observation=owner_observation
+                )
+                return Response(
+                    {'report_id': report.report_id, 'message': 'Stock item problem report created successfully'},
+                    status=status.HTTP_201_CREATED
+                )
+            
+            elif item_type == 'consumable':
+                consumable = Consumable.objects.get(consumable_id=item_id)
+                next_id = get_next_report_id(PersonReportsProblemOnConsumable)
+                report = PersonReportsProblemOnConsumable.objects.create(
+                    report_id=next_id,
+                    consumable=consumable,
+                    person=person,
+                    report_datetime=timezone.now(),
+                    owner_observation=owner_observation
+                )
+                return Response(
+                    {'report_id': report.report_id, 'message': 'Consumable problem report created successfully'},
+                    status=status.HTTP_201_CREATED
+                )
+            
+            else:
+                return Response(
+                    {'error': f'Invalid item_type: {item_type}. Must be asset, stock_item, or consumable.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        except (Asset.DoesNotExist, StockItem.DoesNotExist, Consumable.DoesNotExist):
+            return Response(
+                {'error': f'{item_type} with id {item_id} not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error creating problem report: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class CreateMaintenanceView(APIView):
+    """View to create maintenance from a problem report"""
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def post(self, request):
+        """Create a maintenance request from a problem report"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account:
+            return Response(
+                {'error': 'Could not identify user'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Check if user is a maintenance chief
+        is_chief = user_account.is_superuser() or PersonRoleMapping.objects.filter(
+            person=user_account.person,
+            role__role_code__in=['maintenance_chief', 'exploitation_chief']
+        ).exists()
+
+        if not is_chief:
+            return Response(
+                {'error': 'Only maintenance chiefs can create maintenance requests'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        item_type = request.data.get('item_type')
+        report_id = request.data.get('report_id')
+        technician_person_id = request.data.get('technician_person_id')
+        description = request.data.get('description', '')
+
+        if not item_type or not report_id or not technician_person_id:
+            return Response(
+                {'error': 'item_type, report_id, and technician_person_id are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Currently only assets can have maintenance in the database schema
+            if item_type == 'asset':
+                report = PersonReportsProblemOnAsset.objects.get(report_id=report_id)
+                asset = report.asset
+                technician = Person.objects.get(person_id=technician_person_id)
+                
+                # Get next maintenance_id
+                max_id = Maintenance.objects.aggregate(models.Max('maintenance_id'))['maintenance_id__max']
+                next_id = (max_id or 0) + 1
+                
+                # Create maintenance record
+                maintenance = Maintenance.objects.create(
+                    maintenance_id=next_id,
+                    asset=asset,
+                    performed_by_person=technician,
+                    approved_by_maintenance_chief=user_account.person,
+                    is_approved_by_maintenance_chief=False,
+                    start_datetime=timezone.now(),
+                    end_datetime=timezone.now(),
+                    description=description,
+                    is_successful=None
+                )
+                
+                return Response(
+                    {'maintenance_id': maintenance.maintenance_id, 'message': 'Maintenance request created successfully'},
+                    status=status.HTTP_201_CREATED
+                )
+            
+            else:
+                return Response(
+                    {'error': f'Maintenance can only be created for assets, not {item_type}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        except PersonReportsProblemOnAsset.DoesNotExist:
+            return Response(
+                {'error': f'Asset problem report with id {report_id} not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Person.DoesNotExist:
+            return Response(
+                {'error': f'Technician with id {technician_person_id} not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error creating maintenance: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

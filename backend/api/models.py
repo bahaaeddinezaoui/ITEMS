@@ -435,3 +435,72 @@ class ConsumableIsAssignedToPerson(models.Model):
 
     def __str__(self):
         return f'Consumable {self.consumable_id} assigned to {self.person}'
+
+
+class PersonReportsProblemOnAsset(models.Model):
+    """Maps to person_reports_problem_on_asset table"""
+    report_id = models.IntegerField(primary_key=True, db_column='report_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    report_datetime = models.DateTimeField(db_column='report_datetime')
+    owner_observation = models.CharField(max_length=256, db_column='owner_observation')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_asset'
+
+    def __str__(self):
+        return f'Problem report on asset {self.asset_id} by {self.person}'
+
+
+class PersonReportsProblemOnStockItem(models.Model):
+    """Maps to person_reports_problem_on_stock_item table"""
+    report_id = models.IntegerField(primary_key=True, db_column='report_id')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    report_datetime = models.DateTimeField(db_column='report_datetime')
+    owner_observation = models.CharField(max_length=256, db_column='owner_observation')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_stock_item'
+
+    def __str__(self):
+        return f'Problem report on stock item {self.stock_item_id} by {self.person}'
+
+
+class PersonReportsProblemOnConsumable(models.Model):
+    """Maps to person_reports_problem_on_consumable table"""
+    report_id = models.IntegerField(primary_key=True, db_column='report_id')
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    report_datetime = models.DateTimeField(db_column='report_datetime')
+    owner_observation = models.CharField(max_length=256, db_column='owner_observation')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_consumable'
+
+    def __str__(self):
+        return f'Problem report on consumable {self.consumable_id} by {self.person}'
+
+
+class Maintenance(models.Model):
+    """Maps to maintenance table"""
+    maintenance_id = models.IntegerField(primary_key=True, db_column='maintenance_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id')
+    performed_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='performed_by_person_id', related_name='maintenance_performed')
+    approved_by_maintenance_chief = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='approved_by_maintenance_chief_id', related_name='maintenance_approved')
+    is_approved_by_maintenance_chief = models.BooleanField(blank=True, null=True, db_column='is_approved_by_maintenance_chief')
+    start_datetime = models.DateTimeField(db_column='start_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime')
+    description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+    is_successful = models.BooleanField(blank=True, null=True, db_column='is_successful')
+    digital_copy = models.BinaryField(blank=True, null=True, db_column='digital_copy')
+
+    class Meta:
+        managed = False
+        db_table = 'maintenance'
+
+    def __str__(self):
+        return f'Maintenance {self.maintenance_id} on asset {self.asset_id}'

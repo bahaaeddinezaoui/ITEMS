@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -259,4 +259,28 @@ class ConsumableIsAssignedToPersonSerializer(serializers.ModelSerializer):
         model = ConsumableIsAssignedToPerson
         fields = ['assignment_id', 'person', 'consumable', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active']
         read_only_fields = ['assignment_id']
+
+
+class PersonReportsProblemOnAssetSerializer(serializers.ModelSerializer):
+    """Serializer for PersonReportsProblemOnAsset model"""
+    class Meta:
+        model = PersonReportsProblemOnAsset
+        fields = ['report_id', 'asset', 'person', 'report_datetime', 'owner_observation']
+        read_only_fields = ['report_id', 'report_datetime']
+
+
+class PersonReportsProblemOnStockItemSerializer(serializers.ModelSerializer):
+    """Serializer for PersonReportsProblemOnStockItem model"""
+    class Meta:
+        model = PersonReportsProblemOnStockItem
+        fields = ['report_id', 'stock_item', 'person', 'report_datetime', 'owner_observation']
+        read_only_fields = ['report_id', 'report_datetime']
+
+
+class PersonReportsProblemOnConsumableSerializer(serializers.ModelSerializer):
+    """Serializer for PersonReportsProblemOnConsumable model"""
+    class Meta:
+        model = PersonReportsProblemOnConsumable
+        fields = ['report_id', 'consumable', 'person', 'report_datetime', 'owner_observation']
+        read_only_fields = ['report_id', 'report_datetime']
 

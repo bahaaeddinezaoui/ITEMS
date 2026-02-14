@@ -5164,3 +5164,1021 @@ Response Body: <!DOCTYPE html>
 [2026-02-14 15:58:43.245467] END   GET /api/my-items/ -> 200
 [2026-02-14 15:58:43.249159] START GET /api/my-items/
 [2026-02-14 15:58:43.291196] END   GET /api/my-items/ -> 200
+[2026-02-14 16:00:00.279149] START POST /api/problem-reports/
+[2026-02-14 16:00:00.306255] END   POST /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 16:00:51.951779] START GET /api/my-items/
+[2026-02-14 16:00:52.008016] END   GET /api/my-items/ -> 200
+[2026-02-14 16:00:52.011775] START GET /api/my-items/
+[2026-02-14 16:00:52.048184] END   GET /api/my-items/ -> 200
+[2026-02-14 16:00:55.555657] START POST /api/problem-reports/
+[2026-02-14 16:00:55.570958] END   POST /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 16:02:05.153985] START GET /api/my-items/
+[2026-02-14 16:02:05.207016] END   GET /api/my-items/ -> 200
+[2026-02-14 16:02:05.211234] START GET /api/my-items/
+[2026-02-14 16:02:05.367967] END   GET /api/my-items/ -> 200
+[2026-02-14 16:02:06.237035] START GET /api/my-items/
+[2026-02-14 16:02:06.396108] END   GET /api/my-items/ -> 200
+[2026-02-14 16:02:06.400607] START GET /api/my-items/
+[2026-02-14 16:02:06.442225] END   GET /api/my-items/ -> 200
+[2026-02-14 16:02:39.175051] START GET /api/my-items/
+[2026-02-14 16:02:39.223497] END   GET /api/my-items/ -> 200
+[2026-02-14 16:02:39.229661] START GET /api/my-items/
+[2026-02-14 16:02:39.274180] END   GET /api/my-items/ -> 200
+[2026-02-14 16:02:51.452924] START POST /api/problem-reports/
+[2026-02-14 16:02:51.636468] END   POST /api/problem-reports/ -> 500
+Response Body: {"error":"Error creating problem report: null value in column \"report_id\" of relation \"person_reports_problem_on_asset\" violates not-null constraint\nDETAIL:  Failing row contains (1, 9, null, 2026-02-14 15:02:51.627517, It is not working anymore).\n"}
+[2026-02-14 16:03:52.985949] START GET /api/my-items/
+[2026-02-14 16:03:53.038050] END   GET /api/my-items/ -> 200
+[2026-02-14 16:03:53.044224] START GET /api/my-items/
+[2026-02-14 16:03:53.189121] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:07.205150] START GET /api/my-items/
+[2026-02-14 16:04:07.294678] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:07.300383] START GET /api/my-items/
+[2026-02-14 16:04:07.370022] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:07.754498] START GET /api/my-items/
+[2026-02-14 16:04:07.820545] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:07.826940] START GET /api/my-items/
+[2026-02-14 16:04:07.889469] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:08.972677] START GET /api/my-items/
+[2026-02-14 16:04:09.035644] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:09.044208] START GET /api/my-items/
+[2026-02-14 16:04:09.106447] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:09.368808] START GET /api/my-items/
+[2026-02-14 16:04:09.411039] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:09.415666] START GET /api/my-items/
+[2026-02-14 16:04:09.573970] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:17.688625] START POST /api/problem-reports/
+[2026-02-14 16:04:17.741437] END   POST /api/problem-reports/ -> 201
+[2026-02-14 16:04:48.656019] START POST /api/auth/login/
+[2026-02-14 16:04:48.695841] END   POST /api/auth/login/ -> 200
+[2026-02-14 16:04:50.024135] START GET /api/problem-reports/
+[2026-02-14 16:04:50.025620] START GET /api/persons/
+[2026-02-14 16:04:50.169807] END   GET /api/persons/ -> 200
+[2026-02-14 16:04:50.174244] START GET /api/persons/
+[2026-02-14 16:04:50.185298] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:50.189932] START GET /api/problem-reports/
+[2026-02-14 16:04:50.203120] END   GET /api/persons/ -> 200
+[2026-02-14 16:04:50.223298] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:51.373390] START GET /api/problem-reports/
+[2026-02-14 16:04:51.405637] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:51.829897] START GET /api/problem-reports/
+[2026-02-14 16:04:51.866031] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:52.150135] START GET /api/problem-reports/
+[2026-02-14 16:04:52.183720] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:52.342020] START GET /api/problem-reports/
+[2026-02-14 16:04:52.375417] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:52.486042] START GET /api/problem-reports/
+[2026-02-14 16:04:52.517401] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:52.638421] START GET /api/problem-reports/
+[2026-02-14 16:04:52.670623] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:52.789315] START GET /api/problem-reports/
+[2026-02-14 16:04:52.821816] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:52.942162] START GET /api/problem-reports/
+[2026-02-14 16:04:52.977353] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:53.094466] START GET /api/problem-reports/
+[2026-02-14 16:04:53.133104] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:53.245625] START GET /api/problem-reports/
+[2026-02-14 16:04:53.285725] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:53.385152] START GET /api/problem-reports/
+[2026-02-14 16:04:53.427020] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:53.541851] START GET /api/problem-reports/
+[2026-02-14 16:04:53.573566] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:53.685990] START GET /api/problem-reports/
+[2026-02-14 16:04:53.720326] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:53.829944] START GET /api/problem-reports/
+[2026-02-14 16:04:53.867041] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:53.989579] START GET /api/problem-reports/
+[2026-02-14 16:04:54.025437] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:54.141776] START GET /api/problem-reports/
+[2026-02-14 16:04:54.285660] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:54.493973] START GET /api/problem-reports/
+[2026-02-14 16:04:54.529931] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:54.670148] START GET /api/problem-reports/
+[2026-02-14 16:04:54.701797] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:54.990387] START GET /api/problem-reports/
+[2026-02-14 16:04:55.025221] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:55.238210] START GET /api/problem-reports/
+[2026-02-14 16:04:55.385319] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:55.452178] START GET /api/problem-reports/
+[2026-02-14 16:04:55.483907] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:55.628077] START GET /api/problem-reports/
+[2026-02-14 16:04:55.658439] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:55.853895] START GET /api/problem-reports/
+[2026-02-14 16:04:55.885631] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:04:56.933379] START GET /api/maintenances/
+[2026-02-14 16:04:56.941354] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:04:56.941282] START GET /api/persons/
+[2026-02-14 16:04:56.947504] START GET /api/maintenances/
+[2026-02-14 16:04:56.951795] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:04:57.082893] END   GET /api/persons/ -> 200
+[2026-02-14 16:04:57.086270] START GET /api/persons/
+[2026-02-14 16:04:57.114629] END   GET /api/persons/ -> 200
+[2026-02-14 16:04:57.796169] START GET /api/my-items/
+[2026-02-14 16:04:57.949979] END   GET /api/my-items/ -> 200
+[2026-02-14 16:04:57.953759] START GET /api/my-items/
+[2026-02-14 16:04:57.991688] END   GET /api/my-items/ -> 200
+[2026-02-14 16:05:00.882247] START GET /api/problem-reports/
+[2026-02-14 16:05:00.882728] START GET /api/persons/
+[2026-02-14 16:05:00.916521] END   GET /api/persons/ -> 200
+[2026-02-14 16:05:00.919076] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:05:00.920732] START GET /api/persons/
+[2026-02-14 16:05:00.922196] START GET /api/problem-reports/
+[2026-02-14 16:05:00.953402] END   GET /api/persons/ -> 200
+[2026-02-14 16:05:00.958063] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:05:02.801946] START GET /api/problem-reports/
+[2026-02-14 16:05:02.804397] START GET /api/persons/
+[2026-02-14 16:05:02.836436] END   GET /api/persons/ -> 200
+[2026-02-14 16:05:02.840955] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:05:02.841509] START GET /api/persons/
+[2026-02-14 16:05:02.846005] START GET /api/problem-reports/
+[2026-02-14 16:05:02.875410] END   GET /api/persons/ -> 200
+[2026-02-14 16:05:02.883611] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:13.551974] START GET /api/problem-reports/
+[2026-02-14 16:06:13.553394] START GET /api/persons/
+[2026-02-14 16:06:13.587981] END   GET /api/persons/ -> 200
+[2026-02-14 16:06:13.592414] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:13.595080] START GET /api/persons/
+[2026-02-14 16:06:13.598771] START GET /api/problem-reports/
+[2026-02-14 16:06:13.627435] END   GET /api/persons/ -> 200
+[2026-02-14 16:06:13.633367] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:14.020745] START GET /api/problem-reports/
+[2026-02-14 16:06:14.021222] START GET /api/persons/
+[2026-02-14 16:06:14.060926] END   GET /api/persons/ -> 200
+[2026-02-14 16:06:14.064882] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:14.066535] START GET /api/persons/
+[2026-02-14 16:06:14.068577] START GET /api/problem-reports/
+[2026-02-14 16:06:14.108355] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:14.210206] END   GET /api/persons/ -> 200
+[2026-02-14 16:06:23.661764] START GET /api/problem-reports/
+[2026-02-14 16:06:23.663131] START GET /api/persons/
+[2026-02-14 16:06:23.702479] END   GET /api/persons/ -> 200
+[2026-02-14 16:06:23.708179] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:23.708671] START GET /api/persons/
+[2026-02-14 16:06:23.712890] START GET /api/problem-reports/
+[2026-02-14 16:06:23.745713] END   GET /api/persons/ -> 200
+[2026-02-14 16:06:23.749328] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:24.221495] START GET /api/problem-reports/
+[2026-02-14 16:06:24.223090] START GET /api/persons/
+[2026-02-14 16:06:24.255784] END   GET /api/persons/ -> 200
+[2026-02-14 16:06:24.258428] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:24.260268] START GET /api/persons/
+[2026-02-14 16:06:24.262636] START GET /api/problem-reports/
+[2026-02-14 16:06:24.295238] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:06:24.405199] END   GET /api/persons/ -> 200
+[2026-02-14 16:09:53.876860] START GET /api/problem-reports/
+[2026-02-14 16:09:53.877619] START GET /api/persons/
+[2026-02-14 16:09:53.974192] END   GET /api/persons/ -> 200
+[2026-02-14 16:09:53.985479] START GET /api/persons/
+[2026-02-14 16:09:53.998110] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:09:54.006029] START GET /api/problem-reports/
+[2026-02-14 16:09:54.039370] END   GET /api/persons/ -> 200
+[2026-02-14 16:09:54.064342] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:12:11.721929] START GET /api/problem-reports/
+[2026-02-14 16:12:11.723019] START GET /api/persons/
+[2026-02-14 16:12:11.787728] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:12:11.792587] START GET /api/problem-reports/
+[2026-02-14 16:12:11.848431] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:12:11.900072] END   GET /api/persons/ -> 200
+[2026-02-14 16:12:11.905460] START GET /api/persons/
+[2026-02-14 16:12:11.952458] END   GET /api/persons/ -> 200
+[2026-02-14 16:12:12.240200] START GET /api/problem-reports/
+[2026-02-14 16:12:12.244450] START GET /api/persons/
+[2026-02-14 16:12:12.303839] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:12:12.310672] START GET /api/problem-reports/
+[2026-02-14 16:12:12.371100] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:12:12.395288] END   GET /api/persons/ -> 200
+[2026-02-14 16:12:12.402029] START GET /api/persons/
+[2026-02-14 16:12:12.448166] END   GET /api/persons/ -> 200
+[2026-02-14 16:13:26.791188] START POST /api/problem-reports/create-maintenance/
+[2026-02-14 16:13:26.799718] END   POST /api/problem-reports/create-maintenance/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/create-maintenance/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-wei
+[2026-02-14 16:15:40.230652] START GET /api/problem-reports/
+[2026-02-14 16:15:40.234336] START GET /api/persons/
+[2026-02-14 16:15:40.278763] END   GET /api/persons/ -> 200
+[2026-02-14 16:15:40.284519] START GET /api/persons/
+[2026-02-14 16:15:40.288546] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:15:40.292619] START GET /api/problem-reports/
+[2026-02-14 16:15:40.320765] END   GET /api/persons/ -> 200
+[2026-02-14 16:15:40.338579] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:15:40.774399] START GET /api/problem-reports/
+[2026-02-14 16:15:40.776307] START GET /api/persons/
+[2026-02-14 16:15:40.816440] END   GET /api/persons/ -> 200
+[2026-02-14 16:15:40.821091] START GET /api/persons/
+[2026-02-14 16:15:40.823985] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:15:40.828705] START GET /api/problem-reports/
+[2026-02-14 16:15:40.857856] END   GET /api/persons/ -> 200
+[2026-02-14 16:15:40.870244] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:20.877781] START GET /api/problem-reports/
+[2026-02-14 16:16:20.878614] START GET /api/persons/
+[2026-02-14 16:16:20.921027] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:20.925481] START GET /api/persons/
+[2026-02-14 16:16:20.929855] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:20.933893] START GET /api/problem-reports/
+[2026-02-14 16:16:20.966225] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:20.974867] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:22.071439] START GET /api/problem-reports/
+[2026-02-14 16:16:22.072685] START GET /api/persons/
+[2026-02-14 16:16:22.126197] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:22.134129] START GET /api/persons/
+[2026-02-14 16:16:22.140262] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:22.147840] START GET /api/problem-reports/
+[2026-02-14 16:16:22.185083] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:22.207845] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:24.143525] START GET /api/problem-reports/
+[2026-02-14 16:16:24.145059] START GET /api/persons/
+[2026-02-14 16:16:24.196640] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:24.202885] START GET /api/persons/
+[2026-02-14 16:16:24.210682] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:24.217845] START GET /api/problem-reports/
+[2026-02-14 16:16:24.257873] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:24.277035] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:24.641508] START GET /api/problem-reports/
+[2026-02-14 16:16:24.643850] START GET /api/persons/
+[2026-02-14 16:16:24.693682] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:24.700413] START GET /api/persons/
+[2026-02-14 16:16:24.708693] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:24.714838] START GET /api/problem-reports/
+[2026-02-14 16:16:24.748789] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:24.771502] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:40.830330] START POST /api/problem-reports/create-maintenance/
+[2026-02-14 16:16:40.918070] END   POST /api/problem-reports/create-maintenance/ -> 201
+[2026-02-14 16:16:46.492138] START GET /api/persons/
+[2026-02-14 16:16:46.493599] START GET /api/maintenances/
+[2026-02-14 16:16:46.522439] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:46.528372] START GET /api/maintenances/
+[2026-02-14 16:16:46.546151] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:46.559834] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:46.568116] START GET /api/persons/
+[2026-02-14 16:16:46.620274] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:47.696073] START GET /api/problem-reports/
+[2026-02-14 16:16:47.700277] START GET /api/persons/
+[2026-02-14 16:16:47.755178] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:47.760322] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:47.759704] START GET /api/persons/
+[2026-02-14 16:16:47.764829] START GET /api/problem-reports/
+[2026-02-14 16:16:47.810701] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:47.823939] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:16:51.107449] START GET /api/maintenances/
+[2026-02-14 16:16:51.108709] START GET /api/persons/
+[2026-02-14 16:16:51.126501] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:51.133631] START GET /api/maintenances/
+[2026-02-14 16:16:51.149582] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:51.159242] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:51.167470] START GET /api/persons/
+[2026-02-14 16:16:51.216983] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:52.379851] START GET /api/maintenances/
+[2026-02-14 16:16:52.381011] START GET /api/persons/
+[2026-02-14 16:16:52.393459] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:52.400360] START GET /api/maintenances/
+[2026-02-14 16:16:52.414921] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:52.430166] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:52.436196] START GET /api/persons/
+[2026-02-14 16:16:52.597767] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:52.872565] START GET /api/maintenances/
+[2026-02-14 16:16:52.874117] START GET /api/persons/
+[2026-02-14 16:16:52.883020] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:52.889962] START GET /api/maintenances/
+[2026-02-14 16:16:52.906997] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:52.922048] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:52.928514] START GET /api/persons/
+[2026-02-14 16:16:52.977314] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:53.291797] START GET /api/maintenances/
+[2026-02-14 16:16:53.293796] START GET /api/persons/
+[2026-02-14 16:16:53.311791] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:53.319833] START GET /api/maintenances/
+[2026-02-14 16:16:53.338163] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:53.356412] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:53.361791] START GET /api/persons/
+[2026-02-14 16:16:53.406816] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:53.606054] START GET /api/maintenances/
+[2026-02-14 16:16:53.607822] START GET /api/persons/
+[2026-02-14 16:16:53.626962] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:53.634917] START GET /api/maintenances/
+[2026-02-14 16:16:53.651446] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:53.675129] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:53.680983] START GET /api/persons/
+[2026-02-14 16:16:53.725291] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:53.810563] START GET /api/maintenances/
+[2026-02-14 16:16:53.811820] START GET /api/persons/
+[2026-02-14 16:16:53.826084] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:53.831743] START GET /api/maintenances/
+[2026-02-14 16:16:53.850012] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:53.859550] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:53.865212] START GET /api/persons/
+[2026-02-14 16:16:53.907693] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:53.973734] START GET /api/maintenances/
+[2026-02-14 16:16:53.975374] START GET /api/persons/
+[2026-02-14 16:16:53.986620] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:53.993202] START GET /api/maintenances/
+[2026-02-14 16:16:54.009113] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.022385] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.027467] START GET /api/persons/
+[2026-02-14 16:16:54.072726] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.138600] START GET /api/maintenances/
+[2026-02-14 16:16:54.140124] START GET /api/persons/
+[2026-02-14 16:16:54.158690] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.166892] START GET /api/maintenances/
+[2026-02-14 16:16:54.182459] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.214663] START GET /api/persons/
+[2026-02-14 16:16:54.256944] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.293927] START GET /api/maintenances/
+[2026-02-14 16:16:54.295396] START GET /api/persons/
+[2026-02-14 16:16:54.312909] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.319492] START GET /api/maintenances/
+[2026-02-14 16:16:54.339239] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.339539] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.366826] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.371913] START GET /api/persons/
+[2026-02-14 16:16:54.439775] START GET /api/maintenances/
+[2026-02-14 16:16:54.442123] START GET /api/persons/
+[2026-02-14 16:16:54.459937] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.465813] START GET /api/maintenances/
+[2026-02-14 16:16:54.479993] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.502036] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.507846] START GET /api/persons/
+[2026-02-14 16:16:54.525005] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.552046] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.589153] START GET /api/maintenances/
+[2026-02-14 16:16:54.590564] START GET /api/persons/
+[2026-02-14 16:16:54.608573] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.613716] START GET /api/maintenances/
+[2026-02-14 16:16:54.631371] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:16:54.648272] END   GET /api/persons/ -> 200
+[2026-02-14 16:16:54.653213] START GET /api/persons/
+[2026-02-14 16:16:54.697642] END   GET /api/persons/ -> 200
+[2026-02-14 16:17:04.973220] START POST /api/auth/login/
+[2026-02-14 16:17:05.051293] END   POST /api/auth/login/ -> 200
+[2026-02-14 16:17:06.259203] START GET /api/maintenances/
+[2026-02-14 16:17:06.261483] START GET /api/persons/
+[2026-02-14 16:17:06.277805] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:17:06.286377] START GET /api/maintenances/
+[2026-02-14 16:17:06.305276] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:17:06.324250] END   GET /api/persons/ -> 200
+[2026-02-14 16:17:06.330725] START GET /api/persons/
+[2026-02-14 16:17:06.378413] END   GET /api/persons/ -> 200
+[2026-02-14 16:17:07.643463] START GET /api/problem-reports/
+[2026-02-14 16:17:07.645713] START GET /api/persons/
+[2026-02-14 16:17:07.692927] END   GET /api/persons/ -> 200
+[2026-02-14 16:17:07.701010] START GET /api/persons/
+[2026-02-14 16:17:07.706432] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:17:07.711705] START GET /api/problem-reports/
+[2026-02-14 16:17:07.756607] END   GET /api/persons/ -> 200
+[2026-02-14 16:17:07.776508] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:17:35.790339] START POST /api/problem-reports/create-maintenance/
+[2026-02-14 16:17:35.870748] END   POST /api/problem-reports/create-maintenance/ -> 201
+[2026-02-14 16:17:45.403604] START POST /api/auth/login/
+[2026-02-14 16:17:45.466947] END   POST /api/auth/login/ -> 200
+[2026-02-14 16:17:46.404703] START GET /api/maintenances/
+[2026-02-14 16:17:46.423282] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:17:46.430550] START GET /api/maintenances/
+[2026-02-14 16:17:46.447751] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:17:47.407131] START GET /api/my-items/
+[2026-02-14 16:17:47.472967] END   GET /api/my-items/ -> 200
+[2026-02-14 16:17:47.478765] START GET /api/my-items/
+[2026-02-14 16:17:47.538996] END   GET /api/my-items/ -> 200
+[2026-02-14 16:17:48.075945] START GET /api/maintenances/
+[2026-02-14 16:17:48.083569] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:17:48.088732] START GET /api/maintenances/
+[2026-02-14 16:17:48.107017] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:17:48.832556] START GET /api/my-items/
+[2026-02-14 16:17:48.905829] END   GET /api/my-items/ -> 200
+[2026-02-14 16:17:48.911424] START GET /api/my-items/
+[2026-02-14 16:17:48.971294] END   GET /api/my-items/ -> 200
+[2026-02-14 16:17:49.253310] START GET /api/maintenances/
+[2026-02-14 16:17:49.267915] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:17:49.273896] START GET /api/maintenances/
+[2026-02-14 16:17:49.287835] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:18:57.533170] START GET /api/maintenances/
+[2026-02-14 16:18:57.541124] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:18:57.546659] START GET /api/maintenances/
+[2026-02-14 16:18:57.551282] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:18:58.099319] START GET /api/maintenances/
+[2026-02-14 16:18:58.104174] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:18:58.108345] START GET /api/maintenances/
+[2026-02-14 16:18:58.112488] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 16:19:09.429501] START GET /api/maintenances/
+[2026-02-14 16:19:09.474836] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:09.480450] START GET /api/maintenances/
+[2026-02-14 16:19:09.517352] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:34.173122] START POST /api/auth/login/
+[2026-02-14 16:19:34.245374] END   POST /api/auth/login/ -> 200
+[2026-02-14 16:19:35.995359] START GET /api/maintenances/
+[2026-02-14 16:19:35.998503] START GET /api/persons/
+[2026-02-14 16:19:36.048372] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:36.050791] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:36.053777] START GET /api/persons/
+[2026-02-14 16:19:36.057052] START GET /api/maintenances/
+[2026-02-14 16:19:36.106873] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:36.115797] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:38.576833] START GET /api/problem-reports/
+[2026-02-14 16:19:38.579808] START GET /api/persons/
+[2026-02-14 16:19:38.628956] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:38.634368] START GET /api/persons/
+[2026-02-14 16:19:38.641597] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:19:38.647184] START GET /api/problem-reports/
+[2026-02-14 16:19:38.703574] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:19:38.793134] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:38.983303] START GET /api/maintenances/
+[2026-02-14 16:19:38.986809] START GET /api/persons/
+[2026-02-14 16:19:39.042313] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:39.051312] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:39.052104] START GET /api/persons/
+[2026-02-14 16:19:39.058467] START GET /api/maintenances/
+[2026-02-14 16:19:39.100528] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:39.109826] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:39.880439] START GET /api/problem-reports/
+[2026-02-14 16:19:39.882584] START GET /api/persons/
+[2026-02-14 16:19:39.943654] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:39.951159] START GET /api/persons/
+[2026-02-14 16:19:39.953056] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:19:39.958226] START GET /api/problem-reports/
+[2026-02-14 16:19:40.004163] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:40.020404] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:19:41.406090] START GET /api/maintenances/
+[2026-02-14 16:19:41.410172] START GET /api/persons/
+[2026-02-14 16:19:41.469807] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:41.475235] START GET /api/maintenances/
+[2026-02-14 16:19:41.532808] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:41.561762] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:41.569220] START GET /api/persons/
+[2026-02-14 16:19:41.617056] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:53.710564] START GET /api/problem-reports/
+[2026-02-14 16:19:53.714431] START GET /api/persons/
+[2026-02-14 16:19:53.772616] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:53.780585] START GET /api/persons/
+[2026-02-14 16:19:53.788322] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:19:53.795342] START GET /api/problem-reports/
+[2026-02-14 16:19:53.954266] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:53.973674] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:19:54.776537] START GET /api/maintenances/
+[2026-02-14 16:19:54.778771] START GET /api/persons/
+[2026-02-14 16:19:54.831228] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:54.834340] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:54.835640] START GET /api/persons/
+[2026-02-14 16:19:54.838540] START GET /api/maintenances/
+[2026-02-14 16:19:54.887350] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:54.900987] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:56.673640] START GET /api/problem-reports/
+[2026-02-14 16:19:56.675027] START GET /api/persons/
+[2026-02-14 16:19:56.726367] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:56.732930] START GET /api/persons/
+[2026-02-14 16:19:56.741563] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:19:56.749038] START GET /api/problem-reports/
+[2026-02-14 16:19:56.784300] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:56.808877] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:19:57.561121] START GET /api/persons/
+[2026-02-14 16:19:57.563349] START GET /api/maintenances/
+[2026-02-14 16:19:57.632304] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:57.637838] START GET /api/maintenances/
+[2026-02-14 16:19:57.692155] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:19:57.714398] END   GET /api/persons/ -> 200
+[2026-02-14 16:19:57.718859] START GET /api/persons/
+[2026-02-14 16:19:57.765889] END   GET /api/persons/ -> 200
+[2026-02-14 16:20:10.554867] START GET /api/problem-reports/
+[2026-02-14 16:20:10.557158] START GET /api/persons/
+[2026-02-14 16:20:10.615134] END   GET /api/persons/ -> 200
+[2026-02-14 16:20:10.619595] START GET /api/persons/
+[2026-02-14 16:20:10.621283] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:20:10.626283] START GET /api/problem-reports/
+[2026-02-14 16:20:10.671934] END   GET /api/persons/ -> 200
+[2026-02-14 16:20:10.792492] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:20:11.305963] START GET /api/persons/
+[2026-02-14 16:20:11.309690] START GET /api/maintenances/
+[2026-02-14 16:20:11.363602] END   GET /api/persons/ -> 200
+[2026-02-14 16:20:11.373138] START GET /api/persons/
+[2026-02-14 16:20:11.377132] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:20:11.382774] START GET /api/maintenances/
+[2026-02-14 16:20:11.421346] END   GET /api/persons/ -> 200
+[2026-02-14 16:20:11.442497] END   GET /api/maintenances/ -> 200
