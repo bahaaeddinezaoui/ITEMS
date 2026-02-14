@@ -7300,3 +7300,30 @@ steps/
 [2026-02-14 18:20:00.765119] END   GET /api/maintenance-typical-steps/ -> 200
 [2026-02-14 18:20:00.770760] END   GET /api/persons/ -> 200
 [2026-02-14 18:20:00.789448] END   GET /api/maintenance-steps/ -> 200
+[2026-02-14 19:01:40.633145] START POST /api/auth/login/
+[2026-02-14 19:01:40.708703] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-14 19:01:48.807732] START POST /api/auth/login/
+[2026-02-14 19:01:48.961744] END   POST /api/auth/login/ -> 200
+[2026-02-14 19:01:49.955589] START GET /api/maintenances/
+[2026-02-14 19:01:50.036866] END   GET /api/maintenances/ -> 200
+[2026-02-14 19:01:50.044500] START GET /api/maintenances/
+[2026-02-14 19:01:50.104711] END   GET /api/maintenances/ -> 200
+[2026-02-14 19:01:53.350952] START GET /api/maintenance-typical-steps/
+[2026-02-14 19:01:53.350219] START GET /api/maintenance-steps/
+[2026-02-14 19:01:53.354488] START GET /api/persons/
+[2026-02-14 19:01:53.422123] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-14 19:01:53.424481] END   GET /api/persons/ -> 200
+[2026-02-14 19:01:53.436974] START GET /api/persons/
+[2026-02-14 19:01:53.439460] END   GET /api/maintenance-steps/ -> 200
+[2026-02-14 19:01:53.439358] START GET /api/maintenance-typical-steps/
+[2026-02-14 19:01:53.447693] START GET /api/maintenance-steps/
+[2026-02-14 19:01:53.487277] END   GET /api/persons/ -> 200
+[2026-02-14 19:01:53.489303] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-14 19:01:53.512624] END   GET /api/maintenance-steps/ -> 200
+[2026-02-14 19:02:08.001176] START POST /api/auth/login/
+[2026-02-14 19:02:08.054338] END   POST /api/auth/login/ -> 200
+[2026-02-14 19:02:09.219416] START GET /api/maintenances/
+[2026-02-14 19:02:09.288110] END   GET /api/maintenances/ -> 200
+[2026-02-14 19:02:09.296660] START GET /api/maintenances/
+[2026-02-14 19:02:09.363479] END   GET /api/maintenances/ -> 200

@@ -358,3 +358,14 @@ Login successful for: bahaaeddinezaoui
 
 [2026-02-14 17:07:32.619688+00:00] Login attempt for: technician2
 Login successful for: technician2
+
+[2026-02-14 18:01:40.644735+00:00] Login attempt for: technician2
+Password mismatch for user: technician2
+Provided hash: 3fe1f42111e654691e49...
+DB hash:       40c82ecd90443ed156f5...
+
+[2026-02-14 18:01:48.810363+00:00] Login attempt for: technician2
+Login successful for: technician2
+
+[2026-02-14 18:02:08.002141+00:00] Login attempt for: technician1
+Login successful for: technician1

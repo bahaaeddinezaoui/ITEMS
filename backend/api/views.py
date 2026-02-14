@@ -1500,8 +1500,15 @@ class MaintenanceViewSet(viewsets.ModelViewSet):
             # Chiefs see all maintenance records
             return Maintenance.objects.all().select_related('asset', 'performed_by_person', 'approved_by_maintenance_chief').order_by('-maintenance_id')
         else:
-            # Technicians see only their own maintenance tasks
-            return Maintenance.objects.filter(performed_by_person=person).select_related('asset', 'performed_by_person', 'approved_by_maintenance_chief').order_by('-maintenance_id')
+            # Technicians see maintenances they are assigned to (performed_by_person)
+            # OR maintenances where they are assigned to at least one maintenance step
+            from django.db.models import Q
+            step_maintenance_ids = MaintenanceStep.objects.filter(
+                person=person
+            ).values_list('maintenance_id', flat=True)
+            return Maintenance.objects.filter(
+                Q(performed_by_person=person) | Q(maintenance_id__in=step_maintenance_ids)
+            ).select_related('asset', 'performed_by_person', 'approved_by_maintenance_chief').order_by('-maintenance_id').distinct()
 
     def list(self, request, *args, **kwargs):
         """Override list to return custom format"""
