@@ -331,6 +331,182 @@ export const assetAttributeValueService = {
     },
 };
 
+// Stock Item Attribute Definition service
+export const stockItemAttributeDefinitionService = {
+    getAll: async () => {
+        const response = await api.get('stock-item-attribute-definitions/');
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('stock-item-attribute-definitions/', data);
+        return response.data;
+    },
+
+    update: async (id, data) => {
+        const response = await api.put(`stock-item-attribute-definitions/${id}/`, data);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`stock-item-attribute-definitions/${id}/`);
+    },
+};
+
+// Stock Item Type Attribute service
+export const stockItemTypeAttributeService = {
+    getByStockItemType: async (stockItemTypeId) => {
+        const response = await api.get(`stock-item-type-attributes/?stock_item_type=${stockItemTypeId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('stock-item-type-attributes/', data);
+        return response.data;
+    },
+
+    delete: async (stockItemTypeId, stockItemAttributeDefinitionId) => {
+        await api.delete(`stock-item-type-attributes/${stockItemAttributeDefinitionId}/`, {
+            params: {
+                stock_item_type: stockItemTypeId,
+                stock_item_attribute_definition: stockItemAttributeDefinitionId,
+            },
+        });
+    },
+};
+
+// Stock Item Model Attribute service
+export const stockItemModelAttributeService = {
+    getByStockItemModel: async (stockItemModelId) => {
+        const response = await api.get(`stock-item-model-attributes/?stock_item_model=${stockItemModelId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('stock-item-model-attributes/', data);
+        return response.data;
+    },
+
+    delete: async (stockItemModelId, stockItemAttributeDefinitionId) => {
+        await api.delete(`stock-item-model-attributes/${stockItemAttributeDefinitionId}/`, {
+            params: {
+                stock_item_model: stockItemModelId,
+                stock_item_attribute_definition: stockItemAttributeDefinitionId,
+            },
+        });
+    },
+};
+
+// Stock Item Attribute Value service
+export const stockItemAttributeValueService = {
+    getByStockItem: async (stockItemId) => {
+        const response = await api.get(`stock-item-attributes/?stock_item=${stockItemId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('stock-item-attributes/', data);
+        return response.data;
+    },
+
+    delete: async (stockItemId, stockItemAttributeDefinitionId) => {
+        await api.delete(`stock-item-attributes/${stockItemAttributeDefinitionId}/`, {
+            params: {
+                stock_item: stockItemId,
+                stock_item_attribute_definition: stockItemAttributeDefinitionId,
+            },
+        });
+    },
+};
+
+// Consumable Attribute Definition service
+export const consumableAttributeDefinitionService = {
+    getAll: async () => {
+        const response = await api.get('consumable-attribute-definitions/');
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('consumable-attribute-definitions/', data);
+        return response.data;
+    },
+
+    update: async (id, data) => {
+        const response = await api.put(`consumable-attribute-definitions/${id}/`, data);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`consumable-attribute-definitions/${id}/`);
+    },
+};
+
+// Consumable Type Attribute service
+export const consumableTypeAttributeService = {
+    getByConsumableType: async (consumableTypeId) => {
+        const response = await api.get(`consumable-type-attributes/?consumable_type=${consumableTypeId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('consumable-type-attributes/', data);
+        return response.data;
+    },
+
+    delete: async (consumableTypeId, consumableAttributeDefinitionId) => {
+        await api.delete(`consumable-type-attributes/${consumableAttributeDefinitionId}/`, {
+            params: {
+                consumable_type: consumableTypeId,
+                consumable_attribute_definition: consumableAttributeDefinitionId,
+            },
+        });
+    },
+};
+
+// Consumable Model Attribute service
+export const consumableModelAttributeService = {
+    getByConsumableModel: async (consumableModelId) => {
+        const response = await api.get(`consumable-model-attributes/?consumable_model=${consumableModelId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('consumable-model-attributes/', data);
+        return response.data;
+    },
+
+    delete: async (consumableModelId, consumableAttributeDefinitionId) => {
+        await api.delete(`consumable-model-attributes/${consumableAttributeDefinitionId}/`, {
+            params: {
+                consumable_model: consumableModelId,
+                consumable_attribute_definition: consumableAttributeDefinitionId,
+            },
+        });
+    },
+};
+
+// Consumable Attribute Value service
+export const consumableAttributeValueService = {
+    getByConsumable: async (consumableId) => {
+        const response = await api.get(`consumable-attributes/?consumable=${consumableId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('consumable-attributes/', data);
+        return response.data;
+    },
+
+    delete: async (consumableId, consumableAttributeDefinitionId) => {
+        await api.delete(`consumable-attributes/${consumableAttributeDefinitionId}/`, {
+            params: {
+                consumable: consumableId,
+                consumable_attribute_definition: consumableAttributeDefinitionId,
+            },
+        });
+    },
+};
+
 // Stock Item Type service
 export const stockItemTypeService = {
     getAll: async () => {

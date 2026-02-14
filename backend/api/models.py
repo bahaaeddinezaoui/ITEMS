@@ -419,6 +419,150 @@ class AssetAttributeValue(models.Model):
         unique_together = (('asset_attribute_definition', 'asset'),)
 
 
+class StockItemAttributeDefinition(models.Model):
+    """Maps to stock_item_attribute_definition table"""
+    stock_item_attribute_definition_id = models.AutoField(primary_key=True, db_column='stock_item_attribute_definition_id')
+    data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
+    unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
+    description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_attribute_definition'
+
+    def __str__(self):
+        return f"StockAttr {self.stock_item_attribute_definition_id}" if self.description is None else self.description
+
+
+class StockItemTypeAttribute(models.Model):
+    """Maps to stock_item_type_attribute table"""
+    stock_item_attribute_definition = models.ForeignKey(
+        StockItemAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='stock_item_attribute_definition_id',
+        primary_key=True,
+    )
+    stock_item_type = models.ForeignKey(StockItemType, on_delete=models.CASCADE, db_column='stock_item_type_id')
+    is_mandatory = models.BooleanField(blank=True, null=True, db_column='is_mandatory')
+    default_value = models.CharField(max_length=255, blank=True, null=True, db_column='default_value')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_type_attribute'
+        unique_together = (('stock_item_attribute_definition', 'stock_item_type'),)
+
+
+class StockItemModelAttributeValue(models.Model):
+    """Maps to stock_item_model_attribute_value table"""
+    stock_item_model = models.ForeignKey(StockItemModel, on_delete=models.CASCADE, db_column='stock_item_model_id', primary_key=True)
+    stock_item_attribute_definition = models.ForeignKey(
+        StockItemAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='stock_item_attribute_definition_id',
+    )
+    value_bool = models.BooleanField(blank=True, null=True, db_column='value_bool')
+    value_string = models.CharField(max_length=1024, blank=True, null=True, db_column='value_string')
+    value_number = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True, db_column='value_number')
+    value_date = models.DateField(blank=True, null=True, db_column='value_date')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_model_attribute_value'
+        unique_together = (('stock_item_model', 'stock_item_attribute_definition'),)
+
+
+class StockItemAttributeValue(models.Model):
+    """Maps to stock_item_attribute_value table"""
+    stock_item_attribute_definition = models.ForeignKey(
+        StockItemAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='stock_item_attribute_definition_id',
+        primary_key=True,
+    )
+    stock_item = models.ForeignKey('StockItem', on_delete=models.CASCADE, db_column='stock_item_id')
+    value_string = models.CharField(max_length=1024, blank=True, null=True, db_column='value_string')
+    value_bool = models.BooleanField(blank=True, null=True, db_column='value_bool')
+    value_date = models.DateField(blank=True, null=True, db_column='value_date')
+    value_number = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True, db_column='value_number')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_attribute_value'
+        unique_together = (('stock_item_attribute_definition', 'stock_item'),)
+
+
+class ConsumableAttributeDefinition(models.Model):
+    """Maps to consumable_attribute_definition table"""
+    consumable_attribute_definition_id = models.AutoField(primary_key=True, db_column='consumable_attribute_definition_id')
+    data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
+    unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
+    description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_attribute_definition'
+
+    def __str__(self):
+        return f"ConsAttr {self.consumable_attribute_definition_id}" if self.description is None else self.description
+
+
+class ConsumableTypeAttribute(models.Model):
+    """Maps to consumable_type_attribute table"""
+    consumable_attribute_definition = models.ForeignKey(
+        ConsumableAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='consumable_attribute_definition_id',
+        primary_key=True,
+    )
+    consumable_type = models.ForeignKey(ConsumableType, on_delete=models.CASCADE, db_column='consumable_type_id')
+    is_mandatory = models.BooleanField(blank=True, null=True, db_column='is_mandatory')
+    default_value = models.CharField(max_length=255, blank=True, null=True, db_column='default_value')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_type_attribute'
+        unique_together = (('consumable_attribute_definition', 'consumable_type'),)
+
+
+class ConsumableModelAttributeValue(models.Model):
+    """Maps to consumable_model_attribute_value table"""
+    consumable_model = models.ForeignKey(ConsumableModel, on_delete=models.CASCADE, db_column='consumable_model_id', primary_key=True)
+    consumable_attribute_definition = models.ForeignKey(
+        ConsumableAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='consumable_attribute_definition_id',
+    )
+    value_bool = models.BooleanField(blank=True, null=True, db_column='value_bool')
+    value_string = models.CharField(max_length=1024, blank=True, null=True, db_column='value_string')
+    value_number = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True, db_column='value_number')
+    value_date = models.DateField(blank=True, null=True, db_column='value_date')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_model_attribute_value'
+        unique_together = (('consumable_model', 'consumable_attribute_definition'),)
+
+
+class ConsumableAttributeValue(models.Model):
+    """Maps to consumable_attribute_value table"""
+    consumable_attribute_definition = models.ForeignKey(
+        ConsumableAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='consumable_attribute_definition_id',
+        primary_key=True,
+    )
+    consumable = models.ForeignKey('Consumable', on_delete=models.CASCADE, db_column='consumable_id')
+    value_string = models.CharField(max_length=1024, blank=True, null=True, db_column='value_string')
+    value_bool = models.BooleanField(blank=True, null=True, db_column='value_bool')
+    value_date = models.DateField(blank=True, null=True, db_column='value_date')
+    value_number = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True, db_column='value_number')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_attribute_value'
+        unique_together = (('consumable_attribute_definition', 'consumable'),)
+
+
 class AssetIsAssignedToPerson(models.Model):
     """Maps to asset_is_assigned_to_person table"""
     assignment_id = models.AutoField(primary_key=True, db_column='assignment_id')

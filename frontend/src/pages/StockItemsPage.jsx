@@ -1,13 +1,61 @@
-import { useEffect, useState } from 'react';
-import { stockItemTypeService, stockItemModelService, stockItemBrandService, stockItemService } from '../services/api';
+import { useEffect, useMemo, useState } from 'react';
+import {
+    stockItemTypeService,
+    stockItemModelService,
+    stockItemBrandService,
+    stockItemService,
+    stockItemAttributeDefinitionService,
+    stockItemTypeAttributeService,
+    stockItemModelAttributeService,
+    stockItemAttributeValueService
+} from '../services/api';
 
 const StockItemsPage = () => {
     const [stockItemTypes, setStockItemTypes] = useState([]);
     const [stockItemBrands, setStockItemBrands] = useState([]);
     const [stockItemModels, setStockItemModels] = useState([]);
     const [stockItems, setStockItems] = useState([]);
+    const [stockItemAttributeDefinitions, setStockItemAttributeDefinitions] = useState([]);
+    const [stockItemTypeAttributes, setStockItemTypeAttributes] = useState([]);
+    const [stockItemModelAttributes, setStockItemModelAttributes] = useState([]);
+    const [stockItemAttributes, setStockItemAttributes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Attribute forms visibility
+    const [showAttributeDefinitionForm, setShowAttributeDefinitionForm] = useState(false);
+    const [showTypeAttributeForm, setShowTypeAttributeForm] = useState(false);
+    const [showModelAttributeForm, setShowModelAttributeForm] = useState(false);
+    const [showStockItemAttributeForm, setShowStockItemAttributeForm] = useState(false);
+
+    // Stock item selection for attribute values
+    const [selectedStockItem, setSelectedStockItem] = useState(null);
+
+    // Attribute form data
+    const [attributeDefinitionForm, setAttributeDefinitionForm] = useState({
+        description: '',
+        data_type: '',
+        unit: ''
+    });
+    const [typeAttributeForm, setTypeAttributeForm] = useState({
+        stock_item_attribute_definition: '',
+        is_mandatory: false,
+        default_value: ''
+    });
+    const [modelAttributeForm, setModelAttributeForm] = useState({
+        stock_item_attribute_definition: '',
+        value_string: '',
+        value_number: '',
+        value_bool: false,
+        value_date: ''
+    });
+    const [stockItemAttributeForm, setStockItemAttributeForm] = useState({
+        stock_item_attribute_definition: '',
+        value_string: '',
+        value_number: '',
+        value_bool: false,
+        value_date: ''
+    });
     
     // Form visibility states
     const [showTypeForm, setShowTypeForm] = useState(false);
@@ -50,23 +98,33 @@ const StockItemsPage = () => {
     useEffect(() => {
         fetchStockItemTypes();
         fetchStockItemBrands();
+        fetchStockItemAttributeDefinitions();
     }, []);
 
     useEffect(() => {
         if (selectedStockItemType) {
             fetchStockItemModels(selectedStockItemType.stock_item_type_id);
+            fetchStockItemTypeAttributes(selectedStockItemType.stock_item_type_id);
             setSelectedStockItemModel(null);
+            setSelectedStockItem(null);
             setStockItems([]);
+            setStockItemModelAttributes([]);
+            setStockItemAttributes([]);
         } else {
             setStockItemModels([]);
+            setStockItemTypeAttributes([]);
         }
     }, [selectedStockItemType]);
 
     useEffect(() => {
         if (selectedStockItemModel) {
             fetchStockItems(selectedStockItemModel.stock_item_model_id);
+            fetchStockItemModelAttributes(selectedStockItemModel.stock_item_model_id);
         } else {
             setStockItems([]);
+            setStockItemModelAttributes([]);
+            setSelectedStockItem(null);
+            setStockItemAttributes([]);
         }
     }, [selectedStockItemModel]);
 
@@ -104,6 +162,22 @@ const StockItemsPage = () => {
         }
     };
 
+    useEffect(() => {
+        if (selectedStockItem) {
+            fetchStockItemAttributes(selectedStockItem.stock_item_id);
+        } else {
+            setStockItemAttributes([]);
+        }
+    }, [selectedStockItem]);
+
+    const definitionLookup = useMemo(() => {
+        const map = new Map();
+        stockItemAttributeDefinitions.forEach((def) => {
+            map.set(def.stock_item_attribute_definition_id, def);
+        });
+        return map;
+    }, [stockItemAttributeDefinitions]);
+
     const fetchStockItems = async (stockItemModelId) => {
         try {
             const data = await stockItemService.getAll({ stock_item_model: stockItemModelId });
@@ -111,6 +185,46 @@ const StockItemsPage = () => {
         } catch (err) {
             setError('Failed to fetch stock items: ' + err.message);
             setStockItems([]);
+        }
+    };
+
+    const fetchStockItemAttributeDefinitions = async () => {
+        try {
+            const data = await stockItemAttributeDefinitionService.getAll();
+            setStockItemAttributeDefinitions(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch stock item attribute definitions: ' + err.message);
+            setStockItemAttributeDefinitions([]);
+        }
+    };
+
+    const fetchStockItemTypeAttributes = async (stockItemTypeId) => {
+        try {
+            const data = await stockItemTypeAttributeService.getByStockItemType(stockItemTypeId);
+            setStockItemTypeAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch stock item type attributes: ' + err.message);
+            setStockItemTypeAttributes([]);
+        }
+    };
+
+    const fetchStockItemModelAttributes = async (stockItemModelId) => {
+        try {
+            const data = await stockItemModelAttributeService.getByStockItemModel(stockItemModelId);
+            setStockItemModelAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch stock item model attributes: ' + err.message);
+            setStockItemModelAttributes([]);
+        }
+    };
+
+    const fetchStockItemAttributes = async (stockItemId) => {
+        try {
+            const data = await stockItemAttributeValueService.getByStockItem(stockItemId);
+            setStockItemAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch stock item attributes: ' + err.message);
+            setStockItemAttributes([]);
         }
     };
 
@@ -130,6 +244,35 @@ const StockItemsPage = () => {
     const handleStockItemInputChange = (e) => {
         const { name, value } = e.target;
         setStockItemFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAttributeDefinitionInputChange = (e) => {
+        const { name, value } = e.target;
+        setAttributeDefinitionForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleTypeAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setTypeAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleModelAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setModelAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleStockItemAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setStockItemAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleTypeSubmit = async (e) => {
@@ -249,6 +392,183 @@ const StockItemsPage = () => {
             maintenance_step_id: item.maintenance_step_id || null
         });
         setShowStockItemForm(true);
+    };
+
+    const handleAttributeDefinitionSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                description: attributeDefinitionForm.description || null,
+                data_type: attributeDefinitionForm.data_type || null,
+                unit: attributeDefinitionForm.unit || null
+            };
+            await stockItemAttributeDefinitionService.create(payload);
+            setAttributeDefinitionForm({ description: '', data_type: '', unit: '' });
+            setShowAttributeDefinitionForm(false);
+            await fetchStockItemAttributeDefinitions();
+        } catch (err) {
+            setError('Failed to create stock item attribute definition: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleTypeAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedStockItemType) {
+            setError('Please select a stock item type first');
+            return;
+        }
+        if (!typeAttributeForm.stock_item_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                stock_item_type: selectedStockItemType.stock_item_type_id,
+                stock_item_attribute_definition: Number(typeAttributeForm.stock_item_attribute_definition),
+                is_mandatory: typeAttributeForm.is_mandatory,
+                default_value: typeAttributeForm.default_value || null
+            };
+            await stockItemTypeAttributeService.create(payload);
+            setTypeAttributeForm({ stock_item_attribute_definition: '', is_mandatory: false, default_value: '' });
+            setShowTypeAttributeForm(false);
+            await fetchStockItemTypeAttributes(selectedStockItemType.stock_item_type_id);
+        } catch (err) {
+            setError('Failed to assign attribute to stock item type: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleModelAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedStockItemModel) {
+            setError('Please select a stock item model first');
+            return;
+        }
+        if (!modelAttributeForm.stock_item_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                stock_item_model: selectedStockItemModel.stock_item_model_id,
+                stock_item_attribute_definition: Number(modelAttributeForm.stock_item_attribute_definition),
+                value_string: modelAttributeForm.value_string || null,
+                value_number: modelAttributeForm.value_number ? Number(modelAttributeForm.value_number) : null,
+                value_bool: modelAttributeForm.value_bool,
+                value_date: modelAttributeForm.value_date || null
+            };
+            await stockItemModelAttributeService.create(payload);
+            setModelAttributeForm({
+                stock_item_attribute_definition: '',
+                value_string: '',
+                value_number: '',
+                value_bool: false,
+                value_date: ''
+            });
+            setShowModelAttributeForm(false);
+            await fetchStockItemModelAttributes(selectedStockItemModel.stock_item_model_id);
+        } catch (err) {
+            setError('Failed to add model attribute value: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleStockItemAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedStockItem) {
+            setError('Please select a stock item first');
+            return;
+        }
+        if (!stockItemAttributeForm.stock_item_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                stock_item: selectedStockItem.stock_item_id,
+                stock_item_attribute_definition: Number(stockItemAttributeForm.stock_item_attribute_definition),
+                value_string: stockItemAttributeForm.value_string || null,
+                value_number: stockItemAttributeForm.value_number ? Number(stockItemAttributeForm.value_number) : null,
+                value_bool: stockItemAttributeForm.value_bool,
+                value_date: stockItemAttributeForm.value_date || null
+            };
+            await stockItemAttributeValueService.create(payload);
+            setStockItemAttributeForm({
+                stock_item_attribute_definition: '',
+                value_string: '',
+                value_number: '',
+                value_bool: false,
+                value_date: ''
+            });
+            setShowStockItemAttributeForm(false);
+            await fetchStockItemAttributes(selectedStockItem.stock_item_id);
+        } catch (err) {
+            setError('Failed to add stock item attribute value: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteAttributeDefinition = async (id) => {
+        if (window.confirm('Delete this attribute definition?')) {
+            try {
+                await stockItemAttributeDefinitionService.delete(id);
+                await fetchStockItemAttributeDefinitions();
+            } catch (err) {
+                setError('Failed to delete stock item attribute definition: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteTypeAttribute = async (stockItemTypeId, definitionId) => {
+        if (window.confirm('Remove this attribute from the stock item type?')) {
+            try {
+                await stockItemTypeAttributeService.delete(stockItemTypeId, definitionId);
+                if (selectedStockItemType) {
+                    await fetchStockItemTypeAttributes(selectedStockItemType.stock_item_type_id);
+                }
+            } catch (err) {
+                setError('Failed to remove stock item type attribute: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteModelAttribute = async (stockItemModelId, definitionId) => {
+        if (window.confirm('Remove this attribute value from the stock item model?')) {
+            try {
+                await stockItemModelAttributeService.delete(stockItemModelId, definitionId);
+                if (selectedStockItemModel) {
+                    await fetchStockItemModelAttributes(selectedStockItemModel.stock_item_model_id);
+                }
+            } catch (err) {
+                setError('Failed to remove stock item model attribute: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteStockItemAttribute = async (stockItemId, definitionId) => {
+        if (window.confirm('Remove this attribute value from the stock item?')) {
+            try {
+                await stockItemAttributeValueService.delete(stockItemId, definitionId);
+                if (selectedStockItem) {
+                    await fetchStockItemAttributes(selectedStockItem.stock_item_id);
+                }
+            } catch (err) {
+                setError('Failed to remove stock item attribute: ' + err.message);
+            }
+        }
     };
 
     const handleDeleteType = async (id) => {
@@ -566,6 +886,373 @@ const StockItemsPage = () => {
                             </div>
 
                             <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-4)' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                            <div style={{ fontWeight: '600' }}>Attribute Definitions</div>
+                                            <button
+                                                onClick={() => setShowAttributeDefinitionForm(!showAttributeDefinitionForm)}
+                                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                            >
+                                                + Add
+                                            </button>
+                                        </div>
+                                        {showAttributeDefinitionForm && (
+                                            <form onSubmit={handleAttributeDefinitionSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                                <input
+                                                    type="text"
+                                                    name="description"
+                                                    placeholder="Description"
+                                                    value={attributeDefinitionForm.description}
+                                                    onChange={handleAttributeDefinitionInputChange}
+                                                    required
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                />
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                                                    <select
+                                                        name="data_type"
+                                                        value={attributeDefinitionForm.data_type}
+                                                        onChange={handleAttributeDefinitionInputChange}
+                                                        style={{ padding: 'var(--space-2)' }}
+                                                    >
+                                                        <option value="">Data Type</option>
+                                                        <option value="string">String</option>
+                                                        <option value="number">Number</option>
+                                                        <option value="bool">Boolean</option>
+                                                        <option value="date">Date</option>
+                                                    </select>
+                                                    <input
+                                                        type="text"
+                                                        name="unit"
+                                                        placeholder="Unit"
+                                                        value={attributeDefinitionForm.unit}
+                                                        onChange={handleAttributeDefinitionInputChange}
+                                                        style={{ padding: 'var(--space-2)' }}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                    <button type="button" onClick={() => setShowAttributeDefinitionForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                            {stockItemAttributeDefinitions.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No attribute definitions.</div>
+                                            ) : (
+                                                stockItemAttributeDefinitions.map((def) => (
+                                                    <div key={def.stock_item_attribute_definition_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: '500' }}>{def.description || `Attribute ${def.stock_item_attribute_definition_id}`}</div>
+                                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{def.data_type || 'type'}{def.unit ? ` • ${def.unit}` : ''}</div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteAttributeDefinition(def.stock_item_attribute_definition_id)}
+                                                            style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                            <div style={{ fontWeight: '600' }}>Stock Item Type Attributes</div>
+                                            <button
+                                                onClick={() => setShowTypeAttributeForm(!showTypeAttributeForm)}
+                                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                            >
+                                                + Assign
+                                            </button>
+                                        </div>
+                                        {showTypeAttributeForm && (
+                                            <form onSubmit={handleTypeAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                                <select
+                                                    name="stock_item_attribute_definition"
+                                                    value={typeAttributeForm.stock_item_attribute_definition}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    required
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                >
+                                                    <option value="">Select attribute definition...</option>
+                                                    {stockItemAttributeDefinitions.map((def) => (
+                                                        <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
+                                                            {def.description || `Attribute ${def.stock_item_attribute_definition_id}`}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="text"
+                                                    name="default_value"
+                                                    placeholder="Default value"
+                                                    value={typeAttributeForm.default_value}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                />
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        name="is_mandatory"
+                                                        checked={typeAttributeForm.is_mandatory}
+                                                        onChange={handleTypeAttributeInputChange}
+                                                    />
+                                                    Mandatory
+                                                </label>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                    <button type="button" onClick={() => setShowTypeAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                            {stockItemTypeAttributes.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned.</div>
+                                            ) : (
+                                                stockItemTypeAttributes.map((attr) => {
+                                                    const definition = attr.definition || definitionLookup.get(attr.stock_item_attribute_definition);
+                                                    return (
+                                                        <div key={`${attr.stock_item_type}-${attr.stock_item_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                            <div>
+                                                                <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.stock_item_attribute_definition}`}</div>
+                                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                    {definition?.data_type || 'type'}{definition?.unit ? ` • ${definition.unit}` : ''}
+                                                                    {attr.is_mandatory ? ' • mandatory' : ''}
+                                                                    {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleDeleteTypeAttribute(attr.stock_item_type, attr.stock_item_attribute_definition)}
+                                                                style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                            >
+                                                                &times;
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>Stock Item Model Attributes</div>
+                                        <button
+                                            onClick={() => setShowModelAttributeForm(!showModelAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Add Value
+                                        </button>
+                                    </div>
+                                    {showModelAttributeForm && (
+                                        <form onSubmit={handleModelAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="stock_item_attribute_definition"
+                                                value={modelAttributeForm.stock_item_attribute_definition}
+                                                onChange={handleModelAttributeInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            >
+                                                <option value="">Select attribute definition...</option>
+                                                {stockItemAttributeDefinitions.map((def) => (
+                                                    <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
+                                                        {def.description || `Attribute ${def.stock_item_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {(() => {
+                                                const selectedDef = definitionLookup.get(Number(modelAttributeForm.stock_item_attribute_definition));
+                                                const dataType = selectedDef?.data_type?.toLowerCase();
+                                                if (dataType === 'number') {
+                                                    return (
+                                                        <input
+                                                            type="number"
+                                                            name="value_number"
+                                                            placeholder="Number value"
+                                                            value={modelAttributeForm.value_number}
+                                                            onChange={handleModelAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                if (dataType === 'bool' || dataType === 'boolean') {
+                                                    return (
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                name="value_bool"
+                                                                checked={modelAttributeForm.value_bool}
+                                                                onChange={handleModelAttributeInputChange}
+                                                            />
+                                                            True
+                                                        </label>
+                                                    );
+                                                }
+                                                if (dataType === 'date') {
+                                                    return (
+                                                        <input
+                                                            type="date"
+                                                            name="value_date"
+                                                            value={modelAttributeForm.value_date}
+                                                            onChange={handleModelAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <input
+                                                        type="text"
+                                                        name="value_string"
+                                                        placeholder="String value"
+                                                        value={modelAttributeForm.value_string}
+                                                        onChange={handleModelAttributeInputChange}
+                                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                    />
+                                                );
+                                            })()}
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowModelAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {stockItemModelAttributes.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No model attribute values.</div>
+                                    ) : (
+                                        stockItemModelAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.stock_item_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            return (
+                                                <div key={`${attr.stock_item_model}-${attr.stock_item_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.stock_item_attribute_definition}`}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? 'No value' : String(value)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteModelAttribute(attr.stock_item_model, attr.stock_item_attribute_definition)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>
+                                            Stock Item Attributes {selectedStockItem ? `• ${selectedStockItem.stock_item_name || 'Item ' + selectedStockItem.stock_item_id}` : ''}
+                                        </div>
+                                        <button
+                                            onClick={() => setShowStockItemAttributeForm(!showStockItemAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Add Value
+                                        </button>
+                                    </div>
+                                    {showStockItemAttributeForm && (
+                                        <form onSubmit={handleStockItemAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="stock_item_attribute_definition"
+                                                value={stockItemAttributeForm.stock_item_attribute_definition}
+                                                onChange={handleStockItemAttributeInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            >
+                                                <option value="">Select attribute definition...</option>
+                                                {stockItemAttributeDefinitions.map((def) => (
+                                                    <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
+                                                        {def.description || `Attribute ${def.stock_item_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {(() => {
+                                                const selectedDef = definitionLookup.get(Number(stockItemAttributeForm.stock_item_attribute_definition));
+                                                const dataType = selectedDef?.data_type?.toLowerCase();
+                                                if (dataType === 'number') {
+                                                    return (
+                                                        <input
+                                                            type="number"
+                                                            name="value_number"
+                                                            placeholder="Number value"
+                                                            value={stockItemAttributeForm.value_number}
+                                                            onChange={handleStockItemAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                if (dataType === 'bool' || dataType === 'boolean') {
+                                                    return (
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                name="value_bool"
+                                                                checked={stockItemAttributeForm.value_bool}
+                                                                onChange={handleStockItemAttributeInputChange}
+                                                            />
+                                                            True
+                                                        </label>
+                                                    );
+                                                }
+                                                if (dataType === 'date') {
+                                                    return (
+                                                        <input
+                                                            type="date"
+                                                            name="value_date"
+                                                            value={stockItemAttributeForm.value_date}
+                                                            onChange={handleStockItemAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <input
+                                                        type="text"
+                                                        name="value_string"
+                                                        placeholder="String value"
+                                                        value={stockItemAttributeForm.value_string}
+                                                        onChange={handleStockItemAttributeInputChange}
+                                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                    />
+                                                );
+                                            })()}
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowStockItemAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {!selectedStockItem ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>Select a stock item to view or add values.</div>
+                                    ) : stockItemAttributes.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No attribute values set for this stock item.</div>
+                                    ) : (
+                                        stockItemAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.stock_item_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            return (
+                                                <div key={`${attr.stock_item}-${attr.stock_item_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.stock_item_attribute_definition}`}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? 'No value' : String(value)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteStockItemAttribute(attr.stock_item, attr.stock_item_attribute_definition)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
                                 {showStockItemForm && (
                                     <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
                                         <div style={{ fontWeight: '600', marginBottom: 'var(--space-4)' }}>{editingStockItem ? 'Edit Stock Item' : 'New Stock Item'}</div>
@@ -617,7 +1304,15 @@ const StockItemsPage = () => {
                                         </thead>
                                         <tbody>
                                             {stockItems.map(item => (
-                                                <tr key={item.stock_item_id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                                <tr
+                                                    key={item.stock_item_id}
+                                                    onClick={() => setSelectedStockItem(item)}
+                                                    style={{
+                                                        borderBottom: '1px solid var(--color-border)',
+                                                        cursor: 'pointer',
+                                                        backgroundColor: selectedStockItem?.stock_item_id === item.stock_item_id ? 'var(--color-bg-secondary)' : 'transparent'
+                                                    }}
+                                                >
                                                     <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
                                                         <div style={{ fontWeight: '500' }}>{item.stock_item_name || 'Unnamed Item'}</div>
                                                     </td>

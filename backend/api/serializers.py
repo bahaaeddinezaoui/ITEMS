@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -329,6 +329,220 @@ class AssetIsAssignedToPersonSerializer(serializers.ModelSerializer):
         model = AssetIsAssignedToPerson
         fields = ['assignment_id', 'person', 'asset', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active']
         read_only_fields = ['assignment_id']
+
+
+class StockItemAttributeDefinitionSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemAttributeDefinition model"""
+
+    class Meta:
+        model = StockItemAttributeDefinition
+        fields = ['stock_item_attribute_definition_id', 'data_type', 'unit', 'description']
+        read_only_fields = ['stock_item_attribute_definition_id']
+
+
+class StockItemTypeAttributeSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemTypeAttribute model"""
+    stock_item_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=StockItemAttributeDefinition.objects.all())
+    stock_item_type = serializers.PrimaryKeyRelatedField(queryset=StockItemType.objects.all())
+    definition = StockItemAttributeDefinitionSerializer(source='stock_item_attribute_definition', read_only=True)
+
+    class Meta:
+        model = StockItemTypeAttribute
+        fields = ['stock_item_attribute_definition', 'stock_item_type', 'is_mandatory', 'default_value', 'definition']
+
+    def create(self, validated_data):
+        instance = StockItemTypeAttribute()
+        definition = validated_data.get('stock_item_attribute_definition')
+        stock_item_type = validated_data.get('stock_item_type')
+        instance.stock_item_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.stock_item_type_id = stock_item_type.pk if hasattr(stock_item_type, 'pk') else stock_item_type
+        instance.is_mandatory = validated_data.get('is_mandatory')
+        instance.default_value = validated_data.get('default_value')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.is_mandatory = validated_data.get('is_mandatory', instance.is_mandatory)
+        instance.default_value = validated_data.get('default_value', instance.default_value)
+        instance.save()
+        return instance
+
+
+class StockItemModelAttributeValueSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemModelAttributeValue model"""
+    stock_item_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=StockItemAttributeDefinition.objects.all())
+    stock_item_model = serializers.PrimaryKeyRelatedField(queryset=StockItemModel.objects.all())
+    definition = StockItemAttributeDefinitionSerializer(source='stock_item_attribute_definition', read_only=True)
+
+    class Meta:
+        model = StockItemModelAttributeValue
+        fields = [
+            'stock_item_model', 'stock_item_attribute_definition', 'definition',
+            'value_bool', 'value_string', 'value_number', 'value_date'
+        ]
+
+    def create(self, validated_data):
+        instance = StockItemModelAttributeValue()
+        definition = validated_data.get('stock_item_attribute_definition')
+        stock_item_model = validated_data.get('stock_item_model')
+        instance.stock_item_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.stock_item_model_id = stock_item_model.pk if hasattr(stock_item_model, 'pk') else stock_item_model
+        instance.value_bool = validated_data.get('value_bool')
+        instance.value_string = validated_data.get('value_string')
+        instance.value_number = validated_data.get('value_number')
+        instance.value_date = validated_data.get('value_date')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.value_bool = validated_data.get('value_bool', instance.value_bool)
+        instance.value_string = validated_data.get('value_string', instance.value_string)
+        instance.value_number = validated_data.get('value_number', instance.value_number)
+        instance.value_date = validated_data.get('value_date', instance.value_date)
+        instance.save()
+        return instance
+
+
+class StockItemAttributeValueSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemAttributeValue model"""
+    stock_item_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=StockItemAttributeDefinition.objects.all())
+    stock_item = serializers.PrimaryKeyRelatedField(queryset=StockItem.objects.all())
+    definition = StockItemAttributeDefinitionSerializer(source='stock_item_attribute_definition', read_only=True)
+
+    class Meta:
+        model = StockItemAttributeValue
+        fields = [
+            'stock_item', 'stock_item_attribute_definition', 'definition',
+            'value_bool', 'value_string', 'value_number', 'value_date'
+        ]
+
+    def create(self, validated_data):
+        instance = StockItemAttributeValue()
+        definition = validated_data.get('stock_item_attribute_definition')
+        stock_item = validated_data.get('stock_item')
+        instance.stock_item_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.stock_item_id = stock_item.pk if hasattr(stock_item, 'pk') else stock_item
+        instance.value_bool = validated_data.get('value_bool')
+        instance.value_string = validated_data.get('value_string')
+        instance.value_number = validated_data.get('value_number')
+        instance.value_date = validated_data.get('value_date')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.value_bool = validated_data.get('value_bool', instance.value_bool)
+        instance.value_string = validated_data.get('value_string', instance.value_string)
+        instance.value_number = validated_data.get('value_number', instance.value_number)
+        instance.value_date = validated_data.get('value_date', instance.value_date)
+        instance.save()
+        return instance
+
+
+class ConsumableAttributeDefinitionSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableAttributeDefinition model"""
+
+    class Meta:
+        model = ConsumableAttributeDefinition
+        fields = ['consumable_attribute_definition_id', 'data_type', 'unit', 'description']
+        read_only_fields = ['consumable_attribute_definition_id']
+
+
+class ConsumableTypeAttributeSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableTypeAttribute model"""
+    consumable_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=ConsumableAttributeDefinition.objects.all())
+    consumable_type = serializers.PrimaryKeyRelatedField(queryset=ConsumableType.objects.all())
+    definition = ConsumableAttributeDefinitionSerializer(source='consumable_attribute_definition', read_only=True)
+
+    class Meta:
+        model = ConsumableTypeAttribute
+        fields = ['consumable_attribute_definition', 'consumable_type', 'is_mandatory', 'default_value', 'definition']
+
+    def create(self, validated_data):
+        instance = ConsumableTypeAttribute()
+        definition = validated_data.get('consumable_attribute_definition')
+        consumable_type = validated_data.get('consumable_type')
+        instance.consumable_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.consumable_type_id = consumable_type.pk if hasattr(consumable_type, 'pk') else consumable_type
+        instance.is_mandatory = validated_data.get('is_mandatory')
+        instance.default_value = validated_data.get('default_value')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.is_mandatory = validated_data.get('is_mandatory', instance.is_mandatory)
+        instance.default_value = validated_data.get('default_value', instance.default_value)
+        instance.save()
+        return instance
+
+
+class ConsumableModelAttributeValueSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableModelAttributeValue model"""
+    consumable_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=ConsumableAttributeDefinition.objects.all())
+    consumable_model = serializers.PrimaryKeyRelatedField(queryset=ConsumableModel.objects.all())
+    definition = ConsumableAttributeDefinitionSerializer(source='consumable_attribute_definition', read_only=True)
+
+    class Meta:
+        model = ConsumableModelAttributeValue
+        fields = [
+            'consumable_model', 'consumable_attribute_definition', 'definition',
+            'value_bool', 'value_string', 'value_number', 'value_date'
+        ]
+
+    def create(self, validated_data):
+        instance = ConsumableModelAttributeValue()
+        definition = validated_data.get('consumable_attribute_definition')
+        consumable_model = validated_data.get('consumable_model')
+        instance.consumable_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.consumable_model_id = consumable_model.pk if hasattr(consumable_model, 'pk') else consumable_model
+        instance.value_bool = validated_data.get('value_bool')
+        instance.value_string = validated_data.get('value_string')
+        instance.value_number = validated_data.get('value_number')
+        instance.value_date = validated_data.get('value_date')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.value_bool = validated_data.get('value_bool', instance.value_bool)
+        instance.value_string = validated_data.get('value_string', instance.value_string)
+        instance.value_number = validated_data.get('value_number', instance.value_number)
+        instance.value_date = validated_data.get('value_date', instance.value_date)
+        instance.save()
+        return instance
+
+
+class ConsumableAttributeValueSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableAttributeValue model"""
+    consumable_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=ConsumableAttributeDefinition.objects.all())
+    consumable = serializers.PrimaryKeyRelatedField(queryset=Consumable.objects.all())
+    definition = ConsumableAttributeDefinitionSerializer(source='consumable_attribute_definition', read_only=True)
+
+    class Meta:
+        model = ConsumableAttributeValue
+        fields = [
+            'consumable', 'consumable_attribute_definition', 'definition',
+            'value_bool', 'value_string', 'value_number', 'value_date'
+        ]
+
+    def create(self, validated_data):
+        instance = ConsumableAttributeValue()
+        definition = validated_data.get('consumable_attribute_definition')
+        consumable = validated_data.get('consumable')
+        instance.consumable_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.consumable_id = consumable.pk if hasattr(consumable, 'pk') else consumable
+        instance.value_bool = validated_data.get('value_bool')
+        instance.value_string = validated_data.get('value_string')
+        instance.value_number = validated_data.get('value_number')
+        instance.value_date = validated_data.get('value_date')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.value_bool = validated_data.get('value_bool', instance.value_bool)
+        instance.value_string = validated_data.get('value_string', instance.value_string)
+        instance.value_number = validated_data.get('value_number', instance.value_number)
+        instance.value_date = validated_data.get('value_date', instance.value_date)
+        instance.save()
+        return instance
 
 
 class StockItemSerializer(serializers.ModelSerializer):

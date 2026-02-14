@@ -8091,3 +8091,555 @@ Response Body: <!DOCTYPE html>
 [2026-02-14 21:39:11.278251] START GET /api/asset-type-attributes/
 [2026-02-14 21:39:11.327708] END   GET /api/asset-type-attributes/ -> 200
 [2026-02-14 21:39:11.327743] END   GET /api/asset-models/ -> 200
+[2026-02-14 21:50:38.207783] START GET /api/asset-types/
+[2026-02-14 21:50:38.211659] START GET /api/asset-attribute-definitions/
+[2026-02-14 21:50:38.210904] START GET /api/asset-brands/
+[2026-02-14 21:50:38.264137] END   GET /api/asset-brands/ -> 200
+[2026-02-14 21:50:38.264178] END   GET /api/asset-types/ -> 200
+[2026-02-14 21:50:38.264667] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-14 21:50:38.268596] START GET /api/asset-brands/
+[2026-02-14 21:50:38.269869] START GET /api/asset-types/
+[2026-02-14 21:50:38.270334] START GET /api/asset-attribute-definitions/
+[2026-02-14 21:50:38.304170] END   GET /api/asset-brands/ -> 200
+[2026-02-14 21:50:38.308655] END   GET /api/asset-types/ -> 200
+[2026-02-14 21:50:38.313603] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-14 21:50:39.664906] START GET /api/stock-item-types/
+[2026-02-14 21:50:39.665407] START GET /api/stock-item-brands/
+[2026-02-14 21:50:39.667985] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:50:39.705887] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:50:39.705912] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:50:39.706356] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:50:39.712946] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:50:39.712679] START GET /api/stock-item-types/
+[2026-02-14 21:50:39.713229] START GET /api/stock-item-brands/
+[2026-02-14 21:50:39.746361] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:50:39.747886] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:50:39.748072] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:50:40.440691] START GET /api/stock-item-models/
+[2026-02-14 21:50:40.441610] START GET /api/stock-item-type-attributes/
+[2026-02-14 21:50:40.475715] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-02-14 21:50:40.478094] END   GET /api/stock-item-models/ -> 200
+[2026-02-14 21:50:42.167041] START GET /api/stock-item-models/
+[2026-02-14 21:50:42.170740] START GET /api/stock-item-type-attributes/
+[2026-02-14 21:50:42.222935] END   GET /api/stock-item-models/ -> 200
+[2026-02-14 21:50:42.223078] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-02-14 21:50:42.936064] START GET /api/stock-items/
+[2026-02-14 21:50:42.937472] START GET /api/stock-item-model-attributes/
+[2026-02-14 21:50:42.975412] END   GET /api/stock-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/stock-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:50:42.990891] END   GET /api/stock-item-model-attributes/ -> 200
+[2026-02-14 21:50:51.345691] START GET /api/stock-item-brands/
+[2026-02-14 21:50:51.348065] START GET /api/stock-item-types/
+[2026-02-14 21:50:51.351697] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:50:51.394172] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:50:51.394402] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:50:51.401239] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:50:51.400404] START GET /api/stock-item-types/
+[2026-02-14 21:50:51.402590] START GET /api/stock-item-brands/
+[2026-02-14 21:50:51.410897] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:50:51.446081] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:50:51.455419] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:50:51.459967] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:50:52.703469] START GET /api/stock-item-models/
+[2026-02-14 21:50:52.706556] START GET /api/stock-item-type-attributes/
+[2026-02-14 21:50:52.760475] END   GET /api/stock-item-models/ -> 200
+[2026-02-14 21:50:52.760667] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-02-14 21:50:53.543592] START GET /api/stock-items/
+[2026-02-14 21:50:53.566715] END   GET /api/stock-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/stock-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:50:53.567945] START GET /api/stock-item-model-attributes/
+[2026-02-14 21:50:53.726514] END   GET /api/stock-item-model-attributes/ -> 200
+[2026-02-14 21:51:24.029129] START GET /api/consumable-types/
+[2026-02-14 21:51:24.030084] START GET /api/consumable-brands/
+[2026-02-14 21:51:24.065473] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:51:24.065515] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:51:24.070209] START GET /api/consumable-brands/
+[2026-02-14 21:51:24.071598] START GET /api/consumable-types/
+[2026-02-14 21:51:24.100084] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:51:24.208998] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:51:24.800947] START GET /api/consumable-models/
+[2026-02-14 21:51:24.838725] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:51:25.524415] START GET /api/consumable-models/
+[2026-02-14 21:51:25.665613] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:51:26.799015] START GET /api/consumables/
+[2026-02-14 21:51:26.805990] END   GET /api/consumables/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/consumables/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:52:14.057630] START GET /api/stock-item-types/
+[2026-02-14 21:52:14.058526] START GET /api/stock-item-brands/
+[2026-02-14 21:52:14.059158] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:52:14.107146] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:52:14.108897] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:52:14.113068] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:52:14.113014] START GET /api/stock-item-types/
+[2026-02-14 21:52:14.115361] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:52:14.117772] START GET /api/stock-item-brands/
+[2026-02-14 21:52:14.149797] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:52:14.149823] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:52:14.251267] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:52:15.461450] START GET /api/stock-item-models/
+[2026-02-14 21:52:15.462305] START GET /api/stock-item-type-attributes/
+[2026-02-14 21:52:15.497427] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-02-14 21:52:15.499356] END   GET /api/stock-item-models/ -> 200
+[2026-02-14 21:52:16.242962] START GET /api/stock-items/
+[2026-02-14 21:52:16.242463] START GET /api/stock-item-model-attributes/
+[2026-02-14 21:52:16.251420] END   GET /api/stock-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/stock-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:52:16.283283] END   GET /api/stock-item-model-attributes/ -> 200
+[2026-02-14 21:52:22.706646] START GET /api/stock-item-types/
+[2026-02-14 21:52:22.709640] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:52:22.710432] START GET /api/stock-item-brands/
+[2026-02-14 21:52:22.754367] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:52:22.757296] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:52:22.760101] START GET /api/stock-item-types/
+[2026-02-14 21:52:22.764345] START GET /api/stock-item-brands/
+[2026-02-14 21:52:22.808419] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:52:22.808729] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:52:22.856404] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:52:22.863655] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:52:22.908631] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:52:26.003473] START GET /api/stock-item-types/
+[2026-02-14 21:52:26.005041] START GET /api/stock-item-brands/
+[2026-02-14 21:52:26.007362] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:52:26.076718] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:52:26.076760] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:52:26.076809] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:52:26.081830] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:52:26.081380] START GET /api/stock-item-types/
+[2026-02-14 21:52:26.084008] START GET /api/stock-item-brands/
+[2026-02-14 21:52:26.115781] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:52:26.118789] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:52:26.120017] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:52:26.906521] START GET /api/stock-item-models/
+[2026-02-14 21:52:26.908253] START GET /api/stock-item-type-attributes/
+[2026-02-14 21:52:26.949895] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-02-14 21:52:26.952697] END   GET /api/stock-item-models/ -> 200
+[2026-02-14 21:52:27.671915] START GET /api/stock-items/
+[2026-02-14 21:52:27.673698] START GET /api/stock-item-model-attributes/
+[2026-02-14 21:52:27.709727] END   GET /api/stock-item-model-attributes/ -> 200
+[2026-02-14 21:52:27.716460] END   GET /api/stock-items/ -> 200
+[2026-02-14 21:52:35.418966] START GET /api/consumable-types/
+[2026-02-14 21:52:35.419698] START GET /api/consumable-brands/
+[2026-02-14 21:52:35.469060] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:52:35.469154] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:52:35.475163] START GET /api/consumable-brands/
+[2026-02-14 21:52:35.477295] START GET /api/consumable-types/
+[2026-02-14 21:52:35.526095] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:52:35.527674] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:52:36.142386] START GET /api/consumable-models/
+[2026-02-14 21:52:36.190774] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:52:36.855099] START GET /api/consumables/
+[2026-02-14 21:52:36.887495] END   GET /api/consumables/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/consumables/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:52:38.472511] START GET /api/consumable-types/
+[2026-02-14 21:52:38.473733] START GET /api/consumable-brands/
+[2026-02-14 21:52:38.527869] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:52:38.528015] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:52:38.533697] START GET /api/consumable-brands/
+[2026-02-14 21:52:38.535924] START GET /api/consumable-types/
+[2026-02-14 21:52:38.582437] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:52:38.582523] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:52:39.638142] START GET /api/consumable-models/
+[2026-02-14 21:52:39.692546] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:52:40.197781] START GET /api/consumables/
+[2026-02-14 21:52:40.223313] END   GET /api/consumables/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/consumables/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:53:17.376508] START GET /api/consumable-types/
+[2026-02-14 21:53:17.378214] START GET /api/consumable-brands/
+[2026-02-14 21:53:17.412853] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:17.414707] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:17.417424] START GET /api/consumable-types/
+[2026-02-14 21:53:17.419635] START GET /api/consumable-brands/
+[2026-02-14 21:53:17.449914] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:17.556206] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:17.977618] START GET /api/consumable-types/
+[2026-02-14 21:53:17.981465] START GET /api/consumable-brands/
+[2026-02-14 21:53:18.014573] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:18.019359] START GET /api/consumable-brands/
+[2026-02-14 21:53:18.116418] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:18.120935] START GET /api/consumable-types/
+[2026-02-14 21:53:18.151656] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:18.161736] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:18.500106] START GET /api/consumable-models/
+[2026-02-14 21:53:18.532382] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:53:19.163771] START GET /api/consumables/
+[2026-02-14 21:53:19.169108] END   GET /api/consumables/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/consumables/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:53:30.646562] START GET /api/consumable-types/
+[2026-02-14 21:53:30.647138] START GET /api/consumable-brands/
+[2026-02-14 21:53:30.702474] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:30.702536] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:30.706580] START GET /api/consumable-brands/
+[2026-02-14 21:53:30.708294] START GET /api/consumable-types/
+[2026-02-14 21:53:30.756223] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:30.849320] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:31.454189] START GET /api/consumable-models/
+[2026-02-14 21:53:31.486571] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:53:31.979773] START GET /api/consumables/
+[2026-02-14 21:53:31.986321] END   GET /api/consumables/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/consumables/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:53:34.180239] START GET /api/consumable-types/
+[2026-02-14 21:53:34.181197] START GET /api/consumable-brands/
+[2026-02-14 21:53:34.214595] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:34.219055] START GET /api/consumable-brands/
+[2026-02-14 21:53:34.320972] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:34.325687] START GET /api/consumable-types/
+[2026-02-14 21:53:34.357499] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:34.365019] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:34.868983] START GET /api/consumable-models/
+[2026-02-14 21:53:34.901570] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:53:35.395452] START GET /api/consumables/
+[2026-02-14 21:53:35.401807] END   GET /api/consumables/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/consumables/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bott
+[2026-02-14 21:53:40.598854] START GET /api/consumable-types/
+[2026-02-14 21:53:40.599909] START GET /api/consumable-brands/
+[2026-02-14 21:53:40.652736] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:40.653552] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:40.656884] START GET /api/consumable-types/
+[2026-02-14 21:53:40.658363] START GET /api/consumable-brands/
+[2026-02-14 21:53:40.689626] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:53:40.694876] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:53:41.436211] START GET /api/consumable-models/
+[2026-02-14 21:53:41.467351] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:53:41.941662] START GET /api/consumables/
+[2026-02-14 21:53:42.022576] END   GET /api/consumables/ -> 500
+Response Body: AttributeError at /api/consumables/
+Got AttributeError when attempting to get a value for field `consumable_model` on serializer `ConsumableSerializer`.
+The serializer field might be named incorrectly and not match any attribute or key on the `ConsumableModel` instance.
+Original exception text was: 'ConsumableModel' object has no attribute 'consumable_model'.
+
+Request Method: GET
+Request URL: http://localhost:8000/api/consumables/?consumable_model=1
+Django Version: 6.0.2
+Python Executable: D:\Pr
+[2026-02-14 21:54:41.594429] START GET /api/consumable-types/
+[2026-02-14 21:54:41.595316] START GET /api/consumable-brands/
+[2026-02-14 21:54:41.651079] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:41.654643] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:41.656892] START GET /api/consumable-types/
+[2026-02-14 21:54:41.658454] START GET /api/consumable-brands/
+[2026-02-14 21:54:41.691257] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:41.789561] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:42.277556] START GET /api/consumable-models/
+[2026-02-14 21:54:42.310089] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:54:42.761519] START GET /api/consumables/
+[2026-02-14 21:54:42.808808] END   GET /api/consumables/ -> 500
+Response Body: AttributeError at /api/consumables/
+Got AttributeError when attempting to get a value for field `consumable_model` on serializer `ConsumableSerializer`.
+The serializer field might be named incorrectly and not match any attribute or key on the `ConsumableModel` instance.
+Original exception text was: 'ConsumableModel' object has no attribute 'consumable_model'.
+
+Request Method: GET
+Request URL: http://localhost:8000/api/consumables/?consumable_model=1
+Django Version: 6.0.2
+Python Executable: D:\Pr
+[2026-02-14 21:54:44.444464] START GET /api/consumable-types/
+[2026-02-14 21:54:44.445855] START GET /api/consumable-brands/
+[2026-02-14 21:54:44.483202] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:44.487499] START GET /api/consumable-brands/
+[2026-02-14 21:54:44.519816] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:44.581318] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:44.585982] START GET /api/consumable-types/
+[2026-02-14 21:54:44.720597] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:45.048469] START GET /api/consumable-models/
+[2026-02-14 21:54:45.080769] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:54:45.501910] START GET /api/consumables/
+[2026-02-14 21:54:45.551113] END   GET /api/consumables/ -> 500
+Response Body: AttributeError at /api/consumables/
+Got AttributeError when attempting to get a value for field `consumable_model` on serializer `ConsumableSerializer`.
+The serializer field might be named incorrectly and not match any attribute or key on the `ConsumableModel` instance.
+Original exception text was: 'ConsumableModel' object has no attribute 'consumable_model'.
+
+Request Method: GET
+Request URL: http://localhost:8000/api/consumables/?consumable_model=1
+Django Version: 6.0.2
+Python Executable: D:\Pr
+[2026-02-14 21:54:51.743633] START GET /api/consumable-types/
+[2026-02-14 21:54:51.744987] START GET /api/consumable-brands/
+[2026-02-14 21:54:51.788385] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:51.795182] START GET /api/consumable-brands/
+[2026-02-14 21:54:51.840597] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:51.894645] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:51.900839] START GET /api/consumable-types/
+[2026-02-14 21:54:51.947212] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:52.549566] START GET /api/consumable-types/
+[2026-02-14 21:54:52.552563] START GET /api/consumable-brands/
+[2026-02-14 21:54:52.591732] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:52.598912] START GET /api/consumable-types/
+[2026-02-14 21:54:52.602814] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:52.607575] START GET /api/consumable-brands/
+[2026-02-14 21:54:52.655494] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:52.742198] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:53.043867] START GET /api/consumable-models/
+[2026-02-14 21:54:53.190970] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:54:53.830993] START GET /api/consumables/
+[2026-02-14 21:54:53.917464] END   GET /api/consumables/ -> 500
+Response Body: AttributeError at /api/consumables/
+Got AttributeError when attempting to get a value for field `consumable_model` on serializer `ConsumableSerializer`.
+The serializer field might be named incorrectly and not match any attribute or key on the `ConsumableModel` instance.
+Original exception text was: 'ConsumableModel' object has no attribute 'consumable_model'.
+
+Request Method: GET
+Request URL: http://localhost:8000/api/consumables/?consumable_model=1
+Django Version: 6.0.2
+Python Executable: D:\Pr
+[2026-02-14 21:54:57.386936] START GET /api/consumable-types/
+[2026-02-14 21:54:57.389342] START GET /api/consumable-brands/
+[2026-02-14 21:54:57.439886] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:57.446649] START GET /api/consumable-brands/
+[2026-02-14 21:54:57.492146] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:54:57.582871] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:57.590910] START GET /api/consumable-types/
+[2026-02-14 21:54:57.651085] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:54:58.284292] START GET /api/consumable-models/
+[2026-02-14 21:54:58.346039] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:54:58.818671] START GET /api/consumables/
+[2026-02-14 21:54:58.882304] END   GET /api/consumables/ -> 500
+Response Body: AttributeError at /api/consumables/
+Got AttributeError when attempting to get a value for field `consumable_model` on serializer `ConsumableSerializer`.
+The serializer field might be named incorrectly and not match any attribute or key on the `ConsumableModel` instance.
+Original exception text was: 'ConsumableModel' object has no attribute 'consumable_model'.
+
+Request Method: GET
+Request URL: http://localhost:8000/api/consumables/?consumable_model=1
+Django Version: 6.0.2
+Python Executable: D:\Pr
+[2026-02-14 21:55:21.144438] START GET /api/consumable-types/
+[2026-02-14 21:55:21.145852] START GET /api/consumable-brands/
+[2026-02-14 21:55:21.197620] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:55:21.197660] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:55:21.201744] START GET /api/consumable-types/
+[2026-02-14 21:55:21.203105] START GET /api/consumable-brands/
+[2026-02-14 21:55:21.236726] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:55:21.236904] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:55:21.807072] START GET /api/consumable-models/
+[2026-02-14 21:55:21.842590] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:55:22.350080] START GET /api/consumables/
+[2026-02-14 21:55:22.396223] END   GET /api/consumables/ -> 500
+Response Body: AttributeError at /api/consumables/
+Got AttributeError when attempting to get a value for field `consumable_model` on serializer `ConsumableSerializer`.
+The serializer field might be named incorrectly and not match any attribute or key on the `ConsumableModel` instance.
+Original exception text was: 'ConsumableModel' object has no attribute 'consumable_model'.
+
+Request Method: GET
+Request URL: http://localhost:8000/api/consumables/?consumable_model=1
+Django Version: 6.0.2
+Python Executable: D:\Pr
+[2026-02-14 21:56:12.507780] START GET /api/consumable-types/
+[2026-02-14 21:56:12.511855] START GET /api/consumable-brands/
+[2026-02-14 21:56:12.548447] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:56:12.548489] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:56:12.553013] START GET /api/consumable-brands/
+[2026-02-14 21:56:12.553622] START GET /api/consumable-types/
+[2026-02-14 21:56:12.589417] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:56:12.589451] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:56:13.077118] START GET /api/consumable-types/
+[2026-02-14 21:56:13.079879] START GET /api/consumable-brands/
+[2026-02-14 21:56:13.113650] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:56:13.117819] START GET /api/consumable-brands/
+[2026-02-14 21:56:13.147366] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:56:13.212099] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:56:13.215899] START GET /api/consumable-types/
+[2026-02-14 21:56:13.247312] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:56:13.553979] START GET /api/consumable-models/
+[2026-02-14 21:56:13.587797] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:56:14.196337] START GET /api/consumables/
+[2026-02-14 21:56:14.234793] END   GET /api/consumables/ -> 500
+Response Body: AttributeError at /api/consumables/
+Got AttributeError when attempting to get a value for field `consumable_model` on serializer `ConsumableSerializer`.
+The serializer field might be named incorrectly and not match any attribute or key on the `ConsumableModel` instance.
+Original exception text was: 'ConsumableModel' object has no attribute 'consumable_model'.
+
+Request Method: GET
+Request URL: http://localhost:8000/api/consumables/?consumable_model=1
+Django Version: 6.0.2
+Python Executable: D:\Pr
+[2026-02-14 21:59:22.834276] START GET /api/consumable-types/
+[2026-02-14 21:59:22.835099] START GET /api/consumable-brands/
+[2026-02-14 21:59:22.885151] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:59:22.886059] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:59:22.890103] START GET /api/consumable-brands/
+[2026-02-14 21:59:22.890496] START GET /api/consumable-types/
+[2026-02-14 21:59:22.922183] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:59:22.922225] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:59:23.576952] START GET /api/consumable-models/
+[2026-02-14 21:59:23.615607] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:59:24.149880] START GET /api/consumables/
+[2026-02-14 21:59:24.195300] END   GET /api/consumables/ -> 200
+[2026-02-14 21:59:26.425353] START GET /api/stock-item-types/
+[2026-02-14 21:59:26.426208] START GET /api/stock-item-brands/
+[2026-02-14 21:59:26.428836] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:59:26.475226] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:59:26.475391] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:59:26.476287] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:59:26.480740] START GET /api/stock-item-types/
+[2026-02-14 21:59:26.482784] START GET /api/stock-item-brands/
+[2026-02-14 21:59:26.484349] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:59:26.518470] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:59:26.519312] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:59:26.520714] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:59:27.385588] START GET /api/stock-item-models/
+[2026-02-14 21:59:27.386495] START GET /api/stock-item-type-attributes/
+[2026-02-14 21:59:27.425627] END   GET /api/stock-item-models/ -> 200
+[2026-02-14 21:59:27.433767] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-02-14 21:59:28.049120] START GET /api/stock-items/
+[2026-02-14 21:59:28.049705] START GET /api/stock-item-model-attributes/
+[2026-02-14 21:59:28.095469] END   GET /api/stock-items/ -> 200
+[2026-02-14 21:59:28.095830] END   GET /api/stock-item-model-attributes/ -> 200
+[2026-02-14 21:59:31.934395] START GET /api/stock-item-attributes/
+[2026-02-14 21:59:31.978722] END   GET /api/stock-item-attributes/ -> 200
+[2026-02-14 21:59:37.804157] START PUT /api/stock-items/1/
+[2026-02-14 21:59:37.866573] END   PUT /api/stock-items/1/ -> 200
+[2026-02-14 21:59:37.875454] START GET /api/stock-items/
+[2026-02-14 21:59:37.926686] END   GET /api/stock-items/ -> 200
+[2026-02-14 21:59:39.087264] START GET /api/asset-types/
+[2026-02-14 21:59:39.090386] START GET /api/asset-brands/
+[2026-02-14 21:59:39.091694] START GET /api/asset-attribute-definitions/
+[2026-02-14 21:59:39.145720] END   GET /api/asset-types/ -> 200
+[2026-02-14 21:59:39.145832] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-14 21:59:39.146123] END   GET /api/asset-brands/ -> 200
+[2026-02-14 21:59:39.152555] START GET /api/asset-attribute-definitions/
+[2026-02-14 21:59:39.153991] START GET /api/asset-types/
+[2026-02-14 21:59:39.158907] START GET /api/asset-brands/
+[2026-02-14 21:59:39.202629] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-14 21:59:39.204298] END   GET /api/asset-types/ -> 200
+[2026-02-14 21:59:39.207702] END   GET /api/asset-brands/ -> 200
+[2026-02-14 21:59:39.992898] START GET /api/asset-models/
+[2026-02-14 21:59:39.994557] START GET /api/asset-type-attributes/
+[2026-02-14 21:59:40.046957] END   GET /api/asset-models/ -> 200
+[2026-02-14 21:59:40.050382] END   GET /api/asset-type-attributes/ -> 200
+[2026-02-14 21:59:42.871966] START GET /api/asset-model-attributes/
+[2026-02-14 21:59:42.873479] START GET /api/assets/
+[2026-02-14 21:59:42.934280] END   GET /api/asset-model-attributes/ -> 200
+[2026-02-14 21:59:42.935182] END   GET /api/assets/ -> 200
+[2026-02-14 21:59:48.691142] START GET /api/consumable-types/
+[2026-02-14 21:59:48.691972] START GET /api/consumable-brands/
+[2026-02-14 21:59:48.735150] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:59:48.739682] START GET /api/consumable-types/
+[2026-02-14 21:59:48.746521] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:59:48.751703] START GET /api/consumable-brands/
+[2026-02-14 21:59:48.777516] END   GET /api/consumable-types/ -> 200
+[2026-02-14 21:59:48.908905] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 21:59:49.788024] START GET /api/consumable-models/
+[2026-02-14 21:59:49.950979] END   GET /api/consumable-models/ -> 200
+[2026-02-14 21:59:50.691524] START GET /api/consumables/
+[2026-02-14 21:59:50.742794] END   GET /api/consumables/ -> 200
+[2026-02-14 21:59:54.601812] START GET /api/stock-item-types/
+[2026-02-14 21:59:54.602742] START GET /api/stock-item-brands/
+[2026-02-14 21:59:54.607173] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:59:54.651451] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:59:54.657076] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:59:54.656748] START GET /api/stock-item-brands/
+[2026-02-14 21:59:54.668325] START GET /api/stock-item-attribute-definitions/
+[2026-02-14 21:59:54.704816] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 21:59:54.716126] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-14 21:59:54.743882] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 21:59:54.751253] START GET /api/stock-item-types/
+[2026-02-14 21:59:54.795272] END   GET /api/stock-item-types/ -> 200
