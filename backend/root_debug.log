@@ -6182,3 +6182,241 @@ Response Body: <!DOCTYPE html>
 [2026-02-14 16:20:11.382774] START GET /api/maintenances/
 [2026-02-14 16:20:11.421346] END   GET /api/persons/ -> 200
 [2026-02-14 16:20:11.442497] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:21:45.225533] START GET /api/problem-reports/
+[2026-02-14 16:21:45.226591] START GET /api/persons/
+[2026-02-14 16:21:45.270800] END   GET /api/persons/ -> 200
+[2026-02-14 16:21:45.275802] START GET /api/persons/
+[2026-02-14 16:21:45.278983] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:21:45.284253] START GET /api/problem-reports/
+[2026-02-14 16:21:45.308747] END   GET /api/persons/ -> 200
+[2026-02-14 16:21:45.323114] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:49:59.662656] START GET /api/problem-reports/
+[2026-02-14 16:49:59.663087] START GET /api/persons/
+[2026-02-14 16:49:59.704129] END   GET /api/persons/ -> 200
+[2026-02-14 16:49:59.711420] START GET /api/persons/
+[2026-02-14 16:49:59.727746] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:49:59.732786] START GET /api/problem-reports/
+[2026-02-14 16:49:59.755063] END   GET /api/persons/ -> 200
+[2026-02-14 16:49:59.880066] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:50:15.726105] START GET /api/problem-reports/
+[2026-02-14 16:50:15.726659] START GET /api/persons/
+[2026-02-14 16:50:15.765133] END   GET /api/persons/ -> 200
+[2026-02-14 16:50:15.769837] START GET /api/persons/
+[2026-02-14 16:50:15.776269] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:50:15.780112] START GET /api/problem-reports/
+[2026-02-14 16:50:15.808272] END   GET /api/persons/ -> 200
+[2026-02-14 16:50:15.820550] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:50:34.520142] START POST /api/problem-reports/create-maintenance/
+[2026-02-14 16:50:34.710026] END   POST /api/problem-reports/create-maintenance/ -> 201
+[2026-02-14 16:50:40.718696] START POST /api/auth/login/
+[2026-02-14 16:50:40.770941] END   POST /api/auth/login/ -> 200
+[2026-02-14 16:50:41.776626] START GET /api/maintenances/
+[2026-02-14 16:50:41.839271] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:50:41.844759] START GET /api/maintenances/
+[2026-02-14 16:50:41.897733] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:01.218230] START GET /api/maintenances/
+[2026-02-14 16:51:01.275151] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:01.280757] START GET /api/maintenances/
+[2026-02-14 16:51:01.445429] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:02.048498] START GET /api/maintenances/
+[2026-02-14 16:51:02.107502] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:02.113277] START GET /api/maintenances/
+[2026-02-14 16:51:02.165822] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:28.304560] START GET /api/maintenances/
+[2026-02-14 16:51:28.359008] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:28.365771] START GET /api/maintenances/
+[2026-02-14 16:51:28.424037] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:28.955813] START GET /api/maintenances/
+[2026-02-14 16:51:29.122870] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:29.129550] START GET /api/maintenances/
+[2026-02-14 16:51:29.187191] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:35.128382] START POST /api/auth/login/
+[2026-02-14 16:51:35.174915] END   POST /api/auth/login/ -> 200
+[2026-02-14 16:51:36.391927] START GET /api/maintenances/
+[2026-02-14 16:51:36.396030] START GET /api/persons/
+[2026-02-14 16:51:36.447670] END   GET /api/persons/ -> 200
+[2026-02-14 16:51:36.453316] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:36.454032] START GET /api/persons/
+[2026-02-14 16:51:36.458638] START GET /api/maintenances/
+[2026-02-14 16:51:36.501392] END   GET /api/persons/ -> 200
+[2026-02-14 16:51:36.515346] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:51:37.178063] START GET /api/problem-reports/
+[2026-02-14 16:51:37.179609] START GET /api/persons/
+[2026-02-14 16:51:37.231966] END   GET /api/persons/ -> 200
+[2026-02-14 16:51:37.239245] START GET /api/persons/
+[2026-02-14 16:51:37.248852] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:51:37.254305] START GET /api/problem-reports/
+[2026-02-14 16:51:37.283456] END   GET /api/persons/ -> 200
+[2026-02-14 16:51:37.309401] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:51:56.290441] START GET /api/problem-reports/
+[2026-02-14 16:51:56.292603] START GET /api/persons/
+[2026-02-14 16:51:56.347554] END   GET /api/persons/ -> 200
+[2026-02-14 16:51:56.356259] START GET /api/persons/
+[2026-02-14 16:51:56.361707] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:51:56.368366] START GET /api/problem-reports/
+[2026-02-14 16:51:56.400992] END   GET /api/persons/ -> 200
+[2026-02-14 16:51:56.424349] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:52:04.212187] START POST /api/auth/login/
+[2026-02-14 16:52:04.268568] END   POST /api/auth/login/ -> 200
+[2026-02-14 16:52:05.463907] START GET /api/my-items/
+[2026-02-14 16:52:05.528540] END   GET /api/my-items/ -> 200
+[2026-02-14 16:52:05.533106] START GET /api/my-items/
+[2026-02-14 16:52:05.595715] END   GET /api/my-items/ -> 200
+[2026-02-14 16:52:17.340087] START POST /api/problem-reports/
+[2026-02-14 16:52:17.407310] END   POST /api/problem-reports/ -> 201
+[2026-02-14 16:52:24.948057] START POST /api/auth/login/
+[2026-02-14 16:52:25.012445] END   POST /api/auth/login/ -> 200
+[2026-02-14 16:52:26.286317] START GET /api/maintenances/
+[2026-02-14 16:52:26.289589] START GET /api/persons/
+[2026-02-14 16:52:26.340137] END   GET /api/persons/ -> 200
+[2026-02-14 16:52:26.340350] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:52:26.346931] START GET /api/persons/
+[2026-02-14 16:52:26.350541] START GET /api/maintenances/
+[2026-02-14 16:52:26.400620] END   GET /api/persons/ -> 200
+[2026-02-14 16:52:26.408550] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:52:27.328373] START GET /api/problem-reports/
+[2026-02-14 16:52:27.330734] START GET /api/persons/
+[2026-02-14 16:52:27.494617] END   GET /api/persons/ -> 200
+[2026-02-14 16:52:27.500336] START GET /api/persons/
+[2026-02-14 16:52:27.508077] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:52:27.514670] START GET /api/problem-reports/
+[2026-02-14 16:52:27.544500] END   GET /api/persons/ -> 200
+[2026-02-14 16:52:27.570927] END   GET /api/problem-reports/ -> 200
+[2026-02-14 16:52:48.425043] START POST /api/problem-reports/create-maintenance/
+[2026-02-14 16:52:48.621150] END   POST /api/problem-reports/create-maintenance/ -> 201
+[2026-02-14 16:52:49.994782] START GET /api/maintenances/
+[2026-02-14 16:52:49.997777] START GET /api/persons/
+[2026-02-14 16:52:50.045772] END   GET /api/persons/ -> 200
+[2026-02-14 16:52:50.051470] START GET /api/persons/
+[2026-02-14 16:52:50.099145] END   GET /api/persons/ -> 200
+[2026-02-14 16:52:50.164049] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:52:50.170712] START GET /api/maintenances/
+[2026-02-14 16:52:50.226923] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:55:40.722211] START GET /api/maintenances/
+[2026-02-14 16:55:40.722793] START GET /api/persons/
+[2026-02-14 16:55:40.773803] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:55:40.775329] END   GET /api/persons/ -> 200
+[2026-02-14 16:55:40.777779] START GET /api/maintenances/
+[2026-02-14 16:55:40.779543] START GET /api/persons/
+[2026-02-14 16:55:40.815064] END   GET /api/persons/ -> 200
+[2026-02-14 16:55:40.820058] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:55:41.452765] START GET /api/maintenances/
+[2026-02-14 16:55:41.455706] START GET /api/persons/
+[2026-02-14 16:55:41.490556] END   GET /api/persons/ -> 200
+[2026-02-14 16:55:41.492066] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:55:41.495394] START GET /api/persons/
+[2026-02-14 16:55:41.496632] START GET /api/maintenances/
+[2026-02-14 16:55:41.531899] END   GET /api/maintenances/ -> 200
+[2026-02-14 16:55:41.646206] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:45.341710] START GET /api/maintenances/
+[2026-02-14 17:02:45.342252] START GET /api/persons/
+[2026-02-14 17:02:45.389767] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:45.395581] START GET /api/persons/
+[2026-02-14 17:02:45.398161] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:02:45.401437] START GET /api/maintenances/
+[2026-02-14 17:02:45.438259] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:02:45.532675] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:45.983938] START GET /api/maintenances/
+[2026-02-14 17:02:45.986115] START GET /api/persons/
+[2026-02-14 17:02:46.019809] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:46.024159] START GET /api/persons/
+[2026-02-14 17:02:46.027157] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:02:46.031161] START GET /api/maintenances/
+[2026-02-14 17:02:46.062177] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:46.067137] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:02:46.450435] START GET /api/maintenances/
+[2026-02-14 17:02:46.453769] START GET /api/persons/
+[2026-02-14 17:02:46.486981] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:46.492460] START GET /api/persons/
+[2026-02-14 17:02:46.495526] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:02:46.500092] START GET /api/maintenances/
+[2026-02-14 17:02:46.528441] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:46.535365] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:02:59.721673] START GET /api/maintenances/
+[2026-02-14 17:02:59.723113] START GET /api/persons/
+[2026-02-14 17:02:59.760341] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:59.765896] START GET /api/persons/
+[2026-02-14 17:02:59.766200] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:02:59.771654] START GET /api/maintenances/
+[2026-02-14 17:02:59.796576] END   GET /api/persons/ -> 200
+[2026-02-14 17:02:59.920305] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:00.469290] START GET /api/maintenances/
+[2026-02-14 17:03:00.470644] START GET /api/persons/
+[2026-02-14 17:03:00.471913] START GET /api/maintenances/
+[2026-02-14 17:03:00.473253] START GET /api/persons/
+[2026-02-14 17:03:00.505784] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:00.511087] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:00.512770] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:00.514177] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:01.480008] START GET /api/maintenances/
+[2026-02-14 17:03:01.480276] START GET /api/maintenances/
+[2026-02-14 17:03:01.484404] START GET /api/persons/
+[2026-02-14 17:03:01.483921] START GET /api/persons/
+[2026-02-14 17:03:01.523129] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:01.530444] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:01.530486] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:01.635057] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:02.500038] START GET /api/maintenances/
+[2026-02-14 17:03:02.502235] START GET /api/persons/
+[2026-02-14 17:03:02.504194] START GET /api/maintenances/
+[2026-02-14 17:03:02.503999] START GET /api/persons/
+[2026-02-14 17:03:02.537646] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:02.543874] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:02.637035] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:02.646615] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:06.149432] START GET /api/persons/
+[2026-02-14 17:03:06.150126] START GET /api/maintenances/
+[2026-02-14 17:03:06.159800] START GET /api/maintenances/
+[2026-02-14 17:03:06.154217] START GET /api/persons/
+[2026-02-14 17:03:06.220923] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:06.238185] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:06.238369] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:06.308053] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:07.494183] START GET /api/maintenances/
+[2026-02-14 17:03:07.497959] START GET /api/maintenances/
+[2026-02-14 17:03:07.499299] START GET /api/persons/
+[2026-02-14 17:03:07.504380] START GET /api/persons/
+[2026-02-14 17:03:07.555222] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:07.560137] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:07.562922] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:07.652303] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.107116] START GET /api/persons/
+[2026-02-14 17:03:10.109393] START GET /api/maintenances/
+[2026-02-14 17:03:10.110449] START GET /api/maintenances/
+[2026-02-14 17:03:10.114934] START GET /api/persons/
+[2026-02-14 17:03:10.148193] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:10.163058] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:10.168676] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.269800] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.427414] START GET /api/persons/
+[2026-02-14 17:03:10.429924] START GET /api/maintenances/
+[2026-02-14 17:03:10.431536] START GET /api/maintenances/
+[2026-02-14 17:03:10.437718] START GET /api/persons/
+[2026-02-14 17:03:10.475842] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:10.488083] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:10.492844] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.499068] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.603591] START GET /api/maintenances/
+[2026-02-14 17:03:10.606341] START GET /api/maintenances/
+[2026-02-14 17:03:10.610681] START GET /api/persons/
+[2026-02-14 17:03:10.614111] START GET /api/persons/
+[2026-02-14 17:03:10.661446] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:10.670146] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:10.671065] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.673096] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.782766] START GET /api/maintenances/
+[2026-02-14 17:03:10.782218] START GET /api/maintenances/
+[2026-02-14 17:03:10.783644] START GET /api/persons/
+[2026-02-14 17:03:10.787724] START GET /api/persons/
+[2026-02-14 17:03:10.840948] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:10.843952] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:10.854603] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.856355] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:10.944394] START GET /api/persons/
+[2026-02-14 17:03:10.943257] START GET /api/maintenances/
+[2026-02-14 17:03:10.951393] START GET /api/maintenances/
+[2026-02-14 17:03:10.955169] START GET /api/persons/
+[2026-02-14 17:03:11.002879] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:11.013589] END   GET /api/persons/ -> 200
+[2026-02-14 17:03:11.018088] END   GET /api/maintenances/ -> 200
+[2026-02-14 17:03:11.026955] END   GET /api/maintenances/ -> 200

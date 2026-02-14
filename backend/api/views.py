@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, Maintenance
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, Maintenance, MaintenanceStep, MaintenanceTypicalStep
 from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer
 
 
@@ -1484,18 +1484,37 @@ class MaintenanceViewSet(viewsets.ModelViewSet):
         
         maintenances = []
         for maintenance in queryset:
+            # Get maintenance steps for this maintenance
+            steps = MaintenanceStep.objects.filter(maintenance=maintenance).order_by('maintenance_step_id')
+            
+            # Calculate maintenance status based on steps
+            status = 'pending'  # default status
+            if steps.exists():
+                step_count = steps.count()
+                completed_steps = steps.filter(is_successful=True).count()
+                failed_steps = steps.filter(is_successful=False).count()
+                
+                if failed_steps > 0:
+                    status = 'failed'
+                elif completed_steps == step_count:
+                    status = 'completed'
+                elif completed_steps > 0:
+                    status = 'in-progress'
+            
             maintenances.append({
                 'maintenance_id': maintenance.maintenance_id,
                 'asset_id': maintenance.asset.asset_id,
                 'asset_name': maintenance.asset.asset_name or f'Asset {maintenance.asset.asset_id}',
                 'performed_by_person': maintenance.performed_by_person.person_id,
-                'performed_by_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
+                'performed_by_person_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
                 'approved_by_maintenance_chief': maintenance.approved_by_maintenance_chief.person_id,
                 'is_approved_by_maintenance_chief': maintenance.is_approved_by_maintenance_chief,
                 'start_datetime': maintenance.start_datetime,
                 'end_datetime': maintenance.end_datetime,
                 'description': maintenance.description,
                 'is_successful': maintenance.is_successful,
+                'status': status,
+                'step_count': steps.count(),
             })
 
         return Response(maintenances)
@@ -1504,18 +1523,37 @@ class MaintenanceViewSet(viewsets.ModelViewSet):
         """Get a single maintenance record"""
         maintenance = self.get_object()
         
+        # Get maintenance steps
+        steps = MaintenanceStep.objects.filter(maintenance=maintenance).order_by('maintenance_step_id')
+        
+        # Calculate status based on steps
+        status = 'pending'
+        if steps.exists():
+            step_count = steps.count()
+            completed_steps = steps.filter(is_successful=True).count()
+            failed_steps = steps.filter(is_successful=False).count()
+            
+            if failed_steps > 0:
+                status = 'failed'
+            elif completed_steps == step_count:
+                status = 'completed'
+            elif completed_steps > 0:
+                status = 'in-progress'
+        
         return Response({
             'maintenance_id': maintenance.maintenance_id,
             'asset_id': maintenance.asset.asset_id,
             'asset_name': maintenance.asset.asset_name or f'Asset {maintenance.asset.asset_id}',
             'performed_by_person': maintenance.performed_by_person.person_id,
-            'performed_by_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
+            'performed_by_person_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
             'approved_by_maintenance_chief': maintenance.approved_by_maintenance_chief.person_id,
             'is_approved_by_maintenance_chief': maintenance.is_approved_by_maintenance_chief,
             'start_datetime': maintenance.start_datetime,
             'end_datetime': maintenance.end_datetime,
             'description': maintenance.description,
             'is_successful': maintenance.is_successful,
+            'status': status,
+            'step_count': steps.count(),
         })
 
     def update(self, request, *args, **kwargs):
@@ -1561,18 +1599,37 @@ class MaintenanceViewSet(viewsets.ModelViewSet):
 
         maintenance.save()
 
+        # Get maintenance steps for status
+        steps = MaintenanceStep.objects.filter(maintenance=maintenance).order_by('maintenance_step_id')
+        
+        # Calculate status based on steps
+        status_value = 'pending'
+        if steps.exists():
+            step_count = steps.count()
+            completed_steps = steps.filter(is_successful=True).count()
+            failed_steps = steps.filter(is_successful=False).count()
+            
+            if failed_steps > 0:
+                status_value = 'failed'
+            elif completed_steps == step_count:
+                status_value = 'completed'
+            elif completed_steps > 0:
+                status_value = 'in-progress'
+
         return Response({
             'maintenance_id': maintenance.maintenance_id,
             'asset_id': maintenance.asset.asset_id,
             'asset_name': maintenance.asset.asset_name or f'Asset {maintenance.asset.asset_id}',
             'performed_by_person': maintenance.performed_by_person.person_id,
-            'performed_by_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
+            'performed_by_person_name': f"{maintenance.performed_by_person.first_name} {maintenance.performed_by_person.last_name}",
             'approved_by_maintenance_chief': maintenance.approved_by_maintenance_chief.person_id,
             'is_approved_by_maintenance_chief': maintenance.is_approved_by_maintenance_chief,
             'start_datetime': maintenance.start_datetime,
             'end_datetime': maintenance.end_datetime,
             'description': maintenance.description,
             'is_successful': maintenance.is_successful,
+            'status': status_value,
+            'step_count': steps.count(),
         })
 
 

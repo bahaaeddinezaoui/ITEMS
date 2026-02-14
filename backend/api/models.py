@@ -485,6 +485,22 @@ class PersonReportsProblemOnConsumable(models.Model):
         return f'Problem report on consumable {self.consumable_id} by {self.person}'
 
 
+class MaintenanceTypicalStep(models.Model):
+    """Maps to maintenance_typical_step table"""
+    maintenance_typical_step_id = models.AutoField(primary_key=True, db_column='maintenance_typical_step_id')
+    estimated_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, db_column='estimated_cost')
+    actual_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, db_column='actual_cost')
+    description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+    maintenance_type = models.CharField(max_length=8, blank=True, null=True, db_column='maintenance_type')
+
+    class Meta:
+        managed = False
+        db_table = 'maintenance_typical_step'
+
+    def __str__(self):
+        return f'Step {self.maintenance_typical_step_id}'
+
+
 class Maintenance(models.Model):
     """Maps to maintenance table"""
     maintenance_id = models.IntegerField(primary_key=True, db_column='maintenance_id')
@@ -504,3 +520,24 @@ class Maintenance(models.Model):
 
     def __str__(self):
         return f'Maintenance {self.maintenance_id} on asset {self.asset_id}'
+
+
+class MaintenanceStep(models.Model):
+    """Maps to maintenance_step table"""
+    maintenance_step_id = models.IntegerField(primary_key=True, db_column='maintenance_step_id')
+    maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, db_column='maintenance_id', related_name='steps')
+    maintenance_typical_step = models.ForeignKey(MaintenanceTypicalStep, on_delete=models.CASCADE, db_column='maintenance_typical_step_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    asset_condition_history = models.IntegerField(blank=True, null=True, db_column='asset_condition_history_id')
+    stock_item_condition_history = models.IntegerField(blank=True, null=True, db_column='stock_item_condition_history_id')
+    consumable_condition_history = models.IntegerField(blank=True, null=True, db_column='consumable_condition_history_id')
+    start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
+    end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
+    is_successful = models.BooleanField(blank=True, null=True, db_column='is_successful')
+
+    class Meta:
+        managed = False
+        db_table = 'maintenance_step'
+
+    def __str__(self):
+        return f'Step {self.maintenance_step_id} of Maintenance {self.maintenance_id}'

@@ -127,7 +127,6 @@ const MaintenancesPage = () => {
                                     <th>Description</th>
                                     <th>Start Date</th>
                                     <th>Technician</th>
-                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -154,12 +153,12 @@ const MaintenancesPage = () => {
                                             )}
                                         </td>
                                         <td>
-                                            {maintenance.is_successful === true && <span className="badge badge-success">Successful</span>}
-                                            {maintenance.is_successful === false && <span className="badge badge-error">Failed</span>}
-                                            {maintenance.is_successful === null && <span className="badge">Pending</span>}
-                                        </td>
-                                        <td>
-                                            {isChief && (
+                                            {maintenance.performed_by_person && isChief && (
+                                                <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                                    Assigned
+                                                </span>
+                                            )}
+                                            {!maintenance.performed_by_person && isChief && (
                                                 <button 
                                                     className="btn btn-sm btn-secondary"
                                                     onClick={() => handleAssignClick(maintenance)}
