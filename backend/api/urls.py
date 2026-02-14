@@ -1,15 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, UserAccountViewSet, ProblemReportViewSet, CreateMaintenanceFromReportView, MyItemsViewSet, AssetAssignmentViewSet, StockItemAssignmentViewSet, ConsumableAssignmentViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, AssetViewSet, MaintenanceViewSet, StockItemViewSet, ConsumableViewSet
+from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, MyItemsView
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
-router.register(r'user-accounts', UserAccountViewSet, basename='useraccount')
-router.register(r'problem-reports', ProblemReportViewSet, basename='problemreport')
-router.register(r'my-items', MyItemsViewSet, basename='myitems')
-router.register(r'asset-assignments', AssetAssignmentViewSet, basename='assetassignment')
-router.register(r'stock-item-assignments', StockItemAssignmentViewSet, basename='stockitemassignment')
-router.register(r'consumable-assignments', ConsumableAssignmentViewSet, basename='consumableassignment')
 router.register(r'asset-types', AssetTypeViewSet, basename='assettype')
 router.register(r'asset-brands', AssetBrandViewSet, basename='assetbrand')
 router.register(r'asset-models', AssetModelViewSet, basename='assetmodel')
@@ -24,13 +18,9 @@ router.register(r'rooms', RoomViewSet, basename='room')
 router.register(r'positions', PositionViewSet, basename='position')
 router.register(r'organizational-structures', OrganizationalStructureViewSet, basename='organizationalstructure')
 router.register(r'organizational-structure-relations', OrganizationalStructureRelationViewSet, basename='organizationalstructurerelation')
-router.register(r'assets', AssetViewSet, basename='asset')
-router.register(r'stock-items', StockItemViewSet, basename='stockitem')
-router.register(r'consumables', ConsumableViewSet, basename='consumable')
-router.register(r'maintenances', MaintenanceViewSet, basename='maintenance')
 
 urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
-    path('problem-reports/create-maintenance/', CreateMaintenanceFromReportView.as_view(), name='create-maintenance-from-report'),
+    path('my-items/', MyItemsView.as_view(), name='my-items'),
     path('', include(router.urls)),
 ]

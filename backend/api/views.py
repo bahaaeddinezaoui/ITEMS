@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -5,543 +6,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
-from django.utils import timezone
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, Maintenance, StockItem, Consumable, AssetAssignment, StockItemAssignment, ConsumableAssignment, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, UserAccountSerializer, UserAccountCreateSerializer, ProblemReportCreateSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer, AssetSerializer, MaintenanceSerializer, StockItemSerializer, ConsumableSerializer, AssetAssignmentSerializer, StockItemAssignmentSerializer, ConsumableAssignmentSerializer
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer
 
 
 def hash_password(password):
     """Hash password using SHA-512 to match existing database format"""
     return hashlib.sha512(password.encode()).hexdigest()
-
-
-# Helper functions
-def _has_role(user_account, role_code):
-    return PersonRoleMapping.objects.filter(person=user_account.person, role__role_code=role_code).exists()
-
-
-class CreateMaintenanceFromReportView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user_account = request.user
-        if not user_account or user_account.is_anonymous:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not (user_account.is_superuser() or _has_role(user_account, 'maintenance_chief')):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-        item_type = request.data.get('item_type')
-        report_id = request.data.get('report_id')
-        technician_person_id = request.data.get('technician_person_id')
-        description = request.data.get('description')
-
-        if item_type not in ('asset', 'stock_item', 'consumable'):
-            return Response({'error': 'Invalid item_type'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not report_id:
-            return Response({'error': 'report_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not technician_person_id:
-            return Response({'error': 'technician_person_id is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            technician_person_id = int(technician_person_id)
-        except (TypeError, ValueError):
-            return Response({'error': 'technician_person_id must be an integer'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not PersonRoleMapping.objects.filter(person_id=technician_person_id, role__role_code='maintenance_technician').exists():
-            return Response({'error': 'Selected person is not a maintenance technician'}, status=status.HTTP_400_BAD_REQUEST)
-
-        report = None
-        item_id = None
-
-        if item_type == 'asset':
-            report = PersonReportsProblemOnAsset.objects.filter(report_id=report_id).first()
-            item_id = report.asset_id if report else None
-        elif item_type == 'stock_item':
-            report = PersonReportsProblemOnStockItem.objects.filter(report_id=report_id).first()
-            item_id = report.stock_item_id if report else None
-        elif item_type == 'consumable':
-            report = PersonReportsProblemOnConsumable.objects.filter(report_id=report_id).first()
-            item_id = report.consumable_id if report else None
-
-        if not report:
-            return Response({'error': 'Report not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        now = timezone.now()
-        if not description:
-            description = f"From report #{report_id} ({item_type} #{item_id}): {report.owner_observation}"
-
-        last = Maintenance.objects.order_by('-maintenance_id').first()
-        next_id = (last.maintenance_id + 1) if last else 1
-
-        maintenance = Maintenance(
-            maintenance_id=next_id,
-            asset_id=item_id if item_type == 'asset' else None,
-            stock_item_id=item_id if item_type == 'stock_item' else None,
-            consumable_id=item_id if item_type == 'consumable' else None,
-            performed_by_person_id=technician_person_id,
-            approved_by_maintenance_chief_id=user_account.person_id,
-            is_approved_by_maintenance_chief=True,
-            start_datetime=now,
-            end_datetime=None,
-            description=description,
-            is_successful=None,
-        )
-        maintenance.save(force_insert=True)
-
-        return Response(MaintenanceSerializer(maintenance).data, status=status.HTTP_201_CREATED)
-
-
-class ProblemReportViewSet(viewsets.ViewSet):
-    """Owner reporting + chief viewing for asset/stock item/consumable problems"""
-
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        is_chief = (
-            user_account.is_superuser()
-            or _has_role(user_account, 'maintenance_chief')
-            or _has_role(user_account, 'exploitation_chief')
-        )
-
-        asset_qs = PersonReportsProblemOnAsset.objects.all()
-        stock_item_qs = PersonReportsProblemOnStockItem.objects.all()
-        consumable_qs = PersonReportsProblemOnConsumable.objects.all()
-
-        if not is_chief:
-            asset_qs = asset_qs.filter(person=user_account.person)
-            stock_item_qs = stock_item_qs.filter(person=user_account.person)
-            consumable_qs = consumable_qs.filter(person=user_account.person)
-
-        results = []
-
-        for r in asset_qs:
-            results.append({
-                'item_type': 'asset',
-                'item_id': r.asset_id,
-                'report_id': r.report_id,
-                'report_datetime': r.report_datetime,
-                'owner_observation': r.owner_observation,
-                'person_id': r.person_id,
-            })
-
-        for r in stock_item_qs:
-            results.append({
-                'item_type': 'stock_item',
-                'item_id': r.stock_item_id,
-                'report_id': r.report_id,
-                'report_datetime': r.report_datetime,
-                'owner_observation': r.owner_observation,
-                'person_id': r.person_id,
-            })
-
-        for r in consumable_qs:
-            results.append({
-                'item_type': 'consumable',
-                'item_id': r.consumable_id,
-                'report_id': r.report_id,
-                'report_datetime': r.report_datetime,
-                'owner_observation': r.owner_observation,
-                'person_id': r.person_id,
-            })
-
-        results.sort(key=lambda x: x['report_datetime'], reverse=True)
-        return Response(results)
-
-    def create(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ProblemReportCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        item_type = serializer.validated_data['item_type']
-        item_id = serializer.validated_data['item_id']
-        owner_observation = serializer.validated_data['owner_observation']
-        now = timezone.now()
-
-        if item_type == 'asset':
-            is_owner = AssetAssignment.objects.filter(asset_id=item_id, person=user_account.person, is_active=True).exists()
-            if not is_owner and not user_account.is_superuser():
-                return Response({'error': 'You can only report problems on assets you own'}, status=status.HTTP_403_FORBIDDEN)
-
-            last = PersonReportsProblemOnAsset.objects.order_by('-report_id').first()
-            next_id = (last.report_id + 1) if last else 1
-            report = PersonReportsProblemOnAsset.objects.create(
-                report_id=next_id,
-                asset_id=item_id,
-                person_id=user_account.person_id,
-                report_datetime=now,
-                owner_observation=owner_observation,
-            )
-            payload = {
-                'item_type': 'asset',
-                'item_id': report.asset_id,
-                'report_id': report.report_id,
-                'report_datetime': report.report_datetime,
-                'owner_observation': report.owner_observation,
-                'person_id': report.person_id,
-            }
-            return Response(payload, status=status.HTTP_201_CREATED)
-
-        if item_type == 'stock_item':
-            is_owner = StockItemAssignment.objects.filter(stock_item_id=item_id, person=user_account.person, is_active=True).exists()
-            if not is_owner and not user_account.is_superuser():
-                return Response({'error': 'You can only report problems on stock items you own'}, status=status.HTTP_403_FORBIDDEN)
-
-            last = PersonReportsProblemOnStockItem.objects.order_by('-report_id').first()
-            next_id = (last.report_id + 1) if last else 1
-            report = PersonReportsProblemOnStockItem.objects.create(
-                report_id=next_id,
-                stock_item_id=item_id,
-                person_id=user_account.person_id,
-                report_datetime=now,
-                owner_observation=owner_observation,
-            )
-            payload = {
-                'item_type': 'stock_item',
-                'item_id': report.stock_item_id,
-                'report_id': report.report_id,
-                'report_datetime': report.report_datetime,
-                'owner_observation': report.owner_observation,
-                'person_id': report.person_id,
-            }
-            return Response(payload, status=status.HTTP_201_CREATED)
-
-        if item_type == 'consumable':
-            is_owner = ConsumableAssignment.objects.filter(consumable_id=item_id, person=user_account.person, is_active=True).exists()
-            if not is_owner and not user_account.is_superuser():
-                return Response({'error': 'You can only report problems on consumables you own'}, status=status.HTTP_403_FORBIDDEN)
-
-            last = PersonReportsProblemOnConsumable.objects.order_by('-report_id').first()
-            next_id = (last.report_id + 1) if last else 1
-            report = PersonReportsProblemOnConsumable.objects.create(
-                report_id=next_id,
-                consumable_id=item_id,
-                person_id=user_account.person_id,
-                report_datetime=now,
-                owner_observation=owner_observation,
-            )
-            payload = {
-                'item_type': 'consumable',
-                'item_id': report.consumable_id,
-                'report_id': report.report_id,
-                'report_datetime': report.report_datetime,
-                'owner_observation': report.owner_observation,
-                'person_id': report.person_id,
-            }
-            return Response(payload, status=status.HTTP_201_CREATED)
-
-        return Response({'error': 'Invalid item_type'}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MyItemsViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        asset_assignments = AssetAssignment.objects.filter(person=user_account.person).select_related('asset')
-        stock_item_assignments = StockItemAssignment.objects.filter(person=user_account.person).select_related('stock_item')
-        consumable_assignments = ConsumableAssignment.objects.filter(person=user_account.person).select_related('consumable')
-
-        assets_current = [a.asset for a in asset_assignments.filter(is_active=True)]
-        assets_history = asset_assignments.filter(is_active=False).order_by('-end_datetime')
-
-        stock_items_current = [a.stock_item for a in stock_item_assignments.filter(is_active=True)]
-        stock_items_history = stock_item_assignments.filter(is_active=False).order_by('-end_datetime')
-
-        consumables_current = [a.consumable for a in consumable_assignments.filter(is_active=True)]
-        consumables_history = consumable_assignments.filter(is_active=False).order_by('-end_datetime')
-
-        payload = {
-            'assets': {
-                'current': AssetSerializer(assets_current, many=True).data,
-                'history': [
-                    {
-                        'assignment_id': a.assignment_id,
-                        'asset': AssetSerializer(a.asset).data,
-                        'start_datetime': a.start_datetime,
-                        'end_datetime': a.end_datetime,
-                        'condition_on_assignment': a.condition_on_assignment,
-                        'assigned_by_person_id': a.assigned_by_person_id,
-                    }
-                    for a in assets_history
-                ],
-            },
-            'stock_items': {
-                'current': StockItemSerializer(stock_items_current, many=True).data,
-                'history': [
-                    {
-                        'assignment_id': a.assignment_id,
-                        'stock_item': StockItemSerializer(a.stock_item).data,
-                        'start_datetime': a.start_datetime,
-                        'end_datetime': a.end_datetime,
-                        'condition_on_assignment': a.condition_on_assignment,
-                        'assigned_by_person_id': a.assigned_by_person_id,
-                    }
-                    for a in stock_items_history
-                ],
-            },
-            'consumables': {
-                'current': ConsumableSerializer(consumables_current, many=True).data,
-                'history': [
-                    {
-                        'assignment_id': a.assignment_id,
-                        'consumable': ConsumableSerializer(a.consumable).data,
-                        'start_datetime': a.start_datetime,
-                        'end_datetime': a.end_datetime,
-                        'condition_on_assignment': a.condition_on_assignment,
-                        'assigned_by_person_id': a.assigned_by_person_id,
-                    }
-                    for a in consumables_history
-                ],
-            },
-        }
-
-        return Response(payload)
-
-
-class AssetAssignmentViewSet(viewsets.ViewSet):
-    """Assign assets to people (superuser + exploitation_chief only)"""
-
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not (user_account.is_superuser() or _has_role(user_account, 'exploitation_chief')):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-        qs = AssetAssignment.objects.all().order_by('-start_datetime')
-        return Response(AssetAssignmentSerializer(qs, many=True).data)
-
-    def create(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not (user_account.is_superuser() or _has_role(user_account, 'exploitation_chief')):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = AssetAssignmentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        now = timezone.now()
-        asset_id = serializer.validated_data['asset'].asset_id
-
-        AssetAssignment.objects.filter(asset_id=asset_id, is_active=True).update(is_active=False, end_datetime=now)
-
-        last = AssetAssignment.objects.order_by('-assignment_id').first()
-        next_id = (last.assignment_id + 1) if last else 1
-
-        assignment = AssetAssignment.objects.create(
-            assignment_id=next_id,
-            person_id=serializer.validated_data['person'].person_id,
-            asset_id=asset_id,
-            assigned_by_person_id=user_account.person_id,
-            start_datetime=serializer.validated_data.get('start_datetime') or now,
-            end_datetime=serializer.validated_data.get('end_datetime') or now,
-            condition_on_assignment=serializer.validated_data.get('condition_on_assignment') or '',
-            is_active=serializer.validated_data.get('is_active', True),
-        )
-
-        return Response(AssetAssignmentSerializer(assignment).data, status=status.HTTP_201_CREATED)
-
-
-class StockItemAssignmentViewSet(viewsets.ViewSet):
-    """Assign stock items to people (superuser + exploitation_chief only)"""
-
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not (user_account.is_superuser() or _has_role(user_account, 'exploitation_chief')):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-        qs = StockItemAssignment.objects.all().order_by('-start_datetime')
-        return Response(StockItemAssignmentSerializer(qs, many=True).data)
-
-    def create(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not (user_account.is_superuser() or _has_role(user_account, 'exploitation_chief')):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = StockItemAssignmentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        now = timezone.now()
-        item_id = serializer.validated_data['stock_item'].stock_item_id
-
-        StockItemAssignment.objects.filter(stock_item_id=item_id, is_active=True).update(is_active=False, end_datetime=now)
-
-        last = StockItemAssignment.objects.order_by('-assignment_id').first()
-        next_id = (last.assignment_id + 1) if last else 1
-
-        assignment = StockItemAssignment.objects.create(
-            assignment_id=next_id,
-            person_id=serializer.validated_data['person'].person_id,
-            stock_item_id=item_id,
-            assigned_by_person_id=user_account.person_id,
-            start_datetime=serializer.validated_data.get('start_datetime') or now,
-            end_datetime=serializer.validated_data.get('end_datetime') or now,
-            condition_on_assignment=serializer.validated_data.get('condition_on_assignment') or '',
-            is_active=serializer.validated_data.get('is_active', True),
-        )
-
-        return Response(StockItemAssignmentSerializer(assignment).data, status=status.HTTP_201_CREATED)
-
-
-class ConsumableAssignmentViewSet(viewsets.ViewSet):
-    """Assign consumables to people (superuser + exploitation_chief only)"""
-
-    permission_classes = [IsAuthenticated]
-
-    def list(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not (user_account.is_superuser() or _has_role(user_account, 'exploitation_chief')):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-        qs = ConsumableAssignment.objects.all().order_by('-start_datetime')
-        return Response(ConsumableAssignmentSerializer(qs, many=True).data)
-
-    def create(self, request):
-        user_account = _get_user_account_from_request(request)
-        if not user_account:
-            return Response({'error': 'User account not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if not (user_account.is_superuser() or _has_role(user_account, 'exploitation_chief')):
-            return Response({'error': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
-
-        serializer = ConsumableAssignmentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        now = timezone.now()
-        item_id = serializer.validated_data['consumable'].consumable_id
-
-        ConsumableAssignment.objects.filter(consumable_id=item_id, is_active=True).update(is_active=False, end_datetime=now)
-
-        last = ConsumableAssignment.objects.order_by('-assignment_id').first()
-        next_id = (last.assignment_id + 1) if last else 1
-
-        assignment = ConsumableAssignment.objects.create(
-            assignment_id=next_id,
-            person_id=serializer.validated_data['person'].person_id,
-            consumable_id=item_id,
-            assigned_by_person_id=user_account.person_id,
-            start_datetime=serializer.validated_data.get('start_datetime') or now,
-            end_datetime=serializer.validated_data.get('end_datetime') or now,
-            condition_on_assignment=serializer.validated_data.get('condition_on_assignment') or '',
-            is_active=serializer.validated_data.get('is_active', True),
-        )
-
-        return Response(ConsumableAssignmentSerializer(assignment).data, status=status.HTTP_201_CREATED)
-
-
-class UserAccountViewSet(viewsets.ViewSet):
-    """Superuser-only operations for user accounts"""
-    permission_classes = [IsAuthenticated]
-
-    def _get_user_account(self, request):
-        """Extract user account from JWT token"""
-        try:
-            if hasattr(request, 'auth') and request.auth is not None:
-                user_id = request.auth.get('user_id')
-                if user_id:
-                    return UserAccount.objects.get(user_id=user_id)
-        except (UserAccount.DoesNotExist, AttributeError, KeyError):
-            pass
-
-        try:
-            if hasattr(request, 'auth') and request.auth is not None:
-                username = request.auth.get('username')
-                if username:
-                    return UserAccount.objects.get(username=username)
-        except (UserAccount.DoesNotExist, AttributeError, KeyError):
-            pass
-
-        return None
-
-    def create(self, request):
-        """Create a user account linked to an existing person (superuser-only)."""
-        user_account = self._get_user_account(request)
-        if not user_account or not user_account.is_superuser():
-            return Response(
-                {'error': 'Only superusers can create user accounts'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        serializer = UserAccountCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        person_id = serializer.validated_data['person_id']
-        username = serializer.validated_data['username']
-        password = serializer.validated_data['password']
-        account_status = serializer.validated_data['account_status']
-        role_code = serializer.validated_data.get('role_code')
-
-        try:
-            person = Person.objects.get(person_id=person_id)
-        except Person.DoesNotExist:
-            return Response({'error': 'Person not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if UserAccount.objects.filter(person=person).exists():
-            return Response({'error': 'This person already has an account'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if UserAccount.objects.filter(username=username).exists():
-            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
-
-        now = timezone.now()
-        last_user = UserAccount.objects.order_by('-user_id').first()
-        next_user_id = (last_user.user_id + 1) if last_user else 1
-
-        new_user = UserAccount.objects.create(
-            user_id=next_user_id,
-            person=person,
-            username=username,
-            password_hash=hash_password(password),
-            created_at_datetime=now,
-            account_status=account_status,
-            failed_login_attempts=0,
-            password_last_changed_datetime=now,
-            modified_at_datetime=now,
-            created_by_user_id=user_account.user_id,
-            modified_by_user_id=user_account.user_id,
-            # Some DBs enforce NOT NULL; keep consistent with your scripts
-            disabled_at_datetime=now,
-            last_login=now,
-        )
-
-        if role_code:
-            try:
-                from .models import Role
-                role = Role.objects.get(role_code=role_code)
-                PersonRoleMapping.objects.get_or_create(person=person, role=role)
-            except Exception:
-                pass
-
-        return Response(UserAccountSerializer(new_user).data, status=status.HTTP_201_CREATED)
 
 
 class LoginView(APIView):
@@ -624,16 +96,11 @@ class PersonViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny] # Temporarily disable for debugging
 
     def get_queryset(self):
-        """Optionally filter by is_approved status or role_code"""
+        """Optionally filter by is_approved status"""
         queryset = Person.objects.all().order_by('person_id')
         is_approved = self.request.query_params.get('is_approved', None)
         if is_approved is not None:
             queryset = queryset.filter(is_approved=is_approved.lower() == 'true')
-            
-        role_code = self.request.query_params.get('role', None)
-        if role_code is not None:
-            queryset = queryset.filter(personrolemapping__role__role_code=role_code)
-            
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -800,102 +267,6 @@ class AssetTypeViewSet(viewsets.ModelViewSet):
             )
 
         return super().destroy(request, *args, **kwargs)
-
-
-class AssetViewSet(viewsets.ModelViewSet):
-    """CRUD operations for Asset model"""
-    queryset = Asset.objects.all().order_by('asset_id')
-    serializer_class = AssetSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        queryset = Asset.objects.all().order_by('asset_id')
-        asset_model_id = self.request.query_params.get('asset_model', None)
-        if asset_model_id is not None:
-            queryset = queryset.filter(asset_model_id=asset_model_id)
-        return queryset
-
-
-class StockItemViewSet(viewsets.ModelViewSet):
-    """CRUD operations for StockItem model"""
-    queryset = StockItem.objects.all().order_by('stock_item_id')
-    serializer_class = StockItemSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        queryset = StockItem.objects.all().order_by('stock_item_id')
-        stock_item_model_id = self.request.query_params.get('stock_item_model', None)
-        if stock_item_model_id is not None:
-            queryset = queryset.filter(stock_item_model_id=stock_item_model_id)
-        return queryset
-
-
-class ConsumableViewSet(viewsets.ModelViewSet):
-    """CRUD operations for Consumable model"""
-    queryset = Consumable.objects.all().order_by('consumable_id')
-    serializer_class = ConsumableSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        queryset = Consumable.objects.all().order_by('consumable_id')
-        consumable_model_id = self.request.query_params.get('consumable_model', None)
-        if consumable_model_id is not None:
-            queryset = queryset.filter(consumable_model_id=consumable_model_id)
-        return queryset
-
-
-class MaintenanceViewSet(viewsets.ModelViewSet):
-    """CRUD operations for Maintenance model"""
-    queryset = Maintenance.objects.all().order_by('maintenance_id')
-    serializer_class = MaintenanceSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        """
-        Filter maintenances based on query params.
-        Can filter by asset_id, performed_by_person_id, etc.
-        Role-based: Technicians only see their assigned maintenances.
-        """
-        queryset = Maintenance.objects.all().order_by('-start_datetime')
-        
-        user_account = self.request.user
-        if user_account and not user_account.is_anonymous:
-            # Check if user is a chief or superuser
-            is_chief = (
-                user_account.is_superuser()
-                or _has_role(user_account, 'maintenance_chief')
-                or _has_role(user_account, 'exploitation_chief')
-            )
-            
-            # If not chief, but technician, filter by their person record
-            if not is_chief and _has_role(user_account, 'maintenance_technician'):
-                queryset = queryset.filter(performed_by_person=user_account.person)
-
-        asset_id = self.request.query_params.get('asset', None)
-        if asset_id is not None:
-            queryset = queryset.filter(asset_id=asset_id)
-            
-        performed_by_person_id = self.request.query_params.get('performed_by_person', None)
-        if performed_by_person_id is not None:
-            queryset = queryset.filter(performed_by_person_id=performed_by_person_id)
-            
-        approved_by_maintenance_chief_id = self.request.query_params.get('approved_by_maintenance_chief', None)
-        if approved_by_maintenance_chief_id is not None:
-            queryset = queryset.filter(approved_by_maintenance_chief_id=approved_by_maintenance_chief_id)
-            
-        return queryset
-
-    def create(self, request, *args, **kwargs):
-        """Create a new maintenance record"""
-        try:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        except Exception as e:
-             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class AssetBrandViewSet(viewsets.ModelViewSet):
@@ -2058,3 +1429,168 @@ class OrganizationalStructureRelationViewSet(viewsets.ModelViewSet):
             )
 
         return super().destroy(request, *args, **kwargs)
+
+
+class MyItemsView(APIView):
+    """View to get all items assigned to the current user"""
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        """Extract user account from JWT token"""
+        try:
+            # Try to get user_id from token claims
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        # Fallback: try to get from username if available
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+        
+        return None
+
+    def get(self, request):
+        """Get all items assigned to the current user"""
+        user_account = self._get_user_account(request)
+        
+        if not user_account:
+            return Response(
+                {'error': 'Could not identify user'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        person = user_account.person
+
+        # Get current asset assignments (is_active = true)
+        current_assets = AssetIsAssignedToPerson.objects.filter(
+            person=person,
+            is_active=True
+        ).select_related('asset', 'asset__asset_model')
+
+        # Get asset history (is_active = false)
+        asset_history = AssetIsAssignedToPerson.objects.filter(
+            person=person,
+            is_active=False
+        ).select_related('asset', 'asset__asset_model')
+
+        # Get current stock item assignments
+        current_stock_items = StockItemIsAssignedToPerson.objects.filter(
+            person=person,
+            is_active=True
+        ).select_related('stock_item', 'stock_item__stock_item_model')
+
+        # Get stock item history
+        stock_item_history = StockItemIsAssignedToPerson.objects.filter(
+            person=person,
+            is_active=False
+        ).select_related('stock_item', 'stock_item__stock_item_model')
+
+        # Get current consumable assignments
+        current_consumables = ConsumableIsAssignedToPerson.objects.filter(
+            person=person,
+            is_active=True
+        ).select_related('consumable', 'consumable__consumable_model')
+
+        # Get consumable history
+        consumable_history = ConsumableIsAssignedToPerson.objects.filter(
+            person=person,
+            is_active=False
+        ).select_related('consumable', 'consumable__consumable_model')
+
+        # Serialize the data
+        asset_current_data = [
+            {
+                'asset_id': a.asset.asset_id,
+                'asset_name': a.asset.asset_name,
+                'asset_status': a.asset.asset_status,
+                'asset_inventory_number': a.asset.asset_inventory_number,
+                'asset_serial_number': a.asset.asset_serial_number,
+            }
+            for a in current_assets
+        ]
+
+        asset_history_data = [
+            {
+                'assignment_id': a.assignment_id,
+                'start_datetime': a.start_datetime,
+                'end_datetime': a.end_datetime,
+                'condition_on_assignment': a.condition_on_assignment,
+                'asset': {
+                    'asset_id': a.asset.asset_id,
+                    'asset_name': a.asset.asset_name,
+                }
+            }
+            for a in asset_history
+        ]
+
+        stock_item_current_data = [
+            {
+                'stock_item_id': s.stock_item.stock_item_id,
+                'stock_item_name': s.stock_item.stock_item_name,
+                'stock_item_status': s.stock_item.stock_item_status,
+                'stock_item_inventory_number': s.stock_item.stock_item_inventory_number,
+            }
+            for s in current_stock_items
+        ]
+
+        stock_item_history_data = [
+            {
+                'assignment_id': s.assignment_id,
+                'start_datetime': s.start_datetime,
+                'end_datetime': s.end_datetime,
+                'condition_on_assignment': s.condition_on_assignment,
+                'stock_item': {
+                    'stock_item_id': s.stock_item.stock_item_id,
+                    'stock_item_name': s.stock_item.stock_item_name,
+                }
+            }
+            for s in stock_item_history
+        ]
+
+        consumable_current_data = [
+            {
+                'consumable_id': c.consumable.consumable_id,
+                'consumable_name': c.consumable.consumable_name,
+                'consumable_status': c.consumable.consumable_status,
+                'consumable_inventory_number': c.consumable.consumable_inventory_number,
+                'consumable_serial_number': c.consumable.consumable_serial_number,
+            }
+            for c in current_consumables
+        ]
+
+        consumable_history_data = [
+            {
+                'assignment_id': c.assignment_id,
+                'start_datetime': c.start_datetime,
+                'end_datetime': c.end_datetime,
+                'condition_on_assignment': c.condition_on_assignment,
+                'consumable': {
+                    'consumable_id': c.consumable.consumable_id,
+                    'consumable_name': c.consumable.consumable_name,
+                }
+            }
+            for c in consumable_history
+        ]
+
+        return Response({
+            'assets': {
+                'current': asset_current_data,
+                'history': asset_history_data,
+            },
+            'stock_items': {
+                'current': stock_item_current_data,
+                'history': stock_item_history_data,
+            },
+            'consumables': {
+                'current': consumable_current_data,
+                'history': consumable_history_data,
+            }
+        })

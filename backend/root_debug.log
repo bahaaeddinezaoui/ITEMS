@@ -4024,3 +4024,1143 @@ Python Pa
 [2026-02-11 21:08:02.367295] END   GET /api/maintenances/ -> 200
 [2026-02-11 21:08:02.371954] START GET /api/maintenances/
 [2026-02-11 21:08:02.408683] END   GET /api/maintenances/ -> 200
+[2026-02-14 15:52:45.005217] START POST /api/auth/login/
+[2026-02-14 15:52:45.104308] END   POST /api/auth/login/ -> 200
+[2026-02-14 15:52:46.702422] START GET /api/maintenances/
+[2026-02-14 15:52:46.704999] START GET /api/persons/
+[2026-02-14 15:52:46.752743] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:46.756758] START GET /api/maintenances/
+[2026-02-14 15:52:46.760183] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:46.835918] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:46.840137] START GET /api/persons/
+[2026-02-14 15:52:46.868801] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:48.605675] START GET /api/maintenances/
+[2026-02-14 15:52:48.606626] START GET /api/persons/
+[2026-02-14 15:52:48.611994] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:48.616919] START GET /api/maintenances/
+[2026-02-14 15:52:48.621123] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:48.647089] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:48.652304] START GET /api/persons/
+[2026-02-14 15:52:48.684803] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:49.138444] START GET /api/maintenances/
+[2026-02-14 15:52:49.139278] START GET /api/persons/
+[2026-02-14 15:52:49.144680] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:49.148868] START GET /api/maintenances/
+[2026-02-14 15:52:49.153455] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:49.177235] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:49.181075] START GET /api/persons/
+[2026-02-14 15:52:49.208222] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:49.680153] START GET /api/maintenances/
+[2026-02-14 15:52:49.685083] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:49.687454] START GET /api/persons/
+[2026-02-14 15:52:49.690696] START GET /api/maintenances/
+[2026-02-14 15:52:49.694443] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:49.722194] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:49.725588] START GET /api/persons/
+[2026-02-14 15:52:49.758048] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:50.368454] START GET /api/problem-reports/
+[2026-02-14 15:52:50.369595] START GET /api/persons/
+[2026-02-14 15:52:50.375068] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:52:50.379539] START GET /api/problem-reports/
+[2026-02-14 15:52:50.383930] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:52:50.406935] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:50.409861] START GET /api/persons/
+[2026-02-14 15:52:50.558722] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:51.178605] START GET /api/my-items/
+[2026-02-14 15:52:51.183068] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:52:51.187171] START GET /api/my-items/
+[2026-02-14 15:52:51.191195] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:52:52.734065] START GET /api/problem-reports/
+[2026-02-14 15:52:52.734951] START GET /api/persons/
+[2026-02-14 15:52:52.741347] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:52:52.744790] START GET /api/problem-reports/
+[2026-02-14 15:52:52.748749] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:52:52.771858] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:52.775489] START GET /api/persons/
+[2026-02-14 15:52:52.802486] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:53.597425] START GET /api/maintenances/
+[2026-02-14 15:52:53.598177] START GET /api/persons/
+[2026-02-14 15:52:53.602487] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:53.607125] START GET /api/maintenances/
+[2026-02-14 15:52:53.611307] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:52:53.632104] END   GET /api/persons/ -> 200
+[2026-02-14 15:52:53.636897] START GET /api/persons/
+[2026-02-14 15:52:53.669570] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:03.141619] START POST /api/auth/login/
+[2026-02-14 15:53:03.284919] END   POST /api/auth/login/ -> 200
+[2026-02-14 15:53:06.441731] START GET /api/maintenances/
+[2026-02-14 15:53:06.441953] START GET /api/persons/
+[2026-02-14 15:53:06.447352] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:53:06.451882] START GET /api/maintenances/
+[2026-02-14 15:53:06.456013] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:53:06.473200] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:06.477420] START GET /api/persons/
+[2026-02-14 15:53:06.504350] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:07.045139] START GET /api/problem-reports/
+[2026-02-14 15:53:07.045431] START GET /api/persons/
+[2026-02-14 15:53:07.050666] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:53:07.056624] START GET /api/problem-reports/
+[2026-02-14 15:53:07.060339] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:53:07.076285] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:07.080556] START GET /api/persons/
+[2026-02-14 15:53:07.219013] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:07.589079] START GET /api/my-items/
+[2026-02-14 15:53:07.593257] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:07.598491] START GET /api/my-items/
+[2026-02-14 15:53:07.602531] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:08.517264] START GET /api/positions/
+[2026-02-14 15:53:08.564143] END   GET /api/positions/ -> 200
+[2026-02-14 15:53:08.568162] START GET /api/positions/
+[2026-02-14 15:53:08.600076] END   GET /api/positions/ -> 200
+[2026-02-14 15:53:10.840578] START GET /api/rooms/
+[2026-02-14 15:53:10.882146] END   GET /api/rooms/ -> 200
+[2026-02-14 15:53:10.887014] START GET /api/rooms/
+[2026-02-14 15:53:10.915111] END   GET /api/rooms/ -> 200
+[2026-02-14 15:53:11.718326] START GET /api/consumable-brands/
+[2026-02-14 15:53:11.717883] START GET /api/consumable-types/
+[2026-02-14 15:53:11.755999] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 15:53:11.756999] END   GET /api/consumable-types/ -> 200
+[2026-02-14 15:53:11.760522] START GET /api/consumable-brands/
+[2026-02-14 15:53:11.761035] START GET /api/consumable-types/
+[2026-02-14 15:53:11.791948] END   GET /api/consumable-types/ -> 200
+[2026-02-14 15:53:11.792187] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 15:53:12.830162] START GET /api/stock-item-brands/
+[2026-02-14 15:53:12.829546] START GET /api/stock-item-types/
+[2026-02-14 15:53:12.865371] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 15:53:12.865411] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 15:53:12.870060] START GET /api/stock-item-brands/
+[2026-02-14 15:53:12.871389] START GET /api/stock-item-types/
+[2026-02-14 15:53:12.899772] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 15:53:12.901136] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 15:53:13.321265] START GET /api/asset-types/
+[2026-02-14 15:53:13.322647] START GET /api/asset-brands/
+[2026-02-14 15:53:13.356584] END   GET /api/asset-brands/ -> 200
+[2026-02-14 15:53:13.356728] END   GET /api/asset-types/ -> 200
+[2026-02-14 15:53:13.360456] START GET /api/asset-brands/
+[2026-02-14 15:53:13.361672] START GET /api/asset-types/
+[2026-02-14 15:53:13.390050] END   GET /api/asset-brands/ -> 200
+[2026-02-14 15:53:13.394060] END   GET /api/asset-types/ -> 200
+[2026-02-14 15:53:14.233126] START GET /api/persons/
+[2026-02-14 15:53:14.262064] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:14.265586] START GET /api/persons/
+[2026-02-14 15:53:14.298468] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:15.670046] START GET /api/organizational-structures/
+[2026-02-14 15:53:15.702475] END   GET /api/organizational-structures/ -> 200
+[2026-02-14 15:53:15.705466] START GET /api/organizational-structures/
+[2026-02-14 15:53:15.736798] END   GET /api/organizational-structures/ -> 200
+[2026-02-14 15:53:18.215982] START GET /api/persons/
+es/
+[2026-02-14 15:53:18.225413] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:53:18.230676] START GET /api/maintenances/
+[2026-02-14 15:53:18.234532] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:53:18.250637] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:18.254204] START GET /api/persons/
+[2026-02-14 15:53:18.280487] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:21.326443] START GET /api/problem-reports/
+[2026-02-14 15:53:21.327018] START GET /api/persons/
+[2026-02-14 15:53:21.332680] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:53:21.337080] START GET /api/problem-reports/
+[2026-02-14 15:53:21.341139] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:53:21.358494] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:21.362091] START GET /api/persons/
+[2026-02-14 15:53:21.387816] END   GET /api/persons/ -> 200
+[2026-02-14 15:53:22.276583] START GET /api/my-items/
+[2026-02-14 15:53:22.289832] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:22.293894] START GET /api/my-items/
+[2026-02-14 15:53:22.297248] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:35.741074] START GET /api/my-items/
+[2026-02-14 15:53:35.746410] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:35.751971] START GET /api/my-items/
+[2026-02-14 15:53:35.756289] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:36.309673] START GET /api/my-items/
+[2026-02-14 15:53:36.313623] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:36.319416] START GET /api/my-items/
+[2026-02-14 15:53:36.323488] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:38.590644] START GET /api/my-items/
+[2026-02-14 15:53:38.592586] START GET /api/my-items/
+[2026-02-14 15:53:38.596214] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:38.599268] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:39.357882] START GET /api/my-items/
+[2026-02-14 15:53:39.358354] START GET /api/my-items/
+[2026-02-14 15:53:39.362895] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:53:39.366170] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:19.657601] START GET /api/persons/
+[2026-02-14 15:55:19.811286] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:19.815906] START GET /api/persons/
+[2026-02-14 15:55:19.851361] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:21.082725] START GET /api/asset-types/
+[2026-02-14 15:55:21.084448] START GET /api/asset-brands/
+[2026-02-14 15:55:21.115408] END   GET /api/asset-types/ -> 200
+[2026-02-14 15:55:21.115915] END   GET /api/asset-brands/ -> 200
+[2026-02-14 15:55:21.121490] START GET /api/asset-brands/
+[2026-02-14 15:55:21.121871] START GET /api/asset-types/
+[2026-02-14 15:55:21.149084] END   GET /api/asset-types/ -> 200
+[2026-02-14 15:55:21.258144] END   GET /api/asset-brands/ -> 200
+[2026-02-14 15:55:22.222223] START GET /api/stock-item-types/
+[2026-02-14 15:55:22.224531] START GET /api/stock-item-brands/
+[2026-02-14 15:55:22.254497] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 15:55:22.258396] START GET /api/stock-item-types/
+[2026-02-14 15:55:22.284765] END   GET /api/stock-item-types/ -> 200
+[2026-02-14 15:55:22.364536] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 15:55:22.370212] START GET /api/stock-item-brands/
+[2026-02-14 15:55:22.398039] END   GET /api/stock-item-brands/ -> 200
+[2026-02-14 15:55:22.979989] START GET /api/consumable-types/
+[2026-02-14 15:55:22.980484] START GET /api/consumable-brands/
+[2026-02-14 15:55:23.013299] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 15:55:23.013991] END   GET /api/consumable-types/ -> 200
+[2026-02-14 15:55:23.018538] START GET /api/consumable-brands/
+[2026-02-14 15:55:23.020167] START GET /api/consumable-types/
+[2026-02-14 15:55:23.049171] END   GET /api/consumable-brands/ -> 200
+[2026-02-14 15:55:23.050091] END   GET /api/consumable-types/ -> 200
+[2026-02-14 15:55:23.549855] START GET /api/rooms/
+[2026-02-14 15:55:23.579239] END   GET /api/rooms/ -> 200
+[2026-02-14 15:55:23.583190] START GET /api/rooms/
+[2026-02-14 15:55:23.615231] END   GET /api/rooms/ -> 200
+[2026-02-14 15:55:24.414813] START GET /api/positions/
+[2026-02-14 15:55:24.457867] END   GET /api/positions/ -> 200
+[2026-02-14 15:55:24.463633] START GET /api/positions/
+[2026-02-14 15:55:24.507874] END   GET /api/positions/ -> 200
+[2026-02-14 15:55:25.749467] START GET /api/my-items/
+[2026-02-14 15:55:25.781628] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:25.789929] START GET /api/my-items/
+[2026-02-14 15:55:25.796736] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:37.997742] START GET /api/problem-reports/
+[2026-02-14 15:55:37.999027] START GET /api/persons/
+[2026-02-14 15:55:38.015885] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:55:38.023619] START GET /api/problem-reports/
+[2026-02-14 15:55:38.036904] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:55:38.047346] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:38.051572] START GET /api/persons/
+[2026-02-14 15:55:38.090622] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:38.732640] START GET /api/maintenances/
+[2026-02-14 15:55:38.733747] START GET /api/persons/
+[2026-02-14 15:55:38.747627] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:55:38.753312] START GET /api/maintenances/
+[2026-02-14 15:55:38.766421] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:55:38.784390] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:38.791455] START GET /api/persons/
+[2026-02-14 15:55:38.838212] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:39.373432] START GET /api/persons/
+[2026-02-14 15:55:39.372945] START GET /api/problem-reports/
+[2026-02-14 15:55:39.391406] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:55:39.397508] START GET /api/problem-reports/
+[2026-02-14 15:55:39.409206] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:55:39.421004] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:39.426497] START GET /api/persons/
+[2026-02-14 15:55:39.579797] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:40.462797] START GET /api/my-items/
+[2026-02-14 15:55:40.477986] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:40.484058] START GET /api/my-items/
+[2026-02-14 15:55:40.501949] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:46.882946] START GET /api/my-items/
+[2026-02-14 15:55:46.932455] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:46.939316] START GET /api/my-items/
+[2026-02-14 15:55:46.947766] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:47.628361] START GET /api/my-items/
+[2026-02-14 15:55:47.638174] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:47.643929] START GET /api/my-items/
+[2026-02-14 15:55:47.652722] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:55:51.558906] START GET /api/problem-reports/
+[2026-02-14 15:55:51.560307] START GET /api/persons/
+[2026-02-14 15:55:51.567742] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:55:51.574622] START GET /api/problem-reports/
+[2026-02-14 15:55:51.581701] END   GET /api/problem-reports/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/problem-reports/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-
+[2026-02-14 15:55:51.852256] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:51.857238] START GET /api/persons/
+[2026-02-14 15:55:51.988821] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:52.596744] START GET /api/maintenances/
+[2026-02-14 15:55:52.597524] START GET /api/persons/
+[2026-02-14 15:55:52.605976] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:55:52.613386] START GET /api/maintenances/
+[2026-02-14 15:55:52.620634] END   GET /api/maintenances/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/maintenances/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bot
+[2026-02-14 15:55:52.640841] END   GET /api/persons/ -> 200
+[2026-02-14 15:55:52.645305] START GET /api/persons/
+[2026-02-14 15:55:52.795638] END   GET /api/persons/ -> 200
+[2026-02-14 15:56:34.134678] START POST /api/auth/login/
+[2026-02-14 15:56:34.227079] END   POST /api/auth/login/ -> 200
+[2026-02-14 15:56:35.462787] START GET /api/my-items/
+[2026-02-14 15:56:35.479115] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:56:35.484970] START GET /api/my-items/
+[2026-02-14 15:56:35.501032] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:57:21.849793] START GET /api/my-items/
+[2026-02-14 15:57:21.854241] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:57:21.858645] START GET /api/my-items/
+[2026-02-14 15:57:21.863664] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:57:22.466117] START GET /api/my-items/
+[2026-02-14 15:57:22.472745] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:57:22.477663] START GET /api/my-items/
+[2026-02-14 15:57:22.482586] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:57:42.646263] START GET /api/my-items/
+[2026-02-14 15:57:42.650345] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:57:42.654323] START GET /api/my-items/
+[2026-02-14 15:57:42.658536] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:58:15.183360] START GET /api/my-items/
+[2026-02-14 15:58:15.195837] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:58:15.200587] START GET /api/my-items/
+[2026-02-14 15:58:15.204643] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:58:15.634246] START GET /api/my-items/
+[2026-02-14 15:58:15.638835] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:58:15.643676] START GET /api/my-items/
+[2026-02-14 15:58:15.648357] END   GET /api/my-items/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/my-items/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; margin-bottom:
+[2026-02-14 15:58:43.173674] START GET /api/my-items/
+[2026-02-14 15:58:43.245467] END   GET /api/my-items/ -> 200
+[2026-02-14 15:58:43.249159] START GET /api/my-items/
+[2026-02-14 15:58:43.291196] END   GET /api/my-items/ -> 200
