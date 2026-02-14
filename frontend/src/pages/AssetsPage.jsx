@@ -1,11 +1,24 @@
-import { useEffect, useState } from 'react';
-import { assetTypeService, assetModelService, assetBrandService, assetService } from '../services/api';
+import { useEffect, useMemo, useState } from 'react';
+import {
+    assetTypeService,
+    assetModelService,
+    assetBrandService,
+    assetService,
+    assetAttributeDefinitionService,
+    assetTypeAttributeService,
+    assetModelAttributeService,
+    assetAttributeValueService
+} from '../services/api';
 
 const AssetsPage = () => {
     const [assetTypes, setAssetTypes] = useState([]);
     const [assetBrands, setAssetBrands] = useState([]);
     const [assetModels, setAssetModels] = useState([]);
     const [assets, setAssets] = useState([]);
+    const [attributeDefinitions, setAttributeDefinitions] = useState([]);
+    const [assetTypeAttributes, setAssetTypeAttributes] = useState([]);
+    const [assetModelAttributes, setAssetModelAttributes] = useState([]);
+    const [assetAttributes, setAssetAttributes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     
@@ -13,10 +26,15 @@ const AssetsPage = () => {
     const [showTypeForm, setShowTypeForm] = useState(false);
     const [showModelForm, setShowModelForm] = useState(false);
     const [showAssetForm, setShowAssetForm] = useState(false);
+    const [showAttributeDefinitionForm, setShowAttributeDefinitionForm] = useState(false);
+    const [showTypeAttributeForm, setShowTypeAttributeForm] = useState(false);
+    const [showModelAttributeForm, setShowModelAttributeForm] = useState(false);
+    const [showAssetAttributeForm, setShowAssetAttributeForm] = useState(false);
     
     // Selection states
     const [selectedAssetType, setSelectedAssetType] = useState(null);
     const [selectedAssetModel, setSelectedAssetModel] = useState(null);
+    const [selectedAsset, setSelectedAsset] = useState(null);
     
     // Form data states
     const [formData, setFormData] = useState({
@@ -43,6 +61,30 @@ const AssetsPage = () => {
         attribution_order_id: '',
         destruction_certificate_id: ''
     });
+    const [attributeDefinitionForm, setAttributeDefinitionForm] = useState({
+        description: '',
+        data_type: '',
+        unit: ''
+    });
+    const [typeAttributeForm, setTypeAttributeForm] = useState({
+        asset_attribute_definition: '',
+        is_mandatory: false,
+        default_value: ''
+    });
+    const [modelAttributeForm, setModelAttributeForm] = useState({
+        asset_attribute_definition: '',
+        value_string: '',
+        value_number: '',
+        value_bool: false,
+        value_date: ''
+    });
+    const [assetAttributeForm, setAssetAttributeForm] = useState({
+        asset_attribute_definition: '',
+        value_string: '',
+        value_number: '',
+        value_bool: false,
+        value_date: ''
+    });
     
     const [editingAsset, setEditingAsset] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -50,29 +92,53 @@ const AssetsPage = () => {
     useEffect(() => {
         fetchAssetTypes();
         fetchAssetBrands();
+        fetchAttributeDefinitions();
     }, []);
 
     useEffect(() => {
         if (selectedAssetType) {
             fetchAssetModels(selectedAssetType.asset_type_id);
+            fetchAssetTypeAttributes(selectedAssetType.asset_type_id);
             // We don't nullify selectedAssetModel immediately if we want to keep context, 
             // but usually switching type implies switching context. 
             // If the user clicks the SAME type, we might want to toggle collapse? 
             // For now, let's keep the behavior: select type -> fetch models -> clear asset selection
             setSelectedAssetModel(null);
             setAssets([]);
+            setAssetModelAttributes([]);
         } else {
             setAssetModels([]);
+            setAssetTypeAttributes([]);
         }
     }, [selectedAssetType]);
 
     useEffect(() => {
         if (selectedAssetModel) {
             fetchAssets(selectedAssetModel.asset_model_id);
+            fetchAssetModelAttributes(selectedAssetModel.asset_model_id);
         } else {
             setAssets([]);
+            setAssetModelAttributes([]);
+            setSelectedAsset(null);
+            setAssetAttributes([]);
         }
     }, [selectedAssetModel]);
+
+    useEffect(() => {
+        if (selectedAsset) {
+            fetchAssetAttributes(selectedAsset.asset_id);
+        } else {
+            setAssetAttributes([]);
+        }
+    }, [selectedAsset]);
+
+    const definitionLookup = useMemo(() => {
+        const map = new Map();
+        attributeDefinitions.forEach((def) => {
+            map.set(def.asset_attribute_definition_id, def);
+        });
+        return map;
+    }, [attributeDefinitions]);
 
     const fetchAssetTypes = async () => {
         setLoading(true);
@@ -118,6 +184,46 @@ const AssetsPage = () => {
         }
     };
 
+    const fetchAttributeDefinitions = async () => {
+        try {
+            const data = await assetAttributeDefinitionService.getAll();
+            setAttributeDefinitions(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch attribute definitions: ' + err.message);
+            setAttributeDefinitions([]);
+        }
+    };
+
+    const fetchAssetTypeAttributes = async (assetTypeId) => {
+        try {
+            const data = await assetTypeAttributeService.getByAssetType(assetTypeId);
+            setAssetTypeAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch asset type attributes: ' + err.message);
+            setAssetTypeAttributes([]);
+        }
+    };
+
+    const fetchAssetModelAttributes = async (assetModelId) => {
+        try {
+            const data = await assetModelAttributeService.getByAssetModel(assetModelId);
+            setAssetModelAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch asset model attributes: ' + err.message);
+            setAssetModelAttributes([]);
+        }
+    };
+
+    const fetchAssetAttributes = async (assetId) => {
+        try {
+            const data = await assetAttributeValueService.getByAsset(assetId);
+            setAssetAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch asset attributes: ' + err.message);
+            setAssetAttributes([]);
+        }
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -134,6 +240,35 @@ const AssetsPage = () => {
     const handleAssetInputChange = (e) => {
         const { name, value } = e.target;
         setAssetFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAttributeDefinitionInputChange = (e) => {
+        const { name, value } = e.target;
+        setAttributeDefinitionForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleTypeAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setTypeAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleModelAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setModelAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleAssetAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setAssetAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
     const handleTypeSubmit = async (e) => {
@@ -242,6 +377,133 @@ const AssetsPage = () => {
         }
     };
 
+    const handleAttributeDefinitionSubmit = async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                description: attributeDefinitionForm.description || null,
+                data_type: attributeDefinitionForm.data_type || null,
+                unit: attributeDefinitionForm.unit || null
+            };
+            await assetAttributeDefinitionService.create(payload);
+            setAttributeDefinitionForm({ description: '', data_type: '', unit: '' });
+            setShowAttributeDefinitionForm(false);
+            await fetchAttributeDefinitions();
+        } catch (err) {
+            setError('Failed to create attribute definition: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleTypeAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedAssetType) {
+            setError('Please select an asset type first');
+            return;
+        }
+        if (!typeAttributeForm.asset_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                asset_type: selectedAssetType.asset_type_id,
+                asset_attribute_definition: Number(typeAttributeForm.asset_attribute_definition),
+                is_mandatory: typeAttributeForm.is_mandatory,
+                default_value: typeAttributeForm.default_value || null
+            };
+            await assetTypeAttributeService.create(payload);
+            setTypeAttributeForm({ asset_attribute_definition: '', is_mandatory: false, default_value: '' });
+            setShowTypeAttributeForm(false);
+            await fetchAssetTypeAttributes(selectedAssetType.asset_type_id);
+        } catch (err) {
+            setError('Failed to assign attribute to asset type: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleModelAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedAssetModel) {
+            setError('Please select an asset model first');
+            return;
+        }
+        if (!modelAttributeForm.asset_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                asset_model: selectedAssetModel.asset_model_id,
+                asset_attribute_definition: Number(modelAttributeForm.asset_attribute_definition),
+                value_string: modelAttributeForm.value_string || null,
+                value_number: modelAttributeForm.value_number ? Number(modelAttributeForm.value_number) : null,
+                value_bool: modelAttributeForm.value_bool,
+                value_date: modelAttributeForm.value_date || null
+            };
+            await assetModelAttributeService.create(payload);
+            setModelAttributeForm({
+                asset_attribute_definition: '',
+                value_string: '',
+                value_number: '',
+                value_bool: false,
+                value_date: ''
+            });
+            setShowModelAttributeForm(false);
+            await fetchAssetModelAttributes(selectedAssetModel.asset_model_id);
+        } catch (err) {
+            setError('Failed to add model attribute value: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleAssetAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedAsset) {
+            setError('Please select an asset first');
+            return;
+        }
+        if (!assetAttributeForm.asset_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                asset: selectedAsset.asset_id,
+                asset_attribute_definition: Number(assetAttributeForm.asset_attribute_definition),
+                value_string: assetAttributeForm.value_string || null,
+                value_number: assetAttributeForm.value_number ? Number(assetAttributeForm.value_number) : null,
+                value_bool: assetAttributeForm.value_bool,
+                value_date: assetAttributeForm.value_date || null
+            };
+            await assetAttributeValueService.create(payload);
+            setAssetAttributeForm({
+                asset_attribute_definition: '',
+                value_string: '',
+                value_number: '',
+                value_bool: false,
+                value_date: ''
+            });
+            setShowAssetAttributeForm(false);
+            await fetchAssetAttributes(selectedAsset.asset_id);
+        } catch (err) {
+            setError('Failed to add asset attribute value: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleEditAsset = (asset) => {
         setEditingAsset(asset.asset_id);
         setAssetFormData({
@@ -292,6 +554,56 @@ const AssetsPage = () => {
                 }
             } catch (err) {
                 setError('Failed to delete asset: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteAttributeDefinition = async (id) => {
+        if (window.confirm('Delete this attribute definition?')) {
+            try {
+                await assetAttributeDefinitionService.delete(id);
+                await fetchAttributeDefinitions();
+            } catch (err) {
+                setError('Failed to delete attribute definition: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteTypeAttribute = async (assetTypeId, definitionId) => {
+        if (window.confirm('Remove this attribute from the asset type?')) {
+            try {
+                await assetTypeAttributeService.delete(assetTypeId, definitionId);
+                if (selectedAssetType) {
+                    await fetchAssetTypeAttributes(selectedAssetType.asset_type_id);
+                }
+            } catch (err) {
+                setError('Failed to remove asset type attribute: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteModelAttribute = async (assetModelId, definitionId) => {
+        if (window.confirm('Remove this attribute value from the asset model?')) {
+            try {
+                await assetModelAttributeService.delete(assetModelId, definitionId);
+                if (selectedAssetModel) {
+                    await fetchAssetModelAttributes(selectedAssetModel.asset_model_id);
+                }
+            } catch (err) {
+                setError('Failed to remove asset model attribute: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteAssetAttribute = async (assetId, definitionId) => {
+        if (window.confirm('Remove this attribute value from the asset?')) {
+            try {
+                await assetAttributeValueService.delete(assetId, definitionId);
+                if (selectedAsset) {
+                    await fetchAssetAttributes(selectedAsset.asset_id);
+                }
+            } catch (err) {
+                setError('Failed to remove asset attribute: ' + err.message);
             }
         }
     };
@@ -571,6 +883,373 @@ const AssetsPage = () => {
                             </div>
 
                             <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-4)' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                            <div style={{ fontWeight: '600' }}>Attribute Definitions</div>
+                                            <button
+                                                onClick={() => setShowAttributeDefinitionForm(!showAttributeDefinitionForm)}
+                                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                            >
+                                                + Add
+                                            </button>
+                                        </div>
+                                        {showAttributeDefinitionForm && (
+                                            <form onSubmit={handleAttributeDefinitionSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                                <input
+                                                    type="text"
+                                                    name="description"
+                                                    placeholder="Description"
+                                                    value={attributeDefinitionForm.description}
+                                                    onChange={handleAttributeDefinitionInputChange}
+                                                    required
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                />
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                                                    <select
+                                                        name="data_type"
+                                                        value={attributeDefinitionForm.data_type}
+                                                        onChange={handleAttributeDefinitionInputChange}
+                                                        style={{ padding: 'var(--space-2)' }}
+                                                    >
+                                                        <option value="">Data Type</option>
+                                                        <option value="string">String</option>
+                                                        <option value="number">Number</option>
+                                                        <option value="bool">Boolean</option>
+                                                        <option value="date">Date</option>
+                                                    </select>
+                                                    <input
+                                                        type="text"
+                                                        name="unit"
+                                                        placeholder="Unit"
+                                                        value={attributeDefinitionForm.unit}
+                                                        onChange={handleAttributeDefinitionInputChange}
+                                                        style={{ padding: 'var(--space-2)' }}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                    <button type="button" onClick={() => setShowAttributeDefinitionForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                            {attributeDefinitions.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No attribute definitions.</div>
+                                            ) : (
+                                                attributeDefinitions.map((def) => (
+                                                    <div key={def.asset_attribute_definition_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: '500' }}>{def.description || `Attribute ${def.asset_attribute_definition_id}`}</div>
+                                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{def.data_type || 'type'}{def.unit ? ` • ${def.unit}` : ''}</div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteAttributeDefinition(def.asset_attribute_definition_id)}
+                                                            style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                            <div style={{ fontWeight: '600' }}>Asset Type Attributes</div>
+                                            <button
+                                                onClick={() => setShowTypeAttributeForm(!showTypeAttributeForm)}
+                                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                            >
+                                                + Assign
+                                            </button>
+                                        </div>
+                                        {showTypeAttributeForm && (
+                                            <form onSubmit={handleTypeAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                                <select
+                                                    name="asset_attribute_definition"
+                                                    value={typeAttributeForm.asset_attribute_definition}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    required
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                >
+                                                    <option value="">Select attribute definition...</option>
+                                                    {attributeDefinitions.map((def) => (
+                                                        <option key={def.asset_attribute_definition_id} value={def.asset_attribute_definition_id}>
+                                                            {def.description || `Attribute ${def.asset_attribute_definition_id}`}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="text"
+                                                    name="default_value"
+                                                    placeholder="Default value"
+                                                    value={typeAttributeForm.default_value}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                />
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        name="is_mandatory"
+                                                        checked={typeAttributeForm.is_mandatory}
+                                                        onChange={handleTypeAttributeInputChange}
+                                                    />
+                                                    Mandatory
+                                                </label>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                    <button type="button" onClick={() => setShowTypeAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                            {assetTypeAttributes.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned.</div>
+                                            ) : (
+                                                assetTypeAttributes.map((attr) => {
+                                                    const definition = attr.definition || definitionLookup.get(attr.asset_attribute_definition);
+                                                    return (
+                                                        <div key={`${attr.asset_type}-${attr.asset_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                            <div>
+                                                                <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.asset_attribute_definition}`}</div>
+                                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                    {definition?.data_type || 'type'}{definition?.unit ? ` • ${definition.unit}` : ''}
+                                                                    {attr.is_mandatory ? ' • mandatory' : ''}
+                                                                    {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleDeleteTypeAttribute(attr.asset_type, attr.asset_attribute_definition)}
+                                                                style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                            >
+                                                                &times;
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>Asset Model Attributes</div>
+                                        <button
+                                            onClick={() => setShowModelAttributeForm(!showModelAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Add Value
+                                        </button>
+                                    </div>
+                                    {showModelAttributeForm && (
+                                        <form onSubmit={handleModelAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="asset_attribute_definition"
+                                                value={modelAttributeForm.asset_attribute_definition}
+                                                onChange={handleModelAttributeInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            >
+                                                <option value="">Select attribute definition...</option>
+                                                {attributeDefinitions.map((def) => (
+                                                    <option key={def.asset_attribute_definition_id} value={def.asset_attribute_definition_id}>
+                                                        {def.description || `Attribute ${def.asset_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {(() => {
+                                                const selectedDef = definitionLookup.get(Number(modelAttributeForm.asset_attribute_definition));
+                                                const dataType = selectedDef?.data_type?.toLowerCase();
+                                                if (dataType === 'number') {
+                                                    return (
+                                                        <input
+                                                            type="number"
+                                                            name="value_number"
+                                                            placeholder="Number value"
+                                                            value={modelAttributeForm.value_number}
+                                                            onChange={handleModelAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                if (dataType === 'bool' || dataType === 'boolean') {
+                                                    return (
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                name="value_bool"
+                                                                checked={modelAttributeForm.value_bool}
+                                                                onChange={handleModelAttributeInputChange}
+                                                            />
+                                                            True
+                                                        </label>
+                                                    );
+                                                }
+                                                if (dataType === 'date') {
+                                                    return (
+                                                        <input
+                                                            type="date"
+                                                            name="value_date"
+                                                            value={modelAttributeForm.value_date}
+                                                            onChange={handleModelAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <input
+                                                        type="text"
+                                                        name="value_string"
+                                                        placeholder="String value"
+                                                        value={modelAttributeForm.value_string}
+                                                        onChange={handleModelAttributeInputChange}
+                                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                    />
+                                                );
+                                            })()}
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowModelAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {assetModelAttributes.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No model attribute values.</div>
+                                    ) : (
+                                        assetModelAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.asset_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            return (
+                                                <div key={`${attr.asset_model}-${attr.asset_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.asset_attribute_definition}`}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? 'No value' : String(value)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteModelAttribute(attr.asset_model, attr.asset_attribute_definition)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>
+                                            Asset Attributes {selectedAsset ? `• ${selectedAsset.asset_name || 'Asset ' + selectedAsset.asset_id}` : ''}
+                                        </div>
+                                        <button
+                                            onClick={() => setShowAssetAttributeForm(!showAssetAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Add Value
+                                        </button>
+                                    </div>
+                                    {showAssetAttributeForm && (
+                                        <form onSubmit={handleAssetAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="asset_attribute_definition"
+                                                value={assetAttributeForm.asset_attribute_definition}
+                                                onChange={handleAssetAttributeInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            >
+                                                <option value="">Select attribute definition...</option>
+                                                {attributeDefinitions.map((def) => (
+                                                    <option key={def.asset_attribute_definition_id} value={def.asset_attribute_definition_id}>
+                                                        {def.description || `Attribute ${def.asset_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {(() => {
+                                                const selectedDef = definitionLookup.get(Number(assetAttributeForm.asset_attribute_definition));
+                                                const dataType = selectedDef?.data_type?.toLowerCase();
+                                                if (dataType === 'number') {
+                                                    return (
+                                                        <input
+                                                            type="number"
+                                                            name="value_number"
+                                                            placeholder="Number value"
+                                                            value={assetAttributeForm.value_number}
+                                                            onChange={handleAssetAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                if (dataType === 'bool' || dataType === 'boolean') {
+                                                    return (
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                name="value_bool"
+                                                                checked={assetAttributeForm.value_bool}
+                                                                onChange={handleAssetAttributeInputChange}
+                                                            />
+                                                            True
+                                                        </label>
+                                                    );
+                                                }
+                                                if (dataType === 'date') {
+                                                    return (
+                                                        <input
+                                                            type="date"
+                                                            name="value_date"
+                                                            value={assetAttributeForm.value_date}
+                                                            onChange={handleAssetAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <input
+                                                        type="text"
+                                                        name="value_string"
+                                                        placeholder="String value"
+                                                        value={assetAttributeForm.value_string}
+                                                        onChange={handleAssetAttributeInputChange}
+                                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                    />
+                                                );
+                                            })()}
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowAssetAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {!selectedAsset ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>Select an asset to view or add values.</div>
+                                    ) : assetAttributes.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No attribute values set for this asset.</div>
+                                    ) : (
+                                        assetAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.asset_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            return (
+                                                <div key={`${attr.asset}-${attr.asset_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.asset_attribute_definition}`}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? 'No value' : String(value)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteAssetAttribute(attr.asset, attr.asset_attribute_definition)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
                                 {showAssetForm && (
                                     <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
                                         <div style={{ fontWeight: '600', marginBottom: 'var(--space-4)' }}>{editingAsset ? 'Edit Asset' : 'New Asset'}</div>
@@ -643,6 +1322,12 @@ const AssetsPage = () => {
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                                                        <button
+                                                            onClick={() => setSelectedAsset(asset)}
+                                                            style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontWeight: '500' }}
+                                                        >
+                                                            Attributes
+                                                        </button>
                                                         <button 
                                                             onClick={() => handleEditAsset(asset)}
                                                             style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
@@ -663,6 +1348,160 @@ const AssetsPage = () => {
                                 )}
                             </div>
                         </>
+                    ) : selectedAssetType ? (
+                        <div style={{ padding: 'var(--space-6)', overflowY: 'auto' }}>
+                            <h2 style={{ marginBottom: 'var(--space-4)' }}>{selectedAssetType.asset_type_label} Attributes</h2>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>Attribute Definitions</div>
+                                        <button
+                                            onClick={() => setShowAttributeDefinitionForm(!showAttributeDefinitionForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Add
+                                        </button>
+                                    </div>
+                                    {showAttributeDefinitionForm && (
+                                        <form onSubmit={handleAttributeDefinitionSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <input
+                                                type="text"
+                                                name="description"
+                                                placeholder="Description"
+                                                value={attributeDefinitionForm.description}
+                                                onChange={handleAttributeDefinitionInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            />
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                                                <select
+                                                    name="data_type"
+                                                    value={attributeDefinitionForm.data_type}
+                                                    onChange={handleAttributeDefinitionInputChange}
+                                                    style={{ padding: 'var(--space-2)' }}
+                                                >
+                                                    <option value="">Data Type</option>
+                                                    <option value="string">String</option>
+                                                    <option value="number">Number</option>
+                                                    <option value="bool">Boolean</option>
+                                                    <option value="date">Date</option>
+                                                </select>
+                                                <input
+                                                    type="text"
+                                                    name="unit"
+                                                    placeholder="Unit"
+                                                    value={attributeDefinitionForm.unit}
+                                                    onChange={handleAttributeDefinitionInputChange}
+                                                    style={{ padding: 'var(--space-2)' }}
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowAttributeDefinitionForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                                        {attributeDefinitions.length === 0 ? (
+                                            <div style={{ color: 'var(--color-text-secondary)' }}>No attribute definitions.</div>
+                                        ) : (
+                                            attributeDefinitions.map((def) => (
+                                                <div key={def.asset_attribute_definition_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{def.description || `Attribute ${def.asset_attribute_definition_id}`}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{def.data_type || 'type'}{def.unit ? ` • ${def.unit}` : ''}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteAttributeDefinition(def.asset_attribute_definition_id)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>Asset Type Attributes</div>
+                                        <button
+                                            onClick={() => setShowTypeAttributeForm(!showTypeAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Assign
+                                        </button>
+                                    </div>
+                                    {showTypeAttributeForm && (
+                                        <form onSubmit={handleTypeAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="asset_attribute_definition"
+                                                value={typeAttributeForm.asset_attribute_definition}
+                                                onChange={handleTypeAttributeInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            >
+                                                <option value="">Select attribute definition...</option>
+                                                {attributeDefinitions.map((def) => (
+                                                    <option key={def.asset_attribute_definition_id} value={def.asset_attribute_definition_id}>
+                                                        {def.description || `Attribute ${def.asset_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <input
+                                                type="text"
+                                                name="default_value"
+                                                placeholder="Default value"
+                                                value={typeAttributeForm.default_value}
+                                                onChange={handleTypeAttributeInputChange}
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            />
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    name="is_mandatory"
+                                                    checked={typeAttributeForm.is_mandatory}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                />
+                                                Mandatory
+                                            </label>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowTypeAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    <div style={{ maxHeight: '320px', overflowY: 'auto' }}>
+                                        {assetTypeAttributes.length === 0 ? (
+                                            <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned.</div>
+                                        ) : (
+                                            assetTypeAttributes.map((attr) => {
+                                                const definition = attr.definition || definitionLookup.get(attr.asset_attribute_definition);
+                                                return (
+                                                    <div key={`${attr.asset_type}-${attr.asset_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.asset_attribute_definition}`}</div>
+                                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                {definition?.data_type || 'type'}{definition?.unit ? ` • ${definition.unit}` : ''}
+                                                                {attr.is_mandatory ? ' • mandatory' : ''}
+                                                                {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteTypeAttribute(attr.asset_type, attr.asset_attribute_definition)}
+                                                            style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-secondary)' }}>
                             <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)', opacity: 0.2 }}>📋</div>

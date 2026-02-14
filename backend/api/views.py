@@ -8,8 +8,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import hashlib
 import os
 
-from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, Maintenance, MaintenanceStep, MaintenanceTypicalStep
-from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer, MaintenanceTypicalStepSerializer, MaintenanceStepSerializer
+from .models import Person, UserAccount, PersonRoleMapping, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, Maintenance, MaintenanceStep, MaintenanceTypicalStep, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue
+from .serializers import PersonSerializer, LoginSerializer, UserProfileSerializer, AssetTypeSerializer, AssetBrandSerializer, AssetModelSerializer, AssetSerializer, StockItemTypeSerializer, StockItemBrandSerializer, StockItemModelSerializer, ConsumableTypeSerializer, ConsumableBrandSerializer, ConsumableModelSerializer, RoomTypeSerializer, RoomSerializer, PositionSerializer, OrganizationalStructureSerializer, OrganizationalStructureRelationSerializer, MaintenanceTypicalStepSerializer, MaintenanceStepSerializer, AssetAttributeDefinitionSerializer, AssetTypeAttributeSerializer, AssetModelAttributeValueSerializer, AssetAttributeValueSerializer
 
 
 def hash_password(password):
@@ -458,6 +458,358 @@ class AssetModelViewSet(viewsets.ModelViewSet):
                 {'error': 'Only superusers can delete asset models'},
                 status=status.HTTP_403_FORBIDDEN
             )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class AssetViewSet(viewsets.ModelViewSet):
+    """CRUD operations for Asset model"""
+    queryset = Asset.objects.all().order_by('asset_id')
+    serializer_class = AssetSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """Get all assets, optionally filtered by asset_model"""
+        queryset = Asset.objects.select_related('asset_model').order_by('asset_id')
+        asset_model_id = self.request.query_params.get('asset_model', None)
+        if asset_model_id is not None:
+            try:
+                asset_model_id = int(asset_model_id)
+                queryset = queryset.filter(asset_model_id=asset_model_id)
+            except (ValueError, TypeError):
+                pass
+        return queryset
+
+
+class AssetAttributeDefinitionViewSet(viewsets.ModelViewSet):
+    """CRUD operations for AssetAttributeDefinition model"""
+    queryset = AssetAttributeDefinition.objects.all().order_by('asset_attribute_definition_id')
+    serializer_class = AssetAttributeDefinitionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new asset attribute definition - only superusers can create"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create asset attribute definitions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        last_def = AssetAttributeDefinition.objects.order_by('-asset_attribute_definition_id').first()
+        next_id = (last_def.asset_attribute_definition_id + 1) if last_def else 1
+
+        definition = AssetAttributeDefinition.objects.create(
+            asset_attribute_definition_id=next_id,
+            **serializer.validated_data
+        )
+        return Response(AssetAttributeDefinitionSerializer(definition).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update asset attribute definition - only superusers can update"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update asset attribute definitions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete asset attribute definition - only superusers can delete"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete asset attribute definitions'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class AssetTypeAttributeViewSet(viewsets.ModelViewSet):
+    """CRUD operations for AssetTypeAttribute model"""
+    queryset = AssetTypeAttribute.objects.all().order_by('asset_type_id', 'asset_attribute_definition_id')
+    serializer_class = AssetTypeAttributeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = AssetTypeAttribute.objects.select_related('asset_attribute_definition', 'asset_type')
+        asset_type_id = self.request.query_params.get('asset_type', None)
+        if asset_type_id is not None:
+            try:
+                asset_type_id = int(asset_type_id)
+                queryset = queryset.filter(asset_type_id=asset_type_id)
+            except (ValueError, TypeError):
+                pass
+        return queryset
+
+    def _get_user_account(self, request):
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new asset type attribute mapping - only superusers can create"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create asset type attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mapping = serializer.save()
+        return Response(AssetTypeAttributeSerializer(mapping).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update asset type attribute mapping - only superusers can update"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update asset type attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete asset type attribute mapping - only superusers can delete"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete asset type attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        asset_type_id = request.query_params.get('asset_type')
+        definition_id = request.query_params.get('asset_attribute_definition') or kwargs.get('pk')
+        if asset_type_id:
+            deleted, _ = AssetTypeAttribute.objects.filter(
+                asset_type_id=asset_type_id,
+                asset_attribute_definition_id=definition_id
+            ).delete()
+            if deleted == 0:
+                return Response({'error': 'Mapping not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class AssetModelAttributeValueViewSet(viewsets.ModelViewSet):
+    """CRUD operations for AssetModelAttributeValue model"""
+    queryset = AssetModelAttributeValue.objects.all().order_by('asset_model_id', 'asset_attribute_definition_id')
+    serializer_class = AssetModelAttributeValueSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = AssetModelAttributeValue.objects.select_related('asset_attribute_definition', 'asset_model')
+        asset_model_id = self.request.query_params.get('asset_model', None)
+        if asset_model_id is not None:
+            try:
+                asset_model_id = int(asset_model_id)
+                queryset = queryset.filter(asset_model_id=asset_model_id)
+            except (ValueError, TypeError):
+                pass
+        return queryset
+
+    def _get_user_account(self, request):
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new asset model attribute value - only superusers can create"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create asset model attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        value = serializer.save()
+        return Response(AssetModelAttributeValueSerializer(value).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update asset model attribute value - only superusers can update"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update asset model attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete asset model attribute value - only superusers can delete"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete asset model attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        asset_model_id = request.query_params.get('asset_model')
+        definition_id = request.query_params.get('asset_attribute_definition') or kwargs.get('pk')
+        if asset_model_id:
+            deleted, _ = AssetModelAttributeValue.objects.filter(
+                asset_model_id=asset_model_id,
+                asset_attribute_definition_id=definition_id
+            ).delete()
+            if deleted == 0:
+                return Response({'error': 'Mapping not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return super().destroy(request, *args, **kwargs)
+
+
+class AssetAttributeValueViewSet(viewsets.ModelViewSet):
+    """CRUD operations for AssetAttributeValue model"""
+    queryset = AssetAttributeValue.objects.all().order_by('asset_id', 'asset_attribute_definition_id')
+    serializer_class = AssetAttributeValueSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = AssetAttributeValue.objects.select_related('asset_attribute_definition', 'asset')
+        asset_id = self.request.query_params.get('asset', None)
+        if asset_id is not None:
+            try:
+                asset_id = int(asset_id)
+                queryset = queryset.filter(asset_id=asset_id)
+            except (ValueError, TypeError):
+                pass
+        return queryset
+
+    def _get_user_account(self, request):
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get('user_id')
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                username = request.auth.get('username')
+                if username:
+                    return UserAccount.objects.get(username=username)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            pass
+
+        return None
+
+    def create(self, request, *args, **kwargs):
+        """Create a new asset attribute value - only superusers can create"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can create asset attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        value = serializer.save()
+        return Response(AssetAttributeValueSerializer(value).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """Update asset attribute value - only superusers can update"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can update asset attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete asset attribute value - only superusers can delete"""
+        user_account = self._get_user_account(request)
+
+        if not user_account or not user_account.is_superuser():
+            return Response(
+                {'error': 'Only superusers can delete asset attributes'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        asset_id = request.query_params.get('asset')
+        definition_id = request.query_params.get('asset_attribute_definition') or kwargs.get('pk')
+        if asset_id:
+            deleted, _ = AssetAttributeValue.objects.filter(
+                asset_id=asset_id,
+                asset_attribute_definition_id=definition_id
+            ).delete()
+            if deleted == 0:
+                return Response({'error': 'Mapping not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         return super().destroy(request, *args, **kwargs)
 

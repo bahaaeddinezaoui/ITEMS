@@ -216,6 +216,121 @@ export const assetModelService = {
     },
 };
 
+// Asset Attribute Definition service
+export const assetAttributeDefinitionService = {
+    getAll: async () => {
+        const response = await api.get('asset-attribute-definitions/');
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('asset-attribute-definitions/', data);
+        return response.data;
+    },
+
+    update: async (id, data) => {
+        const response = await api.put(`asset-attribute-definitions/${id}/`, data);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`asset-attribute-definitions/${id}/`);
+    },
+};
+
+// Asset Type Attribute service
+export const assetTypeAttributeService = {
+    getByAssetType: async (assetTypeId) => {
+        const response = await api.get(`asset-type-attributes/?asset_type=${assetTypeId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('asset-type-attributes/', data);
+        return response.data;
+    },
+
+    update: async (assetTypeId, assetAttributeDefinitionId, data) => {
+        const response = await api.put(`asset-type-attributes/${assetTypeId}/`, {
+            asset_type: assetTypeId,
+            asset_attribute_definition: assetAttributeDefinitionId,
+            ...data,
+        });
+        return response.data;
+    },
+
+    delete: async (assetTypeId, assetAttributeDefinitionId) => {
+        await api.delete(`asset-type-attributes/${assetAttributeDefinitionId}/`, {
+            params: {
+                asset_type: assetTypeId,
+                asset_attribute_definition: assetAttributeDefinitionId,
+            },
+        });
+    },
+};
+
+// Asset Model Attribute service
+export const assetModelAttributeService = {
+    getByAssetModel: async (assetModelId) => {
+        const response = await api.get(`asset-model-attributes/?asset_model=${assetModelId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('asset-model-attributes/', data);
+        return response.data;
+    },
+
+    update: async (assetModelId, assetAttributeDefinitionId, data) => {
+        const response = await api.put(`asset-model-attributes/${assetModelId}/`, {
+            asset_model: assetModelId,
+            asset_attribute_definition: assetAttributeDefinitionId,
+            ...data,
+        });
+        return response.data;
+    },
+
+    delete: async (assetModelId, assetAttributeDefinitionId) => {
+        await api.delete(`asset-model-attributes/${assetAttributeDefinitionId}/`, {
+            params: {
+                asset_model: assetModelId,
+                asset_attribute_definition: assetAttributeDefinitionId,
+            },
+        });
+    },
+};
+
+// Asset Attribute Value service
+export const assetAttributeValueService = {
+    getByAsset: async (assetId) => {
+        const response = await api.get(`asset-attributes/?asset=${assetId}`);
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('asset-attributes/', data);
+        return response.data;
+    },
+
+    update: async (assetId, assetAttributeDefinitionId, data) => {
+        const response = await api.put(`asset-attributes/${assetAttributeDefinitionId}/`, {
+            asset: assetId,
+            asset_attribute_definition: assetAttributeDefinitionId,
+            ...data,
+        });
+        return response.data;
+    },
+
+    delete: async (assetId, assetAttributeDefinitionId) => {
+        await api.delete(`asset-attributes/${assetAttributeDefinitionId}/`, {
+            params: {
+                asset: assetId,
+                asset_attribute_definition: assetAttributeDefinitionId,
+            },
+        });
+    },
+};
+
 // Stock Item Type service
 export const stockItemTypeService = {
     getAll: async () => {

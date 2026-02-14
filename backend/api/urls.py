@@ -1,12 +1,17 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, MyItemsView, ProblemReportView, CreateMaintenanceView
+from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, MyItemsView, ProblemReportView, CreateMaintenanceView, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
 router.register(r'asset-types', AssetTypeViewSet, basename='assettype')
 router.register(r'asset-brands', AssetBrandViewSet, basename='assetbrand')
 router.register(r'asset-models', AssetModelViewSet, basename='assetmodel')
+router.register(r'assets', AssetViewSet, basename='asset')
+router.register(r'asset-attribute-definitions', AssetAttributeDefinitionViewSet, basename='assetattributedefinition')
+router.register(r'asset-type-attributes', AssetTypeAttributeViewSet, basename='assettypeattribute')
+router.register(r'asset-model-attributes', AssetModelAttributeValueViewSet, basename='assetmodelattribute')
+router.register(r'asset-attributes', AssetAttributeValueViewSet, basename='assetattribute')
 router.register(r'stock-item-types', StockItemTypeViewSet, basename='stockitemtype')
 router.register(r'stock-item-brands', StockItemBrandViewSet, basename='stockitembrand')
 router.register(r'stock-item-models', StockItemModelViewSet, basename='stockitemmodel')

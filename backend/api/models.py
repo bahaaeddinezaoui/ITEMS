@@ -347,6 +347,78 @@ class Asset(models.Model):
         return self.asset_name or f'Asset {self.asset_id}'
 
 
+class AssetAttributeDefinition(models.Model):
+    """Maps to asset_attribute_definition table"""
+    asset_attribute_definition_id = models.AutoField(primary_key=True, db_column='asset_attribute_definition_id')
+    data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
+    unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
+    description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_attribute_definition'
+
+    def __str__(self):
+        return f"Attr {self.asset_attribute_definition_id}" if self.description is None else self.description
+
+
+class AssetTypeAttribute(models.Model):
+    """Maps to asset_type_attribute table"""
+    asset_attribute_definition = models.ForeignKey(
+        AssetAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='asset_attribute_definition_id',
+        primary_key=True,
+    )
+    asset_type = models.ForeignKey(AssetType, on_delete=models.CASCADE, db_column='asset_type_id')
+    is_mandatory = models.BooleanField(blank=True, null=True, db_column='is_mandatory')
+    default_value = models.CharField(max_length=255, blank=True, null=True, db_column='default_value')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_type_attribute'
+        unique_together = (('asset_attribute_definition', 'asset_type'),)
+
+
+class AssetModelAttributeValue(models.Model):
+    """Maps to asset_model_attribute_value table"""
+    asset_model = models.ForeignKey(AssetModel, on_delete=models.CASCADE, db_column='asset_model_id', primary_key=True)
+    asset_attribute_definition = models.ForeignKey(
+        AssetAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='asset_attribute_definition_id',
+    )
+    value_bool = models.BooleanField(blank=True, null=True, db_column='value_bool')
+    value_string = models.CharField(max_length=1024, blank=True, null=True, db_column='value_string')
+    value_number = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True, db_column='value_number')
+    value_date = models.DateField(blank=True, null=True, db_column='value_date')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_model_attribute_value'
+        unique_together = (('asset_model', 'asset_attribute_definition'),)
+
+
+class AssetAttributeValue(models.Model):
+    """Maps to asset_attribute_value table"""
+    asset_attribute_definition = models.ForeignKey(
+        AssetAttributeDefinition,
+        on_delete=models.CASCADE,
+        db_column='asset_attribute_definition_id',
+        primary_key=True,
+    )
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id')
+    value_string = models.CharField(max_length=1024, blank=True, null=True, db_column='value_string')
+    value_bool = models.BooleanField(blank=True, null=True, db_column='value_bool')
+    value_date = models.DateField(blank=True, null=True, db_column='value_date')
+    value_number = models.DecimalField(max_digits=18, decimal_places=6, blank=True, null=True, db_column='value_number')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_attribute_value'
+        unique_together = (('asset_attribute_definition', 'asset'),)
+
+
 class AssetIsAssignedToPerson(models.Model):
     """Maps to asset_is_assigned_to_person table"""
     assignment_id = models.AutoField(primary_key=True, db_column='assignment_id')

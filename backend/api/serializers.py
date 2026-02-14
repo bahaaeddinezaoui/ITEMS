@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -213,6 +213,112 @@ class AssetSerializer(serializers.ModelSerializer):
         model = Asset
         fields = ['asset_id', 'asset_model', 'asset_serial_number', 'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag']
         read_only_fields = ['asset_id']
+
+
+class AssetAttributeDefinitionSerializer(serializers.ModelSerializer):
+    """Serializer for AssetAttributeDefinition model"""
+    class Meta:
+        model = AssetAttributeDefinition
+        fields = ['asset_attribute_definition_id', 'data_type', 'unit', 'description']
+        read_only_fields = ['asset_attribute_definition_id']
+
+
+class AssetTypeAttributeSerializer(serializers.ModelSerializer):
+    """Serializer for AssetTypeAttribute model"""
+    asset_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=AssetAttributeDefinition.objects.all())
+    asset_type = serializers.PrimaryKeyRelatedField(queryset=AssetType.objects.all())
+    definition = AssetAttributeDefinitionSerializer(source='asset_attribute_definition', read_only=True)
+
+    class Meta:
+        model = AssetTypeAttribute
+        fields = ['asset_attribute_definition', 'asset_type', 'is_mandatory', 'default_value', 'definition']
+
+    def create(self, validated_data):
+        instance = AssetTypeAttribute()
+        definition = validated_data.get('asset_attribute_definition')
+        asset_type = validated_data.get('asset_type')
+        instance.asset_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.asset_type_id = asset_type.pk if hasattr(asset_type, 'pk') else asset_type
+        instance.is_mandatory = validated_data.get('is_mandatory')
+        instance.default_value = validated_data.get('default_value')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.is_mandatory = validated_data.get('is_mandatory', instance.is_mandatory)
+        instance.default_value = validated_data.get('default_value', instance.default_value)
+        instance.save()
+        return instance
+
+
+class AssetModelAttributeValueSerializer(serializers.ModelSerializer):
+    """Serializer for AssetModelAttributeValue model"""
+    asset_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=AssetAttributeDefinition.objects.all())
+    asset_model = serializers.PrimaryKeyRelatedField(queryset=AssetModel.objects.all())
+    definition = AssetAttributeDefinitionSerializer(source='asset_attribute_definition', read_only=True)
+
+    class Meta:
+        model = AssetModelAttributeValue
+        fields = [
+            'asset_model', 'asset_attribute_definition', 'definition',
+            'value_bool', 'value_string', 'value_number', 'value_date'
+        ]
+
+    def create(self, validated_data):
+        instance = AssetModelAttributeValue()
+        definition = validated_data.get('asset_attribute_definition')
+        asset_model = validated_data.get('asset_model')
+        instance.asset_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.asset_model_id = asset_model.pk if hasattr(asset_model, 'pk') else asset_model
+        instance.value_bool = validated_data.get('value_bool')
+        instance.value_string = validated_data.get('value_string')
+        instance.value_number = validated_data.get('value_number')
+        instance.value_date = validated_data.get('value_date')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.value_bool = validated_data.get('value_bool', instance.value_bool)
+        instance.value_string = validated_data.get('value_string', instance.value_string)
+        instance.value_number = validated_data.get('value_number', instance.value_number)
+        instance.value_date = validated_data.get('value_date', instance.value_date)
+        instance.save()
+        return instance
+
+
+class AssetAttributeValueSerializer(serializers.ModelSerializer):
+    """Serializer for AssetAttributeValue model"""
+    asset_attribute_definition = serializers.PrimaryKeyRelatedField(queryset=AssetAttributeDefinition.objects.all())
+    asset = serializers.PrimaryKeyRelatedField(queryset=Asset.objects.all())
+    definition = AssetAttributeDefinitionSerializer(source='asset_attribute_definition', read_only=True)
+
+    class Meta:
+        model = AssetAttributeValue
+        fields = [
+            'asset', 'asset_attribute_definition', 'definition',
+            'value_bool', 'value_string', 'value_number', 'value_date'
+        ]
+
+    def create(self, validated_data):
+        instance = AssetAttributeValue()
+        definition = validated_data.get('asset_attribute_definition')
+        asset = validated_data.get('asset')
+        instance.asset_attribute_definition_id = definition.pk if hasattr(definition, 'pk') else definition
+        instance.asset_id = asset.pk if hasattr(asset, 'pk') else asset
+        instance.value_bool = validated_data.get('value_bool')
+        instance.value_string = validated_data.get('value_string')
+        instance.value_number = validated_data.get('value_number')
+        instance.value_date = validated_data.get('value_date')
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.value_bool = validated_data.get('value_bool', instance.value_bool)
+        instance.value_string = validated_data.get('value_string', instance.value_string)
+        instance.value_number = validated_data.get('value_number', instance.value_number)
+        instance.value_date = validated_data.get('value_date', instance.value_date)
+        instance.save()
+        return instance
 
 
 class AssetIsAssignedToPersonSerializer(serializers.ModelSerializer):
