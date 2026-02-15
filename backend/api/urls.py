@@ -1,6 +1,6 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet
+from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
@@ -28,12 +28,19 @@ router.register(r'consumable-types', ConsumableTypeViewSet, basename='consumable
 router.register(r'consumable-brands', ConsumableBrandViewSet, basename='consumablebrand')
 router.register(r'consumable-models', ConsumableModelViewSet, basename='consumablemodel')
 router.register(r'consumables', ConsumableViewSet, basename='consumable')
-# NOTE: room/org-structure/maintenance endpoints were removed from api.views during refactor.
-# Re-add their viewsets to api.views (or split into separate modules) if you still need these routes.
+router.register(r'maintenances', MaintenanceViewSet, basename='maintenance')
+router.register(r'maintenance-steps', MaintenanceStepViewSet, basename='maintenancestep')
+router.register(r'maintenance-typical-steps', MaintenanceTypicalStepViewSet, basename='maintenancetypicalstep')
+router.register(r'problem-reports', ProblemReportViewSet, basename='problemreport')
+router.register(r'room-types', RoomTypeViewSet, basename='roomtype')
+router.register(r'rooms', RoomViewSet, basename='room')
+router.register(r'positions', PositionViewSet, basename='position')
+router.register(r'organizational-structures', OrganizationalStructureViewSet, basename='organizationalstructure')
+router.register(r'organizational-structure-relations', OrganizationalStructureRelationViewSet, basename='organizationalstructurerelation')
 
 urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
-    # NOTE: my-items/problem-reports endpoints were removed from api.views during refactor.
-    # Re-add their views to api.views (or split into separate modules) if you still need these routes.
+    path('my-items/', MyItemsView.as_view(), name='my-items'),
+    # All endpoints have been restored and are now available
     path('', include(router.urls)),
 ]

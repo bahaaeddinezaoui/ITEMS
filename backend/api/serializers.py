@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -634,3 +634,38 @@ class MaintenanceStepSerializer(serializers.ModelSerializer):
             'start_datetime', 'end_datetime', 'is_successful'
         ]
         read_only_fields = ['maintenance_step_id']
+
+
+class MaintenanceSerializer(serializers.ModelSerializer):
+    """Serializer for Maintenance model"""
+
+    performed_by_person_name = serializers.SerializerMethodField()
+    asset_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Maintenance
+        fields = [
+            'maintenance_id',
+            'asset',
+            'description',
+            'start_datetime',
+            'performed_by_person',
+            'performed_by_person_name',
+            'asset_name',
+        ]
+        read_only_fields = ['maintenance_id']
+
+    def get_performed_by_person_name(self, obj):
+        person = getattr(obj, 'performed_by_person', None)
+        if not person:
+            return None
+        first = getattr(person, 'first_name', '') or ''
+        last = getattr(person, 'last_name', '') or ''
+        full = (first + ' ' + last).strip()
+        return full or None
+
+    def get_asset_name(self, obj):
+        asset = getattr(obj, 'asset', None)
+        if not asset:
+            return None
+        return getattr(asset, 'asset_name', None) or None

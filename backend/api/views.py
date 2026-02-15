@@ -9,12 +9,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import action
 
 from .models import (
     Asset,
     AssetAttributeDefinition,
     AssetAttributeValue,
     AssetBrand,
+    AssetIsAssignedToPerson,
     AssetModel,
     AssetModelAttributeValue,
     AssetType,
@@ -23,6 +25,7 @@ from .models import (
     ConsumableAttributeDefinition,
     ConsumableAttributeValue,
     ConsumableBrand,
+    ConsumableIsAssignedToPerson,
     ConsumableModel,
     ConsumableModelAttributeValue,
     ConsumableType,
@@ -44,6 +47,7 @@ from .models import (
     StockItemAttributeDefinition,
     StockItemAttributeValue,
     StockItemBrand,
+    StockItemIsAssignedToPerson,
     StockItemModel,
     StockItemModelAttributeValue,
     StockItemType,
@@ -54,6 +58,7 @@ from .serializers import (
     AssetAttributeDefinitionSerializer,
     AssetAttributeValueSerializer,
     AssetBrandSerializer,
+    AssetIsAssignedToPersonSerializer,
     AssetModelAttributeValueSerializer,
     AssetModelSerializer,
     AssetSerializer,
@@ -65,10 +70,12 @@ from .serializers import (
     ConsumableModelAttributeValueSerializer,
     ConsumableModelSerializer,
     ConsumableSerializer,
+    ConsumableIsAssignedToPersonSerializer,
     ConsumableTypeAttributeSerializer,
     ConsumableTypeSerializer,
     LoginSerializer,
     MaintenanceStepSerializer,
+    MaintenanceSerializer,
     MaintenanceTypicalStepSerializer,
     OrganizationalStructureRelationSerializer,
     OrganizationalStructureSerializer,
@@ -82,6 +89,7 @@ from .serializers import (
     StockItemModelAttributeValueSerializer,
     StockItemModelSerializer,
     StockItemSerializer,
+    StockItemIsAssignedToPersonSerializer,
     StockItemTypeAttributeSerializer,
     StockItemTypeSerializer,
     UserProfileSerializer,
@@ -150,6 +158,270 @@ class SuperuserWriteMixin:
         return super().destroy(request, *args, **kwargs)
 
 
+class MaintenanceTypicalStepViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = MaintenanceTypicalStep.objects.all().order_by("maintenance_typical_step_id")
+    serializer_class = MaintenanceTypicalStepSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = Maintenance.objects.all().order_by("maintenance_id")
+    serializer_class = MaintenanceSerializer
+
+    def get_queryset(self):
+        qs = (
+            Maintenance.objects.select_related(
+                "asset",
+                "performed_by_person",
+            )
+            .all()
+            .order_by("-start_datetime", "-maintenance_id")
+        )
+
+        user_account = self._get_user_account(self.request)
+        if not user_account:
+            return Maintenance.objects.none()
+
+        if user_account.is_superuser():
+            return qs
+
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Maintenance.objects.none()
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+        if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes:
+            return qs
+
+        if "maintenance_technician" in role_codes:
+            return qs.filter(performed_by_person=person)
+
+        return Maintenance.objects.none()
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create maintenances")
+        if denial:
+            return denial
+
+        last_item = Maintenance.objects.order_by("-maintenance_id").first()
+        next_id = (last_item.maintenance_id + 1) if last_item else 1
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        maintenance = Maintenance.objects.create(maintenance_id=next_id, **serializer.validated_data)
+        return Response(self.get_serializer(maintenance).data, status=status.HTTP_201_CREATED)
+
+
+class MaintenanceStepViewSet(viewsets.ModelViewSet):
+    queryset = MaintenanceStep.objects.all().order_by("maintenance_step_id")
+    serializer_class = MaintenanceStepSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = (
+            MaintenanceStep.objects.select_related("maintenance", "maintenance_typical_step", "person")
+            .all()
+            .order_by("maintenance_step_id")
+        )
+        maintenance_id = self.request.query_params.get("maintenance")
+        if maintenance_id is not None:
+            try:
+                qs = qs.filter(maintenance_id=int(maintenance_id))
+            except (ValueError, TypeError):
+                pass
+        return qs
+
+
+class MyItemsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_account = None
+        try:
+            if hasattr(request, "auth") and request.auth is not None:
+                user_id = request.auth.get("user_id")
+                if user_id:
+                    user_account = UserAccount.objects.select_related("person").get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            user_account = None
+
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = user_account.person
+
+        current_assets = list(
+            Asset.objects.filter(assetisassignedtoperson__person=person, assetisassignedtoperson__is_active=True)
+            .distinct()
+            .order_by("asset_id")
+        )
+        asset_history = list(
+            AssetIsAssignedToPerson.objects.filter(person=person).select_related("asset").order_by("-start_datetime")
+        )
+
+        current_stock_items = list(
+            StockItem.objects.filter(stockitemisassignedtoperson__person=person, stockitemisassignedtoperson__is_active=True)
+            .distinct()
+            .order_by("stock_item_id")
+        )
+        stock_history = list(
+            StockItemIsAssignedToPerson.objects.filter(person=person)
+            .select_related("stock_item")
+            .order_by("-start_datetime")
+        )
+
+        current_consumables = list(
+            Consumable.objects.filter(consumableisassignedtoperson__person=person, consumableisassignedtoperson__is_active=True)
+            .distinct()
+            .order_by("consumable_id")
+        )
+        consumable_history = list(
+            ConsumableIsAssignedToPerson.objects.filter(person=person)
+            .select_related("consumable")
+            .order_by("-start_datetime")
+        )
+
+        return Response(
+            {
+                "assets": {
+                    "current": AssetSerializer(current_assets, many=True).data,
+                    "history": AssetIsAssignedToPersonSerializer(asset_history, many=True).data,
+                },
+                "stock_items": {
+                    "current": StockItemSerializer(current_stock_items, many=True).data,
+                    "history": StockItemIsAssignedToPersonSerializer(stock_history, many=True).data,
+                },
+                "consumables": {
+                    "current": ConsumableSerializer(current_consumables, many=True).data,
+                    "history": ConsumableIsAssignedToPersonSerializer(consumable_history, many=True).data,
+                },
+            }
+        )
+
+
+class ProblemReportViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        asset_reports = PersonReportsProblemOnAsset.objects.all().order_by("-report_datetime")
+        stock_reports = PersonReportsProblemOnStockItem.objects.all().order_by("-report_datetime")
+        consumable_reports = PersonReportsProblemOnConsumable.objects.all().order_by("-report_datetime")
+
+        def normalize(item_type, report):
+            return {
+                "item_type": item_type,
+                "report_id": report.report_id,
+                "item_id": getattr(report, item_type).pk if getattr(report, item_type, None) else None,
+                "person_id": report.person_id if hasattr(report, "person_id") else report.person.person_id,
+                "report_datetime": report.report_datetime,
+                "owner_observation": report.owner_observation,
+            }
+
+        data = [normalize("asset", r) for r in asset_reports] + [normalize("stock_item", r) for r in stock_reports] + [
+            normalize("consumable", r) for r in consumable_reports
+        ]
+        data.sort(key=lambda x: x.get("report_datetime") or timezone.now(), reverse=True)
+        return Response(data)
+
+    def create(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        item_type = request.data.get("item_type")
+        item_id = request.data.get("item_id")
+        owner_observation = request.data.get("owner_observation")
+
+        if item_type not in {"asset", "stock_item", "consumable"}:
+            return Response({"error": "Invalid item_type"}, status=status.HTTP_400_BAD_REQUEST)
+        if not item_id:
+            return Response({"error": "item_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not owner_observation:
+            return Response({"error": "owner_observation is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        person = user_account.person
+
+        if item_type == "asset":
+            last = PersonReportsProblemOnAsset.objects.order_by("-report_id").first()
+            next_id = (last.report_id + 1) if last else 1
+            report = PersonReportsProblemOnAsset.objects.create(
+                report_id=next_id,
+                asset_id=item_id,
+                person=person,
+                owner_observation=owner_observation,
+            )
+            return Response(PersonReportsProblemOnAssetSerializer(report).data, status=status.HTTP_201_CREATED)
+
+        if item_type == "stock_item":
+            last = PersonReportsProblemOnStockItem.objects.order_by("-report_id").first()
+            next_id = (last.report_id + 1) if last else 1
+            report = PersonReportsProblemOnStockItem.objects.create(
+                report_id=next_id,
+                stock_item_id=item_id,
+                person=person,
+                owner_observation=owner_observation,
+            )
+            return Response(PersonReportsProblemOnStockItemSerializer(report).data, status=status.HTTP_201_CREATED)
+
+        last = PersonReportsProblemOnConsumable.objects.order_by("-report_id").first()
+        next_id = (last.report_id + 1) if last else 1
+        report = PersonReportsProblemOnConsumable.objects.create(
+            report_id=next_id,
+            consumable_id=item_id,
+            person=person,
+            owner_observation=owner_observation,
+        )
+        return Response(PersonReportsProblemOnConsumableSerializer(report).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["post"], url_path="create-maintenance")
+    def create_maintenance(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes):
+            return Response({"error": "Only maintenance chiefs can create maintenance"}, status=status.HTTP_403_FORBIDDEN)
+
+        item_type = request.data.get("item_type")
+        report_id = request.data.get("report_id")
+        technician_person_id = request.data.get("technician_person_id")
+        description = request.data.get("description")
+
+        if item_type not in {"asset", "stock_item", "consumable"}:
+            return Response({"error": "Invalid item_type"}, status=status.HTTP_400_BAD_REQUEST)
+        if not report_id:
+            return Response({"error": "report_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not technician_person_id:
+            return Response({"error": "technician_person_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        technician = Person.objects.filter(person_id=technician_person_id).first()
+        if not technician:
+            return Response({"error": "Technician not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if item_type != "asset":
+            return Response(
+                {"error": "Maintenance can only be created for assets in the current schema"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        report = PersonReportsProblemOnAsset.objects.filter(report_id=report_id).first()
+        if not report:
+            return Response({"error": "Report not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        last_item = Maintenance.objects.order_by("-maintenance_id").first()
+        next_id = (last_item.maintenance_id + 1) if last_item else 1
+        maintenance = Maintenance.objects.create(
+            maintenance_id=next_id,
+            performed_by_person=technician,
+            description=description or report.owner_observation,
+            start_datetime=timezone.now(),
+            asset=report.asset,
+        )
+        return Response(MaintenanceSerializer(maintenance).data, status=status.HTTP_201_CREATED)
 class LoginView(APIView):
     """Handle user authentication."""
 
@@ -734,5 +1006,94 @@ class ConsumableAttributeValueViewSet(SuperuserWriteMixin, viewsets.ModelViewSet
         return super().destroy(request, *args, **kwargs)
 
 
-# --- The rest of the module (rooms, positions, org structure, maintenance, my-items, problem reports)
-# remains in the original codebase. If you need them refactored too, we can iterate.
+# Room ViewSets
+class RoomTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = RoomType.objects.all().order_by("room_type_id")
+    serializer_class = RoomTypeSerializer
+
+
+class RoomViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = Room.objects.all().order_by("room_id")
+    serializer_class = RoomSerializer
+
+    def get_queryset(self):
+        queryset = Room.objects.all().order_by("room_id")
+        room_type = self.request.query_params.get("room_type")
+        if room_type is not None:
+            queryset = queryset.filter(room_type=room_type)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create rooms")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        last_room = Room.objects.order_by("-room_id").first()
+        next_id = (last_room.room_id + 1) if last_room else 1
+        room = Room.objects.create(room_id=next_id, **serializer.validated_data)
+        return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
+
+
+# Position ViewSet
+class PositionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = Position.objects.all().order_by("position_id")
+    serializer_class = PositionSerializer
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create positions")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        last_position = Position.objects.order_by("-position_id").first()
+        next_id = (last_position.position_id + 1) if last_position else 1
+        position = Position.objects.create(position_id=next_id, **serializer.validated_data)
+        return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+
+
+# Organizational Structure ViewSets
+class OrganizationalStructureViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = OrganizationalStructure.objects.all().order_by("organizational_structure_id")
+    serializer_class = OrganizationalStructureSerializer
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create organizational structures")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        last_org = OrganizationalStructure.objects.order_by("-organizational_structure_id").first()
+        next_id = (last_org.organizational_structure_id + 1) if last_org else 1
+        org_structure = OrganizationalStructure.objects.create(organizational_structure_id=next_id, **serializer.validated_data)
+        return Response(OrganizationalStructureSerializer(org_structure).data, status=status.HTTP_201_CREATED)
+
+
+class OrganizationalStructureRelationViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = OrganizationalStructureRelation.objects.all().order_by("organizational_structure_id", "parent_organizational_structure_id")
+    serializer_class = OrganizationalStructureRelationSerializer
+
+    def get_queryset(self):
+        queryset = OrganizationalStructureRelation.objects.select_related(
+            "organizational_structure", "parent_organizational_structure"
+        ).order_by("organizational_structure_id", "parent_organizational_structure_id")
+        org_structure_id = self.request.query_params.get("org_structure_id")
+        if org_structure_id is not None:
+            try:
+                queryset = queryset.filter(organizational_structure_id=int(org_structure_id))
+            except (ValueError, TypeError):
+                pass
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create organizational structure relations")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        relation = OrganizationalStructureRelation.objects.create(**serializer.validated_data)
+        return Response(OrganizationalStructureRelationSerializer(relation).data, status=status.HTTP_201_CREATED)

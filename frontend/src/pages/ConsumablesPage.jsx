@@ -5,7 +5,9 @@ import {
     consumableBrandService,
     consumableService,
     consumableAttributeDefinitionService,
-    consumableTypeAttributeService
+    consumableTypeAttributeService,
+    consumableModelAttributeService,
+    consumableAttributeValueService
 } from '../services/api';
 
 const ConsumablesPage = () => {
@@ -15,12 +17,16 @@ const ConsumablesPage = () => {
     const [consumables, setConsumables] = useState([]);
     const [consumableAttributeDefinitions, setConsumableAttributeDefinitions] = useState([]);
     const [consumableTypeAttributes, setConsumableTypeAttributes] = useState([]);
+    const [consumableModelAttributes, setConsumableModelAttributes] = useState([]);
+    const [consumableAttributes, setConsumableAttributes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     // Attribute forms visibility
     const [showAttributeDefinitionForm, setShowAttributeDefinitionForm] = useState(false);
     const [showTypeAttributeForm, setShowTypeAttributeForm] = useState(false);
+    const [showModelAttributeForm, setShowModelAttributeForm] = useState(false);
+    const [showConsumableAttributeForm, setShowConsumableAttributeForm] = useState(false);
 
     // Attribute form data
     const [attributeDefinitionForm, setAttributeDefinitionForm] = useState({
@@ -33,6 +39,20 @@ const ConsumablesPage = () => {
         is_mandatory: false,
         default_value: ''
     });
+    const [modelAttributeForm, setModelAttributeForm] = useState({
+        consumable_attribute_definition: '',
+        value_string: '',
+        value_number: '',
+        value_bool: false,
+        value_date: ''
+    });
+    const [consumableAttributeForm, setConsumableAttributeForm] = useState({
+        consumable_attribute_definition: '',
+        value_string: '',
+        value_number: '',
+        value_bool: false,
+        value_date: ''
+    });
     
     // Form visibility states
     const [showTypeForm, setShowTypeForm] = useState(false);
@@ -42,6 +62,7 @@ const ConsumablesPage = () => {
     // Selection states
     const [selectedConsumableType, setSelectedConsumableType] = useState(null);
     const [selectedConsumableModel, setSelectedConsumableModel] = useState(null);
+    const [selectedConsumable, setSelectedConsumable] = useState(null);
     
     // Form data states
     const [formData, setFormData] = useState({
@@ -84,19 +105,37 @@ const ConsumablesPage = () => {
             fetchConsumableTypeAttributes(selectedConsumableType.consumable_type_id);
             setSelectedConsumableModel(null);
             setConsumables([]);
+            setConsumableModelAttributes([]);
+            setSelectedConsumable(null);
+            setConsumableAttributes([]);
         } else {
             setConsumableModels([]);
             setConsumableTypeAttributes([]);
+            setConsumableModelAttributes([]);
+            setSelectedConsumable(null);
+            setConsumableAttributes([]);
         }
     }, [selectedConsumableType]);
 
     useEffect(() => {
         if (selectedConsumableModel) {
             fetchConsumables(selectedConsumableModel.consumable_model_id);
+            fetchConsumableModelAttributes(selectedConsumableModel.consumable_model_id);
         } else {
             setConsumables([]);
+            setConsumableModelAttributes([]);
+            setSelectedConsumable(null);
+            setConsumableAttributes([]);
         }
     }, [selectedConsumableModel]);
+
+    useEffect(() => {
+        if (selectedConsumable) {
+            fetchConsumableAttributes(selectedConsumable.consumable_id);
+        } else {
+            setConsumableAttributes([]);
+        }
+    }, [selectedConsumable]);
 
     const fetchConsumableTypes = async () => {
         setLoading(true);
@@ -142,6 +181,26 @@ const ConsumablesPage = () => {
         }
     };
 
+    const fetchConsumableModelAttributes = async (consumableModelId) => {
+        try {
+            const data = await consumableModelAttributeService.getByConsumableModel(consumableModelId);
+            setConsumableModelAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch model attributes: ' + err.message);
+            setConsumableModelAttributes([]);
+        }
+    };
+
+    const fetchConsumableAttributes = async (consumableId) => {
+        try {
+            const data = await consumableAttributeValueService.getByConsumable(consumableId);
+            setConsumableAttributes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch consumable attributes: ' + err.message);
+            setConsumableAttributes([]);
+        }
+    };
+
     const definitionLookup = useMemo(() => {
         const map = new Map();
         consumableAttributeDefinitions.forEach((def) => {
@@ -183,6 +242,22 @@ const ConsumablesPage = () => {
     const handleTypeAttributeInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setTypeAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleModelAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setModelAttributeForm(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleConsumableAttributeInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setConsumableAttributeForm(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
@@ -252,6 +327,82 @@ const ConsumablesPage = () => {
         }
     };
 
+    const handleModelAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedConsumableModel) {
+            setError('Please select a consumable model first');
+            return;
+        }
+        if (!modelAttributeForm.consumable_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                consumable_model: selectedConsumableModel.consumable_model_id,
+                consumable_attribute_definition: Number(modelAttributeForm.consumable_attribute_definition),
+                value_string: modelAttributeForm.value_string || null,
+                value_number: modelAttributeForm.value_number ? Number(modelAttributeForm.value_number) : null,
+                value_bool: modelAttributeForm.value_bool,
+                value_date: modelAttributeForm.value_date || null
+            };
+            await consumableModelAttributeService.create(payload);
+            setModelAttributeForm({
+                consumable_attribute_definition: '',
+                value_string: '',
+                value_number: '',
+                value_bool: false,
+                value_date: ''
+            });
+            setShowModelAttributeForm(false);
+            await fetchConsumableModelAttributes(selectedConsumableModel.consumable_model_id);
+        } catch (err) {
+            setError('Failed to add model attribute value: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleConsumableAttributeSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedConsumable) {
+            setError('Please select a consumable first');
+            return;
+        }
+        if (!consumableAttributeForm.consumable_attribute_definition) {
+            setError('Please select an attribute definition');
+            return;
+        }
+        setSaving(true);
+        setError(null);
+        try {
+            const payload = {
+                consumable: selectedConsumable.consumable_id,
+                consumable_attribute_definition: Number(consumableAttributeForm.consumable_attribute_definition),
+                value_string: consumableAttributeForm.value_string || null,
+                value_number: consumableAttributeForm.value_number ? Number(consumableAttributeForm.value_number) : null,
+                value_bool: consumableAttributeForm.value_bool,
+                value_date: consumableAttributeForm.value_date || null
+            };
+            await consumableAttributeValueService.create(payload);
+            setConsumableAttributeForm({
+                consumable_attribute_definition: '',
+                value_string: '',
+                value_number: '',
+                value_bool: false,
+                value_date: ''
+            });
+            setShowConsumableAttributeForm(false);
+            await fetchConsumableAttributes(selectedConsumable.consumable_id);
+        } catch (err) {
+            setError('Failed to add consumable attribute value: ' + err.message);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleDeleteAttributeDefinition = async (id) => {
         if (window.confirm('Delete this attribute definition?')) {
             try {
@@ -272,6 +423,32 @@ const ConsumablesPage = () => {
                 }
             } catch (err) {
                 setError('Failed to remove type attribute: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteModelAttribute = async (consumableModelId, definitionId) => {
+        if (window.confirm('Remove this attribute value from the consumable model?')) {
+            try {
+                await consumableModelAttributeService.delete(consumableModelId, definitionId);
+                if (selectedConsumableModel) {
+                    await fetchConsumableModelAttributes(selectedConsumableModel.consumable_model_id);
+                }
+            } catch (err) {
+                setError('Failed to remove model attribute: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteConsumableAttribute = async (consumableId, definitionId) => {
+        if (window.confirm('Remove this attribute value from the consumable?')) {
+            try {
+                await consumableAttributeValueService.delete(consumableId, definitionId);
+                if (selectedConsumable) {
+                    await fetchConsumableAttributes(selectedConsumable.consumable_id);
+                }
+            } catch (err) {
+                setError('Failed to remove consumable attribute: ' + err.message);
             }
         }
     };
@@ -710,6 +887,371 @@ const ConsumablesPage = () => {
                             </div>
 
                             <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-4)' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                            <div style={{ fontWeight: '600' }}>Attribute Definitions</div>
+                                            <button
+                                                onClick={() => setShowAttributeDefinitionForm(!showAttributeDefinitionForm)}
+                                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                            >
+                                                + Add
+                                            </button>
+                                        </div>
+                                        {showAttributeDefinitionForm && (
+                                            <form onSubmit={handleAttributeDefinitionSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                                <input
+                                                    type="text"
+                                                    name="description"
+                                                    placeholder="Description"
+                                                    value={attributeDefinitionForm.description}
+                                                    onChange={handleAttributeDefinitionInputChange}
+                                                    required
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                />
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                                                    <select
+                                                        name="data_type"
+                                                        value={attributeDefinitionForm.data_type}
+                                                        onChange={handleAttributeDefinitionInputChange}
+                                                        style={{ padding: 'var(--space-2)' }}
+                                                    >
+                                                        <option value="">Data Type</option>
+                                                        <option value="string">String</option>
+                                                        <option value="number">Number</option>
+                                                        <option value="bool">Boolean</option>
+                                                        <option value="date">Date</option>
+                                                    </select>
+                                                    <input
+                                                        type="text"
+                                                        name="unit"
+                                                        placeholder="Unit"
+                                                        value={attributeDefinitionForm.unit}
+                                                        onChange={handleAttributeDefinitionInputChange}
+                                                        style={{ padding: 'var(--space-2)' }}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                    <button type="button" onClick={() => setShowAttributeDefinitionForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                            {consumableAttributeDefinitions.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No attribute definitions.</div>
+                                            ) : (
+                                                consumableAttributeDefinitions.map((def) => (
+                                                    <div key={def.consumable_attribute_definition_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: '500' }}>{def.description || `Attribute ${def.consumable_attribute_definition_id}`}</div>
+                                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{def.data_type || 'type'}{def.unit ? ` • ${def.unit}` : ''}</div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteAttributeDefinition(def.consumable_attribute_definition_id)}
+                                                            style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                            <div style={{ fontWeight: '600' }}>Consumable Type Attributes</div>
+                                            <button
+                                                onClick={() => setShowTypeAttributeForm(!showTypeAttributeForm)}
+                                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                            >
+                                                + Assign
+                                            </button>
+                                        </div>
+                                        {showTypeAttributeForm && (
+                                            <form onSubmit={handleTypeAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                                <select
+                                                    name="consumable_attribute_definition"
+                                                    value={typeAttributeForm.consumable_attribute_definition}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    required
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                >
+                                                    <option value="">Select attribute definition...</option>
+                                                    {consumableAttributeDefinitions.map((def) => (
+                                                        <option key={def.consumable_attribute_definition_id} value={def.consumable_attribute_definition_id}>
+                                                            {def.description || `Attribute ${def.consumable_attribute_definition_id}`}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="text"
+                                                    name="default_value"
+                                                    placeholder="Default value"
+                                                    value={typeAttributeForm.default_value}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                />
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        name="is_mandatory"
+                                                        checked={typeAttributeForm.is_mandatory}
+                                                        onChange={handleTypeAttributeInputChange}
+                                                    />
+                                                    Mandatory
+                                                </label>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                    <button type="button" onClick={() => setShowTypeAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                                </div>
+                                            </form>
+                                        )}
+                                        <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                            {consumableTypeAttributes.length === 0 ? (
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned.</div>
+                                            ) : (
+                                                consumableTypeAttributes.map((attr) => {
+                                                    const definition = attr.definition || definitionLookup.get(attr.consumable_attribute_definition);
+                                                    return (
+                                                        <div key={`${attr.consumable_type}-${attr.consumable_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                            <div>
+                                                                <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.consumable_attribute_definition}`}</div>
+                                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                    {definition?.data_type || 'type'}{definition?.unit ? ` • ${definition.unit}` : ''}
+                                                                    {attr.is_mandatory ? ' • mandatory' : ''}
+                                                                    {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleDeleteTypeAttribute(attr.consumable_type, attr.consumable_attribute_definition)}
+                                                                style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                            >
+                                                                &times;
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>Consumable Model Attributes</div>
+                                        <button
+                                            onClick={() => setShowModelAttributeForm(!showModelAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Add Value
+                                        </button>
+                                    </div>
+                                    {showModelAttributeForm && (
+                                        <form onSubmit={handleModelAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="consumable_attribute_definition"
+                                                value={modelAttributeForm.consumable_attribute_definition}
+                                                onChange={handleModelAttributeInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            >
+                                                <option value="">Select attribute definition...</option>
+                                                {consumableAttributeDefinitions.map((def) => (
+                                                    <option key={def.consumable_attribute_definition_id} value={def.consumable_attribute_definition_id}>
+                                                        {def.description || `Attribute ${def.consumable_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {(() => {
+                                                const selectedDef = definitionLookup.get(Number(modelAttributeForm.consumable_attribute_definition));
+                                                const dataType = selectedDef?.data_type?.toLowerCase();
+                                                if (dataType === 'number') {
+                                                    return (
+                                                        <input
+                                                            type="number"
+                                                            name="value_number"
+                                                            placeholder="Number value"
+                                                            value={modelAttributeForm.value_number}
+                                                            onChange={handleModelAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                if (dataType === 'bool' || dataType === 'boolean') {
+                                                    return (
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                name="value_bool"
+                                                                checked={modelAttributeForm.value_bool}
+                                                                onChange={handleModelAttributeInputChange}
+                                                            />
+                                                            True
+                                                        </label>
+                                                    );
+                                                }
+                                                if (dataType === 'date') {
+                                                    return (
+                                                        <input
+                                                            type="date"
+                                                            name="value_date"
+                                                            value={modelAttributeForm.value_date}
+                                                            onChange={handleModelAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <input
+                                                        type="text"
+                                                        name="value_string"
+                                                        placeholder="String value"
+                                                        value={modelAttributeForm.value_string}
+                                                        onChange={handleModelAttributeInputChange}
+                                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                    />
+                                                );
+                                            })()}
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowModelAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {consumableModelAttributes.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No model attribute values.</div>
+                                    ) : (
+                                        consumableModelAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.consumable_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            return (
+                                                <div key={`${attr.consumable_model}-${attr.consumable_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.consumable_attribute_definition}`}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? 'No value' : String(value)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteModelAttribute(attr.consumable_model, attr.consumable_attribute_definition)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>
+                                            Consumable Attributes {selectedConsumable ? `• ${selectedConsumable.consumable_name || 'Consumable ' + selectedConsumable.consumable_id}` : ''}
+                                        </div>
+                                        <button
+                                            onClick={() => setShowConsumableAttributeForm(!showConsumableAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Add Value
+                                        </button>
+                                    </div>
+                                    {showConsumableAttributeForm && (
+                                        <form onSubmit={handleConsumableAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="consumable_attribute_definition"
+                                                value={consumableAttributeForm.consumable_attribute_definition}
+                                                onChange={handleConsumableAttributeInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            >
+                                                <option value="">Select attribute definition...</option>
+                                                {consumableAttributeDefinitions.map((def) => (
+                                                    <option key={def.consumable_attribute_definition_id} value={def.consumable_attribute_definition_id}>
+                                                        {def.description || `Attribute ${def.consumable_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {(() => {
+                                                const selectedDef = definitionLookup.get(Number(consumableAttributeForm.consumable_attribute_definition));
+                                                const dataType = selectedDef?.data_type?.toLowerCase();
+                                                if (dataType === 'number') {
+                                                    return (
+                                                        <input
+                                                            type="number"
+                                                            name="value_number"
+                                                            placeholder="Number value"
+                                                            value={consumableAttributeForm.value_number}
+                                                            onChange={handleConsumableAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                if (dataType === 'bool' || dataType === 'boolean') {
+                                                    return (
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                name="value_bool"
+                                                                checked={consumableAttributeForm.value_bool}
+                                                                onChange={handleConsumableAttributeInputChange}
+                                                            />
+                                                            True
+                                                        </label>
+                                                    );
+                                                }
+                                                if (dataType === 'date') {
+                                                    return (
+                                                        <input
+                                                            type="date"
+                                                            name="value_date"
+                                                            value={consumableAttributeForm.value_date}
+                                                            onChange={handleConsumableAttributeInputChange}
+                                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <input
+                                                        type="text"
+                                                        name="value_string"
+                                                        placeholder="String value"
+                                                        value={consumableAttributeForm.value_string}
+                                                        onChange={handleConsumableAttributeInputChange}
+                                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                                    />
+                                                );
+                                            })()}
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowConsumableAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {consumableAttributes.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No consumable attribute values.</div>
+                                    ) : (
+                                        consumableAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.consumable_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            return (
+                                                <div key={`${attr.consumable}-${attr.consumable_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.consumable_attribute_definition}`}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? 'No value' : String(value)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteConsumableAttribute(attr.consumable, attr.consumable_attribute_definition)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
                                 {showConsumableForm && (
                                     <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
                                         <div style={{ fontWeight: '600', marginBottom: 'var(--space-4)' }}>{editingConsumable ? 'Edit Consumable' : 'New Consumable'}</div>
@@ -761,7 +1303,15 @@ const ConsumablesPage = () => {
                                         </thead>
                                         <tbody>
                                             {consumables.map(item => (
-                                                <tr key={item.consumable_id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                                <tr
+                                                    key={item.consumable_id}
+                                                    style={{
+                                                        borderBottom: '1px solid var(--color-border)',
+                                                        backgroundColor: selectedConsumable?.consumable_id === item.consumable_id ? 'var(--color-bg-secondary)' : 'transparent',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    onClick={() => setSelectedConsumable(item)}
+                                                >
                                                     <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
                                                         <div style={{ fontWeight: '500' }}>{item.consumable_name || 'Unnamed Item'}</div>
                                                     </td>
@@ -781,13 +1331,13 @@ const ConsumablesPage = () => {
                                                     </td>
                                                     <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
                                                         <button 
-                                                            onClick={() => handleEditConsumable(item)}
+                                                            onClick={(e) => { e.stopPropagation(); handleEditConsumable(item); }}
                                                             style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
                                                         >
                                                             Edit
                                                         </button>
                                                         <button 
-                                                            onClick={() => handleDeleteConsumable(item.consumable_id)}
+                                                            onClick={(e) => { e.stopPropagation(); handleDeleteConsumable(item.consumable_id); }}
                                                             style={{ background: 'none', border: 'none', color: '#c33', cursor: 'pointer', fontWeight: '500' }}
                                                         >
                                                             Delete
@@ -800,6 +1350,159 @@ const ConsumablesPage = () => {
                                 )}
                             </div>
                         </>
+                    ) : selectedConsumableType ? (
+                        <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--space-4)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>Attribute Definitions</div>
+                                        <button
+                                            onClick={() => setShowAttributeDefinitionForm(!showAttributeDefinitionForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Add
+                                        </button>
+                                    </div>
+                                    {showAttributeDefinitionForm && (
+                                        <form onSubmit={handleAttributeDefinitionSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <input
+                                                type="text"
+                                                name="description"
+                                                placeholder="Description"
+                                                value={attributeDefinitionForm.description}
+                                                onChange={handleAttributeDefinitionInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            />
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+                                                <select
+                                                    name="data_type"
+                                                    value={attributeDefinitionForm.data_type}
+                                                    onChange={handleAttributeDefinitionInputChange}
+                                                    style={{ padding: 'var(--space-2)' }}
+                                                >
+                                                    <option value="">Data Type</option>
+                                                    <option value="string">String</option>
+                                                    <option value="number">Number</option>
+                                                    <option value="bool">Boolean</option>
+                                                    <option value="date">Date</option>
+                                                </select>
+                                                <input
+                                                    type="text"
+                                                    name="unit"
+                                                    placeholder="Unit"
+                                                    value={attributeDefinitionForm.unit}
+                                                    onChange={handleAttributeDefinitionInputChange}
+                                                    style={{ padding: 'var(--space-2)' }}
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowAttributeDefinitionForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                        {consumableAttributeDefinitions.length === 0 ? (
+                                            <div style={{ color: 'var(--color-text-secondary)' }}>No attribute definitions.</div>
+                                        ) : (
+                                            consumableAttributeDefinitions.map((def) => (
+                                                <div key={def.consumable_attribute_definition_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{def.description || `Attribute ${def.consumable_attribute_definition_id}`}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{def.data_type || 'type'}{def.unit ? ` • ${def.unit}` : ''}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteAttributeDefinition(def.consumable_attribute_definition_id)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>Consumable Type Attributes</div>
+                                        <button
+                                            onClick={() => setShowTypeAttributeForm(!showTypeAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + Assign
+                                        </button>
+                                    </div>
+                                    {showTypeAttributeForm && (
+                                        <form onSubmit={handleTypeAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="consumable_attribute_definition"
+                                                value={typeAttributeForm.consumable_attribute_definition}
+                                                onChange={handleTypeAttributeInputChange}
+                                                required
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            >
+                                                <option value="">Select attribute definition...</option>
+                                                {consumableAttributeDefinitions.map((def) => (
+                                                    <option key={def.consumable_attribute_definition_id} value={def.consumable_attribute_definition_id}>
+                                                        {def.description || `Attribute ${def.consumable_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <input
+                                                type="text"
+                                                name="default_value"
+                                                placeholder="Default value"
+                                                value={typeAttributeForm.default_value}
+                                                onChange={handleTypeAttributeInputChange}
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                            />
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    name="is_mandatory"
+                                                    checked={typeAttributeForm.is_mandatory}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                />
+                                                Mandatory
+                                            </label>
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                                <button type="button" onClick={() => setShowTypeAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                                        {consumableTypeAttributes.length === 0 ? (
+                                            <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned.</div>
+                                        ) : (
+                                            consumableTypeAttributes.map((attr) => {
+                                                const definition = attr.definition || definitionLookup.get(attr.consumable_attribute_definition);
+                                                return (
+                                                    <div key={`${attr.consumable_type}-${attr.consumable_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.consumable_attribute_definition}`}</div>
+                                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                {definition?.data_type || 'type'}{definition?.unit ? ` • ${definition.unit}` : ''}
+                                                                {attr.is_mandatory ? ' • mandatory' : ''}
+                                                                {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteTypeAttribute(attr.consumable_type, attr.consumable_attribute_definition)}
+                                                            style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--color-text-secondary)' }}>
                             <div style={{ fontSize: '48px', marginBottom: 'var(--space-4)', opacity: 0.2 }}>🖨️</div>
