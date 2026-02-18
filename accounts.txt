@@ -13,3 +13,9 @@ mohamednedjouh - 123456
 
 Exploitation chief:
 bensimessouaddaoud - 27022002
+
+Assets responsible:
+asset_user - password123
+
+Stock items and consumables responsible:
+stock_user3 - password123

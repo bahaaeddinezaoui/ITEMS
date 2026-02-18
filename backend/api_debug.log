@@ -395,3 +395,18 @@ Password mismatch for user: admin
 [2026-02-15 14:34:47.858270+00:00] Login attempt for: admin
 
 [2026-02-15 14:35:29.561254+00:00] Login attempt for: admin
+
+[2026-02-15 14:50:07.338522+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-02-18 08:24:36.668969+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-02-18 08:24:51.992280+00:00] Login attempt for: admin
+
+[2026-02-18 08:25:52.425506+00:00] Login attempt for: bensimessaouddaoud
+Password mismatch for user: bensimessaouddaoud
+
+[2026-02-18 08:26:01.871619+00:00] Login attempt for: bensimessaouddaoud
+
+[2026-02-18 09:10:48.235132+00:00] Login attempt for: stock_user3
+
+[2026-02-18 09:17:15.305458+00:00] Login attempt for: asset_user

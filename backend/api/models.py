@@ -21,8 +21,8 @@ class Person(models.Model):
 class Role(models.Model):
     """Maps to role table"""
     role_id = models.AutoField(primary_key=True, db_column='role_id')
-    role_code = models.CharField(max_length=24, db_column='role_code')
-    role_label = models.CharField(max_length=24, db_column='role_label')
+    role_code = models.CharField(max_length=60, db_column='role_code')
+    role_label = models.CharField(max_length=60, db_column='role_label')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
 
     class Meta:
