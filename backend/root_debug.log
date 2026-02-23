@@ -16008,3 +16008,54 @@ Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\
 [2026-02-23 18:41:15.873641] END   POST /api/attribution-orders/ -> 201
 [2026-02-23 18:41:15.879852] START POST /api/assets/
 [2026-02-23 18:41:15.922108] END   POST /api/assets/ -> 201
+[2026-02-23 18:42:15.462443] START GET /api/warehouses/
+[2026-02-23 18:42:15.463183] START GET /api/asset-types/
+[2026-02-23 18:42:15.509979] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:42:15.510108] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:42:15.514272] START GET /api/asset-types/
+[2026-02-23 18:42:15.515016] START GET /api/warehouses/
+[2026-02-23 18:42:15.562249] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:42:15.562385] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:44:06.173123] START GET /api/attribution-orders/
+[2026-02-23 18:44:06.212669] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 19:01:57.165914] START GET /api/attribution-orders/
+[2026-02-23 19:01:57.203196] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 19:03:00.162996] START GET /api/warehouses/
+[2026-02-23 19:03:00.163621] START GET /api/asset-types/
+[2026-02-23 19:03:00.165112] START GET /api/attribution-orders/
+[2026-02-23 19:03:00.204833] END   GET /api/warehouses/ -> 200
+[2026-02-23 19:03:00.207089] END   GET /api/asset-types/ -> 200
+[2026-02-23 19:03:00.213383] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 19:07:39.244499] START GET /api/assets/
+[2026-02-23 19:07:39.281164] END   GET /api/assets/ -> 200
+[2026-02-23 19:07:41.911607] START GET /api/asset-brands/
+[2026-02-23 19:07:41.912002] START GET /api/asset-attribute-definitions/
+[2026-02-23 19:07:41.911300] START GET /api/asset-types/
+[2026-02-23 19:07:41.914175] START GET /api/persons/
+[2026-02-23 19:07:41.916665] START GET /api/asset-assignments/
+[2026-02-23 19:07:41.964244] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 19:07:41.968292] END   GET /api/asset-types/ -> 200
+[2026-02-23 19:07:41.969300] START GET /api/asset-attribute-definitions/
+[2026-02-23 19:07:41.973907] END   GET /api/persons/ -> 200
+[2026-02-23 19:07:41.973320] START GET /api/asset-brands/
+[2026-02-23 19:07:41.981631] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 19:07:41.980257] START GET /api/asset-types/
+[2026-02-23 19:07:41.985799] START GET /api/persons/
+[2026-02-23 19:07:41.990497] START GET /api/asset-assignments/
+[2026-02-23 19:07:42.029369] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 19:07:42.035148] END   GET /api/asset-brands/ -> 200
+[2026-02-23 19:07:42.042896] END   GET /api/persons/ -> 200
+00
+[2026-02-23 19:07:42.051590] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 19:07:43.257594] START GET /api/warehouses/
+[2026-02-23 19:07:43.258024] START GET /api/asset-types/
+[2026-02-23 19:07:43.258924] START GET /api/attribution-orders/
+[2026-02-23 19:07:43.302538] END   GET /api/warehouses/ -> 200
+[2026-02-23 19:07:43.303099] END   GET /api/asset-types/ -> 200
+[2026-02-23 19:07:43.304476] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 19:07:43.308440] START GET /api/asset-types/
+[2026-02-23 19:07:43.309025] START GET /api/warehouses/
+[2026-02-23 19:07:43.311066] START GET /api/attribution-orders/
+[2026-02-23 19:07:43.352978] END   GET /api/asset-types/ -> 200
+[2026-02-23 19:07:43.360720] END   GET /api/warehouses/ -> 200
+[2026-02-23 19:07:43.363984] END   GET /api/attribution-orders/ -> 200
