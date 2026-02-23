@@ -949,6 +949,11 @@ export const maintenanceService = {
         return response.data;
     },
 
+    createDirect: async (data) => {
+        const response = await api.post('maintenances/create-direct/', data);
+        return response.data;
+    },
+
     update: async (id, maintenanceData) => {
         const response = await api.put(`maintenances/${id}/`, maintenanceData);
         return response.data;

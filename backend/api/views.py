@@ -224,6 +224,60 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         return Response(self.get_serializer(maintenance).data, status=status.HTTP_201_CREATED)
 
 
+    @action(detail=False, methods=["post"], url_path="create-direct")
+    def create_direct(self, request):
+        user_account = self._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes):
+            return Response({"error": "Only maintenance chiefs can create maintenance"}, status=status.HTTP_403_FORBIDDEN)
+
+        asset_id = request.data.get("asset_id")
+        technician_person_id = request.data.get("technician_person_id")
+        description = request.data.get("description")
+
+        if not asset_id:
+            return Response({"error": "asset_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not technician_person_id:
+            return Response({"error": "technician_person_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        asset = Asset.objects.filter(asset_id=asset_id).first()
+        if not asset:
+            return Response({"error": "Asset not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        technician = Person.objects.filter(person_id=technician_person_id).first()
+        if not technician:
+            return Response({"error": "Technician not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        last_item = Maintenance.objects.order_by("-maintenance_id").first()
+        next_id = (last_item.maintenance_id + 1) if last_item else 1
+
+        try:
+            maintenance = Maintenance.objects.create(
+                maintenance_id=next_id,
+                asset=asset,
+                performed_by_person=technician,
+                approved_by_maintenance_chief=user_account.person,
+                description=description,
+                start_datetime=timezone.now(),
+                end_datetime=timezone.now(),
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Failed to create maintenance due to database constraints.",
+                    "details": "Check required fields in Maintenance model (approved_by_maintenance_chief, end_datetime, etc.)",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(self.get_serializer(maintenance).data, status=status.HTTP_201_CREATED)
+
+
 class MaintenanceStepViewSet(viewsets.ModelViewSet):
     queryset = MaintenanceStep.objects.all().order_by("maintenance_step_id")
     serializer_class = MaintenanceStepSerializer

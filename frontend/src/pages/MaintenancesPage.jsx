@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, Fragment } from 'react';
-import { maintenanceService, personService } from '../services/api';
+import { assetService, maintenanceService, personService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import MaintenanceSteps from '../components/MaintenanceSteps';
 
@@ -13,6 +13,11 @@ const MaintenancesPage = () => {
     const [selectedMaintenance, setSelectedMaintenance] = useState(null);
     const [selectedTechnician, setSelectedTechnician] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    const [assets, setAssets] = useState([]);
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedAsset, setSelectedAsset] = useState('');
+    const [createDescription, setCreateDescription] = useState('');
 
     // Steps Modal State
     // Steps Expansion State
@@ -31,6 +36,7 @@ const MaintenancesPage = () => {
         loadMaintenances();
         if (isChief) {
             loadTechnicians();
+            loadAssets();
         }
     }, [isChief]);
 
@@ -54,6 +60,52 @@ const MaintenancesPage = () => {
             setTechnicians(data);
         } catch (err) {
             console.error('Failed to load technicians', err);
+        }
+    };
+
+    const loadAssets = async () => {
+        try {
+            const data = await assetService.getAll();
+            setAssets(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to load assets', err);
+            setAssets([]);
+        }
+    };
+
+    const openCreateMaintenance = () => {
+        setError('');
+        setSelectedAsset('');
+        setSelectedTechnician('');
+        setCreateDescription('');
+        setShowCreateModal(true);
+    };
+
+    const handleCreateSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedAsset) {
+            setError('Please select an asset');
+            return;
+        }
+        if (!selectedTechnician) {
+            setError('Please select a technician');
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            await maintenanceService.createDirect({
+                asset_id: selectedAsset,
+                technician_person_id: selectedTechnician,
+                description: createDescription,
+            });
+            setShowCreateModal(false);
+            loadMaintenances();
+        } catch (err) {
+            const msg = err?.response?.data?.error || err?.message || 'Failed to create maintenance';
+            setError(typeof msg === 'string' ? msg : 'Failed to create maintenance');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -110,7 +162,11 @@ const MaintenancesPage = () => {
                     <h2 className="card-title">
                         {isChief ? 'All Maintenances' : 'My Maintenances'}
                     </h2>
-                    {/* Add Create Maintenance Button if needed later */}
+                    {isChief && (
+                        <button className="btn btn-primary" onClick={openCreateMaintenance}>
+                            Create Maintenance
+                        </button>
+                    )}
                 </div>
 
                 <div className="table-container">
@@ -254,6 +310,85 @@ const MaintenancesPage = () => {
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={submitting}>
                                     {submitting ? 'Saving...' : 'Save Assignment'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Create Maintenance Modal */}
+            {showCreateModal && (
+                <div className="modal-overlay" onClick={() => !submitting && setShowCreateModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">Create Maintenance</h3>
+                            <button className="modal-close" onClick={() => !submitting && setShowCreateModal(false)}>
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreateSubmit}>
+                            <div className="modal-body">
+                                <div className="form-group">
+                                    <label htmlFor="asset" className="form-label">Asset</label>
+                                    <select
+                                        id="asset"
+                                        className="form-input"
+                                        value={selectedAsset}
+                                        onChange={(e) => setSelectedAsset(e.target.value)}
+                                    >
+                                        <option value="">-- Select Asset --</option>
+                                        {assets.map((a) => (
+                                            <option key={a.asset_id} value={a.asset_id}>
+                                                {a.asset_name ? `${a.asset_name} (#${a.asset_id})` : `Asset #${a.asset_id}`}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="technician_create" className="form-label">Technician</label>
+                                    <select
+                                        id="technician_create"
+                                        className="form-input"
+                                        value={selectedTechnician}
+                                        onChange={(e) => setSelectedTechnician(e.target.value)}
+                                    >
+                                        <option value="">-- Select Technician --</option>
+                                        {technicians.map((tech) => (
+                                            <option key={tech.person_id} value={tech.person_id}>
+                                                {tech.first_name} {tech.last_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="description_create" className="form-label">Description</label>
+                                    <textarea
+                                        id="description_create"
+                                        className="form-input"
+                                        rows={4}
+                                        value={createDescription}
+                                        onChange={(e) => setCreateDescription(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => !submitting && setShowCreateModal(false)}
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                                    {submitting ? 'Creating...' : 'Create'}
                                 </button>
                             </div>
                         </form>
