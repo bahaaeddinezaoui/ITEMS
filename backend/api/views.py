@@ -1381,11 +1381,11 @@ class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user_account = SuperuserWriteMixin()._get_user_account(self.request)
-        if not user_account:
+        user_account = getattr(self.request, "user", None)
+        if not user_account or not getattr(user_account, "is_authenticated", False):
             return CompanyAssetRequest.objects.none()
 
-        if user_account.is_superuser():
+        if getattr(user_account, "is_superuser", False):
             return self.queryset
 
         person = getattr(user_account, "person", None)

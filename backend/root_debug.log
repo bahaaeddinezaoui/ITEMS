@@ -16972,3 +16972,35 @@ Python Path: ['D:\\Pr
 [2026-02-23 20:33:57.139278] START GET /api/company-asset-requests/
 [2026-02-23 20:33:57.179555] END   GET /api/attribution-orders/ -> 200
 [2026-02-23 20:33:57.182973] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:37:32.550769] START POST /api/company-asset-requests/
+[2026-02-23 20:37:32.610499] END   POST /api/company-asset-requests/ -> 201
+[2026-02-23 20:37:32.617957] START GET /api/company-asset-requests/
+[2026-02-23 20:37:32.665526] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:37:35.311765] START GET /api/company-asset-requests/
+[2026-02-23 20:37:35.312652] START GET /api/attribution-orders/
+[2026-02-23 20:37:35.363344] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:37:35.363409] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:37:35.370302] START GET /api/company-asset-requests/
+[2026-02-23 20:37:35.371112] START GET /api/attribution-orders/
+[2026-02-23 20:37:35.417870] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:37:35.422109] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:38:06.427428] START POST /api/company-asset-requests/
+[2026-02-23 20:38:06.600580] END   POST /api/company-asset-requests/ -> 201
+[2026-02-23 20:38:06.608022] START GET /api/company-asset-requests/
+[2026-02-23 20:38:06.757136] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:38:36.123333] START GET /api/company-asset-requests/
+[2026-02-23 20:38:36.124301] START GET /api/attribution-orders/
+[2026-02-23 20:38:36.176222] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:38:36.181008] START GET /api/company-asset-requests/
+[2026-02-23 20:38:36.227789] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:38:36.278991] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:38:36.284227] START GET /api/attribution-orders/
+[2026-02-23 20:38:36.430560] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:40:17.039077] START GET /api/company-asset-requests/
+[2026-02-23 20:40:17.039999] START GET /api/attribution-orders/
+[2026-02-23 20:40:17.119897] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:40:17.124674] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:40:17.125149] START GET /api/company-asset-requests/
+[2026-02-23 20:40:17.129849] START GET /api/attribution-orders/
+[2026-02-23 20:40:17.170381] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:40:17.296988] END   GET /api/attribution-orders/ -> 200
