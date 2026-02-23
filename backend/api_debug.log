@@ -410,3 +410,10 @@ Password mismatch for user: bensimessaouddaoud
 [2026-02-18 09:10:48.235132+00:00] Login attempt for: stock_user3
 
 [2026-02-18 09:17:15.305458+00:00] Login attempt for: asset_user
+
+[2026-02-23 16:02:39.120183+00:00] Login attempt for: zaouibahaaeddine
+User not found: zaouibahaaeddine
+
+[2026-02-23 16:02:46.016187+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-02-23 16:11:37.336923+00:00] Login attempt for: asset_resp

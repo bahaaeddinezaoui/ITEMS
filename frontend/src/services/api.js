@@ -976,4 +976,55 @@ export const maintenanceTypicalStepService = {
     },
 };
 
+// Asset Assignment service
+export const assetAssignmentService = {
+    getAll: async (params) => {
+        const response = await api.get('asset-assignments/', { params });
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('asset-assignments/', data);
+        return response.data;
+    },
+
+    confirm: async (id) => {
+        const response = await api.post(`asset-assignments/${id}/confirm/`);
+        return response.data;
+    },
+
+    discharge: async (id) => {
+        const response = await api.post(`asset-assignments/${id}/discharge/`);
+        return response.data;
+    },
+};
+
+// Warehouse service
+export const warehouseService = {
+    getAll: async () => {
+        const response = await api.get('warehouses/');
+        return response.data;
+    },
+    create: async (data) => {
+        const response = await api.post('warehouses/', data);
+        return response.data;
+    },
+};
+
+// Attribution Order service
+export const attributionOrderService = {
+    getAll: async () => {
+        const response = await api.get('attribution-orders/');
+        return response.data;
+    },
+    getById: async (id) => {
+        const response = await api.get(`attribution-orders/${id}/`);
+        return response.data;
+    },
+    create: async (data) => {
+        const response = await api.post('attribution-orders/', data);
+        return response.data;
+    },
+};
+
 export default api;

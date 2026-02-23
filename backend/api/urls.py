@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet
+from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, AssetIsAssignedToPersonViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, WarehouseViewSet, AttributionOrderViewSet
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
@@ -8,6 +8,7 @@ router.register(r'asset-types', AssetTypeViewSet, basename='assettype')
 router.register(r'asset-brands', AssetBrandViewSet, basename='assetbrand')
 router.register(r'asset-models', AssetModelViewSet, basename='assetmodel')
 router.register(r'assets', AssetViewSet, basename='asset')
+router.register(r'asset-assignments', AssetIsAssignedToPersonViewSet, basename='assetassignment')
 router.register(r'asset-attribute-definitions', AssetAttributeDefinitionViewSet, basename='assetattributedefinition')
 router.register(r'asset-type-attributes', AssetTypeAttributeViewSet, basename='assettypeattribute')
 router.register(r'asset-model-attributes', AssetModelAttributeValueViewSet, basename='assetmodelattribute')
@@ -37,6 +38,8 @@ router.register(r'rooms', RoomViewSet, basename='room')
 router.register(r'positions', PositionViewSet, basename='position')
 router.register(r'organizational-structures', OrganizationalStructureViewSet, basename='organizationalstructure')
 router.register(r'organizational-structure-relations', OrganizationalStructureRelationViewSet, basename='organizationalstructurerelation')
+router.register(r'warehouses', WarehouseViewSet, basename='warehouse')
+router.register(r'attribution-orders', AttributionOrderViewSet, basename='attributionorder')
 
 urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),

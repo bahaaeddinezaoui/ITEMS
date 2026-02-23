@@ -7,7 +7,10 @@ import {
     assetAttributeDefinitionService,
     assetTypeAttributeService,
     assetModelAttributeService,
-    assetAttributeValueService
+    assetAttributeValueService,
+    personService,
+    assetAssignmentService,
+    authService
 } from '../services/api';
 
 const AssetsPage = () => {
@@ -21,7 +24,9 @@ const AssetsPage = () => {
     const [assetAttributes, setAssetAttributes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    
+    const [persons, setPersons] = useState([]);
+    const [assignments, setAssignments] = useState([]);
+
     // Form visibility states
     const [showTypeForm, setShowTypeForm] = useState(false);
     const [showModelForm, setShowModelForm] = useState(false);
@@ -30,12 +35,15 @@ const AssetsPage = () => {
     const [showTypeAttributeForm, setShowTypeAttributeForm] = useState(false);
     const [showModelAttributeForm, setShowModelAttributeForm] = useState(false);
     const [showAssetAttributeForm, setShowAssetAttributeForm] = useState(false);
-    
+    const [showAssignForm, setShowAssignForm] = useState(false);
+
     // Selection states
     const [selectedAssetType, setSelectedAssetType] = useState(null);
     const [selectedAssetModel, setSelectedAssetModel] = useState(null);
     const [selectedAsset, setSelectedAsset] = useState(null);
-    
+    const [assigningAsset, setAssigningAsset] = useState(null);
+    const [dischargingAssignment, setDischargingAssignment] = useState(null);
+
     // Form data states
     const [formData, setFormData] = useState({
         asset_type_label: '',
@@ -85,7 +93,13 @@ const AssetsPage = () => {
         value_bool: false,
         value_date: ''
     });
-    
+    const [assignFormData, setAssignFormData] = useState({
+        person: '',
+        start_datetime: '',
+        end_datetime: '',
+        condition_on_assignment: 'New'
+    });
+
     const [editingAsset, setEditingAsset] = useState(null);
     const [saving, setSaving] = useState(false);
 
@@ -93,6 +107,8 @@ const AssetsPage = () => {
         fetchAssetTypes();
         fetchAssetBrands();
         fetchAttributeDefinitions();
+        fetchPersons();
+        fetchAssignments();
     }, []);
 
     useEffect(() => {
@@ -131,6 +147,16 @@ const AssetsPage = () => {
             setAssetAttributes([]);
         }
     }, [selectedAsset]);
+
+    const activeAssignmentsByAsset = useMemo(() => {
+        const map = new Map();
+        assignments.forEach(a => {
+            if (a.is_active) {
+                map.set(a.asset?.asset_id, a);
+            }
+        });
+        return map;
+    }, [assignments]);
 
     const definitionLookup = useMemo(() => {
         const map = new Map();
@@ -221,6 +247,81 @@ const AssetsPage = () => {
         } catch (err) {
             setError('Failed to fetch asset attributes: ' + err.message);
             setAssetAttributes([]);
+        }
+    };
+
+    const fetchPersons = async () => {
+        try {
+            const data = await personService.getAll();
+            setPersons(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to fetch persons:', err);
+        }
+    };
+
+    const fetchAssignments = async () => {
+        try {
+            const data = await assetAssignmentService.getAll();
+            setAssignments(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to fetch assignments:', err);
+        }
+    };
+
+    const handleAssignInputChange = (e) => {
+        const { name, value } = e.target;
+        setAssignFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAssignSubmit = async (e) => {
+        e.preventDefault();
+        if (!assigningAsset) return;
+        setSaving(true);
+        setError(null);
+        try {
+            await assetAssignmentService.create({
+                ...assignFormData,
+                asset: assigningAsset.asset_id,
+                start_datetime: new Date(assignFormData.start_datetime).toISOString(),
+                end_datetime: assignFormData.end_datetime ? new Date(assignFormData.end_datetime).toISOString() : null,
+            });
+            setShowAssignForm(false);
+            setAssigningAsset(null);
+            fetchAssignments();
+            alert('Asset assigned successfully!');
+        } catch (err) {
+            setError('Failed to assign asset: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDischarge = async (assignmentId) => {
+        setSaving(true);
+        setError(null);
+        try {
+            await assetAssignmentService.discharge(assignmentId);
+            setDischargingAssignment(null);
+            fetchAssignments();
+            alert('Asset discharged successfully!');
+        } catch (err) {
+            setError('Failed to discharge asset: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleConfirmAssignment = async (assignmentId) => {
+        setSaving(true);
+        setError(null);
+        try {
+            await assetAssignmentService.confirm(assignmentId);
+            fetchAssignments();
+            alert('Assignment confirmed successfully!');
+        } catch (err) {
+            setError('Failed to confirm assignment: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -326,7 +427,7 @@ const AssetsPage = () => {
             setShowModelForm(false);
             await fetchAssetModels(selectedAssetType.asset_type_id);
         } catch (err) {
-            const errorMsg = err.response?.data ? 
+            const errorMsg = err.response?.data ?
                 (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) :
                 err.message;
             setError('Failed to create asset model: ' + errorMsg);
@@ -368,7 +469,7 @@ const AssetsPage = () => {
             setShowAssetForm(false);
             await fetchAssets(selectedAssetModel.asset_model_id);
         } catch (err) {
-            const errorMsg = err.response?.data ? 
+            const errorMsg = err.response?.data ?
                 (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) :
                 err.message;
             setError(`Failed to ${editingAsset ? 'update' : 'create'} asset: ` + errorMsg);
@@ -608,12 +709,63 @@ const AssetsPage = () => {
         }
     };
 
+    const userAccount = authService.getUser();
+    const isSuperuser = userAccount?.is_superuser;
+    const isAssetResponsible = userAccount?.roles?.some(r => r.role_code === 'asset_responsible') || isSuperuser;
+    const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
+
+    const pendingConfirmations = assignments.filter(a => !a.is_confirmed_by_exploitation_chief && a.is_active);
+
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
                 <h1 className="page-title">Assets Explorer</h1>
                 <p className="page-subtitle">Manage asset types, models, and inventory</p>
             </div>
+
+            {isExploitationChief && pendingConfirmations.length > 0 && (
+                <div style={{
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    border: '1px solid var(--color-primary)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: 'var(--space-4)',
+                    marginBottom: 'var(--space-4)'
+                }}>
+                    <h3 style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>
+                        Pending Confirmations ({pendingConfirmations.length})
+                    </h3>
+                    <div style={{ display: 'flex', gap: 'var(--space-4)', overflowX: 'auto', paddingBottom: 'var(--space-2)' }}>
+                        {pendingConfirmations.map(a => (
+                            <div key={a.assignment_id} style={{
+                                backgroundColor: 'white',
+                                padding: 'var(--space-3)',
+                                borderRadius: 'var(--radius-sm)',
+                                border: '1px solid var(--color-border)',
+                                minWidth: '250px',
+                                fontSize: 'var(--font-size-xs)'
+                            }}>
+                                <div style={{ fontWeight: '600' }}>{a.asset?.asset_name || 'Asset'} (ID: {a.asset?.asset_id})</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>Assignee ID: {a.person}</div>
+                                <div style={{ marginTop: 'var(--space-2)', display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button
+                                        onClick={() => handleConfirmAssignment(a.assignment_id)}
+                                        style={{
+                                            backgroundColor: 'var(--color-primary)',
+                                            color: 'white',
+                                            border: 'none',
+                                            padding: '4px 8px',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Confirm
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {error && (
                 <div style={{
@@ -628,17 +780,17 @@ const AssetsPage = () => {
                 </div>
             )}
 
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '300px 1fr', 
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: '300px 1fr',
                 gap: 'var(--space-6)',
                 flex: 1,
                 minHeight: 0 // Important for nested scrolling
             }}>
                 {/* Left Sidebar: Library (Types & Models) */}
-                <div className="card" style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
+                <div className="card" style={{
+                    display: 'flex',
+                    flexDirection: 'column',
                     overflow: 'hidden',
                     height: '100%'
                 }}>
@@ -719,11 +871,11 @@ const AssetsPage = () => {
                                         &times;
                                     </button>
                                 </div>
-                                
+
                                 {/* Models List (Nested) */}
                                 {selectedAssetType?.asset_type_id === type.asset_type_id && (
                                     <div style={{ backgroundColor: 'var(--color-bg-secondary)', borderBottom: '1px solid var(--color-border)' }}>
-                                        <div 
+                                        <div
                                             onClick={() => setShowModelForm(true)}
                                             style={{
                                                 padding: 'var(--space-2) var(--space-4)',
@@ -754,12 +906,12 @@ const AssetsPage = () => {
                                             >
                                                 <span>{model.model_name}</span>
                                                 {selectedAssetModel?.asset_model_id === model.asset_model_id && (
-                                                     <button
-                                                     onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.asset_model_id); }}
-                                                     style={{ border: 'none', background: 'none', color: 'white', cursor: 'pointer', opacity: 0.8 }}
-                                                 >
-                                                     &times;
-                                                 </button>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.asset_model_id); }}
+                                                        style={{ border: 'none', background: 'none', color: 'white', cursor: 'pointer', opacity: 0.8 }}
+                                                    >
+                                                        &times;
+                                                    </button>
                                                 )}
                                             </div>
                                         ))}
@@ -779,15 +931,15 @@ const AssetsPage = () => {
                 <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
                     {showModelForm ? (
                         <div style={{ padding: 'var(--space-6)', overflowY: 'auto' }}>
-                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
                                 <h2>Add New Model for {selectedAssetType?.asset_type_label}</h2>
                                 <button onClick={() => setShowModelForm(false)} style={{ padding: 'var(--space-2) var(--space-4)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>Cancel</button>
-                             </div>
-                             {assetBrands.length === 0 ? (
+                            </div>
+                            {assetBrands.length === 0 ? (
                                 <div style={{ color: '#c33', backgroundColor: '#fee', padding: 'var(--space-4)', borderRadius: 'var(--radius-sm)' }}>
                                     No asset brands found. Please create a brand first.
                                 </div>
-                             ) : (
+                            ) : (
                                 <form onSubmit={handleModelSubmit} style={{ maxWidth: '600px' }}>
                                     {/* Brand */}
                                     <div style={{ marginBottom: 'var(--space-4)' }}>
@@ -835,7 +987,7 @@ const AssetsPage = () => {
                                         {saving ? 'Creating...' : 'Create Model'}
                                     </button>
                                 </form>
-                             )}
+                            )}
                         </div>
                     ) : selectedAssetModel ? (
                         <>
@@ -1328,13 +1480,45 @@ const AssetsPage = () => {
                                                         >
                                                             Attributes
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleEditAsset(asset)}
                                                             style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
                                                         >
                                                             Edit
                                                         </button>
-                                                        <button 
+                                                        {isAssetResponsible && (
+                                                            (() => {
+                                                                const activeAssignment = activeAssignmentsByAsset.get(asset.asset_id);
+                                                                return activeAssignment ? (
+                                                                    <button
+                                                                        onClick={() => setDischargingAssignment(activeAssignment)}
+                                                                        style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: '500' }}
+                                                                    >
+                                                                        Discharge
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setAssigningAsset(asset);
+                                                                            const now = new Date();
+                                                                            const tzOffset = now.getTimezoneOffset() * 60000;
+                                                                            const localISOTime = new Date(now - tzOffset).toISOString().slice(0, 16);
+                                                                            setAssignFormData({
+                                                                                person: '',
+                                                                                start_datetime: localISOTime,
+                                                                                end_datetime: '',
+                                                                                condition_on_assignment: asset.asset_status === 'active' ? 'Good' : 'Needs Repair'
+                                                                            });
+                                                                            setShowAssignForm(true);
+                                                                        }}
+                                                                        style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontWeight: '500' }}
+                                                                    >
+                                                                        Assign
+                                                                    </button>
+                                                                );
+                                                            })()
+                                                        )}
+                                                        <button
                                                             onClick={() => handleDeleteAsset(asset.asset_id)}
                                                             style={{ background: 'none', border: 'none', color: '#c33', cursor: 'pointer', fontWeight: '500' }}
                                                         >
@@ -1510,6 +1694,141 @@ const AssetsPage = () => {
                     )}
                 </div>
             </div>
+
+            {showAssignForm && assigningAsset && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        padding: 'var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        width: '100%',
+                        maxWidth: '500px',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }}>
+                        <h2 style={{ marginBottom: 'var(--space-4)' }}>Assign Asset: {assigningAsset.asset_name}</h2>
+                        <form onSubmit={handleAssignSubmit}>
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Assign to Person</label>
+                                <select
+                                    name="person"
+                                    value={assignFormData.person}
+                                    onChange={handleAssignInputChange}
+                                    required
+                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
+                                >
+                                    <option value="">Select a person...</option>
+                                    {persons.map(p => (
+                                        <option key={p.person_id} value={p.person_id}>
+                                            {p.first_name} {p.last_name} ({p.person_id})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Start Date (Automatic)</label>
+                                    <input
+                                        type="datetime-local"
+                                        name="start_datetime"
+                                        value={assignFormData.start_datetime}
+                                        onChange={handleAssignInputChange}
+                                        required
+                                        readOnly
+                                        style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-secondary)', cursor: 'not-allowed' }}
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ marginBottom: 'var(--space-6)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Condition</label>
+                                <input
+                                    type="text"
+                                    name="condition_on_assignment"
+                                    value={assignFormData.condition_on_assignment}
+                                    onChange={handleAssignInputChange}
+                                    placeholder="e.g. Good, New"
+                                    required
+                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                                >
+                                    {saving ? 'Assigning...' : 'Assign Asset'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {dischargingAssignment && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'white',
+                        padding: 'var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        width: '100%',
+                        maxWidth: '400px',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+                    }}>
+                        <h2 style={{ marginBottom: 'var(--space-4)' }}>Confirm Discharge</h2>
+                        <p style={{ marginBottom: 'var(--space-6)' }}>
+                            Are you sure you want to end the assignment of <strong>{dischargingAssignment.asset?.asset_name}</strong> to person <strong>{dischargingAssignment.person}</strong>?
+                            <br /><br />
+                            The end date will be set to right now.
+                        </p>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                            <button
+                                type="button"
+                                onClick={() => setDischargingAssignment(null)}
+                                style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleDischarge(dischargingAssignment.assignment_id)}
+                                disabled={saving}
+                                style={{ padding: 'var(--space-2) var(--space-4)', background: '#ef4444', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                            >
+                                {saving ? 'Discharging...' : 'Confirm Discharge'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -53,6 +53,8 @@ from .models import (
     StockItemType,
     StockItemTypeAttribute,
     UserAccount,
+    Warehouse,
+    AttributionOrder,
 )
 from .serializers import (
     AssetAttributeDefinitionSerializer,
@@ -93,6 +95,8 @@ from .serializers import (
     StockItemTypeAttributeSerializer,
     StockItemTypeSerializer,
     UserProfileSerializer,
+    WarehouseSerializer,
+    AttributionOrderSerializer,
 )
 
 
@@ -505,10 +509,38 @@ class AssetTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = AssetType.objects.all().order_by("asset_type_id")
     serializer_class = AssetTypeSerializer
 
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create asset types")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        last_type = AssetType.objects.all().order_by("-asset_type_id").first()
+        next_id = (last_type.asset_type_id + 1) if last_type else 1
+        
+        asset_type = AssetType.objects.create(asset_type_id=next_id, **serializer.validated_data)
+        return Response(AssetTypeSerializer(asset_type).data, status=status.HTTP_201_CREATED)
+
 
 class AssetBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = AssetBrand.objects.all().order_by("asset_brand_id")
     serializer_class = AssetBrandSerializer
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create asset brands")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        last_brand = AssetBrand.objects.all().order_by("-asset_brand_id").first()
+        next_id = (last_brand.asset_brand_id + 1) if last_brand else 1
+        
+        brand = AssetBrand.objects.create(asset_brand_id=next_id, **serializer.validated_data)
+        return Response(AssetBrandSerializer(brand).data, status=status.HTTP_201_CREATED)
 
 
 class AssetModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -525,6 +557,20 @@ class AssetModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 pass
         return queryset
 
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create asset models")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        last_model = AssetModel.objects.all().order_by("-asset_model_id").first()
+        next_id = (last_model.asset_model_id + 1) if last_model else 1
+        
+        asset_model = AssetModel.objects.create(asset_model_id=next_id, **serializer.validated_data)
+        return Response(AssetModelSerializer(asset_model).data, status=status.HTTP_201_CREATED)
+
 
 class AssetViewSet(viewsets.ModelViewSet):
     queryset = Asset.objects.all().order_by("asset_id")
@@ -540,6 +586,18 @@ class AssetViewSet(viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 pass
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        last_asset = Asset.objects.all().order_by("-asset_id").first()
+        next_id = (last_asset.asset_id + 1) if last_asset else 1
+        
+        # Manually set the ID and validated data
+        instance = Asset(asset_id=next_id, **serializer.validated_data)
+        instance.save(force_insert=True)
+        return Response(self.get_serializer(instance).data, status=status.HTTP_201_CREATED)
 
 
 class AssetAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -1097,3 +1155,162 @@ class OrganizationalStructureRelationViewSet(SuperuserWriteMixin, viewsets.Model
         serializer.is_valid(raise_exception=True)
         relation = OrganizationalStructureRelation.objects.create(**serializer.validated_data)
         return Response(OrganizationalStructureRelationSerializer(relation).data, status=status.HTTP_201_CREATED)
+
+
+class AssetIsAssignedToPersonViewSet(viewsets.ModelViewSet):
+    queryset = AssetIsAssignedToPerson.objects.all().order_by("-start_datetime")
+    serializer_class = AssetIsAssignedToPersonSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        if hasattr(request, "user") and request.user and getattr(request.user, "is_authenticated", False):
+            if isinstance(request.user, UserAccount):
+                return request.user
+        try:
+            if hasattr(request, "auth") and request.auth is not None:
+                user_id = request.auth.get("user_id")
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except:
+            pass
+        return None
+
+    def create(self, request, *args, **kwargs):
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        is_asset_responsible = "asset_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+
+        if not (is_asset_responsible or is_superuser or is_exploitation_chief):
+            return Response({"error": "Only Asset Responsible or superiors can assign assets"}, status=status.HTTP_403_FORBIDDEN)
+
+        asset_id = request.data.get("asset")
+        if not asset_id:
+            return Response({"error": "Asset ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check for active assignment
+        active_assignment = AssetIsAssignedToPerson.objects.filter(asset_id=asset_id, is_active=True).exists()
+        if active_assignment:
+            return Response({"error": "This asset is already assigned and active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_item = AssetIsAssignedToPerson.objects.order_by("-assignment_id").first()
+        next_id = (last_item.assignment_id + 1) if last_item else 1
+
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print(f"--- Asset Assignment Validation Errors: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data.copy()
+        
+        print(f"--- Asset Assignment Validated Data: {data}")
+
+        try:
+            last_item = AssetIsAssignedToPerson.objects.all().order_by("-assignment_id").first()
+            next_id = (last_item.assignment_id + 1) if last_item else 1
+            
+            # Explicitly add asset and person if they came as IDs but weren't in validated_data 
+            # (though they should be if they are properly configured in serializer)
+            
+            assignment = AssetIsAssignedToPerson.objects.create(
+                assignment_id=next_id, 
+                assigned_by_person=person, 
+                is_active=True, 
+                **data
+            )
+            return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(f"--- Asset Assignment Creation ERROR: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, pk=None):
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        if "exploitation_chief" not in role_codes and not user_account.is_superuser():
+            return Response({"error": "Only Exploitation Chief can confirm assignments"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        assignment.is_confirmed_by_exploitation_chief = person
+        assignment.save()
+
+        return Response(self.get_serializer(assignment).data)
+
+    @action(detail=True, methods=["post"])
+    def discharge(self, request, pk=None):
+        from django.utils import timezone
+
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        is_asset_responsible = "asset_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+
+        if not (is_asset_responsible or is_superuser or is_exploitation_chief):
+            return Response(
+                {"error": "Only Asset Responsible or superiors can discharge assets"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        assignment = self.get_object()
+        if not assignment.is_active:
+            return Response({"error": "This assignment is already inactive."}, status=status.HTTP_400_BAD_REQUEST)
+
+        assignment.end_datetime = timezone.now()
+        assignment.is_active = False
+        assignment.save()
+
+        return Response(self.get_serializer(assignment).data)
+class WarehouseViewSet(viewsets.ModelViewSet):
+    queryset = Warehouse.objects.all().order_by("warehouse_id")
+    serializer_class = WarehouseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        last_item = Warehouse.objects.order_by("-warehouse_id").first()
+        next_id = (last_item.warehouse_id + 1) if last_item else 1
+        item = Warehouse.objects.create(warehouse_id=next_id, **serializer.validated_data)
+        return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
+
+
+class AttributionOrderViewSet(viewsets.ModelViewSet):
+    queryset = AttributionOrder.objects.all().order_by("attribution_order_id")
+    serializer_class = AttributionOrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        last_item = AttributionOrder.objects.order_by("-attribution_order_id").first()
+        next_id = (last_item.attribution_order_id + 1) if last_item else 1
+        item = AttributionOrder.objects.create(attribution_order_id=next_id, **serializer.validated_data)
+        return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)

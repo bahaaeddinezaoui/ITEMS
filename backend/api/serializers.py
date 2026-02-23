@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -211,7 +211,10 @@ class AssetSerializer(serializers.ModelSerializer):
     """Serializer for Asset model"""
     class Meta:
         model = Asset
-        fields = ['asset_id', 'asset_model', 'asset_serial_number', 'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag']
+        fields = [
+            'asset_id', 'asset_model', 'attribution_order', 'asset_serial_number',
+            'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag'
+        ]
         read_only_fields = ['asset_id']
 
 
@@ -323,12 +326,21 @@ class AssetAttributeValueSerializer(serializers.ModelSerializer):
 
 class AssetIsAssignedToPersonSerializer(serializers.ModelSerializer):
     """Serializer for AssetIsAssignedToPerson model"""
-    asset = AssetSerializer(read_only=True)
     
     class Meta:
         model = AssetIsAssignedToPerson
-        fields = ['assignment_id', 'person', 'asset', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active']
-        read_only_fields = ['assignment_id']
+        fields = ['assignment_id', 'person', 'asset', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active', 'is_confirmed_by_exploitation_chief']
+        read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
+        extra_kwargs = {
+            'is_active': {'required': False},
+        }
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Nest the asset details in the response
+        if instance.asset:
+            representation['asset'] = AssetSerializer(instance.asset).data
+        return representation
 
 
 class StockItemAttributeDefinitionSerializer(serializers.ModelSerializer):
@@ -555,12 +567,21 @@ class StockItemSerializer(serializers.ModelSerializer):
 
 class StockItemIsAssignedToPersonSerializer(serializers.ModelSerializer):
     """Serializer for StockItemIsAssignedToPerson model"""
-    stock_item = StockItemSerializer(read_only=True)
     
     class Meta:
         model = StockItemIsAssignedToPerson
-        fields = ['assignment_id', 'person', 'stock_item', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active']
-        read_only_fields = ['assignment_id']
+        fields = ['assignment_id', 'person', 'stock_item', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active', 'is_confirmed_by_exploitation_chief']
+        read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
+        extra_kwargs = {
+            'is_active': {'required': False},
+        }
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Nest the stock item details in the response
+        if instance.stock_item:
+            representation['stock_item'] = StockItemSerializer(instance.stock_item).data
+        return representation
 
 
 class ConsumableSerializer(serializers.ModelSerializer):
@@ -573,12 +594,21 @@ class ConsumableSerializer(serializers.ModelSerializer):
 
 class ConsumableIsAssignedToPersonSerializer(serializers.ModelSerializer):
     """Serializer for ConsumableIsAssignedToPerson model"""
-    consumable = ConsumableSerializer(read_only=True)
     
     class Meta:
         model = ConsumableIsAssignedToPerson
-        fields = ['assignment_id', 'person', 'consumable', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active']
-        read_only_fields = ['assignment_id']
+        fields = ['assignment_id', 'person', 'consumable', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active', 'is_confirmed_by_exploitation_chief']
+        read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
+        extra_kwargs = {
+            'is_active': {'required': False},
+        }
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Nest the consumable details in the response
+        if instance.consumable:
+            representation['consumable'] = ConsumableSerializer(instance.consumable).data
+        return representation
 
 
 class PersonReportsProblemOnAssetSerializer(serializers.ModelSerializer):
@@ -669,3 +699,25 @@ class MaintenanceSerializer(serializers.ModelSerializer):
         if not asset:
             return None
         return getattr(asset, 'asset_name', None) or None
+
+
+class WarehouseSerializer(serializers.ModelSerializer):
+    """Serializer for Warehouse model"""
+    class Meta:
+        model = Warehouse
+        fields = ['warehouse_id', 'warehouse_name', 'warehouse_address']
+        read_only_fields = ['warehouse_id']
+
+
+class AttributionOrderSerializer(serializers.ModelSerializer):
+    """Serializer for AttributionOrder model"""
+    warehouse_name = serializers.CharField(source='warehouse.warehouse_name', read_only=True)
+
+    class Meta:
+        model = AttributionOrder
+        fields = [
+            'attribution_order_id', 'warehouse', 'warehouse_name',
+            'attribution_order_full_code', 'attribution_order_date',
+            'is_signed_by_central_chief', 'attribution_order_barcode'
+        ]
+        read_only_fields = ['attribution_order_id']

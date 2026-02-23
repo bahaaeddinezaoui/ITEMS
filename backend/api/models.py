@@ -333,6 +333,7 @@ class Asset(models.Model):
     """Maps to asset table"""
     asset_id = models.AutoField(primary_key=True, db_column='asset_id')
     asset_model = models.ForeignKey(AssetModel, on_delete=models.CASCADE, db_column='asset_model_id')
+    attribution_order = models.ForeignKey('AttributionOrder', on_delete=models.SET_NULL, db_column='attribution_order_id', null=True, blank=True)
     asset_serial_number = models.CharField(max_length=48, blank=True, null=True, db_column='asset_serial_number')
     asset_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='asset_inventory_number')
     asset_name = models.CharField(max_length=48, blank=True, null=True, db_column='asset_name')
@@ -570,9 +571,17 @@ class AssetIsAssignedToPerson(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id')
     assigned_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='assigned_by_person_id', related_name='asset_assignments_given')
     start_datetime = models.DateTimeField(db_column='start_datetime')
-    end_datetime = models.DateTimeField(db_column='end_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime', null=True, blank=True)
     condition_on_assignment = models.CharField(max_length=48, db_column='condition_on_assignment')
     is_active = models.BooleanField(db_column='is_active')
+    is_confirmed_by_exploitation_chief = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL,
+        db_column='is_confirmed_by_exploitation_chief_id',
+        null=True,
+        blank=True,
+        related_name='confirmed_asset_assignments'
+    )
 
     class Meta:
         managed = False
@@ -608,6 +617,14 @@ class StockItemIsAssignedToPerson(models.Model):
     end_datetime = models.DateTimeField(db_column='end_datetime')
     condition_on_assignment = models.CharField(max_length=48, db_column='condition_on_assignment')
     is_active = models.BooleanField(db_column='is_active')
+    is_confirmed_by_exploitation_chief = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL,
+        db_column='is_confirmed_by_exploitation_chief_id',
+        null=True,
+        blank=True,
+        related_name='confirmed_stock_item_assignments'
+    )
 
     class Meta:
         managed = False
@@ -644,6 +661,14 @@ class ConsumableIsAssignedToPerson(models.Model):
     end_datetime = models.DateTimeField(db_column='end_datetime')
     condition_on_assignment = models.CharField(max_length=48, db_column='condition_on_assignment')
     is_active = models.BooleanField(db_column='is_active')
+    is_confirmed_by_exploitation_chief = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL,
+        db_column='is_confirmed_by_exploitation_chief_id',
+        null=True,
+        blank=True,
+        related_name='confirmed_consumable_assignments'
+    )
 
     class Meta:
         managed = False
@@ -757,3 +782,34 @@ class MaintenanceStep(models.Model):
 
     def __str__(self):
         return f'Step {self.maintenance_step_id} of Maintenance {self.maintenance_id}'
+
+
+class Warehouse(models.Model):
+    """Maps to warehouse table"""
+    warehouse_id = models.AutoField(primary_key=True, db_column='warehouse_id')
+    warehouse_name = models.CharField(max_length=60, db_column='warehouse_name', blank=True, null=True)
+    warehouse_address = models.CharField(max_length=128, db_column='warehouse_address', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'warehouse'
+
+    def __str__(self):
+        return self.warehouse_name or f"Warehouse {self.warehouse_id}"
+
+
+class AttributionOrder(models.Model):
+    """Maps to attribution_order table"""
+    attribution_order_id = models.AutoField(primary_key=True, db_column='attribution_order_id')
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, db_column='warehouse_id')
+    attribution_order_full_code = models.CharField(max_length=48, db_column='attribution_order_full_code', blank=True, null=True)
+    attribution_order_date = models.DateField(db_column='attribution_order_date', blank=True, null=True)
+    is_signed_by_central_chief = models.BooleanField(db_column='is_signed_by_central_chief', default=False)
+    attribution_order_barcode = models.CharField(max_length=24, db_column='attribution_order_barcode', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'attribution_order'
+
+    def __str__(self):
+        return self.attribution_order_full_code or f"Order {self.attribution_order_id}"
