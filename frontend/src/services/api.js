@@ -10,6 +10,15 @@ const api = axios.create({
     },
 });
 
+const postForm = async (url, formData) => {
+    const response = await api.post(url, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+    return response;
+};
+
 // Add token to requests
 api.interceptors.request.use(
     (config) => {
@@ -68,6 +77,27 @@ export const authService = {
     isSuperuser: () => {
         const user = authService.getUser();
         return user?.is_superuser || false;
+    },
+};
+
+// Company Asset Request service
+export const companyAssetRequestService = {
+    getAll: async () => {
+        const response = await api.get('company-asset-requests/');
+        return response.data;
+    },
+
+    create: async (data) => {
+        const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+        const response = isFormData
+            ? await postForm('company-asset-requests/', data)
+            : await api.post('company-asset-requests/', data);
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`company-asset-requests/${id}/`);
+        return response.data;
     },
 };
 

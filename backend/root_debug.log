@@ -16535,3 +16535,440 @@ ibute-definitions/
 [2026-02-23 19:44:45.724663] END   GET /api/warehouses/ -> 200
 [2026-02-23 19:44:45.733981] END   GET /api/asset-types/ -> 200
 [2026-02-23 19:44:45.736769] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:23.488378] START GET /api/warehouses/
+[2026-02-23 20:04:23.488981] START GET /api/asset-types/
+[2026-02-23 20:04:23.489665] START GET /api/attribution-orders/
+[2026-02-23 20:04:23.571451] END   GET /api/warehouses/ -> 200
+[2026-02-23 20:04:23.571604] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:23.573450] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:23.581747] START GET /api/warehouses/
+[2026-02-23 20:04:23.582296] START GET /api/asset-types/
+[2026-02-23 20:04:23.594058] START GET /api/attribution-orders/
+[2026-02-23 20:04:23.638649] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:23.641071] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:23.734207] END   GET /api/warehouses/ -> 200
+[2026-02-23 20:04:24.049613] START GET /api/asset-types/
+[2026-02-23 20:04:24.049940] START GET /api/asset-brands/
+[2026-02-23 20:04:24.050816] START GET /api/persons/
+[2026-02-23 20:04:24.050255] START GET /api/asset-attribute-definitions/
+[2026-02-23 20:04:24.052682] START GET /api/asset-assignments/
+[2026-02-23 20:04:24.100173] END   GET /api/persons/ -> 200
+[2026-02-23 20:04:24.104294] END   GET /api/asset-brands/ -> 200
+[2026-02-23 20:04:24.105193] START GET /api/persons/
+[2026-02-23 20:04:24.107354] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 20:04:24.116887] START GET /api/asset-brands/
+[2026-02-23 20:04:24.117865] START GET /api/asset-attribute-definitions/
+[2026-02-23 20:04:24.132704] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 20:04:24.137987] START GET /api/asset-assignments/
+[2026-02-23 20:04:24.161032] END   GET /api/persons/ -> 200
+[2026-02-23 20:04:24.163479] END   GET /api/asset-brands/ -> 200
+[2026-02-23 20:04:24.169089] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 20:04:24.184891] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 20:04:24.199937] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:24.204373] START GET /api/asset-types/
+[2026-02-23 20:04:24.242632] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:24.918532] START GET /api/warehouses/
+[2026-02-23 20:04:24.919293] START GET /api/asset-types/
+[2026-02-23 20:04:24.921187] START GET /api/attribution-orders/
+[2026-02-23 20:04:24.962270] END   GET /api/warehouses/ -> 200
+[2026-02-23 20:04:24.962384] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:24.966283] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:24.969017] START GET /api/warehouses/
+[2026-02-23 20:04:24.969584] START GET /api/asset-types/
+[2026-02-23 20:04:24.973574] START GET /api/attribution-orders/
+[2026-02-23 20:04:25.013873] END   GET /api/warehouses/ -> 200
+[2026-02-23 20:04:25.016131] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:25.019714] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:25.337844] START GET /api/company-asset-requests/
+[2026-02-23 20:04:25.338682] START GET /api/attribution-orders/
+[2026-02-23 20:04:25.383610] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:25.391529] START GET /api/attribution-orders/
+[2026-02-23 20:04:25.424748] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:25.429064] START GET /api/company-asset-requests/
+[2026-02-23 20:04:25.435967] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:25.502985] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:26.509611] START GET /api/warehouses/
+[2026-02-23 20:04:26.510660] START GET /api/asset-types/
+[2026-02-23 20:04:26.513357] START GET /api/attribution-orders/
+[2026-02-23 20:04:26.553992] END   GET /api/warehouses/ -> 200
+[2026-02-23 20:04:26.554237] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:26.556684] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:26.560682] START GET /api/warehouses/
+[2026-02-23 20:04:26.561036] START GET /api/asset-types/
+[2026-02-23 20:04:26.564266] START GET /api/attribution-orders/
+[2026-02-23 20:04:26.607460] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:26.609638] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:26.707989] END   GET /api/warehouses/ -> 200
+[2026-02-23 20:04:26.983476] START GET /api/asset-brands/
+[2026-02-23 20:04:26.984136] START GET /api/asset-attribute-definitions/
+[2026-02-23 20:04:26.986601] START GET /api/persons/
+[2026-02-23 20:04:26.988081] START GET /api/asset-assignments/
+[2026-02-23 20:04:27.026536] END   GET /api/asset-brands/ -> 200
+[2026-02-23 20:04:27.033802] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 20:04:27.040033] END   GET /api/persons/ -> 200
+[2026-02-23 20:04:27.041187] START GET /api/asset-attribute-definitions/
+[2026-02-23 20:04:27.047352] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 20:04:27.047243] START GET /api/persons/
+[2026-02-23 20:04:27.054012] START GET /api/asset-assignments/
+[2026-02-23 20:04:27.079247] END   GET /api/asset-brands/ -> 200
+[2026-02-23 20:04:27.086051] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 20:04:27.092963] END   GET /api/persons/ -> 200
+[2026-02-23 20:04:27.102910] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 20:04:27.127418] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:27.132097] START GET /api/asset-types/
+[2026-02-23 20:04:27.170034] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:28.494507] START GET /api/company-asset-requests/
+[2026-02-23 20:04:28.495341] START GET /api/attribution-orders/
+[2026-02-23 20:04:28.540687] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:28.547638] START GET /api/attribution-orders/
+[2026-02-23 20:04:28.572509] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:28.577688] START GET /api/company-asset-requests/
+[2026-02-23 20:04:28.593913] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:28.644721] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:29.560736] START GET /api/asset-types/
+[2026-02-23 20:04:29.561099] START GET /api/asset-brands/
+[2026-02-23 20:04:29.561336] START GET /api/asset-attribute-definitions/
+[2026-02-23 20:04:29.561925] START GET /api/persons/
+[2026-02-23 20:04:29.565127] START GET /api/asset-assignments/
+[2026-02-23 20:04:29.604795] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:29.610844] START GET /api/asset-types/
+[2026-02-23 20:04:29.614080] END   GET /api/asset-brands/ -> 200
+[2026-02-23 20:04:29.621153] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 20:04:29.621381] END   GET /api/persons/ -> 200
+[2026-02-23 20:04:29.622310] START GET /api/asset-brands/
+[2026-02-23 20:04:29.628273] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 20:04:29.628994] START GET /api/asset-attribute-definitions/
+[2026-02-23 20:04:29.630077] START GET /api/persons/
+[2026-02-23 20:04:29.636224] START GET /api/asset-assignments/
+[2026-02-23 20:04:29.663576] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:29.673709] END   GET /api/asset-brands/ -> 200
+[2026-02-23 20:04:29.676388] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 20:04:29.682712] END   GET /api/persons/ -> 200
+[2026-02-23 20:04:29.689959] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 20:04:30.020839] START GET /api/warehouses/
+[2026-02-23 20:04:30.021721] START GET /api/asset-types/
+[2026-02-23 20:04:30.024228] START GET /api/attribution-orders/
+[2026-02-23 20:04:30.062473] END   GET /api/warehouses/ -> 200
+[2026-02-23 20:04:30.066926] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:30.067523] START GET /api/warehouses/
+[2026-02-23 20:04:30.072146] START GET /api/asset-types/
+[2026-02-23 20:04:30.075665] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:30.081252] START GET /api/attribution-orders/
+[2026-02-23 20:04:30.110418] END   GET /api/warehouses/ -> 200
+[2026-02-23 20:04:30.113650] END   GET /api/asset-types/ -> 200
+[2026-02-23 20:04:30.127012] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:30.590837] START GET /api/company-asset-requests/
+[2026-02-23 20:04:30.591961] START GET /api/attribution-orders/
+[2026-02-23 20:04:30.636190] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:30.642630] START GET /api/attribution-orders/
+[2026-02-23 20:04:30.663974] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:30.668945] START GET /api/company-asset-requests/
+[2026-02-23 20:04:30.686125] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:30.734824] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:32.971331] START GET /api/company-asset-requests/
+[2026-02-23 20:04:32.972214] START GET /api/attribution-orders/
+[2026-02-23 20:04:33.019057] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:33.023045] START GET /api/attribution-orders/
+[2026-02-23 20:04:33.062700] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:33.139468] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:33.144480] START GET /api/company-asset-requests/
+[2026-02-23 20:04:33.209070] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:33.594350] START GET /api/company-asset-requests/
+[2026-02-23 20:04:33.595098] START GET /api/attribution-orders/
+[2026-02-23 20:04:33.641550] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:33.648527] START GET /api/attribution-orders/
+[2026-02-23 20:04:33.669669] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:04:33.674598] START GET /api/company-asset-requests/
+[2026-02-23 20:04:33.693204] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:04:33.743071] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:05:20.658794] START GET /api/company-asset-requests/
+[2026-02-23 20:05:20.659751] START GET /api/attribution-orders/
+[2026-02-23 20:05:20.757381] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:05:20.762412] START GET /api/company-asset-requests/
+[2026-02-23 20:05:20.822092] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:05:20.830235] START GET /api/attribution-orders/
+[2026-02-23 20:05:20.852153] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:05:20.881505] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:20:34.069587] START GET /api/company-asset-requests/
+[2026-02-23 20:20:34.071235] END   GET /api/company-asset-requests/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-02-23 20:21:25.670421] START GET /api/company-asset-requests/
+[2026-02-23 20:21:25.671846] START GET /api/attribution-orders/
+[2026-02-23 20:21:25.723792] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:21:25.731101] START GET /api/attribution-orders/
+[2026-02-23 20:21:25.758812] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:21:25.763759] START GET /api/company-asset-requests/
+[2026-02-23 20:21:25.781536] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:21:25.843518] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:21:26.271490] START GET /api/company-asset-requests/
+[2026-02-23 20:21:26.272564] START GET /api/attribution-orders/
+[2026-02-23 20:21:26.325675] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:21:26.331255] START GET /api/attribution-orders/
+[2026-02-23 20:21:26.356147] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:21:26.360663] START GET /api/company-asset-requests/
+[2026-02-23 20:21:26.376414] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:21:26.437530] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:21:55.934192] START GET /api/company-asset-requests/
+[2026-02-23 20:21:55.935103] START GET /api/attribution-orders/
+[2026-02-23 20:21:56.001704] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:21:56.007286] START GET /api/attribution-orders/
+[2026-02-23 20:21:56.069037] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:21:56.132035] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:21:56.138296] START GET /api/company-asset-requests/
+[2026-02-23 20:21:56.227406] END   GET /api/company-asset-requests/ -> 500
+Response Body: ProgrammingError at /api/company-asset-requests/
+column company_asset_request.is_signed_by_central_chief does not exist
+LINE 1: ...ny_asset_request"."administrative_serial_number", "company_a...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/company-asset-requests/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Pr
+[2026-02-23 20:24:04.273689] START GET /api/company-asset-requests/
+[2026-02-23 20:24:04.274951] START GET /api/attribution-orders/
+[2026-02-23 20:24:04.372216] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:24:04.377243] START GET /api/attribution-orders/
+[2026-02-23 20:24:04.435699] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:24:04.475070] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:24:04.479391] START GET /api/company-asset-requests/
+[2026-02-23 20:24:04.548141] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:25:37.077157] START GET /api/company-asset-requests/
+[2026-02-23 20:25:37.077871] START GET /api/attribution-orders/
+[2026-02-23 20:25:37.151197] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:25:37.151783] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:25:37.156598] START GET /api/attribution-orders/
+[2026-02-23 20:25:37.157376] START GET /api/company-asset-requests/
+[2026-02-23 20:25:37.208127] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:25:37.212782] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:26:02.081847] START GET /api/company-asset-requests/
+[2026-02-23 20:26:02.082467] START GET /api/attribution-orders/
+[2026-02-23 20:26:02.132595] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:26:02.133418] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:28:24.028077] START GET /api/company-asset-requests/
+[2026-02-23 20:28:24.029795] START GET /api/attribution-orders/
+[2026-02-23 20:28:24.082244] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:28:24.083403] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:28:24.088514] START GET /api/company-asset-requests/
+[2026-02-23 20:28:24.089107] START GET /api/attribution-orders/
+[2026-02-23 20:28:24.141432] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:28:24.236111] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:33:48.076393] START GET /api/company-asset-requests/
+[2026-02-23 20:33:48.077023] START GET /api/attribution-orders/
+[2026-02-23 20:33:48.144205] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:33:48.145091] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:33:57.087369] START GET /api/company-asset-requests/
+[2026-02-23 20:33:57.087887] START GET /api/attribution-orders/
+[2026-02-23 20:33:57.132685] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:33:57.134266] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 20:33:57.138703] START GET /api/attribution-orders/
+[2026-02-23 20:33:57.139278] START GET /api/company-asset-requests/
+[2026-02-23 20:33:57.179555] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 20:33:57.182973] END   GET /api/company-asset-requests/ -> 200

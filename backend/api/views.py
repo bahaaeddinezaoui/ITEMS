@@ -57,6 +57,7 @@ from .models import (
     AttributionOrder,
     ReceiptReport,
     AdministrativeCertificate,
+    CompanyAssetRequest,
 )
 from .serializers import (
     AssetAttributeDefinitionSerializer,
@@ -101,6 +102,7 @@ from .serializers import (
     AttributionOrderSerializer,
     ReceiptReportSerializer,
     AdministrativeCertificateSerializer,
+    CompanyAssetRequestSerializer,
 )
 
 
@@ -1368,4 +1370,69 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
             validated_data['digital_copy'] = digital_copy.read()
 
         item = AdministrativeCertificate.objects.create(administrative_certificate_id=next_id, **validated_data)
+        return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
+
+
+class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
+    queryset = CompanyAssetRequest.objects.select_related("attribution_order").all().order_by(
+        "-company_asset_request_id"
+    )
+    serializer_class = CompanyAssetRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_account = SuperuserWriteMixin()._get_user_account(self.request)
+        if not user_account:
+            return CompanyAssetRequest.objects.none()
+
+        if user_account.is_superuser():
+            return self.queryset
+
+        person = getattr(user_account, "person", None)
+        if not person:
+            return CompanyAssetRequest.objects.none()
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+        if "asset_responsible" not in role_codes:
+            return CompanyAssetRequest.objects.none()
+
+        return self.queryset
+
+    def create(self, request, *args, **kwargs):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            allowed = "asset_responsible" in role_codes
+
+        if not allowed:
+            return Response(
+                {"error": "Only Asset Responsible can create company asset requests"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        last_item = CompanyAssetRequest.objects.order_by("-company_asset_request_id").first()
+        next_id = (last_item.company_asset_request_id + 1) if last_item else 1
+
+        validated_data = serializer.validated_data
+        digital_copy = request.FILES.get('digital_copy')
+        if digital_copy:
+            validated_data = dict(validated_data)
+            validated_data['digital_copy'] = digital_copy.read()
+
+        item = CompanyAssetRequest.objects.create(company_asset_request_id=next_id, **validated_data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)

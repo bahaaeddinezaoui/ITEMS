@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, AssetIsAssignedToPersonViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, WarehouseViewSet, AttributionOrderViewSet, ReceiptReportViewSet, AdministrativeCertificateViewSet
+from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, AssetIsAssignedToPersonViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, WarehouseViewSet, AttributionOrderViewSet, ReceiptReportViewSet, AdministrativeCertificateViewSet, CompanyAssetRequestViewSet
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
@@ -42,6 +42,7 @@ router.register(r'warehouses', WarehouseViewSet, basename='warehouse')
 router.register(r'attribution-orders', AttributionOrderViewSet, basename='attributionorder')
 router.register(r'receipt-reports', ReceiptReportViewSet, basename='receiptreport')
 router.register(r'administrative-certificates', AdministrativeCertificateViewSet, basename='administrativecertificate')
+router.register(r'company-asset-requests', CompanyAssetRequestViewSet, basename='companyassetrequest')
 
 urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),

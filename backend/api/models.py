@@ -852,3 +852,41 @@ class AdministrativeCertificate(models.Model):
 
     def __str__(self):
         return f"Certificate {self.administrative_certificate_id} for Order {self.attribution_order_id}"
+
+
+class CompanyAssetRequest(models.Model):
+    """Maps to company_asset_request table"""
+
+    company_asset_request_id = models.IntegerField(primary_key=True, db_column="company_asset_request_id")
+    attribution_order = models.ForeignKey(AttributionOrder, on_delete=models.DO_NOTHING, db_column="attribution_order_id")
+    is_signed_by_company = models.BooleanField(blank=True, null=True, db_column="is_signed_by_company")
+    administrative_serial_number = models.CharField(max_length=18, blank=True, null=True, db_column="administrative_serial_number")
+    title_of_demand = models.CharField(max_length=255, blank=True, null=True, db_column="title_of_demand")
+    organization_body_designation = models.CharField(max_length=255, blank=True, null=True, db_column="organization_body_designation")
+    register_number_or_book_journal_of_corpse = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        db_column="register_number_or_book_journal_of_corpse",
+    )
+    register_number_or_book_journal_of_establishment = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        db_column="register_number_or_book_journal_of_establishment",
+    )
+    is_signed_by_company_leader = models.BooleanField(blank=True, null=True, db_column="is_signed_by_company_leader")
+    is_signed_by_regional_provider = models.BooleanField(blank=True, null=True, db_column="is_signed_by_regional_provider")
+    is_signed_by_company_representative = models.BooleanField(
+        blank=True,
+        null=True,
+        db_column="is_signed_by_company_representative",
+    )
+    digital_copy = models.BinaryField(blank=True, null=True, db_column="digital_copy")
+
+    class Meta:
+        managed = False
+        db_table = "company_asset_request"
+
+    def __str__(self):
+        return f"Company Asset Request {self.company_asset_request_id}"

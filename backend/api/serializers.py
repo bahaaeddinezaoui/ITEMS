@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -743,3 +743,25 @@ class AdministrativeCertificateSerializer(serializers.ModelSerializer):
             'is_signed_by_warehouse_leader', 'digital_copy'
         ]
         read_only_fields = ['administrative_certificate_id']
+
+
+class CompanyAssetRequestSerializer(serializers.ModelSerializer):
+    """Serializer for CompanyAssetRequest model"""
+
+    class Meta:
+        model = CompanyAssetRequest
+        fields = [
+            'company_asset_request_id',
+            'attribution_order',
+            'is_signed_by_company',
+            'administrative_serial_number',
+            'title_of_demand',
+            'organization_body_designation',
+            'register_number_or_book_journal_of_corpse',
+            'register_number_or_book_journal_of_establishment',
+            'is_signed_by_company_leader',
+            'is_signed_by_regional_provider',
+            'is_signed_by_company_representative',
+            'digital_copy',
+        ]
+        read_only_fields = ['company_asset_request_id']

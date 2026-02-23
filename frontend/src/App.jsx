@@ -14,6 +14,7 @@ import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
 import MyItemsPage from './pages/MyItemsPage';
 import ReportsPage from './pages/ReportsPage';
 import AttributionOrdersPage from './pages/AttributionOrdersPage';
+import CompanyAssetRequestsPage from './pages/CompanyAssetRequestsPage';
 import './index.css';
 
 // Protected route wrapper
@@ -74,6 +75,7 @@ function App() {
                         <Route path="positions" element={<PositionsPage />} />
                         <Route path="organizational-structure" element={<OrganizationalStructurePage />} />
                         <Route path="attribution-orders" element={<AttributionOrdersPage />} />
+                        <Route path="company-asset-requests" element={<CompanyAssetRequestsPage />} />
                     </Route>
 
                     {/* Redirect root to login */}
