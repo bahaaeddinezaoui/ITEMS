@@ -35,6 +35,16 @@ const AttributionOrdersPage = () => {
     const [orderAssets, setOrderAssets] = useState([]);
     const [showReceiptForm, setShowReceiptForm] = useState(false);
     const [receiptData, setReceiptData] = useState({ report_full_code: '', digital_copy: null });
+    const [orderReceipt, setOrderReceipt] = useState(null);
+    const [previewReceipt, setPreviewReceipt] = useState(false);
+
+    const getMimeType = (b64) => {
+        if (!b64) return 'application/octet-stream';
+        if (b64.startsWith('JVBERi0')) return 'application/pdf';
+        if (b64.startsWith('/9j/')) return 'image/jpeg';
+        if (b64.startsWith('iVBORw0K')) return 'image/png';
+        return 'application/octet-stream';
+    };
 
     useEffect(() => {
         fetchInitialData();
@@ -45,6 +55,8 @@ const AttributionOrdersPage = () => {
             fetchOrdersList();
             setSelectedOrder(null);
             setOrderAssets([]);
+            setOrderReceipt(null);
+            setShowReceiptForm(false);
         }
     }, [viewMode]);
 
@@ -52,11 +64,20 @@ const AttributionOrdersPage = () => {
         setSelectedOrder(order);
         setViewMode('detail');
         setLoading(true);
+        setOrderReceipt(null);
         try {
             const assetsData = await assetService.getAll({ attribution_order: order.attribution_order_id });
             setOrderAssets(assetsData.results || assetsData || []);
+
+            const certData = await administrativeCertificateService.getAll({ attribution_order: order.attribution_order_id });
+            const certificates = certData.results || certData || [];
+            if (certificates.length > 0 && certificates[0].receipt_report) {
+                const receiptId = certificates[0].receipt_report;
+                const receiptInfo = await receiptReportService.getById(receiptId);
+                setOrderReceipt(receiptInfo);
+            }
         } catch (err) {
-            setError('Failed to fetch assets for this order');
+            setError('Failed to fetch assets or receipt for this order');
         } finally {
             setLoading(false);
         }
@@ -189,6 +210,7 @@ const AttributionOrdersPage = () => {
             setSuccess('Receipt Report successfully created and linked to this order.');
             setShowReceiptForm(false);
             setReceiptData({ report_full_code: '', digital_copy: null });
+            setOrderReceipt(receipt);
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.error || 'Failed to create Receipt Report');
@@ -285,7 +307,45 @@ const AttributionOrdersPage = () => {
                             </div>
                         </div>
                     </div>
-                    {selectedOrder && (
+
+                    {orderReceipt && (
+                        <div className="card">
+                            <div className="card-header">
+                                <h2 className="card-title">Receipt Report</h2>
+                            </div>
+                            <div className="card-body">
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)' }}>
+                                    <div>
+                                        <label className="form-label">Report Code</label>
+                                        <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '500' }}>{orderReceipt.report_full_code || '-'}</div>
+                                    </div>
+                                    <div>
+                                        <label className="form-label">Report Date</label>
+                                        <div style={{ fontSize: 'var(--font-size-md)' }}>{orderReceipt.report_datetime ? new Date(orderReceipt.report_datetime).toLocaleString() : '-'}</div>
+                                    </div>
+                                    <div>
+                                        <label className="form-label">Digital Copy</label>
+                                        <div style={{ fontSize: 'var(--font-size-md)' }}>
+                                            {orderReceipt.digital_copy ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPreviewReceipt(true)}
+                                                    className="btn btn-primary"
+                                                    style={{ padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--font-size-sm)' }}
+                                                >
+                                                    Consult Report
+                                                </button>
+                                            ) : (
+                                                <span style={{ color: 'var(--color-text-light)' }}>No file attached</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {selectedOrder && !orderReceipt && (
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button className={`btn btn-${showReceiptForm ? 'secondary' : 'primary'}`} onClick={() => setShowReceiptForm(!showReceiptForm)}>
                                 {showReceiptForm ? 'Cancel Receipt Report' : 'Create Receipt Report'}
@@ -544,6 +604,32 @@ const AttributionOrdersPage = () => {
                         </button>
                     </div>
                 </form>
+            )}
+
+            {previewReceipt && orderReceipt?.digital_copy && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-6)' }} onClick={() => setPreviewReceipt(false)}>
+                    <div className="card" style={{ width: '100%', maxWidth: '900px', height: '90vh', display: 'flex', flexDirection: 'column', padding: 'var(--space-4)' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+                            <h2 style={{ margin: 0 }}>Consult Receipt Report: {orderReceipt.report_full_code || 'Attachment'}</h2>
+                            <button className="btn btn-secondary" onClick={() => setPreviewReceipt(false)}>Close</button>
+                        </div>
+                        {getMimeType(orderReceipt.digital_copy) === 'application/pdf' ? (
+                            <iframe
+                                title="Receipt Report Preview"
+                                src={`data:application/pdf;base64,${orderReceipt.digital_copy}`}
+                                style={{ flexGrow: 1, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: '100%', height: '100%' }}
+                            />
+                        ) : (
+                            <div style={{ flexGrow: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)' }}>
+                                <img
+                                    src={`data:${getMimeType(orderReceipt.digital_copy)};base64,${orderReceipt.digital_copy}`}
+                                    alt="Receipt Report Preview"
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
         </>
     );

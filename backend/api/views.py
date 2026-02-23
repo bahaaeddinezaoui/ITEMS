@@ -1346,6 +1346,16 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
     serializer_class = AdministrativeCertificateSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        queryset = AdministrativeCertificate.objects.all().order_by("administrative_certificate_id")
+        attribution_order_id = self.request.query_params.get("attribution_order")
+        if attribution_order_id is not None:
+            try:
+                queryset = queryset.filter(attribution_order_id=int(attribution_order_id))
+            except (ValueError, TypeError):
+                pass
+        return queryset
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

@@ -1029,6 +1029,10 @@ export const attributionOrderService = {
 
 // Receipt Report service
 export const receiptReportService = {
+    getById: async (id) => {
+        const response = await api.get(`receipt-reports/${id}/`);
+        return response.data;
+    },
     create: async (formData) => {
         const response = await api.post('receipt-reports/', formData, {
             headers: {
@@ -1041,6 +1045,10 @@ export const receiptReportService = {
 
 // Administrative Certificate service
 export const administrativeCertificateService = {
+    getAll: async (params) => {
+        const response = await api.get('administrative-certificates/', { params });
+        return response.data;
+    },
     create: async (data) => {
         const response = await api.post('administrative-certificates/', data);
         return response.data;
