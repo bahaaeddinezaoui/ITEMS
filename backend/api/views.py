@@ -55,6 +55,8 @@ from .models import (
     UserAccount,
     Warehouse,
     AttributionOrder,
+    ReceiptReport,
+    AdministrativeCertificate,
 )
 from .serializers import (
     AssetAttributeDefinitionSerializer,
@@ -97,6 +99,8 @@ from .serializers import (
     UserProfileSerializer,
     WarehouseSerializer,
     AttributionOrderSerializer,
+    ReceiptReportSerializer,
+    AdministrativeCertificateSerializer,
 )
 
 
@@ -1313,4 +1317,45 @@ class AttributionOrderViewSet(viewsets.ModelViewSet):
         last_item = AttributionOrder.objects.order_by("-attribution_order_id").first()
         next_id = (last_item.attribution_order_id + 1) if last_item else 1
         item = AttributionOrder.objects.create(attribution_order_id=next_id, **serializer.validated_data)
+        return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
+
+
+class ReceiptReportViewSet(viewsets.ModelViewSet):
+    queryset = ReceiptReport.objects.all().order_by("receipt_report_id")
+    serializer_class = ReceiptReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        last_item = ReceiptReport.objects.order_by("-receipt_report_id").first()
+        next_id = (last_item.receipt_report_id + 1) if last_item else 1
+        
+        # Handle file upload if present
+        digital_copy = request.FILES.get('digital_copy')
+        validated_data = serializer.validated_data
+        if digital_copy:
+            validated_data['digital_copy'] = digital_copy.read()
+
+        item = ReceiptReport.objects.create(receipt_report_id=next_id, **validated_data)
+        return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
+
+
+class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
+    queryset = AdministrativeCertificate.objects.all().order_by("administrative_certificate_id")
+    serializer_class = AdministrativeCertificateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        last_item = AdministrativeCertificate.objects.order_by("-administrative_certificate_id").first()
+        next_id = (last_item.administrative_certificate_id + 1) if last_item else 1
+        
+        digital_copy = request.FILES.get('digital_copy')
+        validated_data = serializer.validated_data
+        if digital_copy:
+            validated_data['digital_copy'] = digital_copy.read()
+
+        item = AdministrativeCertificate.objects.create(administrative_certificate_id=next_id, **validated_data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)

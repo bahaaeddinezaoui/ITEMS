@@ -4,7 +4,9 @@ import {
     warehouseService,
     assetTypeService,
     assetModelService,
-    assetService
+    assetService,
+    receiptReportService,
+    administrativeCertificateService
 } from '../services/api';
 
 const AttributionOrdersPage = () => {
@@ -31,6 +33,8 @@ const AttributionOrdersPage = () => {
     const [ordersList, setOrdersList] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [orderAssets, setOrderAssets] = useState([]);
+    const [showReceiptForm, setShowReceiptForm] = useState(false);
+    const [receiptData, setReceiptData] = useState({ report_full_code: '', digital_copy: null });
 
     useEffect(() => {
         fetchInitialData();
@@ -160,6 +164,39 @@ const AttributionOrdersPage = () => {
         }
     };
 
+    const handleReceiptSubmit = async (e) => {
+        e.preventDefault();
+        setSubmitting(true);
+        setError(null);
+        setSuccess(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('report_full_code', receiptData.report_full_code);
+            if (receiptData.digital_copy) {
+                formData.append('digital_copy', receiptData.digital_copy);
+            }
+
+            const receipt = await receiptReportService.create(formData);
+
+            await administrativeCertificateService.create({
+                warehouse: selectedOrder.warehouse,
+                attribution_order: selectedOrder.attribution_order_id,
+                receipt_report: receipt.receipt_report_id,
+                operation: 'entry'
+            });
+
+            setSuccess('Receipt Report successfully created and linked to this order.');
+            setShowReceiptForm(false);
+            setReceiptData({ report_full_code: '', digital_copy: null });
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to create Receipt Report');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     if (loading) return <div className="loading">Loading...</div>;
 
     return (
@@ -248,6 +285,49 @@ const AttributionOrdersPage = () => {
                             </div>
                         </div>
                     </div>
+                    {selectedOrder && (
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className={`btn btn-${showReceiptForm ? 'secondary' : 'primary'}`} onClick={() => setShowReceiptForm(!showReceiptForm)}>
+                                {showReceiptForm ? 'Cancel Receipt Report' : 'Create Receipt Report'}
+                            </button>
+                        </div>
+                    )}
+                    {showReceiptForm && (
+                        <div className="card" style={{ border: '2px solid var(--color-primary)' }}>
+                            <div className="card-header">
+                                <h2 className="card-title">New Receipt Report</h2>
+                            </div>
+                            <div className="card-body">
+                                <form onSubmit={handleReceiptSubmit}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+                                        <div className="form-group">
+                                            <label className="form-label">Report Full Code</label>
+                                            <input
+                                                type="text"
+                                                className="form-input"
+                                                value={receiptData.report_full_code}
+                                                onChange={(e) => setReceiptData({ ...receiptData, report_full_code: e.target.value })}
+                                                placeholder="e.g. PV-2024-001"
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Digital Copy (Attachment)</label>
+                                            <input
+                                                type="file"
+                                                className="form-input"
+                                                onChange={(e) => setReceiptData({ ...receiptData, digital_copy: e.target.files[0] })}
+                                                accept="image/*,application/pdf"
+                                            />
+                                        </div>
+                                    </div>
+                                    <button type="submit" className="btn btn-primary" disabled={submitting}>
+                                        {submitting ? 'Submitting...' : 'Save Receipt Report'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
                     <div className="card">
                         <div className="card-header">
                             <h2 className="card-title">Associated Assets</h2>

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -721,3 +721,25 @@ class AttributionOrderSerializer(serializers.ModelSerializer):
             'is_signed_by_central_chief', 'attribution_order_barcode'
         ]
         read_only_fields = ['attribution_order_id']
+
+
+class ReceiptReportSerializer(serializers.ModelSerializer):
+    """Serializer for ReceiptReport model"""
+    class Meta:
+        model = ReceiptReport
+        fields = ['receipt_report_id', 'report_datetime', 'report_full_code', 'digital_copy']
+        read_only_fields = ['receipt_report_id', 'report_datetime']
+
+
+class AdministrativeCertificateSerializer(serializers.ModelSerializer):
+    """Serializer for AdministrativeCertificate model"""
+    class Meta:
+        model = AdministrativeCertificate
+        fields = [
+            'administrative_certificate_id', 'warehouse', 'attribution_order', 'receipt_report',
+            'interested_organization', 'operation', 'format',
+            'is_signed_by_warehouse_storage_magaziner', 'is_signed_by_warehouse_storage_accountant',
+            'is_signed_by_warehouse_storage_marketer', 'is_signed_by_warehouse_it_chief',
+            'is_signed_by_warehouse_leader', 'digital_copy'
+        ]
+        read_only_fields = ['administrative_certificate_id']

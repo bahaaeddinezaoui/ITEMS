@@ -813,3 +813,42 @@ class AttributionOrder(models.Model):
 
     def __str__(self):
         return self.attribution_order_full_code or f"Order {self.attribution_order_id}"
+
+
+class ReceiptReport(models.Model):
+    """Maps to receipt_report table"""
+    receipt_report_id = models.AutoField(primary_key=True, db_column='receipt_report_id')
+    report_datetime = models.DateTimeField(db_column='report_datetime', blank=True, null=True, auto_now_add=True)
+    report_full_code = models.CharField(max_length=48, db_column='report_full_code', blank=True, null=True)
+    digital_copy = models.BinaryField(db_column='digital_copy', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'receipt_report'
+
+    def __str__(self):
+        return self.report_full_code or f"Receipt Report {self.receipt_report_id}"
+
+
+class AdministrativeCertificate(models.Model):
+    """Maps to administrative_certificate table"""
+    administrative_certificate_id = models.AutoField(primary_key=True, db_column='administrative_certificate_id')
+    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, db_column='warehouse_id')
+    attribution_order = models.ForeignKey(AttributionOrder, on_delete=models.CASCADE, db_column='attribution_order_id', related_name='administrative_certificates')
+    receipt_report = models.ForeignKey(ReceiptReport, on_delete=models.CASCADE, db_column='receipt_report_id', related_name='administrative_certificates')
+    interested_organization = models.CharField(max_length=60, db_column='interested_organization', blank=True, null=True)
+    operation = models.CharField(max_length=20, db_column='operation', blank=True, null=True)
+    format = models.CharField(max_length=8, db_column='format', blank=True, null=True)
+    is_signed_by_warehouse_storage_magaziner = models.BooleanField(db_column='is_signed_by_warehouse_storage_magaziner', default=False)
+    is_signed_by_warehouse_storage_accountant = models.BooleanField(db_column='is_signed_by_warehouse_storage_accountant', default=False)
+    is_signed_by_warehouse_storage_marketer = models.BooleanField(db_column='is_signed_by_warehouse_storage_marketer', default=False)
+    is_signed_by_warehouse_it_chief = models.BooleanField(db_column='is_signed_by_warehouse_it_chief', default=False)
+    is_signed_by_warehouse_leader = models.BooleanField(db_column='is_signed_by_warehouse_leader', default=False)
+    digital_copy = models.BinaryField(db_column='digital_copy', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'administrative_certificate'
+
+    def __str__(self):
+        return f"Certificate {self.administrative_certificate_id} for Order {self.attribution_order_id}"

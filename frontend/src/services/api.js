@@ -1027,4 +1027,24 @@ export const attributionOrderService = {
     },
 };
 
+// Receipt Report service
+export const receiptReportService = {
+    create: async (formData) => {
+        const response = await api.post('receipt-reports/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
+};
+
+// Administrative Certificate service
+export const administrativeCertificateService = {
+    create: async (data) => {
+        const response = await api.post('administrative-certificates/', data);
+        return response.data;
+    },
+};
+
 export default api;
