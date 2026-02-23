@@ -1080,7 +1080,10 @@ export const administrativeCertificateService = {
         return response.data;
     },
     create: async (data) => {
-        const response = await api.post('administrative-certificates/', data);
+        const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+        const response = isFormData
+            ? await postForm('administrative-certificates/', data)
+            : await api.post('administrative-certificates/', data);
         return response.data;
     },
 };

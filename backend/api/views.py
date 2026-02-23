@@ -1349,7 +1349,25 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = AdministrativeCertificate.objects.all().order_by("administrative_certificate_id")
+        user_account = getattr(self.request, "user", None)
+        if not user_account or not getattr(user_account, "is_authenticated", False):
+            return AdministrativeCertificate.objects.none()
+
+        if getattr(user_account, "is_superuser", False):
+            queryset = AdministrativeCertificate.objects.all().order_by("administrative_certificate_id")
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return AdministrativeCertificate.objects.none()
+
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            if "asset_responsible" not in role_codes:
+                return AdministrativeCertificate.objects.none()
+
+            queryset = AdministrativeCertificate.objects.all().order_by("administrative_certificate_id")
+
         attribution_order_id = self.request.query_params.get("attribution_order")
         if attribution_order_id is not None:
             try:
@@ -1359,6 +1377,28 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
+        user_account = getattr(request, "user", None)
+        if not user_account or not getattr(user_account, "is_authenticated", False):
+            return Response({"error": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if getattr(user_account, "is_superuser", False):
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            allowed = "asset_responsible" in role_codes
+
+        if not allowed:
+            return Response(
+                {"error": "Only Asset Responsible can create administrative certificates"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         last_item = AdministrativeCertificate.objects.order_by("-administrative_certificate_id").first()
