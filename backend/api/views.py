@@ -7,6 +7,7 @@ from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
@@ -424,13 +425,25 @@ class ProblemReportViewSet(viewsets.ViewSet):
 
         last_item = Maintenance.objects.order_by("-maintenance_id").first()
         next_id = (last_item.maintenance_id + 1) if last_item else 1
-        maintenance = Maintenance.objects.create(
-            maintenance_id=next_id,
-            performed_by_person=technician,
-            description=description or report.owner_observation,
-            start_datetime=timezone.now(),
-            asset=report.asset,
-        )
+        try:
+            maintenance = Maintenance.objects.create(
+                maintenance_id=next_id,
+                performed_by_person=technician,
+                approved_by_maintenance_chief=user_account.person,
+                description=description or report.owner_observation,
+                start_datetime=timezone.now(),
+                end_datetime=timezone.now(),
+                asset=report.asset,
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Failed to create maintenance due to database constraints.",
+                    "details": "Check required fields in Maintenance model (approved_by_maintenance_chief, end_datetime, etc.)",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         return Response(MaintenanceSerializer(maintenance).data, status=status.HTTP_201_CREATED)
 class LoginView(APIView):
     """Handle user authentication."""

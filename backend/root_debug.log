@@ -17391,3 +17391,215 @@ icates/
 [2026-02-23 20:55:47.145620] START GET /api/receipt-reports/2/
 [2026-02-23 20:55:47.184430] END   GET /api/receipt-reports/1/ -> 200
 [2026-02-23 20:55:47.184533] END   GET /api/receipt-reports/2/ -> 200
+[2026-02-23 22:29:42.615663] START GET /api/warehouses/
+[2026-02-23 22:29:42.616738] START GET /api/asset-types/
+[2026-02-23 22:29:42.617665] START GET /api/attribution-orders/
+[2026-02-23 22:29:42.746865] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:42.754564] START GET /api/attribution-orders/
+[2026-02-23 22:29:42.812915] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:42.835104] END   GET /api/asset-types/ -> 200
+[2026-02-23 22:29:42.835324] END   GET /api/warehouses/ -> 200
+[2026-02-23 22:29:42.842754] START GET /api/asset-types/
+[2026-02-23 22:29:42.843795] START GET /api/warehouses/
+[2026-02-23 22:29:42.892739] END   GET /api/asset-types/ -> 200
+[2026-02-23 22:29:42.893894] END   GET /api/warehouses/ -> 200
+[2026-02-23 22:29:51.596794] START GET /api/asset-types/
+[2026-02-23 22:29:51.597185] START GET /api/asset-brands/
+[2026-02-23 22:29:51.597470] START GET /api/asset-attribute-definitions/
+[2026-02-23 22:29:51.598132] START GET /api/asset-assignments/
+[2026-02-23 22:29:51.601328] START GET /api/persons/
+[2026-02-23 22:29:51.647526] END   GET /api/asset-types/ -> 200
+
+[2026-02-23 22:29:51.656542] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 22:29:51.656605] END   GET /api/persons/ -> 200
+[2026-02-23 22:29:51.656266] START GET /api/asset-brands/
+[2026-02-23 22:29:51.657584] START GET /api/asset-types/
+[2026-02-23 22:29:51.665219] START GET /api/persons/
+[2026-02-23 22:29:51.667349] START GET /api/asset-attribute-definitions/
+[2026-02-23 22:29:51.687552] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 22:29:51.692075] START GET /api/asset-assignments/
+[2026-02-23 22:29:51.706699] END   GET /api/asset-brands/ -> 200
+[2026-02-23 22:29:51.709063] END   GET /api/asset-types/ -> 200
+[2026-02-23 22:29:51.716649] END   GET /api/persons/ -> 200
+[2026-02-23 22:29:51.720169] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-23 22:29:51.737629] END   GET /api/asset-assignments/ -> 200
+[2026-02-23 22:29:52.264869] START GET /api/warehouses/
+[2026-02-23 22:29:52.265974] START GET /api/asset-types/
+[2026-02-23 22:29:52.268617] START GET /api/attribution-orders/
+[2026-02-23 22:29:52.310570] END   GET /api/warehouses/ -> 200
+[2026-02-23 22:29:52.310934] END   GET /api/asset-types/ -> 200
+[2026-02-23 22:29:52.316806] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:52.316667] START GET /api/warehouses/
+[2026-02-23 22:29:52.319183] START GET /api/asset-types/
+[2026-02-23 22:29:52.323885] START GET /api/attribution-orders/
+[2026-02-23 22:29:52.362510] END   GET /api/warehouses/ -> 200
+[2026-02-23 22:29:52.366459] END   GET /api/asset-types/ -> 200
+[2026-02-23 22:29:52.370129] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:52.951325] START GET /api/company-asset-requests/
+[2026-02-23 22:29:52.951952] START GET /api/attribution-orders/
+[2026-02-23 22:29:52.998372] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 22:29:52.999724] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:53.004786] START GET /api/company-asset-requests/
+[2026-02-23 22:29:53.005538] START GET /api/attribution-orders/
+[2026-02-23 22:29:53.048337] END   GET /api/company-asset-requests/ -> 200
+[2026-02-23 22:29:53.053722] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:53.979218] START GET /api/warehouses/
+[2026-02-23 22:29:53.979680] START GET /api/asset-types/
+[2026-02-23 22:29:53.983383] START GET /api/attribution-orders/
+[2026-02-23 22:29:54.022076] END   GET /api/warehouses/ -> 200
+[2026-02-23 22:29:54.027554] END   GET /api/asset-types/ -> 200
+[2026-02-23 22:29:54.028011] START GET /api/warehouses/
+[2026-02-23 22:29:54.032888] START GET /api/asset-types/
+[2026-02-23 22:29:54.034783] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:54.040152] START GET /api/attribution-orders/
+[2026-02-23 22:29:54.070710] END   GET /api/warehouses/ -> 200
+[2026-02-23 22:29:54.074884] END   GET /api/asset-types/ -> 200
+[2026-02-23 22:29:54.085134] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:55.503135] START GET /api/administrative-certificates/
+[2026-02-23 22:29:55.503709] START GET /api/attribution-orders/
+[2026-02-23 22:29:55.507134] START GET /api/warehouses/
+[2026-02-23 22:29:55.550902] END   GET /api/administrative-certificates/ -> 200
+[2026-02-23 22:29:55.552758] END   GET /api/warehouses/ -> 200
+[2026-02-23 22:29:55.554473] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:55.558406] START GET /api/administrative-certificates/
+[2026-02-23 22:29:55.559472] START GET /api/warehouses/
+[2026-02-23 22:29:55.561893] START GET /api/attribution-orders/
+[2026-02-23 22:29:55.563563] START GET /api/receipt-reports/1/
+[2026-02-23 22:29:55.567767] START GET /api/receipt-reports/2/
+[2026-02-23 22:29:55.605802] END   GET /api/administrative-certificates/ -> 200
+[2026-02-23 22:29:55.605925] END   GET /api/warehouses/ -> 200
+[2026-02-23 22:29:55.612848] END   GET /api/receipt-reports/1/ -> 200
+[2026-02-23 22:29:55.614648] END   GET /api/attribution-orders/ -> 200
+[2026-02-23 22:29:55.620501] START GET /api/receipt-reports/1/
+[2026-02-23 22:29:55.657367] END   GET /api/receipt-reports/1/ -> 200
+[2026-02-23 22:29:55.717212] END   GET /api/receipt-reports/2/ -> 200
+[2026-02-23 22:29:55.721315] START GET /api/receipt-reports/2/
+[2026-02-23 22:29:55.758137] END   GET /api/receipt-reports/2/ -> 200
+[2026-02-23 22:30:10.361745] START POST /api/auth/login/
+[2026-02-23 22:30:10.421828] END   POST /api/auth/login/ -> 200
+[2026-02-23 22:30:13.815225] START GET /api/maintenances/
+[2026-02-23 22:30:13.816054] START GET /api/persons/
+[2026-02-23 22:30:13.863825] END   GET /api/persons/ -> 200
+[2026-02-23 22:30:13.869307] END   GET /api/maintenances/ -> 200
+[2026-02-23 22:30:13.869770] START GET /api/persons/
+[2026-02-23 22:30:13.875515] START GET /api/maintenances/
+[2026-02-23 22:30:13.913068] END   GET /api/persons/ -> 200
+[2026-02-23 22:30:13.923880] END   GET /api/maintenances/ -> 200
+[2026-02-23 22:33:56.181730] START POST /api/auth/login/
+[2026-02-23 22:33:56.231727] END   POST /api/auth/login/ -> 200
+[2026-02-23 22:33:58.530024] START GET /api/maintenances/
+[2026-02-23 22:33:58.578725] END   GET /api/maintenances/ -> 200
+[2026-02-23 22:33:58.583480] START GET /api/maintenances/
+[2026-02-23 22:33:58.631395] END   GET /api/maintenances/ -> 200
+[2026-02-23 22:34:07.635999] START POST /api/auth/login/
+[2026-02-23 22:34:07.686978] END   POST /api/auth/login/ -> 200
+[2026-02-23 22:34:12.717636] START POST /api/auth/login/
+[2026-02-23 22:34:12.766009] END   POST /api/auth/login/ -> 200
+[2026-02-23 22:34:13.713093] START GET /api/maintenances/
+[2026-02-23 22:34:13.714058] START GET /api/persons/
+[2026-02-23 22:34:13.763752] END   GET /api/persons/ -> 200
+[2026-02-23 22:34:13.768192] END   GET /api/maintenances/ -> 200
+[2026-02-23 22:34:13.768678] START GET /api/persons/
+[2026-02-23 22:34:13.776226] START GET /api/maintenances/
+[2026-02-23 22:34:13.821825] END   GET /api/persons/ -> 200
+[2026-02-23 22:34:13.830227] END   GET /api/maintenances/ -> 200
+[2026-02-23 22:34:52.974089] START GET /api/problem-reports/
+[2026-02-23 22:34:52.974833] START GET /api/persons/
+[2026-02-23 22:34:53.019739] END   GET /api/persons/ -> 200
+[2026-02-23 22:34:53.021038] END   GET /api/problem-reports/ -> 200
+[2026-02-23 22:34:53.024774] START GET /api/persons/
+[2026-02-23 22:34:53.025450] START GET /api/problem-reports/
+[2026-02-23 22:34:53.070636] END   GET /api/problem-reports/ -> 200
+[2026-02-23 22:34:53.171936] END   GET /api/persons/ -> 200
+[2026-02-23 22:34:54.710727] START GET /api/problem-reports/
+[2026-02-23 22:34:54.751095] END   GET /api/problem-reports/ -> 200
+[2026-02-23 22:34:57.920938] START GET /api/maintenances/
+[2026-02-23 22:34:57.921525] START GET /api/persons/
+[2026-02-23 22:34:57.967890] END   GET /api/persons/ -> 200
+[2026-02-23 22:34:57.973585] END   GET /api/maintenances/ -> 200
+[2026-02-23 22:34:57.974318] START GET /api/persons/
+[2026-02-23 22:34:57.980756] START GET /api/maintenances/
+[2026-02-23 22:34:58.018808] END   GET /api/persons/ -> 200
+[2026-02-23 22:34:58.028655] END   GET /api/maintenances/ -> 200
+[2026-02-23 22:34:58.399939] START GET /api/problem-reports/
+[2026-02-23 22:34:58.400608] START GET /api/persons/
+[2026-02-23 22:34:58.444950] END   GET /api/persons/ -> 200
+[2026-02-23 22:34:58.447331] END   GET /api/problem-reports/ -> 200
+[2026-02-23 22:34:58.450163] START GET /api/persons/
+[2026-02-23 22:34:58.452466] START GET /api/problem-reports/
+[2026-02-23 22:34:58.494931] END   GET /api/problem-reports/ -> 200
+[2026-02-23 22:34:58.590953] END   GET /api/persons/ -> 200
+[2026-02-23 22:35:08.161353] START POST /api/problem-reports/create-maintenance/
+[2026-02-23 22:35:08.408495] END   POST /api/problem-reports/create-maintenance/ -> 500
+Response Body: IntegrityError at /api/problem-reports/create-maintenance/
+null value in column "approved_by_maintenance_chief_id" of relation "maintenance" violates not-null constraint
+DETAIL:  Failing row contains (2, 1, 8, null, null, 2026-02-23 21:35:08.20316, null, Not working, null, null, null, null).
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/problem-reports/create-maintenance/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.
+[2026-02-23 22:35:14.915804] START GET /api/problem-reports/
+[2026-02-23 22:35:14.916577] START GET /api/persons/
+[2026-02-23 22:35:14.962974] END   GET /api/persons/ -> 200
+[2026-02-23 22:35:14.963091] END   GET /api/problem-reports/ -> 200
+[2026-02-23 22:35:14.968827] START GET /api/problem-reports/
+[2026-02-23 22:35:14.969820] START GET /api/persons/
+[2026-02-23 22:35:15.016913] END   GET /api/persons/ -> 200
+[2026-02-23 22:35:15.117186] END   GET /api/problem-reports/ -> 200
+[2026-02-23 22:35:17.066226] START GET /api/problem-reports/
+[2026-02-23 22:35:17.108841] END   GET /api/problem-reports/ -> 200
+[2026-02-23 22:35:21.378219] START POST /api/problem-reports/create-maintenance/
+[2026-02-23 22:35:21.446998] END   POST /api/problem-reports/create-maintenance/ -> 500
+Response Body: IntegrityError at /api/problem-reports/create-maintenance/
+null value in column "approved_by_maintenance_chief_id" of relation "maintenance" violates not-null constraint
+DETAIL:  Failing row contains (2, 1, 7, null, null, 2026-02-23 21:35:21.423963, null, Not working, null, null, null, null).
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/problem-reports/create-maintenance/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python
+[2026-02-23 23:47:08.222624] START GET /api/problem-reports/
+[2026-02-23 23:47:08.223386] START GET /api/persons/
+[2026-02-23 23:47:08.288454] END   GET /api/problem-reports/ -> 200
+[2026-02-23 23:47:08.292509] START GET /api/problem-reports/
+[2026-02-23 23:47:08.337739] END   GET /api/problem-reports/ -> 200
+[2026-02-23 23:47:08.390576] END   GET /api/persons/ -> 200
+[2026-02-23 23:47:08.396065] START GET /api/persons/
+[2026-02-23 23:47:08.439997] END   GET /api/persons/ -> 200
+[2026-02-23 23:47:12.168301] START POST /api/problem-reports/create-maintenance/
+[2026-02-23 23:47:12.231872] END   POST /api/problem-reports/create-maintenance/ -> 201
+[2026-02-23 23:47:13.952575] START GET /api/maintenances/
+[2026-02-23 23:47:13.953322] START GET /api/persons/
+[2026-02-23 23:47:14.000460] END   GET /api/persons/ -> 200
+[2026-02-23 23:47:14.004425] END   GET /api/maintenances/ -> 200
+[2026-02-23 23:47:14.004920] START GET /api/persons/
+[2026-02-23 23:47:14.011263] START GET /api/maintenances/
+[2026-02-23 23:47:14.052529] END   GET /api/persons/ -> 200
+[2026-02-23 23:47:14.061092] END   GET /api/maintenances/ -> 200
+[2026-02-23 23:47:25.013505] START GET /api/maintenance-steps/
+[2026-02-23 23:47:25.013765] START GET /api/maintenance-typical-steps/
+[2026-02-23 23:47:25.015814] START GET /api/persons/
+[2026-02-23 23:47:25.061656] END   GET /api/persons/ -> 200
+[2026-02-23 23:47:25.065996] START GET /api/persons/
+[2026-02-23 23:47:25.081917] END   GET /api/maintenance-steps/ -> 200
+[2026-02-23 23:47:25.101149] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-23 23:47:25.101613] START GET /api/maintenance-steps/
+[2026-02-23 23:47:25.105834] START GET /api/maintenance-typical-steps/
+[2026-02-23 23:47:25.111087] END   GET /api/persons/ -> 200
+[2026-02-23 23:47:25.148172] END   GET /api/maintenance-steps/ -> 200
+[2026-02-23 23:47:25.148288] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-23 23:47:33.417779] START GET /api/maintenance-steps/
+[2026-02-23 23:47:33.418215] START GET /api/maintenance-typical-steps/
+[2026-02-23 23:47:33.419004] START GET /api/persons/
+[2026-02-23 23:47:33.464350] END   GET /api/maintenance-steps/ -> 200
+[2026-02-23 23:47:33.466252] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-23 23:47:33.467976] END   GET /api/persons/ -> 200
+[2026-02-23 23:47:33.469771] START GET /api/maintenance-steps/
+[2026-02-23 23:47:33.475186] START GET /api/maintenance-typical-steps/
+[2026-02-23 23:47:33.475972] START GET /api/persons/
+[2026-02-23 23:47:33.522531] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-23 23:47:33.526116] END   GET /api/persons/ -> 200
+[2026-02-23 23:47:33.613125] END   GET /api/maintenance-steps/ -> 200
