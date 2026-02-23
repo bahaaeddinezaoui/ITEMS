@@ -15891,3 +15891,120 @@ e-definitions/
 [2026-02-23 18:16:15.810585] START GET /api/warehouses/
 [2026-02-23 18:16:15.853998] END   GET /api/warehouses/ -> 200
 [2026-02-23 18:16:15.854158] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:22:59.392699] START GET /api/warehouses/
+[2026-02-23 18:22:59.393491] START GET /api/asset-types/
+[2026-02-23 18:22:59.453301] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:22:59.457324] START GET /api/warehouses/
+[2026-02-23 18:22:59.499193] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:22:59.538995] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:22:59.542872] START GET /api/asset-types/
+[2026-02-23 18:22:59.581293] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:23:03.508456] START GET /api/warehouses/
+[2026-02-23 18:23:03.509200] START GET /api/asset-types/
+[2026-02-23 18:23:03.563107] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:23:03.565643] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:23:03.567686] START GET /api/asset-types/
+[2026-02-23 18:23:03.570675] START GET /api/warehouses/
+[2026-02-23 18:23:03.617729] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:23:03.617860] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:24:06.425379] START GET /api/warehouses/
+[2026-02-23 18:24:06.426038] START GET /api/asset-types/
+[2026-02-23 18:24:06.468740] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:24:06.468872] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:24:06.473961] START GET /api/asset-types/
+[2026-02-23 18:24:06.474575] START GET /api/warehouses/
+[2026-02-23 18:24:06.515810] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:24:06.518418] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:31:39.212623] START GET /api/warehouses/
+[2026-02-23 18:31:39.213431] START GET /api/asset-types/
+[2026-02-23 18:31:39.261187] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:31:39.261336] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:31:39.266580] START GET /api/warehouses/
+[2026-02-23 18:31:39.267199] START GET /api/asset-types/
+[2026-02-23 18:31:39.316565] END   GET /api/warehouses/ -> 200
+
+[2026-02-23 18:31:51.666489] START GET /api/asset-types/
+[2026-02-23 18:31:51.666997] START GET /api/warehouses/
+[2026-02-23 18:31:51.667449] START GET /api/asset-types/
+[2026-02-23 18:31:51.717728] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:31:51.717780] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:31:51.717843] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:31:51.818118] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:31:52.370392] START GET /api/warehouses/
+[2026-02-23 18:31:52.370779] START GET /api/asset-types/
+[2026-02-23 18:31:52.371508] START GET /api/warehouses/
+[2026-02-23 18:31:52.375498] START GET /api/asset-types/
+[2026-02-23 18:31:52.418223] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:31:52.422103] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:31:52.425909] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:31:52.427263] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:31:55.073439] START GET /api/asset-models/
+[2026-02-23 18:31:55.112939] END   GET /api/asset-models/ -> 200
+[2026-02-23 18:33:39.791008] START GET /api/warehouses/
+[2026-02-23 18:33:39.791748] START GET /api/asset-types/
+[2026-02-23 18:33:39.843806] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:33:39.848715] START GET /api/asset-types/
+[2026-02-23 18:33:39.849622] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:33:39.854842] START GET /api/warehouses/
+[2026-02-23 18:33:39.890372] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:33:39.896064] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:34:11.772287] START GET /api/warehouses/
+[2026-02-23 18:34:11.773053] START GET /api/asset-types/
+[2026-02-23 18:34:11.819965] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:34:11.824402] START GET /api/asset-types/
+[2026-02-23 18:34:11.825034] START GET /api/warehouses/
+[2026-02-23 18:34:11.870563] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:34:11.872309] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:34:16.848219] START GET /api/asset-models/
+[2026-02-23 18:34:16.888139] END   GET /api/asset-models/ -> 200
+[2026-02-23 18:34:18.317747] START GET /api/asset-models/
+[2026-02-23 18:34:18.356627] END   GET /api/asset-models/ -> 200
+[2026-02-23 18:35:43.140481] START GET /api/warehouses/
+[2026-02-23 18:35:43.141531] START GET /api/asset-types/
+[2026-02-23 18:35:43.186894] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:35:43.187072] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:35:43.192133] START GET /api/warehouses/
+[2026-02-23 18:35:43.192771] START GET /api/asset-types/
+[2026-02-23 18:35:43.240234] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:35:43.240350] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:39:22.906765] START GET /api/warehouses/
+[2026-02-23 18:39:22.907697] START GET /api/asset-types/
+[2026-02-23 18:39:22.952648] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:39:22.954838] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:39:22.957063] START GET /api/warehouses/
+[2026-02-23 18:39:22.959429] START GET /api/asset-types/
+[2026-02-23 18:39:23.002693] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:39:23.003000] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:39:26.692070] START GET /api/asset-models/
+[2026-02-23 18:39:26.731834] END   GET /api/asset-models/ -> 200
+[2026-02-23 18:40:28.074525] START POST /api/attribution-orders/
+[2026-02-23 18:40:28.116371] END   POST /api/attribution-orders/ -> 201
+[2026-02-23 18:40:28.124940] START POST /api/assets/
+[2026-02-23 18:40:28.125923] START POST /api/assets/
+[2026-02-23 18:40:28.176092] END   POST /api/assets/ -> 201
+[2026-02-23 18:40:28.227525] END   POST /api/assets/ -> 500
+Response Body: IntegrityError at /api/assets/
+duplicate key value violates unique constraint "asset_pkey"
+DETAIL:  Key (asset_id)=(4) already exists.
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/assets/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Projects\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Use
+[2026-02-23 18:40:54.103992] START GET /api/warehouses/
+[2026-02-23 18:40:54.104854] START GET /api/asset-types/
+[2026-02-23 18:40:54.146373] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:40:54.147707] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:40:54.151545] START GET /api/warehouses/
+[2026-02-23 18:40:54.152027] START GET /api/asset-types/
+[2026-02-23 18:40:54.196268] END   GET /api/warehouses/ -> 200
+[2026-02-23 18:40:54.307831] END   GET /api/asset-types/ -> 200
+[2026-02-23 18:41:02.302810] START GET /api/asset-models/
+[2026-02-23 18:41:02.342698] END   GET /api/asset-models/ -> 200
+[2026-02-23 18:41:15.832126] START POST /api/attribution-orders/
+[2026-02-23 18:41:15.873641] END   POST /api/attribution-orders/ -> 201
+[2026-02-23 18:41:15.879852] START POST /api/assets/
+[2026-02-23 18:41:15.922108] END   POST /api/assets/ -> 201

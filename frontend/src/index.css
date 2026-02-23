@@ -133,6 +133,11 @@ textarea::placeholder {
     color: var(--color-text-muted);
 }
 
+option {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
 /* ========================================
    Login Page Styles
    ======================================== */

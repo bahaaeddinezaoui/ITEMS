@@ -221,21 +221,21 @@ const AttributionOrdersPage = () => {
                                         <td>
                                             <select
                                                 className="form-input"
-                                                style={{ padding: 'var(--space-2)' }}
+                                                style={{ padding: 'var(--space-2)', minWidth: '140px' }}
                                                 value={asset.asset_type}
                                                 onChange={(e) => handleAssetChange(index, 'asset_type', e.target.value)}
                                                 required
                                             >
                                                 <option value="">Select Type</option>
                                                 {assetTypes.map(t => (
-                                                    <option key={t.asset_type_id} value={t.asset_type_id}>{t.asset_type_name}</option>
+                                                    <option key={t.asset_type_id} value={t.asset_type_id}>{t.asset_type_label}</option>
                                                 ))}
                                             </select>
                                         </td>
                                         <td>
                                             <select
                                                 className="form-input"
-                                                style={{ padding: 'var(--space-2)' }}
+                                                style={{ padding: 'var(--space-2)', minWidth: '140px' }}
                                                 value={asset.asset_model}
                                                 onChange={(e) => handleAssetChange(index, 'asset_model', e.target.value)}
                                                 required
@@ -243,7 +243,7 @@ const AttributionOrdersPage = () => {
                                             >
                                                 <option value="">Select Model</option>
                                                 {(assetModels[asset.asset_type] || []).map(m => (
-                                                    <option key={m.asset_model_id} value={m.asset_model_id}>{m.asset_model_name}</option>
+                                                    <option key={m.asset_model_id} value={m.asset_model_id}>{m.model_name}</option>
                                                 ))}
                                             </select>
                                         </td>
