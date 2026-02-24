@@ -7,6 +7,7 @@ import {
     stockItemModelService,
     consumableTypeService,
     consumableModelService,
+    roomService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -39,6 +40,8 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     const [removeComponents, setRemoveComponents] = useState({ stock_items: [], consumables: [] });
     const [removeSelectedType, setRemoveSelectedType] = useState('');
     const [removeSelectedId, setRemoveSelectedId] = useState('');
+    const [removeRooms, setRemoveRooms] = useState([]);
+    const [removeDestinationRoomId, setRemoveDestinationRoomId] = useState('');
     const [removeLoading, setRemoveLoading] = useState(false);
     const [removeSubmitting, setRemoveSubmitting] = useState(false);
 
@@ -159,6 +162,8 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
         setRemoveComponents({ stock_items: [], consumables: [] });
         setRemoveSelectedType('');
         setRemoveSelectedId('');
+        setRemoveRooms([]);
+        setRemoveDestinationRoomId('');
         setRemoveLoading(false);
         setRemoveSubmitting(false);
     };
@@ -169,15 +174,21 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
         setRemoveComponents({ stock_items: [], consumables: [] });
         setRemoveSelectedType('');
         setRemoveSelectedId('');
+        setRemoveRooms([]);
+        setRemoveDestinationRoomId('');
 
         try {
             setRemoveLoading(true);
             await handleUpdateStatus(step, 'In Progress');
-            const data = await maintenanceStepService.getComponents(step.maintenance_step_id);
+            const [data, rooms] = await Promise.all([
+                maintenanceStepService.getComponents(step.maintenance_step_id),
+                roomService.getAll(),
+            ]);
             setRemoveComponents({
                 stock_items: Array.isArray(data?.stock_items) ? data.stock_items : [],
                 consumables: Array.isArray(data?.consumables) ? data.consumables : [],
             });
+            setRemoveRooms(Array.isArray(rooms) ? rooms : []);
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.error || 'Failed to load components');
@@ -195,10 +206,14 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
         }
         try {
             setRemoveSubmitting(true);
-            await maintenanceStepService.removeComponent(removeEditorStep.maintenance_step_id, {
+            const payload = {
                 component_type: removeSelectedType,
                 component_id: Number(removeSelectedId),
-            });
+            };
+            if (removeDestinationRoomId) {
+                payload.destination_room_id = Number(removeDestinationRoomId);
+            }
+            await maintenanceStepService.removeComponent(removeEditorStep.maintenance_step_id, payload);
             await loadData();
             closeRemoveEditor();
         } catch (err) {
@@ -477,15 +492,17 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                     <td className="px-4 py-2 text-right">
                                         {(user?.person?.person_id === step.person?.person_id || isChief) && (
                                             <div className="d-flex gap-2 justify-content-end" style={{ flexWrap: 'wrap', position: 'relative' }}>
-                                                <button
-                                                    className="btn btn-xs btn-secondary"
-                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                    onClick={() => openStatusEditor(step)}
-                                                >
-                                                    Update status
-                                                </button>
+                                                {step.maintenance_step_status !== 'done' && (
+                                                    <button
+                                                        className="btn btn-xs btn-secondary"
+                                                        style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                        onClick={() => openStatusEditor(step)}
+                                                    >
+                                                        Update status
+                                                    </button>
+                                                )}
 
-                                                {step.maintenance_typical_step?.operation_type === 'remove' && (
+                                                {step.maintenance_step_status !== 'done' && step.maintenance_typical_step?.operation_type === 'remove' && (
                                                     <button
                                                         className="btn btn-xs btn-danger"
                                                         style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
@@ -496,7 +513,7 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                                     </button>
                                                 )}
 
-                                                {statusEditorStepId === step.maintenance_step_id && (
+                                                {step.maintenance_step_status !== 'done' && statusEditorStepId === step.maintenance_step_id && (
                                                     <div
                                                         className="card"
                                                         style={{
@@ -733,6 +750,22 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                             ))}
                                         </optgroup>
                                     )}
+                                </select>
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: 10 }}>
+                                <label className="form-label">Move removed component to (maintenance room)</label>
+                                <select
+                                    className="form-input"
+                                    value={removeDestinationRoomId}
+                                    onChange={(e) => setRemoveDestinationRoomId(e.target.value)}
+                                >
+                                    <option value="">Select room...</option>
+                                    {removeRooms.map((r) => (
+                                        <option key={r.room_id} value={r.room_id}>
+                                            {r.room_name}{r.room_type_label ? ` (${r.room_type_label})` : ''}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 

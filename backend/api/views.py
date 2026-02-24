@@ -518,12 +518,24 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
 
         component_type = request.data.get("component_type")
         component_id = request.data.get("component_id")
+        destination_room_id = request.data.get("destination_room_id")
         if component_type not in {"stock_item", "consumable"}:
             return Response({"error": "component_type must be 'stock_item' or 'consumable'"}, status=status.HTTP_400_BAD_REQUEST)
         try:
             component_id_int = int(component_id)
         except (TypeError, ValueError):
             return Response({"error": "Invalid component_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        destination_room = None
+        if destination_room_id not in (None, ""):
+            try:
+                destination_room_id_int = int(destination_room_id)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
+            if not destination_room:
+                return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         maintenance = getattr(step, "maintenance", None)
         asset = getattr(maintenance, "asset", None) if maintenance else None
@@ -555,6 +567,51 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
 
         if not updated_rows:
             return Response({"error": "Component not found on asset (or already removed)"}, status=status.HTTP_404_NOT_FOUND)
+
+        if destination_room and component_type == "stock_item":
+            last_move = (
+                StockItemMovement.objects.filter(stock_item_id=component_id_int)
+                .order_by("-stock_item_movement_id")
+                .first()
+            )
+            if not last_move:
+                return Response({"error": "Cannot infer stock item current room (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+
+            source_room = last_move.destination_room
+            last_move_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+            next_move_id = (last_move_global.stock_item_movement_id + 1) if last_move_global else 1
+
+            StockItemMovement.objects.create(
+                stock_item_movement_id=next_move_id,
+                stock_item_id=component_id_int,
+                source_room=source_room,
+                destination_room=destination_room,
+                maintenance_step=step,
+                movement_reason="maintenance_step_remove",
+                movement_datetime=now_dt,
+            )
+        elif destination_room and component_type == "consumable":
+            last_move = (
+                ConsumableMovement.objects.filter(consumable_id=component_id_int)
+                .order_by("-consumable_movement_id")
+                .first()
+            )
+            if not last_move:
+                return Response({"error": "Cannot infer consumable current room (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+
+            source_room = last_move.destination_room
+            last_move_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+            next_move_id = (last_move_global.consumable_movement_id + 1) if last_move_global else 1
+
+            ConsumableMovement.objects.create(
+                consumable_movement_id=next_move_id,
+                consumable_id=component_id_int,
+                source_room=source_room,
+                destination_room=destination_room,
+                maintenance_step=step,
+                movement_reason="maintenance_step_remove",
+                movement_datetime=now_dt,
+            )
 
         step.maintenance_step_status = "done"
         step.save(update_fields=["maintenance_step_status"])

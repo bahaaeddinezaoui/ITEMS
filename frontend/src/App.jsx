@@ -17,6 +17,7 @@ import AttributionOrdersPage from './pages/AttributionOrdersPage';
 import CompanyAssetRequestsPage from './pages/CompanyAssetRequestsPage';
 import AdministrativeCertificatesPage from './pages/AdministrativeCertificatesPage';
 import ItemRequestsInboxPage from './pages/ItemRequestsInboxPage';
+import MaintenanceStepsPage from './pages/MaintenanceStepsPage';
 import './index.css';
 
 // Protected route wrapper
@@ -69,6 +70,7 @@ function App() {
                         <Route path="persons" element={<PersonsPage />} />
                         <Route path="assets" element={<AssetsPage />} />
                         <Route path="maintenances" element={<MaintenancesPage />} />
+                        <Route path="maintenances/:maintenanceId/steps" element={<MaintenanceStepsPage />} />
                         <Route path="stock-items" element={<StockItemsPage />} />
                         <Route path="consumables" element={<ConsumablesPage />} />
                         <Route path="my-items" element={<MyItemsPage />} />

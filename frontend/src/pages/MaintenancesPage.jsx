@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo, Fragment } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { assetService, maintenanceService, personService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import MaintenanceSteps from '../components/MaintenanceSteps';
 
 const MaintenancesPage = () => {
     const { user, isSuperuser } = useAuth();
+    const navigate = useNavigate();
     const [maintenances, setMaintenances] = useState([]);
     const [technicians, setTechnicians] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,9 +20,6 @@ const MaintenancesPage = () => {
     const [selectedAsset, setSelectedAsset] = useState('');
     const [createDescription, setCreateDescription] = useState('');
 
-    // Steps Modal State
-    // Steps Expansion State
-    const [expandedMaintenanceId, setExpandedMaintenanceId] = useState(null);
 
     const isChief = useMemo(() => {
         if (isSuperuser) return true;
@@ -115,10 +113,6 @@ const MaintenancesPage = () => {
         setShowAssignModal(true);
     };
 
-    const toggleSteps = (maintenanceId) => {
-        setExpandedMaintenanceId(current => current === maintenanceId ? null : maintenanceId);
-    };
-
     const handleAssignSubmit = async (e) => {
         e.preventDefault();
         if (!selectedMaintenance) return;
@@ -198,8 +192,7 @@ const MaintenancesPage = () => {
                             </thead>
                             <tbody>
                                 {maintenances.map((maintenance) => (
-                                    <Fragment key={maintenance.maintenance_id}>
-                                        <tr>
+                                        <tr key={maintenance.maintenance_id}>
                                             <td>{maintenance.maintenance_id}</td>
                                             <td>
                                                 {maintenance.asset_name ||
@@ -240,26 +233,14 @@ const MaintenancesPage = () => {
                                                     )}
                                                     <button
                                                         className="btn btn-sm btn-info ml-2"
-                                                        onClick={() => toggleSteps(maintenance.maintenance_id)}
+                                                        onClick={() => navigate(`/dashboard/maintenances/${maintenance.maintenance_id}/steps`)}
                                                         style={{ marginLeft: '0.5rem' }}
                                                     >
-                                                        {expandedMaintenanceId === maintenance.maintenance_id ? 'Hide Steps' : 'Steps'}
+                                                        Steps
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                        {expandedMaintenanceId === maintenance.maintenance_id && (
-                                            <tr>
-                                                <td colSpan={isChief ? 7 : 6} style={{ padding: 0 }}>
-                                                    <MaintenanceSteps
-                                                        maintenanceId={maintenance.maintenance_id}
-                                                        maintenancePerformedBy={maintenance.performed_by_person}
-                                                        isChief={isChief}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </Fragment>
                                 ))}
                             </tbody>
                         </table>
