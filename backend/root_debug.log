@@ -17690,3 +17690,386 @@ Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\
 [2026-02-23 23:52:52.724107] START GET /api/maintenances/
 [2026-02-23 23:52:52.767192] END   GET /api/persons/ -> 200
 [2026-02-23 23:52:52.778467] END   GET /api/maintenances/ -> 200
+[2026-02-23 23:54:35.090522] START GET /api/maintenances/
+[2026-02-23 23:54:35.091380] START GET /api/persons/
+[2026-02-23 23:54:35.094319] START GET /api/assets/
+[2026-02-23 23:54:35.148399] END   GET /api/persons/ -> 200
+[2026-02-23 23:54:35.148520] END   GET /api/assets/ -> 200
+[2026-02-23 23:54:35.154369] END   GET /api/maintenances/ -> 200
+[2026-02-23 23:54:35.155009] START GET /api/persons/
+[2026-02-23 23:54:35.155881] START GET /api/assets/
+[2026-02-23 23:54:35.160010] START GET /api/maintenances/
+[2026-02-23 23:54:35.211081] END   GET /api/persons/ -> 200
+[2026-02-23 23:54:35.211318] END   GET /api/assets/ -> 200
+[2026-02-23 23:54:35.220624] END   GET /api/maintenances/ -> 200
+[2026-02-23 23:54:35.793524] START GET /api/maintenances/
+[2026-02-23 23:54:35.794275] START GET /api/persons/
+[2026-02-23 23:54:35.797467] START GET /api/assets/
+[2026-02-23 23:54:35.848480] END   GET /api/assets/ -> 200
+[2026-02-23 23:54:35.848579] END   GET /api/persons/ -> 200
+[2026-02-23 23:54:35.855495] END   GET /api/maintenances/ -> 200
+[2026-02-23 23:54:35.856177] START GET /api/assets/
+[2026-02-23 23:54:35.860687] START GET /api/persons/
+[2026-02-23 23:54:35.867531] START GET /api/maintenances/
+[2026-02-23 23:54:35.914502] END   GET /api/assets/ -> 200
+[2026-02-23 23:54:35.921072] END   GET /api/persons/ -> 200
+[2026-02-23 23:54:35.925720] END   GET /api/maintenances/ -> 200
+[2026-02-24 00:02:30.725372] START GET /api/maintenances/
+[2026-02-24 00:02:30.725902] START GET /api/persons/
+[2026-02-24 00:02:30.727406] START GET /api/assets/
+[2026-02-24 00:02:30.804814] END   GET /api/persons/ -> 200
+[2026-02-24 00:02:30.806480] END   GET /api/assets/ -> 200
+[2026-02-24 00:02:30.812726] START GET /api/persons/
+[2026-02-24 00:02:30.813768] START GET /api/assets/
+[2026-02-24 00:02:30.825965] END   GET /api/maintenances/ -> 200
+[2026-02-24 00:02:30.831872] START GET /api/maintenances/
+[2026-02-24 00:02:30.868720] END   GET /api/persons/ -> 200
+[2026-02-24 00:02:30.909213] END   GET /api/maintenances/ -> 200
+[2026-02-24 00:02:31.661155] START GET /api/maintenances/
+[2026-02-24 00:02:31.662242] START GET /api/persons/
+[2026-02-24 00:02:31.665500] START GET /api/assets/
+[2026-02-24 00:02:31.715694] END   GET /api/persons/ -> 200
+[2026-02-24 00:02:31.722443] END   GET /api/maintenances/ -> 200
+[2026-02-24 00:02:31.723053] START GET /api/persons/
+[2026-02-24 00:02:31.731053] START GET /api/maintenances/
+[2026-02-24 00:02:31.776423] END   GET /api/persons/ -> 200
+[2026-02-24 00:02:31.791102] END   GET /api/maintenances/ -> 200
+[2026-02-24 00:02:31.828461] END   GET /api/assets/ -> 200
+[2026-02-24 00:02:31.834076] START GET /api/assets/
+[2026-02-24 00:02:31.877805] END   GET /api/assets/ -> 200
+[2026-02-24 00:07:04.263734] START GET /api/maintenance-steps/
+[2026-02-24 00:07:04.264287] START GET /api/maintenance-typical-steps/
+[2026-02-24 00:07:04.266522] START GET /api/persons/
+[2026-02-24 00:07:04.307717] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 00:07:04.309034] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 00:07:04.313142] END   GET /api/persons/ -> 200
+[2026-02-24 00:07:04.313829] START GET /api/maintenance-steps/
+[2026-02-24 00:07:04.314567] START GET /api/maintenance-typical-steps/
+[2026-02-24 00:07:04.319898] START GET /api/persons/
+[2026-02-24 00:07:04.369373] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 00:07:04.369520] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 00:07:04.373244] END   GET /api/persons/ -> 200
+[2026-02-24 00:14:13.294639] START GET /api/problem-reports/
+[2026-02-24 00:14:13.295382] START GET /api/persons/
+[2026-02-24 00:14:13.344493] END   GET /api/persons/ -> 200
+[2026-02-24 00:14:13.345845] END   GET /api/problem-reports/ -> 200
+[2026-02-24 00:14:13.352749] START GET /api/persons/
+[2026-02-24 00:14:13.353554] START GET /api/problem-reports/
+[2026-02-24 00:14:13.403227] END   GET /api/persons/ -> 200
+[2026-02-24 00:14:13.403357] END   GET /api/problem-reports/ -> 200
+[2026-02-24 00:14:15.138256] START GET /api/maintenances/
+[2026-02-24 00:14:15.138856] START GET /api/persons/
+[2026-02-24 00:14:15.140520] START GET /api/assets/
+[2026-02-24 00:14:15.190007] END   GET /api/persons/ -> 200
+[2026-02-24 00:14:15.193601] END   GET /api/assets/ -> 200
+[2026-02-24 00:14:15.193910] END   GET /api/maintenances/ -> 200
+[2026-02-24 00:14:15.194516] START GET /api/persons/
+[2026-02-24 00:14:15.199007] START GET /api/assets/
+[2026-02-24 00:14:15.199759] START GET /api/maintenances/
+[2026-02-24 00:14:15.248046] END   GET /api/assets/ -> 200
+[2026-02-24 00:14:15.249251] END   GET /api/persons/ -> 200
+[2026-02-24 00:14:15.257720] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:24:16.953547] START POST /api/auth/login/
+[2026-02-24 11:24:17.058262] END   POST /api/auth/login/ -> 200
+[2026-02-24 11:24:18.147908] START GET /api/maintenances/
+[2026-02-24 11:24:18.208553] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:24:18.214100] START GET /api/maintenances/
+[2026-02-24 11:24:18.261185] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:24:19.720990] START GET /api/maintenance-steps/
+[2026-02-24 11:24:19.721384] START GET /api/persons/
+[2026-02-24 11:24:19.721924] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:24:19.771910] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:24:19.772063] END   GET /api/persons/ -> 200
+[2026-02-24 11:24:19.778182] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:24:19.780606] START GET /api/maintenance-steps/
+[2026-02-24 11:24:19.781303] START GET /api/persons/
+[2026-02-24 11:24:19.823183] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:24:19.827542] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:24:19.827647] END   GET /api/persons/ -> 200
+[2026-02-24 11:24:32.736213] START POST /api/maintenance-steps/
+[2026-02-24 11:24:33.042081] END   POST /api/maintenance-steps/ -> 500
+Response Body: IntegrityError at /api/maintenance-steps/
+null value in column "maintenance_step_id" of relation "maintenance_step" violates not-null constraint
+DETAIL:  Failing row contains (null, 2, 1, 7, null, null, null, null, null, null).
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/maintenance-steps/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Projects\\Equipment Management Syste
+[2026-02-24 11:24:35.524145] START POST /api/maintenance-steps/
+[2026-02-24 11:24:35.593604] END   POST /api/maintenance-steps/ -> 500
+Response Body: IntegrityError at /api/maintenance-steps/
+null value in column "maintenance_step_id" of relation "maintenance_step" violates not-null constraint
+DETAIL:  Failing row contains (null, 2, 1, 7, null, null, null, null, null, null).
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/maintenance-steps/
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Projects\\Equipment Management Syste
+[2026-02-24 11:26:32.955732] START GET /api/maintenances/
+[2026-02-24 11:26:33.150143] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:26:33.157267] START GET /api/maintenances/
+[2026-02-24 11:26:33.312928] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:26:34.241873] START GET /api/maintenance-steps/
+[2026-02-24 11:26:34.242230] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:26:34.242845] START GET /api/persons/
+[2026-02-24 11:26:34.295411] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:26:34.297142] END   GET /api/persons/ -> 200
+[2026-02-24 11:26:34.297357] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:26:34.304287] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:26:34.304670] START GET /api/persons/
+[2026-02-24 11:26:34.305268] START GET /api/maintenance-steps/
+[2026-02-24 11:26:34.351510] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:26:34.362665] END   GET /api/persons/ -> 200
+[2026-02-24 11:26:34.362795] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:26:40.288891] START POST /api/maintenance-steps/
+[2026-02-24 11:26:40.351500] END   POST /api/maintenance-steps/ -> 201
+[2026-02-24 11:26:40.362291] START GET /api/persons/
+[2026-02-24 11:26:40.363015] START GET /api/maintenance-steps/
+[2026-02-24 11:26:40.366506] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:26:40.415676] END   GET /api/persons/ -> 200
+[2026-02-24 11:26:40.416976] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:26:40.421157] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:26:50.110932] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:26:50.153772] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:26:50.159269] START GET /api/maintenance-steps/
+[2026-02-24 11:26:50.161594] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:26:50.162326] START GET /api/persons/
+[2026-02-24 11:26:50.206689] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:26:50.212340] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:26:50.212460] END   GET /api/persons/ -> 200
+[2026-02-24 11:53:36.019510] START GET /api/maintenance-steps/
+[2026-02-24 11:53:36.020308] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:53:36.021212] START GET /api/persons/
+[2026-02-24 11:53:36.085238] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:53:36.088726] END   GET /api/persons/ -> 200
+[2026-02-24 11:53:36.387435] END   GET /api/maintenance-steps/ -> 500
+Response Body: ProgrammingError at /api/maintenance-steps/
+column maintenance_step.maintenance_step_status does not exist
+LINE 1: ...typical_step_id", "maintenance_step"."person_id", "maintenan...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/maintenance-steps/?maintenance=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Projec
+[2026-02-24 11:54:57.248013] START GET /api/maintenances/
+[2026-02-24 11:54:57.324183] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:54:57.331716] START GET /api/maintenances/
+[2026-02-24 11:54:57.381290] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:54:58.579230] START GET /api/maintenance-steps/
+[2026-02-24 11:54:58.579614] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:54:58.581908] START GET /api/persons/
+[2026-02-24 11:54:58.636226] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:54:58.641806] END   GET /api/persons/ -> 200
+[2026-02-24 11:54:58.642135] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:54:58.651116] START GET /api/persons/
+[2026-02-24 11:54:58.675967] END   GET /api/maintenance-steps/ -> 500
+Response Body: ProgrammingError at /api/maintenance-steps/
+column maintenance_step.maintenance_step_status does not exist
+LINE 1: ...typical_step_id", "maintenance_step"."person_id", "maintenan...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/maintenance-steps/?maintenance=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Projec
+[2026-02-24 11:54:58.681605] START GET /api/maintenance-steps/
+[2026-02-24 11:54:58.684399] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:54:58.695906] END   GET /api/persons/ -> 200
+[2026-02-24 11:54:58.861583] END   GET /api/maintenance-steps/ -> 500
+Response Body: ProgrammingError at /api/maintenance-steps/
+column maintenance_step.maintenance_step_status does not exist
+LINE 1: ...typical_step_id", "maintenance_step"."person_id", "maintenan...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/maintenance-steps/?maintenance=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Projec
+[2026-02-24 11:56:16.437577] START GET /api/maintenances/
+[2026-02-24 11:56:16.525573] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:56:16.531010] START GET /api/maintenances/
+[2026-02-24 11:56:16.588241] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:56:17.707762] START GET /api/maintenance-steps/
+[2026-02-24 11:56:17.708470] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:56:17.709497] START GET /api/persons/
+[2026-02-24 11:56:17.763814] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:56:17.766702] END   GET /api/persons/ -> 200
+[2026-02-24 11:56:17.768459] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:56:17.772013] START GET /api/persons/
+[2026-02-24 11:56:17.808538] END   GET /api/maintenance-steps/ -> 500
+Response Body: ProgrammingError at /api/maintenance-steps/
+column maintenance_step.maintenance_step_status does not exist
+LINE 1: ...typical_step_id", "maintenance_step"."person_id", "maintenan...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/maintenance-steps/?maintenance=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Projec
+[2026-02-24 11:56:17.813064] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:56:17.814825] START GET /api/maintenance-steps/
+[2026-02-24 11:56:17.818988] END   GET /api/persons/ -> 200
+[2026-02-24 11:56:17.893886] END   GET /api/maintenance-steps/ -> 500
+Response Body: ProgrammingError at /api/maintenance-steps/
+column maintenance_step.maintenance_step_status does not exist
+LINE 1: ...typical_step_id", "maintenance_step"."person_id", "maintenan...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/maintenance-steps/?maintenance=2
+Django Version: 6.0.2
+Python Executable: D:\Projects\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Projec
+[2026-02-24 11:57:22.813729] START GET /api/maintenances/
+[2026-02-24 11:57:22.859693] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:57:22.864788] START GET /api/maintenances/
+[2026-02-24 11:57:22.914009] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:57:24.401689] START GET /api/maintenance-steps/
+[2026-02-24 11:57:24.402076] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:24.404531] START GET /api/persons/
+[2026-02-24 11:57:24.448762] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:24.450242] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:24.454169] END   GET /api/persons/ -> 200
+[2026-02-24 11:57:24.454883] START GET /api/maintenance-steps/
+[2026-02-24 11:57:24.455660] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:24.460494] START GET /api/persons/
+[2026-02-24 11:57:24.502808] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:24.506881] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:24.507007] END   GET /api/persons/ -> 200
+[2026-02-24 11:57:35.076444] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:57:35.146544] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:57:35.156002] START GET /api/maintenance-steps/
+[2026-02-24 11:57:35.156764] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:35.158874] START GET /api/persons/
+[2026-02-24 11:57:35.206603] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:35.206661] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:35.211794] END   GET /api/persons/ -> 200
+[2026-02-24 11:57:37.047041] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:57:37.099932] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:57:37.108955] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:37.108663] START GET /api/maintenance-steps/
+[2026-02-24 11:57:37.109217] START GET /api/persons/
+[2026-02-24 11:57:37.149381] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:37.159588] END   GET /api/persons/ -> 200
+[2026-02-24 11:57:37.265652] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:39.010807] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:57:39.056168] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:57:39.067216] START GET /api/maintenance-steps/
+[2026-02-24 11:57:39.067863] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:39.069929] START GET /api/persons/
+[2026-02-24 11:57:39.113222] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:39.118527] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:39.121226] END   GET /api/persons/ -> 200
+[2026-02-24 11:57:43.096496] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:57:43.140641] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:57:43.148782] START GET /api/maintenance-steps/
+[2026-02-24 11:57:43.149468] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:43.151180] START GET /api/persons/
+[2026-02-24 11:57:43.198273] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:43.198398] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:43.200601] END   GET /api/persons/ -> 200
+[2026-02-24 11:57:45.391806] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:57:45.443295] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:57:45.450920] START GET /api/maintenance-steps/
+[2026-02-24 11:57:45.451697] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:45.453416] START GET /api/persons/
+[2026-02-24 11:57:45.502572] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:45.507472] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:45.507591] END   GET /api/persons/ -> 200
+[2026-02-24 11:57:53.491898] START GET /api/maintenances/
+[2026-02-24 11:57:53.543439] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:57:53.547954] START GET /api/maintenances/
+[2026-02-24 11:57:53.697292] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:57:54.168395] START GET /api/maintenances/
+[2026-02-24 11:57:54.218215] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:57:54.223516] START GET /api/maintenances/
+[2026-02-24 11:57:54.382744] END   GET /api/maintenances/ -> 200
+[2026-02-24 11:57:54.913989] START GET /api/maintenance-steps/
+[2026-02-24 11:57:54.914477] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:54.917222] START GET /api/persons/
+[2026-02-24 11:57:54.964792] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:54.965039] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:54.966572] END   GET /api/persons/ -> 200
+[2026-02-24 11:57:54.973101] START GET /api/maintenance-steps/
+[2026-02-24 11:57:54.973981] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:57:54.975868] START GET /api/persons/
+[2026-02-24 11:57:55.025012] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:57:55.025128] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:57:55.026537] END   GET /api/persons/ -> 200
+[2026-02-24 11:58:01.277507] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:58:01.329732] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:58:01.339578] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:58:01.340345] START GET /api/maintenance-steps/
+[2026-02-24 11:58:01.342226] START GET /api/persons/
+[2026-02-24 11:58:01.395735] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:58:01.396105] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:58:01.400238] END   GET /api/persons/ -> 200
+[2026-02-24 11:58:40.397452] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:58:40.449827] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:58:40.459780] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:58:40.460501] START GET /api/maintenance-steps/
+[2026-02-24 11:58:40.462397] START GET /api/persons/
+[2026-02-24 11:58:40.505315] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:58:40.512117] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:58:40.514210] END   GET /api/persons/ -> 200
+[2026-02-24 11:59:22.035172] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:59:22.083965] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:59:22.091097] START GET /api/maintenance-steps/
+[2026-02-24 11:59:22.091713] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:59:22.093616] START GET /api/persons/
+[2026-02-24 11:59:22.138950] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:59:22.139113] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:59:22.142158] END   GET /api/persons/ -> 200
+[2026-02-24 11:59:23.488271] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:59:23.536081] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:59:23.543229] START GET /api/maintenance-steps/
+[2026-02-24 11:59:23.543568] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:59:23.545638] START GET /api/persons/
+[2026-02-24 11:59:23.587550] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:59:23.592694] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:59:23.594605] END   GET /api/persons/ -> 200
+[2026-02-24 11:59:24.423815] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:59:24.584195] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:59:24.590557] START GET /api/maintenance-steps/
+[2026-02-24 11:59:24.590923] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:59:24.591620] START GET /api/persons/
+[2026-02-24 11:59:24.635131] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:59:24.638151] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:59:24.641037] END   GET /api/persons/ -> 200
+[2026-02-24 11:59:25.953853] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:59:26.000740] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:59:26.007240] START GET /api/maintenance-steps/
+[2026-02-24 11:59:26.007596] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:59:26.009640] START GET /api/persons/
+[2026-02-24 11:59:26.055645] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:59:26.055765] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:59:26.058214] END   GET /api/persons/ -> 200
+[2026-02-24 11:59:26.981846] START PATCH /api/maintenance-steps/3/
+[2026-02-24 11:59:27.040589] END   PATCH /api/maintenance-steps/3/ -> 200
+[2026-02-24 11:59:27.048398] START GET /api/maintenance-typical-steps/
+[2026-02-24 11:59:27.049134] START GET /api/persons/
+[2026-02-24 11:59:27.097348] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 11:59:27.097469] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 11:59:27.099296] END   GET /api/persons/ -> 200

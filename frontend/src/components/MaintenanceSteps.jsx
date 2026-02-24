@@ -15,6 +15,17 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     const [newStepTypicalId, setNewStepTypicalId] = useState('');
     const [newStepPersonId, setNewStepPersonId] = useState('');
 
+    const stepStatusOptions = useMemo(() => (
+        [
+            'started',
+            'pending (waiting for stock item)',
+            'pending (waiting for consumable)',
+            'in progress',
+            'done',
+            'failed (to be sent to a higher level)',
+        ]
+    ), []);
+
     const isMainTechnician = useMemo(() => {
         return user?.person?.person_id === maintenancePerformedBy;
     }, [user, maintenancePerformedBy]);
@@ -70,19 +81,24 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
         }
     };
 
-    const handleUpdateStatus = async (step, isSuccessful) => {
+    const handleUpdateStatus = async (step, statusValue) => {
         try {
             await maintenanceStepService.patch(step.maintenance_step_id, {
-                is_successful: isSuccessful,
-                end_datetime: isSuccessful ? new Date().toISOString() : null
-                // Logic: if successful, mark end time? Or just status? 
-                // Backend allows updating is_successful.
+                maintenance_step_status: statusValue,
             });
             loadData();
         } catch (err) {
             console.error(err);
             setError('Failed to update step status');
         }
+    };
+
+    const requestStockItem = async (step) => {
+        await handleUpdateStatus(step, 'pending (waiting for stock item)');
+    };
+
+    const requestConsumable = async (step) => {
+        await handleUpdateStatus(step, 'pending (waiting for consumable)');
     };
 
     const handleAssignPerson = async (step, personId) => {
@@ -187,27 +203,40 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                         </span>
                                     </td>
                                     <td className="px-4 py-2">
-                                        {step.is_successful === true && <span className="badge badge-success">Success</span>}
-                                        {step.is_successful === false && <span className="badge badge-error">Failed</span>}
-                                        {step.is_successful === null && <span className="badge badge-warning">Pending</span>}
+                                        {step.maintenance_step_status ? (
+                                            <span className="badge badge-info">{step.maintenance_step_status}</span>
+                                        ) : (
+                                            <span className="badge badge-warning">-</span>
+                                        )}
                                     </td>
                                     <td className="px-4 py-2 text-right">
-                                        {/* Actions for Assigned Person */}
-                                        {user?.person?.person_id === step.person?.person_id && step.is_successful === null && (
-                                            <div className="d-flex gap-2 justify-content-end">
-                                                <button
-                                                    className="btn btn-xs btn-success"
-                                                    title="Mark as Successful"
-                                                    onClick={() => handleUpdateStatus(step, true)}
+                                        {(user?.person?.person_id === step.person?.person_id || isChief) && (
+                                            <div className="d-flex gap-2 justify-content-end" style={{ flexWrap: 'wrap' }}>
+                                                <select
+                                                    className="form-input"
+                                                    style={{ width: 'auto', padding: '0.25rem 0.5rem' }}
+                                                    value={step.maintenance_step_status || ''}
+                                                    onChange={(e) => handleUpdateStatus(step, e.target.value)}
                                                 >
-                                                    ✓
+                                                    <option value="">Change status...</option>
+                                                    {stepStatusOptions.map((s) => (
+                                                        <option key={s} value={s}>
+                                                            {s}
+                                                        </option>
+                                                    ))}
+                                                </select>
+
+                                                <button
+                                                    className="btn btn-xs btn-secondary"
+                                                    onClick={() => requestStockItem(step)}
+                                                >
+                                                    Request Stock Item
                                                 </button>
                                                 <button
-                                                    className="btn btn-xs btn-danger"
-                                                    title="Mark as Failed"
-                                                    onClick={() => handleUpdateStatus(step, false)}
+                                                    className="btn btn-xs btn-secondary"
+                                                    onClick={() => requestConsumable(step)}
                                                 >
-                                                    ✕
+                                                    Request Consumable
                                                 </button>
                                             </div>
                                         )}

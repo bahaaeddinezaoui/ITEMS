@@ -1150,6 +1150,7 @@ CREATE TABLE public.maintenance (
     performed_by_person_id integer NOT NULL,
     approved_by_maintenance_chief_id integer NOT NULL,
     is_approved_by_maintenance_chief boolean,
+    maintenance_status character varying(20),
     start_datetime timestamp without time zone NOT NULL,
     end_datetime timestamp without time zone NOT NULL,
     description character varying(256),
@@ -1183,6 +1184,7 @@ CREATE TABLE public.maintenance_step (
     maintenance_id integer NOT NULL,
     maintenance_typical_step_id integer NOT NULL,
     person_id integer NOT NULL,
+    maintenance_step_status character varying(60),
     asset_condition_history_id integer,
     stock_item_condition_history_id integer,
     consumable_condition_history_id integer,
@@ -2472,7 +2474,7 @@ COPY public.facture (facture_id, bon_de_livraison_id, digital_copy) FROM stdin;
 -- Data for Name: maintenance; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.maintenance (maintenance_id, asset_id, performed_by_person_id, approved_by_maintenance_chief_id, is_approved_by_maintenance_chief, start_datetime, end_datetime, description, is_successful, digital_copy) FROM stdin;
+COPY public.maintenance (maintenance_id, asset_id, performed_by_person_id, approved_by_maintenance_chief_id, is_approved_by_maintenance_chief, maintenance_status, start_datetime, end_datetime, description, is_successful, digital_copy) FROM stdin;
 \.
 
 
@@ -2492,7 +2494,7 @@ COPY public.maintenance_inspection_leads_to_broken_item_report (maintenance_id, 
 -- Data for Name: maintenance_step; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.maintenance_step (maintenance_step_id, maintenance_id, maintenance_typical_step_id, person_id, asset_condition_history_id, stock_item_condition_history_id, consumable_condition_history_id, start_datetime, end_datetime, is_successful) FROM stdin;
+COPY public.maintenance_step (maintenance_step_id, maintenance_id, maintenance_typical_step_id, person_id, maintenance_step_status, asset_condition_history_id, stock_item_condition_history_id, consumable_condition_history_id, start_datetime, end_datetime, is_successful) FROM stdin;
 \.
 
 

@@ -262,6 +262,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 asset=asset,
                 performed_by_person=technician,
                 approved_by_maintenance_chief=user_account.person,
+                maintenance_status="pending",
                 description=description,
                 start_datetime=timezone.now(),
                 end_datetime=timezone.now(),
@@ -282,6 +283,32 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
     queryset = MaintenanceStep.objects.all().order_by("maintenance_step_id")
     serializer_class = MaintenanceStepSerializer
     permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        last_item = MaintenanceStep.objects.order_by("-maintenance_step_id").first()
+        next_id = (last_item.maintenance_step_id + 1) if last_item else 1
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = dict(serializer.validated_data)
+        if not data.get("maintenance_step_status"):
+            data["maintenance_step_status"] = "started"
+
+        try:
+            step = MaintenanceStep.objects.create(
+                maintenance_step_id=next_id,
+                **data,
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Failed to create maintenance step due to database constraints.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(self.get_serializer(step).data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
         qs = (
@@ -484,6 +511,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 maintenance_id=next_id,
                 performed_by_person=technician,
                 approved_by_maintenance_chief=user_account.person,
+                maintenance_status="pending",
                 description=description or report.owner_observation,
                 start_datetime=timezone.now(),
                 end_datetime=timezone.now(),

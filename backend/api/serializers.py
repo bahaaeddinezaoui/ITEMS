@@ -654,12 +654,29 @@ class MaintenanceStepSerializer(serializers.ModelSerializer):
         queryset=MaintenanceTypicalStep.objects.all(), source='maintenance_typical_step', write_only=True
     )
     maintenance_typical_step = MaintenanceTypicalStepSerializer(read_only=True)
+
+    def validate_maintenance_step_status(self, value):
+        if value is None or value == "":
+            return value
+
+        allowed = {
+            "started",
+            "pending (waiting for stock item)",
+            "pending (waiting for consumable)",
+            "in progress",
+            "done",
+            "failed (to be sent to a higher level)",
+        }
+        if value not in allowed:
+            raise serializers.ValidationError("Invalid maintenance_step_status")
+        return value
     
     class Meta:
         model = MaintenanceStep
         fields = [
             'maintenance_step_id', 'maintenance', 'maintenance_typical_step', 'maintenance_typical_step_id',
             'person', 'person_id',
+            'maintenance_step_status',
             'asset_condition_history', 'stock_item_condition_history', 'consumable_condition_history',
             'start_datetime', 'end_datetime', 'is_successful'
         ]
@@ -678,6 +695,7 @@ class MaintenanceSerializer(serializers.ModelSerializer):
             'maintenance_id',
             'asset',
             'description',
+            'maintenance_status',
             'start_datetime',
             'performed_by_person',
             'performed_by_person_name',

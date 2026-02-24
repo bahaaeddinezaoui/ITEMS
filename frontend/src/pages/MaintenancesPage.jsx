@@ -190,6 +190,7 @@ const MaintenancesPage = () => {
                                     <th>ID</th>
                                     <th>Asset</th>
                                     <th>Description</th>
+                                    {isChief && <th>Status</th>}
                                     <th>Start Date</th>
                                     <th>Technician</th>
                                     <th>Actions</th>
@@ -210,6 +211,15 @@ const MaintenancesPage = () => {
                                                                 'Unknown')}
                                             </td>
                                             <td>{maintenance.description}</td>
+                                            {isChief && (
+                                                <td>
+                                                    {maintenance.maintenance_status ? (
+                                                        <span className="badge badge-info">{maintenance.maintenance_status}</span>
+                                                    ) : (
+                                                        <span className="badge badge-warning">-</span>
+                                                    )}
+                                                </td>
+                                            )}
                                             <td>{formatDate(maintenance.start_datetime)}</td>
                                             <td>
                                                 {maintenance.performed_by_person_name ? (
@@ -220,11 +230,6 @@ const MaintenancesPage = () => {
                                             </td>
                                             <td>
                                                 <div className="d-flex align-items-center">
-                                                    {maintenance.performed_by_person && isChief && (
-                                                        <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginRight: '0.5rem' }}>
-                                                            Assigned
-                                                        </span>
-                                                    )}
                                                     {!maintenance.performed_by_person && isChief && (
                                                         <button
                                                             className="btn btn-sm btn-secondary"
@@ -245,7 +250,7 @@ const MaintenancesPage = () => {
                                         </tr>
                                         {expandedMaintenanceId === maintenance.maintenance_id && (
                                             <tr>
-                                                <td colSpan="6" style={{ padding: 0 }}>
+                                                <td colSpan={isChief ? 7 : 6} style={{ padding: 0 }}>
                                                     <MaintenanceSteps
                                                         maintenanceId={maintenance.maintenance_id}
                                                         maintenancePerformedBy={maintenance.performed_by_person}
