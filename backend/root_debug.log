@@ -18766,3 +18766,230 @@ Response Body:
 [2026-02-24 14:16:20.603741] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
 [2026-02-24 14:16:21.094100] START GET /api/maintenance-step-item-requests/4/select-random/
 [2026-02-24 14:16:21.159863] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:17:38.841520] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:17:38.842518] START GET /api/rooms/
+[2026-02-24 14:17:38.894032] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:17:38.899370] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:17:38.902578] END   GET /api/rooms/ -> 200
+[2026-02-24 14:17:38.907085] START GET /api/rooms/
+[2026-02-24 14:17:38.951133] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:17:38.964535] END   GET /api/rooms/ -> 200
+[2026-02-24 14:17:40.472165] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:17:40.473072] START GET /api/rooms/
+[2026-02-24 14:17:40.519168] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:17:40.526157] END   GET /api/rooms/ -> 200
+[2026-02-24 14:17:43.177267] START GET /api/consumables/
+[2026-02-24 14:17:43.218292] END   GET /api/consumables/ -> 200
+[2026-02-24 14:17:48.202571] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:17:48.257020] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:17:48.819981] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:17:48.877393] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:17:49.304898] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:17:49.363360] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:40.218978] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:40.274260] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:40.661256] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:40.715841] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:41.041775] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:41.095058] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:41.273120] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:41.327409] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:41.483805] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:41.536239] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:41.753926] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:41.806338] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:42.022794] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:42.074385] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:42.203739] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:42.257454] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:42.361134] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:42.414767] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:42.510726] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:42.561094] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:42.660977] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:42.712566] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:42.811439] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:42.869263] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:42.953019] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:43.009393] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:43.082374] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:43.140348] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:43.232207] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:43.290092] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:43.374575] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:43.434255] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:43.545183] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:43.611507] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:44.693815] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:18:44.695215] START GET /api/rooms/
+[2026-02-24 14:18:44.760054] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:18:44.767072] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:18:44.773475] END   GET /api/rooms/ -> 200
+[2026-02-24 14:18:44.780447] START GET /api/rooms/
+[2026-02-24 14:18:44.830896] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:18:44.843215] END   GET /api/rooms/ -> 200
+[2026-02-24 14:18:45.818684] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:45.876316] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:46.230104] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:46.288501] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:18:46.709871] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:18:46.769053] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:56.579519] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:20:56.580473] START GET /api/rooms/
+[2026-02-24 14:20:56.633185] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:20:56.639307] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:20:56.643891] END   GET /api/rooms/ -> 200
+[2026-02-24 14:20:56.648140] START GET /api/rooms/
+[2026-02-24 14:20:56.689994] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:20:56.705605] END   GET /api/rooms/ -> 200
+[2026-02-24 14:20:57.803118] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:57.854836] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:58.131244] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:58.182582] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:58.596522] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:58.648335] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:58.777241] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:58.833301] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:58.926486] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:58.977611] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:59.068665] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:59.120807] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:59.218031] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:59.271511] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:59.352264] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:59.403843] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:59.496200] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:59.549469] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:59.646302] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:59.696152] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:59.787669] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:20:59.841864] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:20:59.977534] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:21:00.030814] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:21:00.140360] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:21:00.192103] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:21:00.268316] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:21:00.321265] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:21:00.418291] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:21:00.471925] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:53.633179] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:53.690325] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:54.049223] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:54.104608] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:54.334341] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:54.391624] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:54.799887] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:54.863354] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:55.594062] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:55.670326] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:55.999652] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:56.059412] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:56.282648] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:56.343966] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:56.493534] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:56.556112] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:56.680654] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:56.741970] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:56.845092] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:56.905374] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:29:56.995343] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:29:57.056543] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:30:38.535730] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:30:38.536520] START GET /api/rooms/
+[2026-02-24 14:30:38.587182] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:30:38.596158] END   GET /api/rooms/ -> 200
+[2026-02-24 14:30:46.126236] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:30:46.300645] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:30:47.030287] START GET /api/maintenance-step-item-requests/4/select-random/
+[2026-02-24 14:30:47.092083] END   GET /api/maintenance-step-item-requests/4/select-random/ -> 200
+[2026-02-24 14:33:21.013665] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:33:21.014233] START GET /api/rooms/
+[2026-02-24 14:33:21.098109] END   GET /api/rooms/ -> 200
+[2026-02-24 14:33:21.102103] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:33:21.102494] START GET /api/rooms/
+[2026-02-24 14:33:21.106688] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:33:21.153414] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:33:21.253335] END   GET /api/rooms/ -> 200
+[2026-02-24 14:34:39.007242] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:34:39.007801] START GET /api/rooms/
+[2026-02-24 14:34:39.052574] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:34:39.059426] END   GET /api/rooms/ -> 200
+[2026-02-24 14:35:18.911222] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:35:18.912024] START GET /api/rooms/
+[2026-02-24 14:35:19.009764] END   GET /api/rooms/ -> 200
+[2026-02-24 14:35:19.015708] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:35:19.015621] START GET /api/rooms/
+[2026-02-24 14:35:19.021479] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:35:19.068262] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:35:19.172532] END   GET /api/rooms/ -> 200
+[2026-02-24 14:35:19.502917] START GET /api/maintenance-step-item-requests/4/eligible-items/
+[2026-02-24 14:35:19.564883] END   GET /api/maintenance-step-item-requests/4/eligible-items/ -> 200
+[2026-02-24 14:37:10.163311] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:37:10.164359] START GET /api/rooms/
+[2026-02-24 14:37:10.271175] END   GET /api/rooms/ -> 200
+[2026-02-24 14:37:10.276698] START GET /api/rooms/
+[2026-02-24 14:37:10.281926] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:37:10.287559] START GET /api/maintenance-step-item-requests/
+[2026-02-24 14:37:10.340263] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-02-24 14:37:10.344052] END   GET /api/rooms/ -> 200
+[2026-02-24 14:37:10.785789] START GET /api/maintenance-step-item-requests/4/eligible-items/
+[2026-02-24 14:37:10.845835] END   GET /api/maintenance-step-item-requests/4/eligible-items/ -> 200
+[2026-02-24 14:37:32.175871] START POST /api/auth/login/
+[2026-02-24 14:37:32.224699] END   POST /api/auth/login/ -> 200
+[2026-02-24 14:37:33.157689] START GET /api/maintenances/
+[2026-02-24 14:37:33.307436] END   GET /api/maintenances/ -> 200
+[2026-02-24 14:37:33.312483] START GET /api/maintenances/
+[2026-02-24 14:37:33.355979] END   GET /api/maintenances/ -> 200
+[2026-02-24 14:37:34.629748] START GET /api/maintenance-steps/
+[2026-02-24 14:37:34.630484] START GET /api/maintenance-typical-steps/
+[2026-02-24 14:37:34.631192] START GET /api/persons/
+[2026-02-24 14:37:34.675626] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 14:37:34.680931] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 14:37:34.681449] END   GET /api/persons/ -> 200
+[2026-02-24 14:37:34.681359] START GET /api/maintenance-typical-steps/
+[2026-02-24 14:37:34.685905] START GET /api/maintenance-steps/
+[2026-02-24 14:37:34.686755] START GET /api/persons/
+[2026-02-24 14:37:34.691504] START GET /api/stock-item-types/
+[2026-02-24 14:37:34.692541] START GET /api/consumable-types/
+[2026-02-24 14:37:34.728742] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 14:37:34.739800] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 14:37:34.740371] END   GET /api/stock-item-types/ -> 200
+[2026-02-24 14:37:34.740833] END   GET /api/consumable-types/ -> 200
+[2026-02-24 14:37:34.748579] START GET /api/stock-item-types/
+[2026-02-24 14:37:34.749319] START GET /api/consumable-types/
+[2026-02-24 14:37:34.791398] END   GET /api/stock-item-types/ -> 200
+[2026-02-24 14:37:34.791517] END   GET /api/consumable-types/ -> 200
+[2026-02-24 14:45:01.013833] START GET /api/maintenance-steps/
+[2026-02-24 14:45:01.014565] START GET /api/maintenance-typical-steps/
+[2026-02-24 14:45:01.016319] START GET /api/persons/
+[2026-02-24 14:45:01.062412] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 14:45:01.062516] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 14:45:01.064253] END   GET /api/persons/ -> 200
+[2026-02-24 14:45:01.070720] START GET /api/stock-item-types/
+[2026-02-24 14:45:01.071365] START GET /api/consumable-types/
+[2026-02-24 14:45:01.112419] END   GET /api/stock-item-types/ -> 200
+[2026-02-24 14:45:01.116117] END   GET /api/consumable-types/ -> 200
+[2026-02-24 14:50:46.005367] START GET /api/maintenance-steps/
+[2026-02-24 14:50:46.005952] START GET /api/maintenance-typical-steps/
+[2026-02-24 14:50:46.007787] START GET /api/persons/
+[2026-02-24 14:50:46.047773] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 14:50:46.052393] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 14:50:46.054742] END   GET /api/persons/ -> 200
+[2026-02-24 14:50:46.061122] START GET /api/stock-item-types/
+[2026-02-24 14:50:46.061611] START GET /api/consumable-types/
+[2026-02-24 14:50:46.099787] END   GET /api/stock-item-types/ -> 200
+[2026-02-24 14:50:46.101685] END   GET /api/consumable-types/ -> 200
+[2026-02-24 14:51:17.258051] START GET /api/consumable-models/
+[2026-02-24 14:51:17.299242] END   GET /api/consumable-models/ -> 200
+[2026-02-24 14:51:19.399794] START POST /api/maintenance-steps/3/request-consumable/
+[2026-02-24 14:51:19.460534] END   POST /api/maintenance-steps/3/request-consumable/ -> 201
+[2026-02-24 14:51:19.469045] START GET /api/maintenance-typical-steps/
+[2026-02-24 14:51:19.469659] START GET /api/maintenance-steps/
+[2026-02-24 14:51:19.471215] START GET /api/persons/
+[2026-02-24 14:51:19.522549] END   GET /api/maintenance-steps/ -> 200
+[2026-02-24 14:51:19.522655] END   GET /api/persons/ -> 200
+[2026-02-24 14:51:19.610967] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-24 14:51:19.618109] START GET /api/stock-item-types/
+[2026-02-24 14:51:19.618684] START GET /api/consumable-types/
+[2026-02-24 14:51:19.657727] END   GET /api/stock-item-types/ -> 200
+[2026-02-24 14:51:19.661709] END   GET /api/consumable-types/ -> 200

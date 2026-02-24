@@ -21,6 +21,19 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     const [error, setError] = useState('');
     const [addingStep, setAddingStep] = useState(false);
 
+    const [statusEditorStepId, setStatusEditorStepId] = useState(null);
+    const [statusEditorValue, setStatusEditorValue] = useState('');
+    const [statusSaving, setStatusSaving] = useState(false);
+
+    const [requestEditorOpen, setRequestEditorOpen] = useState(false);
+    const [requestEditorType, setRequestEditorType] = useState(null);
+    const [requestEditorStep, setRequestEditorStep] = useState(null);
+    const [requestTypeId, setRequestTypeId] = useState('');
+    const [requestModelId, setRequestModelId] = useState('');
+    const [requestModels, setRequestModels] = useState([]);
+    const [requestSubmitting, setRequestSubmitting] = useState(false);
+    const [requestMessage, setRequestMessage] = useState(null);
+
     // New Step Form State
     const [newStepTypicalId, setNewStepTypicalId] = useState('');
     const [newStepPersonId, setNewStepPersonId] = useState('');
@@ -107,6 +120,116 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
         } catch (err) {
             console.error(err);
             setError('Failed to update step status');
+        }
+    };
+
+    const openStatusEditor = (step) => {
+        setStatusEditorStepId(step.maintenance_step_id);
+        setStatusEditorValue(step.maintenance_step_status || '');
+    };
+
+    const closeStatusEditor = () => {
+        setStatusEditorStepId(null);
+        setStatusEditorValue('');
+        setStatusSaving(false);
+    };
+
+    const closeRequestEditor = () => {
+        setRequestEditorOpen(false);
+        setRequestEditorType(null);
+        setRequestEditorStep(null);
+        setRequestTypeId('');
+        setRequestModelId('');
+        setRequestModels([]);
+        setRequestSubmitting(false);
+        setRequestMessage(null);
+    };
+
+    const openRequestEditor = (step, requestType) => {
+        setRequestEditorOpen(true);
+        setRequestEditorType(requestType);
+        setRequestEditorStep(step);
+        setRequestTypeId('');
+        setRequestModelId('');
+        setRequestModels([]);
+        setRequestSubmitting(false);
+        setRequestMessage(null);
+    };
+
+    const saveStatusEditor = async (step) => {
+        try {
+            setStatusSaving(true);
+            if (statusEditorValue === 'pending (waiting for stock item)') {
+                closeStatusEditor();
+                openRequestEditor(step, 'stock_item');
+                return;
+            }
+            if (statusEditorValue === 'pending (waiting for consumable)') {
+                closeStatusEditor();
+                openRequestEditor(step, 'consumable');
+                return;
+            }
+
+            await handleUpdateStatus(step, statusEditorValue);
+            closeStatusEditor();
+        } finally {
+            setStatusSaving(false);
+        }
+    };
+
+    const loadModelsForRequestType = async (requestType, typeIdValue) => {
+        try {
+            const typeId = Number(typeIdValue);
+            if (!typeId || Number.isNaN(typeId)) {
+                setRequestModels([]);
+                return;
+            }
+            if (requestType === 'stock_item') {
+                const models = await stockItemModelService.getByStockItemType(typeId);
+                setRequestModels(Array.isArray(models) ? models : []);
+                return;
+            }
+            if (requestType === 'consumable') {
+                const models = await consumableModelService.getByConsumableType(typeId);
+                setRequestModels(Array.isArray(models) ? models : []);
+            }
+        } catch (err) {
+            console.error(err);
+            setRequestModels([]);
+        }
+    };
+
+    const submitRequestEditor = async () => {
+        if (!requestEditorStep || !requestEditorType) return;
+        if (!requestModelId) {
+            setRequestMessage({ type: 'error', text: 'Please select a model.' });
+            return;
+        }
+
+        try {
+            setRequestSubmitting(true);
+            setRequestMessage(null);
+
+            if (requestEditorType === 'stock_item') {
+                await maintenanceStepService.requestStockItem(requestEditorStep.maintenance_step_id, {
+                    requested_stock_item_model_id: Number(requestModelId),
+                });
+            } else if (requestEditorType === 'consumable') {
+                await maintenanceStepService.requestConsumable(requestEditorStep.maintenance_step_id, {
+                    requested_consumable_model_id: Number(requestModelId),
+                });
+            } else {
+                setRequestMessage({ type: 'error', text: 'Invalid request type.' });
+                return;
+            }
+
+            setRequestMessage({ type: 'success', text: 'Request created successfully.' });
+            await loadData();
+        } catch (err) {
+            console.error(err);
+            setRequestMessage({ type: 'error', text: err.response?.data?.error || 'Failed to create request.' });
+        } finally {
+            setRequestSubmitting(false);
         }
     };
 
@@ -289,33 +412,62 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                     </td>
                                     <td className="px-4 py-2 text-right">
                                         {(user?.person?.person_id === step.person?.person_id || isChief) && (
-                                            <div className="d-flex gap-2 justify-content-end" style={{ flexWrap: 'wrap' }}>
-                                                <select
-                                                    className="form-input"
-                                                    style={{ width: 'auto', padding: '0.25rem 0.5rem' }}
-                                                    value={step.maintenance_step_status || ''}
-                                                    onChange={(e) => handleUpdateStatus(step, e.target.value)}
+                                            <div className="d-flex gap-2 justify-content-end" style={{ flexWrap: 'wrap', position: 'relative' }}>
+                                                <button
+                                                    className="btn btn-xs btn-secondary"
+                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                    onClick={() => openStatusEditor(step)}
                                                 >
-                                                    <option value="">Change status...</option>
-                                                    {stepStatusOptions.map((s) => (
-                                                        <option key={s} value={s}>
-                                                            {s}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    Update status
+                                                </button>
 
-                                                <button
-                                                    className="btn btn-xs btn-secondary"
-                                                    onClick={() => requestStockItem(step)}
-                                                >
-                                                    Request Stock Item
-                                                </button>
-                                                <button
-                                                    className="btn btn-xs btn-secondary"
-                                                    onClick={() => requestConsumable(step)}
-                                                >
-                                                    Request Consumable
-                                                </button>
+                                                {statusEditorStepId === step.maintenance_step_id && (
+                                                    <div
+                                                        className="card"
+                                                        style={{
+                                                            position: 'absolute',
+                                                            right: 0,
+                                                            top: 'calc(100% + 6px)',
+                                                            zIndex: 20,
+                                                            width: 280,
+                                                            padding: 'var(--space-3)',
+                                                            border: '1px solid var(--color-border)',
+                                                            background: 'var(--color-bg-tertiary)',
+                                                        }}
+                                                    >
+                                                        <div style={{ fontWeight: 600, marginBottom: 8 }}>Update status</div>
+                                                        <select
+                                                            className="form-input"
+                                                            value={statusEditorValue}
+                                                            onChange={(e) => setStatusEditorValue(e.target.value)}
+                                                        >
+                                                            <option value="">Select status...</option>
+                                                            {stepStatusOptions.map((s) => (
+                                                                <option key={s} value={s}>
+                                                                    {s}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', marginTop: 'var(--space-3)' }}>
+                                                            <button
+                                                                className="btn btn-xs btn-secondary"
+                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                onClick={closeStatusEditor}
+                                                                disabled={statusSaving}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                            <button
+                                                                className="btn btn-xs btn-primary"
+                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                onClick={() => saveStatusEditor(step)}
+                                                                disabled={statusSaving || !statusEditorValue}
+                                                            >
+                                                                {statusSaving ? 'Saving...' : 'Save'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </td>
@@ -323,6 +475,114 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                             ))}
                         </tbody>
                     </table>
+                </div>
+            )}
+
+            {requestEditorOpen && requestEditorStep && (
+                <div
+                    className="card"
+                    style={{
+                        position: 'fixed',
+                        right: 20,
+                        bottom: 20,
+                        zIndex: 50,
+                        width: 420,
+                        padding: 'var(--space-4)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-bg-tertiary)',
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ fontWeight: 700 }}>
+                            {requestEditorType === 'stock_item' ? 'Request stock item' : 'Request consumable'}
+                        </div>
+                        <button
+                            className="btn btn-xs btn-secondary"
+                            style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                            onClick={closeRequestEditor}
+                            disabled={requestSubmitting}
+                        >
+                            Close
+                        </button>
+                    </div>
+
+                    <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                        Step: <b>{requestEditorStep.maintenance_step_id}</b>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 10 }}>
+                        <label className="form-label">Type</label>
+                        <select
+                            className="form-input"
+                            value={requestTypeId}
+                            onChange={async (e) => {
+                                const value = e.target.value;
+                                setRequestTypeId(value);
+                                setRequestModelId('');
+                                setRequestMessage(null);
+                                await loadModelsForRequestType(requestEditorType, value);
+                            }}
+                            disabled={requestSubmitting}
+                        >
+                            <option value="">Select type...</option>
+                            {(requestEditorType === 'stock_item' ? stockItemTypes : consumableTypes).map((t) => (
+                                <option
+                                    key={requestEditorType === 'stock_item' ? t.stock_item_type_id : t.consumable_type_id}
+                                    value={requestEditorType === 'stock_item' ? t.stock_item_type_id : t.consumable_type_id}
+                                >
+                                    {requestEditorType === 'stock_item' ? t.stock_item_type_label : t.consumable_type_label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 10 }}>
+                        <label className="form-label">Model</label>
+                        <select
+                            className="form-input"
+                            value={requestModelId}
+                            onChange={(e) => {
+                                setRequestModelId(e.target.value);
+                                setRequestMessage(null);
+                            }}
+                            disabled={requestSubmitting || !requestTypeId}
+                        >
+                            <option value="">Select model...</option>
+                            {requestModels.map((m) => (
+                                <option
+                                    key={requestEditorType === 'stock_item' ? m.stock_item_model_id : m.consumable_model_id}
+                                    value={requestEditorType === 'stock_item' ? m.stock_item_model_id : m.consumable_model_id}
+                                >
+                                    {m.model_name}{m.model_code ? ` (${m.model_code})` : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {requestMessage && (
+                        <div
+                            className={requestMessage.type === 'success' ? 'badge badge-success' : 'badge badge-danger'}
+                            style={{
+                                padding: 'var(--space-3)',
+                                width: '100%',
+                                marginBottom: 10,
+                                borderRadius: 'var(--radius-md)',
+                                display: 'block',
+                            }}
+                        >
+                            {requestMessage.text}
+                        </div>
+                    )}
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 10 }}>
+                        <button
+                            className="btn btn-primary btn-sm"
+                            onClick={submitRequestEditor}
+                            disabled={requestSubmitting || !requestModelId}
+                        >
+                            {requestSubmitting ? 'Requesting...' : 'Submit request'}
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

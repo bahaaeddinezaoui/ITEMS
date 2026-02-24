@@ -1031,6 +1031,11 @@ export const maintenanceStepItemRequestService = {
         const response = await api.get(`maintenance-step-item-requests/${id}/select-random/`);
         return response.data;
     },
+
+    eligibleItems: async (id) => {
+        const response = await api.get(`maintenance-step-item-requests/${id}/eligible-items/`);
+        return response.data;
+    },
 };
 
 // Maintenance Typical Step service

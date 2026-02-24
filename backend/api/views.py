@@ -729,6 +729,100 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
 
         return Response({"error": "Invalid request_type"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=["get"], url_path="eligible-items")
+    def eligible_items(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        req = self.get_object()
+        if req.status != "pending":
+            return Response({"error": "Only pending requests can be fulfilled"}, status=status.HTTP_400_BAD_REQUEST)
+
+        step = req.maintenance_step
+        maintenance = step.maintenance
+        asset_model_id = getattr(maintenance.asset, "asset_model_id", None)
+        if not asset_model_id:
+            return Response({"error": "Maintenance asset model not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if req.request_type == "stock_item":
+            if not req.requested_stock_item_model_id:
+                return Response({"error": "Request missing requested_stock_item_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            is_compatible = StockItemIsCompatibleWithAsset.objects.filter(
+                asset_model_id=asset_model_id,
+                stock_item_model_id=req.requested_stock_item_model_id,
+            ).exists()
+            if not is_compatible:
+                return Response({"error": "Requested stock item model is not compatible with this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+            used_stock_item_ids = AssetIsComposedOfStockItemHistory.objects.filter(
+                end_datetime__isnull=True
+            ).values_list("stock_item_id", flat=True)
+
+            last_dest_room_subq = Subquery(
+                StockItemMovement.objects.filter(stock_item_id=OuterRef("stock_item_id"))
+                .order_by("-stock_item_movement_id")
+                .values("destination_room_id")[:1]
+            )
+
+            candidates = (
+                StockItem.objects.filter(stock_item_model_id=req.requested_stock_item_model_id)
+                .exclude(stock_item_id__in=used_stock_item_ids)
+                .annotate(current_room_id=last_dest_room_subq)
+                .exclude(current_room_id__isnull=True)
+                .values("stock_item_id", "stock_item_inventory_number", "current_room_id")
+                .order_by("stock_item_id")
+            )
+
+            return Response(
+                {
+                    "request_type": "stock_item",
+                    "results": list(candidates),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        if req.request_type == "consumable":
+            if not req.requested_consumable_model_id:
+                return Response({"error": "Request missing requested_consumable_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            is_compatible = ConsumableIsCompatibleWithAsset.objects.filter(
+                asset_model_id=asset_model_id,
+                consumable_model_id=req.requested_consumable_model_id,
+            ).exists()
+            if not is_compatible:
+                return Response({"error": "Requested consumable model is not compatible with this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+            used_consumable_ids = AssetIsComposedOfConsumableHistory.objects.filter(
+                end_datetime__isnull=True
+            ).values_list("consumable_id", flat=True)
+
+            last_dest_room_subq = Subquery(
+                ConsumableMovement.objects.filter(consumable_id=OuterRef("consumable_id"))
+                .order_by("-consumable_movement_id")
+                .values("destination_room_id")[:1]
+            )
+
+            candidates = (
+                Consumable.objects.filter(consumable_model_id=req.requested_consumable_model_id)
+                .exclude(consumable_id__in=used_consumable_ids)
+                .annotate(current_room_id=last_dest_room_subq)
+                .exclude(current_room_id__isnull=True)
+                .values("consumable_id", "consumable_inventory_number", "current_room_id")
+                .order_by("consumable_id")
+            )
+
+            return Response(
+                {
+                    "request_type": "consumable",
+                    "results": list(candidates),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response({"error": "Invalid request_type"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class MyItemsView(APIView):
     permission_classes = [IsAuthenticated]

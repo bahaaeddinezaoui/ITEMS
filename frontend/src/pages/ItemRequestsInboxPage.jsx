@@ -21,6 +21,8 @@ const ItemRequestsInboxPage = () => {
     const [rooms, setRooms] = useState([]);
 
     const [fulfillFormsById, setFulfillFormsById] = useState({});
+    const [eligibleItemsByRequestId, setEligibleItemsByRequestId] = useState({});
+    const [eligibleLoadingByRequestId, setEligibleLoadingByRequestId] = useState({});
 
     const pendingRequests = useMemo(() => {
         return (requests || []).filter((r) => (r.status || '').toLowerCase() === 'pending');
@@ -105,22 +107,41 @@ const ItemRequestsInboxPage = () => {
         // We provide a basic list of items filtered by model if the backend supports it.
         // If the backend doesn't support filtering, user can still type ID.
         try {
-            if (req.request_type === 'stock_item') {
-                const requestedModelId = req.requested_stock_item_model;
-                const params = requestedModelId ? { stock_item_model: requestedModelId } : undefined;
-                const data = await stockItemService.getAll(params);
-                return Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : []);
-            }
-            if (req.request_type === 'consumable') {
-                const requestedModelId = req.requested_consumable_model;
-                const params = requestedModelId ? { consumable_model: requestedModelId } : undefined;
-                const data = await consumableService.getAll(params);
-                return Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : []);
-            }
+            const data = await maintenanceStepItemRequestService.eligibleItems(req.maintenance_step_item_request_id);
+            return Array.isArray(data?.results) ? data.results : [];
         } catch {
             return [];
         }
         return [];
+    };
+
+    const fetchEligibleItems = async (req) => {
+        const id = req.maintenance_step_item_request_id;
+        setEligibleLoadingByRequestId((prev) => ({ ...prev, [id]: true }));
+        try {
+            const data = await maintenanceStepItemRequestService.eligibleItems(id);
+            const list = Array.isArray(data?.results) ? data.results : [];
+            setEligibleItemsByRequestId((prev) => ({ ...prev, [id]: list }));
+        } catch {
+            setEligibleItemsByRequestId((prev) => ({ ...prev, [id]: [] }));
+        } finally {
+            setEligibleLoadingByRequestId((prev) => ({ ...prev, [id]: false }));
+        }
+    };
+
+    const ensureEligibleItemsLoaded = async (req) => {
+        const id = req.maintenance_step_item_request_id;
+        if (eligibleLoadingByRequestId[id]) return;
+        if (Array.isArray(eligibleItemsByRequestId[id])) return;
+        await fetchEligibleItems(req);
+    };
+
+    const getRoomLabel = (roomId) => {
+        const rid = Number(roomId);
+        if (!rid || Number.isNaN(rid)) return '';
+        const r = rooms.find((x) => Number(x.room_id) === rid);
+        if (!r) return `#${rid}`;
+        return `${r.room_name} (#${r.room_id})`;
     };
 
     const handleFulfill = async (req) => {
@@ -282,38 +303,62 @@ const ItemRequestsInboxPage = () => {
                                             >
                                                 {req.request_type === 'stock_item' ? (
                                                     <div className="form-group">
-                                                        <label className="form-label">Stock Item ID</label>
-                                                        <input
-                                                            type="number"
+                                                        <label className="form-label">Stock Item</label>
+                                                        <select
                                                             className="form-input"
                                                             value={form.stock_item_id}
                                                             onChange={(e) => {
                                                                 const value = e.target.value;
-                                                                updateForm(id, { stock_item_id: value });
-                                                                autoFillSourceRoomForStockItem(id, value);
+                                                                const items = eligibleItemsByRequestId[id] || [];
+                                                                const selected = items.find((x) => String(x.stock_item_id) === String(value));
+                                                                updateForm(id, {
+                                                                    stock_item_id: value,
+                                                                    source_room_id: selected?.current_room_id || '',
+                                                                });
                                                             }}
-                                                            placeholder="Enter stock_item_id"
-                                                        />
+                                                            onFocus={() => ensureEligibleItemsLoaded(req)}
+                                                        >
+                                                            <option value="">Select stock item</option>
+                                                            {(eligibleItemsByRequestId[id] || []).map((x) => (
+                                                                <option key={x.stock_item_id} value={x.stock_item_id}>
+                                                                    {x.stock_item_id}{x.stock_item_inventory_number ? ` (${x.stock_item_inventory_number})` : ''} - {getRoomLabel(x.current_room_id)}
+                                                                </option>
+                                                            ))}
+                                                        </select>
                                                         <div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>
-                                                            Tip: choose an item whose model matches the requested model.
+                                                            {eligibleLoadingByRequestId[id]
+                                                                ? 'Loading available items...'
+                                                                : 'Choose an available item that matches the requested model.'}
                                                         </div>
                                                     </div>
                                                 ) : (
                                                     <div className="form-group">
-                                                        <label className="form-label">Consumable ID</label>
-                                                        <input
-                                                            type="number"
+                                                        <label className="form-label">Consumable</label>
+                                                        <select
                                                             className="form-input"
                                                             value={form.consumable_id}
                                                             onChange={(e) => {
                                                                 const value = e.target.value;
-                                                                updateForm(id, { consumable_id: value });
-                                                                autoFillSourceRoomForConsumable(id, value);
+                                                                const items = eligibleItemsByRequestId[id] || [];
+                                                                const selected = items.find((x) => String(x.consumable_id) === String(value));
+                                                                updateForm(id, {
+                                                                    consumable_id: value,
+                                                                    source_room_id: selected?.current_room_id || '',
+                                                                });
                                                             }}
-                                                            placeholder="Enter consumable_id"
-                                                        />
+                                                            onFocus={() => ensureEligibleItemsLoaded(req)}
+                                                        >
+                                                            <option value="">Select consumable</option>
+                                                            {(eligibleItemsByRequestId[id] || []).map((x) => (
+                                                                <option key={x.consumable_id} value={x.consumable_id}>
+                                                                    {x.consumable_id}{x.consumable_inventory_number ? ` (${x.consumable_inventory_number})` : ''} - {getRoomLabel(x.current_room_id)}
+                                                                </option>
+                                                            ))}
+                                                        </select>
                                                         <div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>
-                                                            Tip: choose a consumable whose model matches the requested model.
+                                                            {eligibleLoadingByRequestId[id]
+                                                                ? 'Loading available items...'
+                                                                : 'Choose an available item that matches the requested model.'}
                                                         </div>
                                                     </div>
                                                 )}
