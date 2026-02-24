@@ -2516,6 +2516,223 @@ class AssetIsAssignedToPersonViewSet(viewsets.ModelViewSet):
         assignment.save()
 
         return Response(self.get_serializer(assignment).data)
+
+
+class StockItemIsAssignedToPersonViewSet(viewsets.ModelViewSet):
+    queryset = StockItemIsAssignedToPerson.objects.all().order_by("-start_datetime")
+    serializer_class = StockItemIsAssignedToPersonSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        return AssetIsAssignedToPersonViewSet()._get_user_account(request)
+
+    def get_queryset(self):
+        qs = StockItemIsAssignedToPerson.objects.all().order_by("-start_datetime")
+        stock_item_id = self.request.query_params.get("stock_item")
+        person_id = self.request.query_params.get("person")
+        is_active = self.request.query_params.get("is_active")
+
+        if stock_item_id not in (None, ""):
+            try:
+                qs = qs.filter(stock_item_id=int(stock_item_id))
+            except (TypeError, ValueError):
+                pass
+        if person_id not in (None, ""):
+            try:
+                qs = qs.filter(person_id=int(person_id))
+            except (TypeError, ValueError):
+                pass
+        if is_active in ("true", "false"):
+            qs = qs.filter(is_active=(is_active == "true"))
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        is_responsible = "stock_consumable_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+
+        if not (is_responsible or is_superuser or is_exploitation_chief):
+            return Response(
+                {"error": "Only Stock/Consumable Responsible or superiors can assign stock items"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        stock_item_id = request.data.get("stock_item")
+        if not stock_item_id:
+            return Response({"error": "Stock item ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        active_assignment = StockItemIsAssignedToPerson.objects.filter(stock_item_id=stock_item_id, is_active=True).exists()
+        if active_assignment:
+            return Response({"error": "This stock item is already assigned and active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data.copy()
+
+        last_item = StockItemIsAssignedToPerson.objects.order_by("-assignment_id").first()
+        next_id = (last_item.assignment_id + 1) if last_item else 1
+
+        assignment = StockItemIsAssignedToPerson.objects.create(
+            assignment_id=next_id,
+            assigned_by_person=person,
+            is_active=True,
+            **data,
+        )
+        return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"])
+    def discharge(self, request, pk=None):
+        from django.utils import timezone
+
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        is_responsible = "stock_consumable_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+
+        if not (is_responsible or is_superuser or is_exploitation_chief):
+            return Response(
+                {"error": "Only Stock/Consumable Responsible or superiors can discharge stock items"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        assignment = self.get_object()
+        if not assignment.is_active:
+            return Response({"error": "This assignment is already inactive."}, status=status.HTTP_400_BAD_REQUEST)
+
+        assignment.end_datetime = timezone.now()
+        assignment.is_active = False
+        assignment.save()
+
+        return Response(self.get_serializer(assignment).data)
+
+
+class ConsumableIsAssignedToPersonViewSet(viewsets.ModelViewSet):
+    queryset = ConsumableIsAssignedToPerson.objects.all().order_by("-start_datetime")
+    serializer_class = ConsumableIsAssignedToPersonSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        return AssetIsAssignedToPersonViewSet()._get_user_account(request)
+
+    def get_queryset(self):
+        qs = ConsumableIsAssignedToPerson.objects.all().order_by("-start_datetime")
+        consumable_id = self.request.query_params.get("consumable")
+        person_id = self.request.query_params.get("person")
+        is_active = self.request.query_params.get("is_active")
+
+        if consumable_id not in (None, ""):
+            try:
+                qs = qs.filter(consumable_id=int(consumable_id))
+            except (TypeError, ValueError):
+                pass
+        if person_id not in (None, ""):
+            try:
+                qs = qs.filter(person_id=int(person_id))
+            except (TypeError, ValueError):
+                pass
+        if is_active in ("true", "false"):
+            qs = qs.filter(is_active=(is_active == "true"))
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        is_responsible = "stock_consumable_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+
+        if not (is_responsible or is_superuser or is_exploitation_chief):
+            return Response(
+                {"error": "Only Stock/Consumable Responsible or superiors can assign consumables"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        consumable_id = request.data.get("consumable")
+        if not consumable_id:
+            return Response({"error": "Consumable ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        active_assignment = ConsumableIsAssignedToPerson.objects.filter(consumable_id=consumable_id, is_active=True).exists()
+        if active_assignment:
+            return Response({"error": "This consumable is already assigned and active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data.copy()
+
+        last_item = ConsumableIsAssignedToPerson.objects.order_by("-assignment_id").first()
+        next_id = (last_item.assignment_id + 1) if last_item else 1
+
+        assignment = ConsumableIsAssignedToPerson.objects.create(
+            assignment_id=next_id,
+            assigned_by_person=person,
+            is_active=True,
+            **data,
+        )
+        return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"])
+    def discharge(self, request, pk=None):
+        from django.utils import timezone
+
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        is_responsible = "stock_consumable_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+
+        if not (is_responsible or is_superuser or is_exploitation_chief):
+            return Response(
+                {"error": "Only Stock/Consumable Responsible or superiors can discharge consumables"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        assignment = self.get_object()
+        if not assignment.is_active:
+            return Response({"error": "This assignment is already inactive."}, status=status.HTTP_400_BAD_REQUEST)
+
+        assignment.end_datetime = timezone.now()
+        assignment.is_active = False
+        assignment.save()
+
+        return Response(self.get_serializer(assignment).data)
+
 class WarehouseViewSet(viewsets.ModelViewSet):
     queryset = Warehouse.objects.all().order_by("warehouse_id")
     serializer_class = WarehouseSerializer

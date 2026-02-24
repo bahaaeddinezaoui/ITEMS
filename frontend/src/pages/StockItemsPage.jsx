@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
     authService,
+    personService,
     roomService,
+    stockItemAssignmentService,
     stockItemTypeService,
     stockItemModelService,
     stockItemBrandService,
@@ -17,6 +19,8 @@ const StockItemsPage = () => {
     const [stockItemBrands, setStockItemBrands] = useState([]);
     const [stockItemModels, setStockItemModels] = useState([]);
     const [stockItems, setStockItems] = useState([]);
+    const [persons, setPersons] = useState([]);
+    const [assignments, setAssignments] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [stockItemAttributeDefinitions, setStockItemAttributeDefinitions] = useState([]);
     const [stockItemTypeAttributes, setStockItemTypeAttributes] = useState([]);
@@ -31,6 +35,15 @@ const StockItemsPage = () => {
     const [moveCurrentRoomLabel, setMoveCurrentRoomLabel] = useState('');
     const [selectedMoveRoomId, setSelectedMoveRoomId] = useState('');
     const [moveSubmitting, setMoveSubmitting] = useState(false);
+
+    const [showAssignForm, setShowAssignForm] = useState(false);
+    const [assigningStockItem, setAssigningStockItem] = useState(null);
+    const [dischargingAssignment, setDischargingAssignment] = useState(null);
+    const [assignFormData, setAssignFormData] = useState({
+        person: '',
+        start_datetime: '',
+        condition_on_assignment: 'Good'
+    });
 
     // Attribute forms visibility
     const [showAttributeDefinitionForm, setShowAttributeDefinitionForm] = useState(false);
@@ -110,6 +123,8 @@ const StockItemsPage = () => {
         fetchStockItemBrands();
         fetchStockItemAttributeDefinitions();
         fetchRooms();
+        fetchPersons();
+        fetchAssignments();
     }, []);
 
     const fetchRooms = async () => {
@@ -119,6 +134,26 @@ const StockItemsPage = () => {
         } catch (err) {
             console.error('Failed to fetch rooms:', err);
             setRooms([]);
+        }
+    };
+
+    const fetchPersons = async () => {
+        try {
+            const data = await personService.getAll();
+            setPersons(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to fetch persons:', err);
+            setPersons([]);
+        }
+    };
+
+    const fetchAssignments = async () => {
+        try {
+            const data = await stockItemAssignmentService.getAll();
+            setAssignments(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to fetch stock item assignments:', err);
+            setAssignments([]);
         }
     };
 
@@ -652,10 +687,65 @@ const StockItemsPage = () => {
         }
     };
 
+    const handleAssignInputChange = (e) => {
+        const { name, value } = e.target;
+        setAssignFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAssignSubmit = async (e) => {
+        e.preventDefault();
+        if (!assigningStockItem) return;
+        setSaving(true);
+        setError(null);
+        try {
+            await stockItemAssignmentService.create({
+                person: assignFormData.person,
+                stock_item: assigningStockItem.stock_item_id,
+                start_datetime: new Date(assignFormData.start_datetime).toISOString(),
+                condition_on_assignment: assignFormData.condition_on_assignment,
+            });
+            setShowAssignForm(false);
+            setAssigningStockItem(null);
+            await fetchAssignments();
+            alert('Stock item assigned successfully!');
+        } catch (err) {
+            setError('Failed to assign stock item: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDischarge = async (assignmentId) => {
+        setSaving(true);
+        setError(null);
+        try {
+            await stockItemAssignmentService.discharge(assignmentId);
+            setDischargingAssignment(null);
+            await fetchAssignments();
+            alert('Stock item discharged successfully!');
+        } catch (err) {
+            setError('Failed to discharge stock item: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const userAccount = authService.getUser();
     const isSuperuser = userAccount?.is_superuser;
     const isStockConsumableResponsible = userAccount?.roles?.some(r => r.role_code === 'stock_consumable_responsible') || isSuperuser;
+    const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
     const canMoveStockItems = isStockConsumableResponsible;
+    const canAssignStockItems = isStockConsumableResponsible || isExploitationChief;
+
+    const activeAssignmentsByStockItem = useMemo(() => {
+        const map = new Map();
+        assignments.forEach((a) => {
+            if (a.is_active) {
+                map.set(a.stock_item?.stock_item_id ?? a.stock_item, a);
+            }
+        });
+        return map;
+    }, [assignments]);
 
     const openMoveModal = (item) => {
         setMovingStockItem(item);
@@ -1427,6 +1517,38 @@ const StockItemsPage = () => {
                                                                 Move
                                                             </button>
                                                         )}
+                                                        {canAssignStockItems && (
+                                                            (() => {
+                                                                const activeAssignment = activeAssignmentsByStockItem.get(item.stock_item_id);
+                                                                return activeAssignment ? (
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); setDischargingAssignment(activeAssignment); }}
+                                                                        style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: '500' }}
+                                                                    >
+                                                                        Discharge
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setAssigningStockItem(item);
+                                                                            const now = new Date();
+                                                                            const tzOffset = now.getTimezoneOffset() * 60000;
+                                                                            const localISOTime = new Date(now - tzOffset).toISOString().slice(0, 16);
+                                                                            setAssignFormData({
+                                                                                person: '',
+                                                                                start_datetime: localISOTime,
+                                                                                condition_on_assignment: item.stock_item_status === 'active' ? 'Good' : 'Needs Repair'
+                                                                            });
+                                                                            setShowAssignForm(true);
+                                                                        }}
+                                                                        style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontWeight: '500' }}
+                                                                    >
+                                                                        Assign
+                                                                    </button>
+                                                                );
+                                                            })()
+                                                        )}
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); handleEditStockItem(item); }}
                                                             style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
@@ -1721,6 +1843,145 @@ const StockItemsPage = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showAssignForm && assigningStockItem && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        color: 'var(--color-text)',
+                        padding: 'var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        width: '100%',
+                        maxWidth: '520px',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.25)',
+                        border: '1px solid var(--color-border)'
+                    }}>
+                        <h2 style={{ marginBottom: 'var(--space-4)' }}>Assign Stock Item: {assigningStockItem.stock_item_name || `Item ${assigningStockItem.stock_item_id}`}</h2>
+                        <form onSubmit={handleAssignSubmit}>
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Assign to Person</label>
+                                <select
+                                    name="person"
+                                    value={assignFormData.person}
+                                    onChange={handleAssignInputChange}
+                                    required
+                                    disabled={saving}
+                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                >
+                                    <option value="">Select a person...</option>
+                                    {persons.map(p => (
+                                        <option key={p.person_id} value={p.person_id}>
+                                            {p.first_name} {p.last_name} ({p.person_id})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Start Date (Automatic)</label>
+                                <input
+                                    type="datetime-local"
+                                    name="start_datetime"
+                                    value={assignFormData.start_datetime}
+                                    onChange={handleAssignInputChange}
+                                    required
+                                    readOnly
+                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-secondary)', cursor: 'not-allowed', color: 'var(--color-text)' }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: 'var(--space-6)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Condition</label>
+                                <input
+                                    type="text"
+                                    name="condition_on_assignment"
+                                    value={assignFormData.condition_on_assignment}
+                                    onChange={handleAssignInputChange}
+                                    placeholder="e.g. Good, New"
+                                    required
+                                    disabled={saving}
+                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', color: 'var(--color-text)' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                                >
+                                    {saving ? 'Assigning...' : 'Assign Stock Item'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {dischargingAssignment && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        color: 'var(--color-text)',
+                        padding: 'var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        width: '100%',
+                        maxWidth: '420px',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.25)',
+                        border: '1px solid var(--color-border)'
+                    }}>
+                        <h2 style={{ marginBottom: 'var(--space-4)' }}>Confirm Discharge</h2>
+                        <p style={{ marginBottom: 'var(--space-6)' }}>
+                            Are you sure you want to end the assignment of <strong>{dischargingAssignment.stock_item?.stock_item_name || 'Stock Item'}</strong> to person <strong>{dischargingAssignment.person}</strong>?
+                            <br /><br />
+                            The end date will be set to right now.
+                        </p>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                            <button
+                                type="button"
+                                onClick={() => setDischargingAssignment(null)}
+                                style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', color: 'var(--color-text)' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleDischarge(dischargingAssignment.assignment_id)}
+                                disabled={saving}
+                                style={{ padding: 'var(--space-2) var(--space-4)', background: '#ef4444', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                            >
+                                {saving ? 'Discharging...' : 'Confirm Discharge'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

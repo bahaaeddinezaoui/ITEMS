@@ -620,7 +620,7 @@ class StockItemIsAssignedToPerson(models.Model):
     stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id')
     assigned_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='assigned_by_person_id', related_name='stock_item_assignments_given')
     start_datetime = models.DateTimeField(db_column='start_datetime')
-    end_datetime = models.DateTimeField(db_column='end_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime', null=True, blank=True)
     condition_on_assignment = models.CharField(max_length=48, db_column='condition_on_assignment')
     is_active = models.BooleanField(db_column='is_active')
     is_confirmed_by_exploitation_chief = models.ForeignKey(
@@ -664,7 +664,7 @@ class ConsumableIsAssignedToPerson(models.Model):
     consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id')
     assigned_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='assigned_by_person_id', related_name='consumable_assignments_given')
     start_datetime = models.DateTimeField(db_column='start_datetime')
-    end_datetime = models.DateTimeField(db_column='end_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime', null=True, blank=True)
     condition_on_assignment = models.CharField(max_length=48, db_column='condition_on_assignment')
     is_active = models.BooleanField(db_column='is_active')
     is_confirmed_by_exploitation_chief = models.ForeignKey(

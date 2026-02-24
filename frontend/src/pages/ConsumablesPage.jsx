@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
     authService,
+    personService,
     roomService,
     consumableTypeService,
     consumableModelService,
     consumableBrandService,
     consumableService,
+    consumableAssignmentService,
     consumableAttributeDefinitionService,
     consumableTypeAttributeService,
     consumableModelAttributeService,
@@ -17,6 +19,8 @@ const ConsumablesPage = () => {
     const [consumableBrands, setConsumableBrands] = useState([]);
     const [consumableModels, setConsumableModels] = useState([]);
     const [consumables, setConsumables] = useState([]);
+    const [persons, setPersons] = useState([]);
+    const [assignments, setAssignments] = useState([]);
     const [rooms, setRooms] = useState([]);
     const [consumableAttributeDefinitions, setConsumableAttributeDefinitions] = useState([]);
     const [consumableTypeAttributes, setConsumableTypeAttributes] = useState([]);
@@ -31,6 +35,15 @@ const ConsumablesPage = () => {
     const [moveCurrentRoomLabel, setMoveCurrentRoomLabel] = useState('');
     const [selectedMoveRoomId, setSelectedMoveRoomId] = useState('');
     const [moveSubmitting, setMoveSubmitting] = useState(false);
+
+    const [showAssignForm, setShowAssignForm] = useState(false);
+    const [assigningConsumable, setAssigningConsumable] = useState(null);
+    const [dischargingAssignment, setDischargingAssignment] = useState(null);
+    const [assignFormData, setAssignFormData] = useState({
+        person: '',
+        start_datetime: '',
+        condition_on_assignment: 'Good'
+    });
 
     // Attribute forms visibility
     const [showAttributeDefinitionForm, setShowAttributeDefinitionForm] = useState(false);
@@ -108,6 +121,8 @@ const ConsumablesPage = () => {
         fetchConsumableBrands();
         fetchConsumableAttributeDefinitions();
         fetchRooms();
+        fetchPersons();
+        fetchAssignments();
     }, []);
 
     const fetchRooms = async () => {
@@ -117,6 +132,26 @@ const ConsumablesPage = () => {
         } catch (err) {
             console.error('Failed to fetch rooms:', err);
             setRooms([]);
+        }
+    };
+
+    const fetchPersons = async () => {
+        try {
+            const data = await personService.getAll();
+            setPersons(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to fetch persons:', err);
+            setPersons([]);
+        }
+    };
+
+    const fetchAssignments = async () => {
+        try {
+            const data = await consumableAssignmentService.getAll();
+            setAssignments(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to fetch consumable assignments:', err);
+            setAssignments([]);
         }
     };
 
@@ -653,10 +688,65 @@ const ConsumablesPage = () => {
         }
     };
 
+    const handleAssignInputChange = (e) => {
+        const { name, value } = e.target;
+        setAssignFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleAssignSubmit = async (e) => {
+        e.preventDefault();
+        if (!assigningConsumable) return;
+        setSaving(true);
+        setError(null);
+        try {
+            await consumableAssignmentService.create({
+                person: assignFormData.person,
+                consumable: assigningConsumable.consumable_id,
+                start_datetime: new Date(assignFormData.start_datetime).toISOString(),
+                condition_on_assignment: assignFormData.condition_on_assignment,
+            });
+            setShowAssignForm(false);
+            setAssigningConsumable(null);
+            await fetchAssignments();
+            alert('Consumable assigned successfully!');
+        } catch (err) {
+            setError('Failed to assign consumable: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDischarge = async (assignmentId) => {
+        setSaving(true);
+        setError(null);
+        try {
+            await consumableAssignmentService.discharge(assignmentId);
+            setDischargingAssignment(null);
+            await fetchAssignments();
+            alert('Consumable discharged successfully!');
+        } catch (err) {
+            setError('Failed to discharge consumable: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const userAccount = authService.getUser();
     const isSuperuser = userAccount?.is_superuser;
     const isStockConsumableResponsible = userAccount?.roles?.some(r => r.role_code === 'stock_consumable_responsible') || isSuperuser;
+    const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
     const canMoveConsumables = isStockConsumableResponsible;
+    const canAssignConsumables = isStockConsumableResponsible || isExploitationChief;
+
+    const activeAssignmentsByConsumable = useMemo(() => {
+        const map = new Map();
+        assignments.forEach((a) => {
+            if (a.is_active) {
+                map.set(a.consumable?.consumable_id ?? a.consumable, a);
+            }
+        });
+        return map;
+    }, [assignments]);
 
     const openMoveModal = (item) => {
         setMovingConsumable(item);
@@ -1426,6 +1516,38 @@ const ConsumablesPage = () => {
                                                                 Move
                                                             </button>
                                                         )}
+                                                        {canAssignConsumables && (
+                                                            (() => {
+                                                                const activeAssignment = activeAssignmentsByConsumable.get(item.consumable_id);
+                                                                return activeAssignment ? (
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); setDischargingAssignment(activeAssignment); }}
+                                                                        style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: '500' }}
+                                                                    >
+                                                                        Discharge
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setAssigningConsumable(item);
+                                                                            const now = new Date();
+                                                                            const tzOffset = now.getTimezoneOffset() * 60000;
+                                                                            const localISOTime = new Date(now - tzOffset).toISOString().slice(0, 16);
+                                                                            setAssignFormData({
+                                                                                person: '',
+                                                                                start_datetime: localISOTime,
+                                                                                condition_on_assignment: item.consumable_status === 'active' ? 'Good' : 'Needs Repair'
+                                                                            });
+                                                                            setShowAssignForm(true);
+                                                                        }}
+                                                                        style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontWeight: '500' }}
+                                                                    >
+                                                                        Assign
+                                                                    </button>
+                                                                );
+                                                            })()
+                                                        )}
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); handleDeleteConsumable(item.consumable_id); }}
                                                             style={{ background: 'none', border: 'none', color: '#c33', cursor: 'pointer', fontWeight: '500' }}
@@ -1699,6 +1821,145 @@ const ConsumablesPage = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showAssignForm && assigningConsumable && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        color: 'var(--color-text)',
+                        padding: 'var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        width: '100%',
+                        maxWidth: '520px',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.25)',
+                        border: '1px solid var(--color-border)'
+                    }}>
+                        <h2 style={{ marginBottom: 'var(--space-4)' }}>Assign Consumable: {assigningConsumable.consumable_name || `Consumable ${assigningConsumable.consumable_id}`}</h2>
+                        <form onSubmit={handleAssignSubmit}>
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Assign to Person</label>
+                                <select
+                                    name="person"
+                                    value={assignFormData.person}
+                                    onChange={handleAssignInputChange}
+                                    required
+                                    disabled={saving}
+                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                >
+                                    <option value="">Select a person...</option>
+                                    {persons.map(p => (
+                                        <option key={p.person_id} value={p.person_id}>
+                                            {p.first_name} {p.last_name} ({p.person_id})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Start Date (Automatic)</label>
+                                <input
+                                    type="datetime-local"
+                                    name="start_datetime"
+                                    value={assignFormData.start_datetime}
+                                    onChange={handleAssignInputChange}
+                                    required
+                                    readOnly
+                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-secondary)', cursor: 'not-allowed', color: 'var(--color-text)' }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: 'var(--space-6)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Condition</label>
+                                <input
+                                    type="text"
+                                    name="condition_on_assignment"
+                                    value={assignFormData.condition_on_assignment}
+                                    onChange={handleAssignInputChange}
+                                    placeholder="e.g. Good, New"
+                                    required
+                                    disabled={saving}
+                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAssignForm(false); setAssigningConsumable(null); }}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', color: 'var(--color-text)' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                                >
+                                    {saving ? 'Assigning...' : 'Assign Consumable'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {dischargingAssignment && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        color: 'var(--color-text)',
+                        padding: 'var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        width: '100%',
+                        maxWidth: '420px',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.25)',
+                        border: '1px solid var(--color-border)'
+                    }}>
+                        <h2 style={{ marginBottom: 'var(--space-4)' }}>Confirm Discharge</h2>
+                        <p style={{ marginBottom: 'var(--space-6)' }}>
+                            Are you sure you want to end the assignment of <strong>{dischargingAssignment.consumable?.consumable_name || 'Consumable'}</strong> to person <strong>{dischargingAssignment.person}</strong>?
+                            <br /><br />
+                            The end date will be set to right now.
+                        </p>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                            <button
+                                type="button"
+                                onClick={() => setDischargingAssignment(null)}
+                                style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', color: 'var(--color-text)' }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleDischarge(dischargingAssignment.assignment_id)}
+                                disabled={saving}
+                                style={{ padding: 'var(--space-2) var(--space-4)', background: '#ef4444', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                            >
+                                {saving ? 'Discharging...' : 'Confirm Discharge'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

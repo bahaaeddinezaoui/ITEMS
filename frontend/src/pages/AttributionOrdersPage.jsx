@@ -29,6 +29,12 @@ const AttributionOrdersPage = () => {
         { id: Date.now(), asset_type: '', asset_model: '', asset_serial_number: '', asset_inventory_number: '', asset_name: '' }
     ]);
 
+    const [bulkAdd, setBulkAdd] = useState({
+        asset_type: '',
+        asset_model: '',
+        quantity: 1,
+    });
+
     const [viewMode, setViewMode] = useState('list');
     const [ordersList, setOrdersList] = useState([]);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -132,6 +138,48 @@ const AttributionOrdersPage = () => {
             }
         }
         setAssets(newAssets);
+    };
+
+    const handleBulkTypeChange = async (value) => {
+        setBulkAdd((prev) => ({ ...prev, asset_type: value, asset_model: '' }));
+        if (value && !assetModels[value]) {
+            try {
+                const models = await assetModelService.getByAssetType(value);
+                setAssetModels(prev => ({ ...prev, [value]: models }));
+            } catch (err) {
+                console.error('Failed to fetch models for type', value);
+            }
+        }
+    };
+
+    const addBulkAssets = () => {
+        const qty = Number(bulkAdd.quantity);
+        if (!bulkAdd.asset_type || !bulkAdd.asset_model || !Number.isFinite(qty) || qty < 1) return;
+
+        const now = Date.now();
+        const newRows = Array.from({ length: qty }, (_, i) => ({
+            id: now + i,
+            asset_type: bulkAdd.asset_type,
+            asset_model: bulkAdd.asset_model,
+            asset_serial_number: '',
+            asset_inventory_number: '',
+            asset_name: ''
+        }));
+
+        setAssets((prev) => {
+            if (
+                prev.length === 1 &&
+                !prev[0].asset_type &&
+                !prev[0].asset_model &&
+                !prev[0].asset_serial_number &&
+                !prev[0].asset_inventory_number &&
+                !prev[0].asset_name
+            ) {
+                return newRows;
+            }
+            return [...prev, ...newRows];
+        });
+        setBulkAdd((prev) => ({ ...prev, quantity: 1 }));
     };
 
     const addAssetRow = () => {
@@ -495,6 +543,66 @@ const AttributionOrdersPage = () => {
                                 </svg>
                                 Add Asset
                             </button>
+                        </div>
+
+                        <div className="card-body" style={{ paddingTop: 0 }}>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'minmax(180px, 1fr) minmax(180px, 1fr) minmax(120px, 180px) auto',
+                                gap: 'var(--space-4)',
+                                alignItems: 'end',
+                                marginBottom: 'var(--space-6)'
+                            }}>
+                                <div className="form-group">
+                                    <label className="form-label">Bulk Type</label>
+                                    <select
+                                        className="form-input"
+                                        value={bulkAdd.asset_type}
+                                        onChange={(e) => handleBulkTypeChange(e.target.value)}
+                                    >
+                                        <option value="">Select Type</option>
+                                        {assetTypes.map(t => (
+                                            <option key={t.asset_type_id} value={t.asset_type_id}>{t.asset_type_label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Bulk Model</label>
+                                    <select
+                                        className="form-input"
+                                        value={bulkAdd.asset_model}
+                                        onChange={(e) => setBulkAdd((prev) => ({ ...prev, asset_model: e.target.value }))}
+                                        disabled={!bulkAdd.asset_type}
+                                    >
+                                        <option value="">Select Model</option>
+                                        {(assetModels[bulkAdd.asset_type] || []).map(m => (
+                                            <option key={m.asset_model_id} value={m.asset_model_id}>{m.model_name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Quantity</label>
+                                    <input
+                                        type="number"
+                                        className="form-input"
+                                        min="1"
+                                        value={bulkAdd.quantity}
+                                        onChange={(e) => setBulkAdd((prev) => ({ ...prev, quantity: e.target.value }))}
+                                    />
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={addBulkAssets}
+                                    disabled={!bulkAdd.asset_type || !bulkAdd.asset_model || Number(bulkAdd.quantity) < 1}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', height: '40px' }}
+                                >
+                                    Add Quantity
+                                </button>
+                            </div>
                         </div>
 
                         <div className="table-container">

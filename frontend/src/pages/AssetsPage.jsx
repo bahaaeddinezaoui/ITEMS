@@ -786,6 +786,7 @@ const AssetsPage = () => {
     const isAssetResponsible = userAccount?.roles?.some(r => r.role_code === 'asset_responsible') || isSuperuser;
     const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
     const canMoveAssets = isAssetResponsible || isExploitationChief;
+    const canAssignAssets = isAssetResponsible || isExploitationChief;
 
     const pendingConfirmations = assignments.filter(a => !a.is_confirmed_by_exploitation_chief && a.is_active);
 
@@ -810,7 +811,8 @@ const AssetsPage = () => {
                     <div style={{ display: 'flex', gap: 'var(--space-4)', overflowX: 'auto', paddingBottom: 'var(--space-2)' }}>
                         {pendingConfirmations.map(a => (
                             <div key={a.assignment_id} style={{
-                                backgroundColor: 'white',
+                                backgroundColor: 'var(--color-bg-tertiary)',
+                                color: 'var(--color-text)',
                                 padding: 'var(--space-3)',
                                 borderRadius: 'var(--radius-sm)',
                                 border: '1px solid var(--color-border)',
@@ -1567,7 +1569,7 @@ const AssetsPage = () => {
                                                                 Move
                                                             </button>
                                                         )}
-                                                        {isAssetResponsible && (
+                                                        {canAssignAssets && (
                                                             (() => {
                                                                 const activeAssignment = activeAssignmentsByAsset.get(asset.asset_id);
                                                                 return activeAssignment ? (
@@ -1870,19 +1872,21 @@ const AssetsPage = () => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    backgroundColor: 'rgba(0,0,0,0.75)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 1000
                 }}>
                     <div style={{
-                        backgroundColor: 'white',
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        color: 'var(--color-text)',
                         padding: 'var(--space-6)',
                         borderRadius: 'var(--radius-md)',
                         width: '100%',
                         maxWidth: '400px',
-                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.25)',
+                        border: '1px solid var(--color-border)'
                     }}>
                         <h2 style={{ marginBottom: 'var(--space-4)' }}>Confirm Discharge</h2>
                         <p style={{ marginBottom: 'var(--space-6)' }}>

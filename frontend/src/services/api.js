@@ -1118,6 +1118,40 @@ export const assetAssignmentService = {
     },
 };
 
+export const stockItemAssignmentService = {
+    getAll: async (params) => {
+        const response = await api.get('stock-item-assignments/', { params });
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('stock-item-assignments/', data);
+        return response.data;
+    },
+
+    discharge: async (id) => {
+        const response = await api.post(`stock-item-assignments/${id}/discharge/`);
+        return response.data;
+    },
+};
+
+export const consumableAssignmentService = {
+    getAll: async (params) => {
+        const response = await api.get('consumable-assignments/', { params });
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('consumable-assignments/', data);
+        return response.data;
+    },
+
+    discharge: async (id) => {
+        const response = await api.post(`consumable-assignments/${id}/discharge/`);
+        return response.data;
+    },
+};
+
 // Warehouse service
 export const warehouseService = {
     getAll: async () => {
