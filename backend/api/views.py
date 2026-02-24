@@ -8,7 +8,7 @@ from django.db.models import OuterRef, Subquery
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
@@ -293,6 +293,81 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
     serializer_class = MaintenanceStepSerializer
     permission_classes = [IsAuthenticated]
 
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        old_status = getattr(instance, "maintenance_step_status", None)
+        new_status = serializer.validated_data.get("maintenance_step_status", old_status)
+
+        updated = serializer.save()
+
+        try:
+            if new_status != "done" or old_status == "done":
+                return
+
+            typical_step = getattr(updated, "maintenance_typical_step", None)
+            op_type = getattr(typical_step, "operation_type", None)
+            if op_type != "add":
+                return
+
+            maintenance = getattr(updated, "maintenance", None)
+            asset = getattr(maintenance, "asset", None) if maintenance else None
+            if not asset:
+                return
+
+            fulfilled_req = (
+                MaintenanceStepItemRequest.objects.filter(
+                    maintenance_step=updated,
+                    status="fulfilled",
+                )
+                .order_by("-fulfilled_at", "-maintenance_step_item_request_id")
+                .first()
+            )
+            if not fulfilled_req:
+                print(
+                    f"[maintenance-step] done+add but no fulfilled request for step_id={updated.maintenance_step_id}"
+                )
+                return
+
+            now_dt = timezone.now()
+
+            with connection.cursor() as cursor:
+                if getattr(fulfilled_req, "stock_item_id", None):
+                    cursor.execute(
+                        """
+                        INSERT INTO public.asset_is_composed_of_stock_item_history
+                            (stock_item_id, asset_id, maintenance_step_id, start_datetime, end_datetime)
+                        VALUES (%s, %s, %s, %s, NULL)
+                        ON CONFLICT DO NOTHING
+                        """,
+                        [
+                            fulfilled_req.stock_item_id,
+                            asset.asset_id,
+                            updated.maintenance_step_id,
+                            now_dt,
+                        ],
+                    )
+
+                if getattr(fulfilled_req, "consumable_id", None):
+                    cursor.execute(
+                        """
+                        INSERT INTO public.asset_is_composed_of_consumable_history
+                            (consumable_id, asset_id, maintenance_step_id, start_datetime, end_datetime)
+                        VALUES (%s, %s, %s, %s, NULL)
+                        ON CONFLICT DO NOTHING
+                        """,
+                        [
+                            fulfilled_req.consumable_id,
+                            asset.asset_id,
+                            updated.maintenance_step_id,
+                            now_dt,
+                        ],
+                    )
+        except Exception:
+            # Never break the status update due to automatic composition insert.
+            # Any unexpected DB constraint issue should be handled separately.
+            print(f"[maintenance-step] failed to auto-compose on done+add for step_id={getattr(updated, 'maintenance_step_id', None)}")
+            return
+
     def create(self, request, *args, **kwargs):
         last_item = MaintenanceStep.objects.order_by("-maintenance_step_id").first()
         next_id = (last_item.maintenance_step_id + 1) if last_item else 1
@@ -360,6 +435,130 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             return person, None
 
         return None, Response({"error": "Not allowed to request items for this step"}, status=status.HTTP_403_FORBIDDEN)
+
+    def _require_can_act_on_step(self, request, step: MaintenanceStep):
+        # Same rule-set as requesting: assigned technician, maintenance chief, or superuser
+        return self._require_can_request_for_step(request, step)
+
+    @action(detail=True, methods=["get"], url_path="components")
+    def components(self, request, pk=None):
+        step = self.get_object()
+        _, denial = self._require_can_act_on_step(request, step)
+        if denial:
+            return denial
+
+        typical_step = getattr(step, "maintenance_typical_step", None)
+        op_type = getattr(typical_step, "operation_type", None)
+        if op_type != "remove":
+            return Response({"error": "This action is only available for operation_type 'remove'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        maintenance = getattr(step, "maintenance", None)
+        asset = getattr(maintenance, "asset", None) if maintenance else None
+        if not asset:
+            return Response({"error": "Maintenance asset not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT s.stock_item_id, s.stock_item_inventory_number, s.stock_item_name
+                FROM public.asset_is_composed_of_stock_item_history h
+                JOIN public.stock_item s ON s.stock_item_id = h.stock_item_id
+                WHERE h.asset_id = %s AND h.end_datetime IS NULL
+                ORDER BY s.stock_item_id
+                """,
+                [asset.asset_id],
+            )
+            stock_rows = cursor.fetchall()
+
+            cursor.execute(
+                """
+                SELECT c.consumable_id, c.consumable_inventory_number, c.consumable_name
+                FROM public.asset_is_composed_of_consumable_history h
+                JOIN public.consumable c ON c.consumable_id = h.consumable_id
+                WHERE h.asset_id = %s AND h.end_datetime IS NULL
+                ORDER BY c.consumable_id
+                """,
+                [asset.asset_id],
+            )
+            consumable_rows = cursor.fetchall()
+
+        return Response(
+            {
+                "stock_items": [
+                    {
+                        "stock_item_id": r[0],
+                        "stock_item_inventory_number": r[1],
+                        "stock_item_name": r[2],
+                    }
+                    for r in stock_rows
+                ],
+                "consumables": [
+                    {
+                        "consumable_id": r[0],
+                        "consumable_inventory_number": r[1],
+                        "consumable_name": r[2],
+                    }
+                    for r in consumable_rows
+                ],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"], url_path="remove-component")
+    def remove_component(self, request, pk=None):
+        step = self.get_object()
+        _, denial = self._require_can_act_on_step(request, step)
+        if denial:
+            return denial
+
+        typical_step = getattr(step, "maintenance_typical_step", None)
+        op_type = getattr(typical_step, "operation_type", None)
+        if op_type != "remove":
+            return Response({"error": "This action is only available for operation_type 'remove'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        component_type = request.data.get("component_type")
+        component_id = request.data.get("component_id")
+        if component_type not in {"stock_item", "consumable"}:
+            return Response({"error": "component_type must be 'stock_item' or 'consumable'"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            component_id_int = int(component_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid component_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        maintenance = getattr(step, "maintenance", None)
+        asset = getattr(maintenance, "asset", None) if maintenance else None
+        if not asset:
+            return Response({"error": "Maintenance asset not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        now_dt = timezone.now()
+        with connection.cursor() as cursor:
+            if component_type == "stock_item":
+                cursor.execute(
+                    """
+                    UPDATE public.asset_is_composed_of_stock_item_history
+                    SET end_datetime = %s
+                    WHERE asset_id = %s AND stock_item_id = %s AND end_datetime IS NULL
+                    """,
+                    [now_dt, asset.asset_id, component_id_int],
+                )
+                updated_rows = cursor.rowcount
+            else:
+                cursor.execute(
+                    """
+                    UPDATE public.asset_is_composed_of_consumable_history
+                    SET end_datetime = %s
+                    WHERE asset_id = %s AND consumable_id = %s AND end_datetime IS NULL
+                    """,
+                    [now_dt, asset.asset_id, component_id_int],
+                )
+                updated_rows = cursor.rowcount
+
+        if not updated_rows:
+            return Response({"error": "Component not found on asset (or already removed)"}, status=status.HTTP_404_NOT_FOUND)
+
+        step.maintenance_step_status = "done"
+        step.save(update_fields=["maintenance_step_status"])
+        return Response(self.get_serializer(step).data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="request-stock-item")
     def request_stock_item(self, request, pk=None):

@@ -34,6 +34,14 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     const [requestSubmitting, setRequestSubmitting] = useState(false);
     const [requestMessage, setRequestMessage] = useState(null);
 
+    const [removeEditorOpen, setRemoveEditorOpen] = useState(false);
+    const [removeEditorStep, setRemoveEditorStep] = useState(null);
+    const [removeComponents, setRemoveComponents] = useState({ stock_items: [], consumables: [] });
+    const [removeSelectedType, setRemoveSelectedType] = useState('');
+    const [removeSelectedId, setRemoveSelectedId] = useState('');
+    const [removeLoading, setRemoveLoading] = useState(false);
+    const [removeSubmitting, setRemoveSubmitting] = useState(false);
+
     // New Step Form State
     const [newStepTypicalId, setNewStepTypicalId] = useState('');
     const [newStepPersonId, setNewStepPersonId] = useState('');
@@ -143,6 +151,62 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
         setRequestModels([]);
         setRequestSubmitting(false);
         setRequestMessage(null);
+    };
+
+    const closeRemoveEditor = () => {
+        setRemoveEditorOpen(false);
+        setRemoveEditorStep(null);
+        setRemoveComponents({ stock_items: [], consumables: [] });
+        setRemoveSelectedType('');
+        setRemoveSelectedId('');
+        setRemoveLoading(false);
+        setRemoveSubmitting(false);
+    };
+
+    const openRemoveEditor = async (step) => {
+        setRemoveEditorOpen(true);
+        setRemoveEditorStep(step);
+        setRemoveComponents({ stock_items: [], consumables: [] });
+        setRemoveSelectedType('');
+        setRemoveSelectedId('');
+
+        try {
+            setRemoveLoading(true);
+            await handleUpdateStatus(step, 'In Progress');
+            const data = await maintenanceStepService.getComponents(step.maintenance_step_id);
+            setRemoveComponents({
+                stock_items: Array.isArray(data?.stock_items) ? data.stock_items : [],
+                consumables: Array.isArray(data?.consumables) ? data.consumables : [],
+            });
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to load components');
+            closeRemoveEditor();
+        } finally {
+            setRemoveLoading(false);
+        }
+    };
+
+    const submitRemoveEditor = async () => {
+        if (!removeEditorStep) return;
+        if (!removeSelectedType || !removeSelectedId) {
+            setError('Please select a component to remove');
+            return;
+        }
+        try {
+            setRemoveSubmitting(true);
+            await maintenanceStepService.removeComponent(removeEditorStep.maintenance_step_id, {
+                component_type: removeSelectedType,
+                component_id: Number(removeSelectedId),
+            });
+            await loadData();
+            closeRemoveEditor();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to remove component');
+        } finally {
+            setRemoveSubmitting(false);
+        }
     };
 
     const openRequestEditor = (step, requestType) => {
@@ -421,6 +485,17 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                                     Update status
                                                 </button>
 
+                                                {step.maintenance_typical_step?.operation_type === 'remove' && (
+                                                    <button
+                                                        className="btn btn-xs btn-danger"
+                                                        style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                        onClick={() => openRemoveEditor(step)}
+                                                        disabled={removeLoading || removeSubmitting}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                )}
+
                                                 {statusEditorStepId === step.maintenance_step_id && (
                                                     <div
                                                         className="card"
@@ -583,6 +658,104 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                             {requestSubmitting ? 'Requesting...' : 'Submit request'}
                         </button>
                     </div>
+                </div>
+            )}
+
+            {removeEditorOpen && removeEditorStep && (
+                <div
+                    className="card"
+                    style={{
+                        position: 'fixed',
+                        right: 20,
+                        bottom: 20,
+                        zIndex: 50,
+                        width: 520,
+                        padding: 'var(--space-4)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-bg-tertiary)',
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ fontWeight: 700 }}>Remove component</div>
+                        <button
+                            className="btn btn-xs btn-secondary"
+                            style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                            onClick={closeRemoveEditor}
+                            disabled={removeSubmitting}
+                        >
+                            Close
+                        </button>
+                    </div>
+
+                    <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                        Step: <b>{removeEditorStep.maintenance_step_id}</b>
+                    </div>
+
+                    {removeLoading ? (
+                        <div style={{ fontSize: 13, opacity: 0.85 }}>Loading components...</div>
+                    ) : (
+                        <>
+                            <div className="form-group" style={{ marginBottom: 10 }}>
+                                <label className="form-label">Component</label>
+                                <select
+                                    className="form-input"
+                                    value={removeSelectedType && removeSelectedId ? `${removeSelectedType}:${removeSelectedId}` : ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (!value) {
+                                            setRemoveSelectedType('');
+                                            setRemoveSelectedId('');
+                                            return;
+                                        }
+                                        const [t, id] = value.split(':');
+                                        setRemoveSelectedType(t);
+                                        setRemoveSelectedId(id);
+                                    }}
+                                >
+                                    <option value="">Select component...</option>
+
+                                    {removeComponents.stock_items?.length > 0 && (
+                                        <optgroup label="Stock items">
+                                            {removeComponents.stock_items.map((it) => (
+                                                <option key={`stock_item:${it.stock_item_id}`} value={`stock_item:${it.stock_item_id}`}>
+                                                    {it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}{it.stock_item_name || `Stock item ${it.stock_item_id}`}
+                                                </option>
+                                            ))}
+                                        </optgroup>
+                                    )}
+
+                                    {removeComponents.consumables?.length > 0 && (
+                                        <optgroup label="Consumables">
+                                            {removeComponents.consumables.map((it) => (
+                                                <option key={`consumable:${it.consumable_id}`} value={`consumable:${it.consumable_id}`}>
+                                                    {it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}{it.consumable_name || `Consumable ${it.consumable_id}`}
+                                                </option>
+                                            ))}
+                                        </optgroup>
+                                    )}
+                                </select>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', marginTop: 'var(--space-3)' }}>
+                                <button
+                                    className="btn btn-xs btn-secondary"
+                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                    onClick={closeRemoveEditor}
+                                    disabled={removeSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="btn btn-xs btn-danger"
+                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                    onClick={submitRemoveEditor}
+                                    disabled={removeSubmitting || !removeSelectedType || !removeSelectedId}
+                                >
+                                    {removeSubmitting ? 'Removing...' : 'Remove'}
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
         </div>

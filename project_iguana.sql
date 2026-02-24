@@ -1233,7 +1233,23 @@ CREATE TABLE public.maintenance_typical_step (
     estimated_cost numeric(10,2),
     actual_cost numeric(10,2),
     description character varying(256),
-    maintenance_type character(8)
+    maintenance_type character(8),
+    operation_type character varying(24) DEFAULT 'change'::character varying NOT NULL,
+    CONSTRAINT maintenance_typical_step_operation_type_check CHECK (
+        operation_type::text = ANY (
+            ARRAY[
+                'add'::character varying,
+                'remove'::character varying,
+                'change'::character varying,
+                'replace'::character varying,
+                'repair'::character varying,
+                'inspect'::character varying,
+                'clean'::character varying,
+                'calibrate'::character varying,
+                'test'::character varying
+            ]::text[]
+        )
+    )
 );
 
 

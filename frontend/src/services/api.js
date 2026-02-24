@@ -1011,6 +1011,16 @@ export const maintenanceStepService = {
         return response.data;
     },
 
+    getComponents: async (id) => {
+        const response = await api.get(`maintenance-steps/${id}/components/`);
+        return response.data;
+    },
+
+    removeComponent: async (id, data) => {
+        const response = await api.post(`maintenance-steps/${id}/remove-component/`, data);
+        return response.data;
+    },
+
     delete: async (id) => {
         await api.delete(`maintenance-steps/${id}/`);
     },

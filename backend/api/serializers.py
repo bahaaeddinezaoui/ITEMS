@@ -662,7 +662,7 @@ class MaintenanceTypicalStepSerializer(serializers.ModelSerializer):
     """Serializer for MaintenanceTypicalStep model"""
     class Meta:
         model = MaintenanceTypicalStep
-        fields = ['maintenance_typical_step_id', 'estimated_cost', 'actual_cost', 'description', 'maintenance_type']
+        fields = ['maintenance_typical_step_id', 'estimated_cost', 'actual_cost', 'description', 'maintenance_type', 'operation_type']
         read_only_fields = ['maintenance_typical_step_id']
 
 

@@ -739,6 +739,7 @@ class MaintenanceTypicalStep(models.Model):
     actual_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, db_column='actual_cost')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
     maintenance_type = models.CharField(max_length=8, blank=True, null=True, db_column='maintenance_type')
+    operation_type = models.CharField(max_length=24, blank=True, null=True, db_column='operation_type')
 
     class Meta:
         managed = False
@@ -840,7 +841,7 @@ class AssetIsComposedOfStockItemHistory(models.Model):
     """Maps to asset_is_composed_of_stock_item_history table"""
     stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id', related_name='+')
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', related_name='+')
-    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.CASCADE, db_column='maintenance_step_id', related_name='+')
+    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.CASCADE, db_column='maintenance_step_id', related_name='+', primary_key=True)
     start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
     end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
 
@@ -854,7 +855,7 @@ class AssetIsComposedOfConsumableHistory(models.Model):
     """Maps to asset_is_composed_of_consumable_history table"""
     consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', related_name='+')
-    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.CASCADE, db_column='maintenance_step_id', related_name='+')
+    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.CASCADE, db_column='maintenance_step_id', related_name='+', primary_key=True)
     start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
     end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
 

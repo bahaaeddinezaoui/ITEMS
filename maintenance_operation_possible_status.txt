@@ -1,0 +1,9 @@
+  'add',
+  'remove',
+  'change',
+  'replace',
+  'repair',
+  'inspect',
+  'clean',
+  'calibrate',
+  'test'
