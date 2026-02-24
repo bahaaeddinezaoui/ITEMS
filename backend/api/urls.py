@@ -1,6 +1,6 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, AssetIsAssignedToPersonViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, MaintenanceStepItemRequestViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, WarehouseViewSet, AttributionOrderViewSet, ReceiptReportViewSet, AdministrativeCertificateViewSet, CompanyAssetRequestViewSet
+from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, AssetIsAssignedToPersonViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, MaintenanceStepItemRequestViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PhysicalConditionViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, WarehouseViewSet, AttributionOrderViewSet, ReceiptReportViewSet, AdministrativeCertificateViewSet, CompanyAssetRequestViewSet
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
@@ -36,6 +36,7 @@ router.register(r'maintenance-typical-steps', MaintenanceTypicalStepViewSet, bas
 router.register(r'problem-reports', ProblemReportViewSet, basename='problemreport')
 router.register(r'room-types', RoomTypeViewSet, basename='roomtype')
 router.register(r'rooms', RoomViewSet, basename='room')
+router.register(r'physical-conditions', PhysicalConditionViewSet, basename='physicalcondition')
 router.register(r'positions', PositionViewSet, basename='position')
 router.register(r'organizational-structures', OrganizationalStructureViewSet, basename='organizationalstructure')
 router.register(r'organizational-structure-relations', OrganizationalStructureRelationViewSet, basename='organizationalstructurerelation')

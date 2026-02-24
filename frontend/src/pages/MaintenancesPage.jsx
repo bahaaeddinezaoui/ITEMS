@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { assetService, maintenanceService, personService } from '../services/api';
+import { assetService, maintenanceService, personService, roomService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const MaintenancesPage = () => {
@@ -19,6 +19,12 @@ const MaintenancesPage = () => {
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState('');
     const [createDescription, setCreateDescription] = useState('');
+
+    const [assetCurrentRoom, setAssetCurrentRoom] = useState(null);
+    const [maintenanceRooms, setMaintenanceRooms] = useState([]);
+    const [selectedMaintenanceRoom, setSelectedMaintenanceRoom] = useState('');
+    const [loadingAssetRoom, setLoadingAssetRoom] = useState(false);
+
 
 
     const isChief = useMemo(() => {
@@ -51,6 +57,7 @@ const MaintenancesPage = () => {
         }
     };
 
+
     const loadTechnicians = async () => {
         try {
             // Filter by role code 'maintenance_technician'
@@ -76,7 +83,28 @@ const MaintenancesPage = () => {
         setSelectedAsset('');
         setSelectedTechnician('');
         setCreateDescription('');
+        setAssetCurrentRoom(null);
+        setMaintenanceRooms([]);
+        setSelectedMaintenanceRoom('');
         setShowCreateModal(true);
+    };
+
+    const isMaintenanceRoom = (room) => {
+        const code = (room?.room_type_code || '').toUpperCase();
+        const label = (room?.room_type_label || '').toLowerCase();
+        if (code && ['MR', 'MAINTENANCE', 'MAINT'].includes(code)) return true;
+        return label.includes('maintenance');
+    };
+
+    const loadMaintenanceRooms = async () => {
+        try {
+            const rooms = await roomService.getAll();
+            const filtered = (Array.isArray(rooms) ? rooms : []).filter(isMaintenanceRoom);
+            setMaintenanceRooms(filtered);
+        } catch (err) {
+            console.error(err);
+            setMaintenanceRooms([]);
+        }
     };
 
     const handleCreateSubmit = async (e) => {
@@ -92,11 +120,20 @@ const MaintenancesPage = () => {
 
         setSubmitting(true);
         try {
-            await maintenanceService.createDirect({
+            const payload = {
                 asset_id: selectedAsset,
                 technician_person_id: selectedTechnician,
                 description: createDescription,
-            });
+            };
+            if (assetCurrentRoom && !isMaintenanceRoom(assetCurrentRoom)) {
+                if (!selectedMaintenanceRoom) {
+                    setError('Please select the maintenance room to move the asset to');
+                    setSubmitting(false);
+                    return;
+                }
+                payload.destination_room_id = Number(selectedMaintenanceRoom);
+            }
+            await maintenanceService.createDirect(payload);
             setShowCreateModal(false);
             loadMaintenances();
         } catch (err) {
@@ -153,14 +190,29 @@ const MaintenancesPage = () => {
 
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title">
-                        {isChief ? 'All Maintenances' : 'My Maintenances'}
-                    </h2>
-                    {isChief && (
-                        <button className="btn btn-primary" onClick={openCreateMaintenance}>
-                            Create Maintenance
-                        </button>
-                    )}
+                    <div
+                        style={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexWrap: 'nowrap',
+                            gap: '0.75rem',
+                        }}
+                    >
+                        <h2 className="card-title" style={{ margin: 0, flex: '1 1 auto', minWidth: 0 }}>
+                            {isChief ? 'All Maintenances' : 'My Maintenances'}
+                        </h2>
+                        {isChief && (
+                            <button
+                                className="btn btn-sm btn-primary"
+                                onClick={openCreateMaintenance}
+                                style={{ width: 'auto', whiteSpace: 'nowrap', flex: '0 0 auto' }}
+                            >
+                                Create Maintenance
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="table-container">
@@ -306,7 +358,16 @@ const MaintenancesPage = () => {
             {/* Create Maintenance Modal */}
             {showCreateModal && (
                 <div className="modal-overlay" onClick={() => !submitting && setShowCreateModal(false)}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                    <div
+                        className="modal"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            maxHeight: '80vh',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}
+                    >
                         <div className="modal-header">
                             <h3 className="modal-title">Create Maintenance</h3>
                             <button className="modal-close" onClick={() => !submitting && setShowCreateModal(false)}>
@@ -317,15 +378,35 @@ const MaintenancesPage = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreateSubmit}>
-                            <div className="modal-body">
+                        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
                                 <div className="form-group">
                                     <label htmlFor="asset" className="form-label">Asset</label>
                                     <select
                                         id="asset"
                                         className="form-input"
                                         value={selectedAsset}
-                                        onChange={(e) => setSelectedAsset(e.target.value)}
+                                        onChange={async (e) => {
+                                            const value = e.target.value;
+                                            setSelectedAsset(value);
+                                            setAssetCurrentRoom(null);
+                                            setSelectedMaintenanceRoom('');
+                                            if (!value) return;
+                                            try {
+                                                setLoadingAssetRoom(true);
+                                                const data = await assetService.getCurrentRoom(value);
+                                                const room = data?.room || null;
+                                                setAssetCurrentRoom(room);
+                                                if (room && !isMaintenanceRoom(room)) {
+                                                    await loadMaintenanceRooms();
+                                                }
+                                            } catch (err) {
+                                                console.error(err);
+                                                setAssetCurrentRoom(null);
+                                            } finally {
+                                                setLoadingAssetRoom(false);
+                                            }
+                                        }}
                                     >
                                         <option value="">-- Select Asset --</option>
                                         {assets.map((a) => (
@@ -335,6 +416,41 @@ const MaintenancesPage = () => {
                                         ))}
                                     </select>
                                 </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Asset Current Room</label>
+                                    <div
+                                        className="form-input"
+                                        style={{
+                                            backgroundColor: 'var(--color-bg-secondary)',
+                                            color: 'var(--color-text-primary)',
+                                        }}
+                                    >
+                                        {loadingAssetRoom
+                                            ? 'Loading...'
+                                            : assetCurrentRoom
+                                                ? `${assetCurrentRoom.room_name}${assetCurrentRoom.room_type_label ? ` (${assetCurrentRoom.room_type_label})` : ''}`
+                                                : '-'}
+                                    </div>
+                                </div>
+
+                                {assetCurrentRoom && !isMaintenanceRoom(assetCurrentRoom) && (
+                                    <div className="form-group">
+                                        <label className="form-label">Move asset to maintenance room</label>
+                                        <select
+                                            className="form-input"
+                                            value={selectedMaintenanceRoom}
+                                            onChange={(e) => setSelectedMaintenanceRoom(e.target.value)}
+                                        >
+                                            <option value="">-- Select Maintenance Room --</option>
+                                            {maintenanceRooms.map((r) => (
+                                                <option key={r.room_id} value={r.room_id}>
+                                                    {r.room_name}{r.room_type_label ? ` (${r.room_type_label})` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
 
                                 <div className="form-group">
                                     <label htmlFor="technician_create" className="form-label">Technician</label>

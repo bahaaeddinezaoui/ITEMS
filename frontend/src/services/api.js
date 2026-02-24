@@ -876,6 +876,11 @@ export const assetService = {
     delete: async (id) => {
         await api.delete(`assets/${id}/`);
     },
+
+    getCurrentRoom: async (id) => {
+        const response = await api.get(`assets/${id}/current-room/`);
+        return response.data;
+    },
 };
 
 // Stock Item service
@@ -1021,8 +1026,20 @@ export const maintenanceStepService = {
         return response.data;
     },
 
+    updateAssetCondition: async (id, data) => {
+        const response = await api.post(`maintenance-steps/${id}/update-asset-condition/`, data);
+        return response.data;
+    },
+
     delete: async (id) => {
         await api.delete(`maintenance-steps/${id}/`);
+    },
+};
+
+export const physicalConditionService = {
+    getAll: async () => {
+        const response = await api.get('physical-conditions/');
+        return response.data;
     },
 };
 

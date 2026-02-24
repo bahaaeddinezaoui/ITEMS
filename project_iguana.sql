@@ -728,19 +728,6 @@ ALTER TABLE public.consumable_condition_history OWNER TO postgres;
 
 --
 -- TOC entry 245 (class 1259 OID 18217)
--- Name: consumable_condition_history_has_physical_condition; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.consumable_condition_history_has_physical_condition (
-    consumable_condition_history_id integer CONSTRAINT consumable_condition_histo_consumable_condition_histo_not_null1 NOT NULL,
-    condition_id integer CONSTRAINT consumable_condition_history_has_physical_condition_id_not_null NOT NULL
-);
-
-
-ALTER TABLE public.consumable_condition_history_has_physical_condition OWNER TO postgres;
-
---
--- TOC entry 246 (class 1259 OID 18224)
 -- Name: consumable_is_assigned_to_person; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2257,16 +2244,6 @@ COPY public.consumable_condition_history (consumable_condition_history_id, consu
 
 --
 -- TOC entry 5739 (class 0 OID 18217)
--- Dependencies: 245
--- Data for Name: consumable_condition_history_has_physical_condition; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.consumable_condition_history_has_physical_condition (consumable_condition_history_id, condition_id) FROM stdin;
-\.
-
-
---
--- TOC entry 5740 (class 0 OID 18224)
 -- Dependencies: 246
 -- Data for Name: consumable_is_assigned_to_person; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -3348,15 +3325,6 @@ ALTER TABLE ONLY public.consumable_brand
 
 --
 -- TOC entry 5276 (class 2606 OID 18223)
--- Name: consumable_condition_history_has_physical_condition consumable_condition_history_has_physical_condition_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.consumable_condition_history_has_physical_condition
-    ADD CONSTRAINT consumable_condition_history_has_physical_condition_pkey PRIMARY KEY (consumable_condition_history_id, condition_id);
-
-
---
--- TOC entry 5274 (class 2606 OID 18216)
 -- Name: consumable_condition_history consumable_condition_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4415,15 +4383,6 @@ ALTER TABLE ONLY public.consumable_attribute_value
 
 --
 -- TOC entry 5471 (class 2606 OID 18862)
--- Name: consumable_condition_history_has_physical_condition fk_cchhpc_history; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.consumable_condition_history_has_physical_condition
-    ADD CONSTRAINT fk_cchhpc_history FOREIGN KEY (consumable_condition_history_id) REFERENCES public.consumable_condition_history(consumable_condition_history_id) ON UPDATE RESTRICT ON DELETE RESTRICT;
-
-
---
--- TOC entry 5473 (class 2606 OID 18872)
 -- Name: consumable_is_assigned_to_person fk_ciatp_consumable; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4595,15 +4554,6 @@ ALTER TABLE ONLY public.consumable_is_assigned_to_person
 
 --
 -- TOC entry 5472 (class 2606 OID 18857)
--- Name: consumable_condition_history_has_physical_condition fk_consumab_consumabl_physical; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.consumable_condition_history_has_physical_condition
-    ADD CONSTRAINT fk_consumab_consumabl_physical FOREIGN KEY (condition_id) REFERENCES public.physical_condition(condition_id) ON UPDATE RESTRICT ON DELETE RESTRICT;
-
-
---
--- TOC entry 5488 (class 2606 OID 18932)
 -- Name: consumable_movement fk_consumab_consumabl_room_dest; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 

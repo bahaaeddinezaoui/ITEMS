@@ -67,6 +67,9 @@ from .models import (
     StockItemMovement,
     ConsumableMovement,
     MaintenanceStepItemRequest,
+    AssetMovement,
+    PhysicalCondition,
+    AssetConditionHistory,
 )
 from .serializers import (
     AssetAttributeDefinitionSerializer,
@@ -91,6 +94,7 @@ from .serializers import (
     MaintenanceStepSerializer,
     MaintenanceSerializer,
     MaintenanceTypicalStepSerializer,
+    PhysicalConditionSerializer,
     OrganizationalStructureRelationSerializer,
     OrganizationalStructureSerializer,
     PersonSerializer,
@@ -248,6 +252,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         asset_id = request.data.get("asset_id")
         technician_person_id = request.data.get("technician_person_id")
         description = request.data.get("description")
+        destination_room_id = request.data.get("destination_room_id")
 
         if not asset_id:
             return Response({"error": "asset_id is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -257,6 +262,54 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         asset = Asset.objects.filter(asset_id=asset_id).first()
         if not asset:
             return Response({"error": "Asset not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        last_move = (
+            AssetMovement.objects.select_related("destination_room", "destination_room__room_type")
+            .filter(asset_id=asset.asset_id)
+            .order_by("-asset_movement_id")
+            .first()
+        )
+        current_room = last_move.destination_room if last_move else None
+
+        def _is_maintenance_room(room: Room | None) -> bool:
+            if not room or not getattr(room, "room_type", None):
+                return False
+            code = getattr(room.room_type, "room_type_code", None)
+            label = (getattr(room.room_type, "room_type_label", None) or "").lower()
+            if code and str(code).upper() in {"MR", "MAINTENANCE", "MAINT"}:
+                return True
+            return "maintenance" in label
+
+        if not _is_maintenance_room(current_room):
+            if not destination_room_id:
+                return Response(
+                    {
+                        "error": "Asset is not in a maintenance room. destination_room_id is required to move the asset before creating maintenance.",
+                        "current_room": RoomSerializer(current_room).data if current_room else None,
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            destination_room = Room.objects.select_related("room_type").filter(room_id=destination_room_id).first()
+            if not destination_room:
+                return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+            if not _is_maintenance_room(destination_room):
+                return Response({"error": "destination_room_id must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
+            if not current_room:
+                return Response({"error": "Cannot infer asset current room (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+
+            last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+            next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+            AssetMovement.objects.create(
+                asset_movement_id=next_asset_move_id,
+                asset=asset,
+                source_room=current_room,
+                destination_room=destination_room,
+                maintenance_step=None,
+                external_maintenance_step_id=None,
+                movement_reason="maintenance_create",
+                movement_datetime=timezone.now(),
+            )
 
         technician = Person.objects.filter(person_id=technician_person_id).first()
         if not technician:
@@ -439,6 +492,51 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
     def _require_can_act_on_step(self, request, step: MaintenanceStep):
         # Same rule-set as requesting: assigned technician, maintenance chief, or superuser
         return self._require_can_request_for_step(request, step)
+
+    @action(detail=True, methods=["post"], url_path="update-asset-condition")
+    def update_asset_condition(self, request, pk=None):
+        step = self.get_object()
+        _, denial = self._require_can_act_on_step(request, step)
+        if denial:
+            return denial
+
+        if getattr(step, "maintenance_step_status", None) == "done":
+            return Response({"error": "Step is done"}, status=status.HTTP_400_BAD_REQUEST)
+
+        condition_id = request.data.get("condition_id")
+        notes = request.data.get("notes")
+        cosmetic_issues = request.data.get("cosmetic_issues")
+        functional_issues = request.data.get("functional_issues")
+        recommendation = request.data.get("recommendation")
+        if not condition_id:
+            return Response({"error": "condition_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        maintenance = getattr(step, "maintenance", None)
+        asset = getattr(maintenance, "asset", None) if maintenance else None
+        if not asset:
+            return Response({"error": "Maintenance asset not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        condition = PhysicalCondition.objects.filter(condition_id=condition_id).first()
+        if not condition:
+            return Response({"error": "Invalid condition_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_item = AssetConditionHistory.objects.order_by("-asset_condition_history_id").first()
+        next_id = (last_item.asset_condition_history_id + 1) if last_item else 1
+
+        AssetConditionHistory.objects.create(
+            asset_condition_history_id=next_id,
+            asset=asset,
+            condition=condition,
+            notes=notes,
+            cosmetic_issues=cosmetic_issues,
+            functional_issues=functional_issues,
+            recommendation=recommendation,
+            created_at=timezone.now(),
+        )
+
+        MaintenanceStep.objects.filter(maintenance_step_id=step.maintenance_step_id).update(asset_condition_history=next_id)
+
+        return Response({"asset_condition_history_id": next_id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"], url_path="components")
     def components(self, request, pk=None):
@@ -1433,6 +1531,19 @@ class AssetViewSet(viewsets.ModelViewSet):
     serializer_class = AssetSerializer
     permission_classes = [IsAuthenticated]
 
+    @action(detail=True, methods=["get"], url_path="current-room")
+    def current_room(self, request, pk=None):
+        asset = self.get_object()
+        last_move = (
+            AssetMovement.objects.select_related("destination_room", "destination_room__room_type")
+            .filter(asset_id=asset.asset_id)
+            .order_by("-asset_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response({"room": None}, status=status.HTTP_200_OK)
+        return Response({"room": RoomSerializer(last_move.destination_room).data}, status=status.HTTP_200_OK)
+
     def get_queryset(self):
         queryset = Asset.objects.select_related("asset_model").order_by("asset_id")
         asset_model_id = self.request.query_params.get("asset_model")
@@ -1972,6 +2083,12 @@ class RoomViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_room.room_id + 1) if last_room else 1
         room = Room.objects.create(room_id=next_id, **serializer.validated_data)
         return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
+
+
+class PhysicalConditionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = PhysicalCondition.objects.all().order_by("condition_id")
+    serializer_class = PhysicalConditionSerializer
+    permission_classes = [IsAuthenticated]
 
 
 # Position ViewSet

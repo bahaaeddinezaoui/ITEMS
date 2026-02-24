@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest, MaintenanceStepItemRequest
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest, MaintenanceStepItemRequest
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -15,6 +15,12 @@ class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
         fields = ['role_id', 'role_code', 'role_label', 'description']
+
+
+class PhysicalConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhysicalCondition
+        fields = ['condition_id', 'condition_code', 'condition_label', 'description']
 
 
 class LoginSerializer(serializers.Serializer):
@@ -145,9 +151,10 @@ class RoomTypeSerializer(serializers.ModelSerializer):
 class RoomSerializer(serializers.ModelSerializer):
     """Serializer for Room model"""
     room_type_label = serializers.CharField(source='room_type.room_type_label', read_only=True)
+    room_type_code = serializers.CharField(source='room_type.room_type_code', read_only=True)
     class Meta:
         model = Room
-        fields = ['room_id', 'room_name', 'room_type', 'room_type_label']
+        fields = ['room_id', 'room_name', 'room_type', 'room_type_label', 'room_type_code']
         read_only_fields = ['room_id']
 
 

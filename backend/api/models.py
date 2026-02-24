@@ -865,6 +865,29 @@ class AssetIsComposedOfConsumableHistory(models.Model):
         unique_together = (('consumable', 'asset', 'maintenance_step'),)
 
 
+class AssetMovement(models.Model):
+    """Maps to asset_movement table"""
+    asset_movement_id = models.IntegerField(primary_key=True, db_column='asset_movement_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', related_name='+')
+    source_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='source_room_id', related_name='+')
+    destination_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='destination_room_id', related_name='+')
+    maintenance_step = models.ForeignKey(
+        MaintenanceStep,
+        on_delete=models.SET_NULL,
+        db_column='maintenance_step_id',
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+    external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
+    movement_reason = models.CharField(max_length=128, db_column='movement_reason')
+    movement_datetime = models.DateTimeField(db_column='movement_datetime')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_movement'
+
+
 class StockItemMovement(models.Model):
     """Maps to stock_item_movement table"""
     stock_item_movement_id = models.IntegerField(primary_key=True, db_column='stock_item_movement_id')
@@ -895,6 +918,34 @@ class ConsumableMovement(models.Model):
     class Meta:
         managed = False
         db_table = 'consumable_movement'
+
+
+class PhysicalCondition(models.Model):
+    """Maps to physical_condition table"""
+    condition_id = models.IntegerField(primary_key=True, db_column='condition_id')
+    condition_code = models.CharField(max_length=12, blank=True, null=True, db_column='condition_code')
+    condition_label = models.CharField(max_length=12, blank=True, null=True, db_column='condition_label')
+    description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+
+    class Meta:
+        managed = False
+        db_table = 'physical_condition'
+
+
+class AssetConditionHistory(models.Model):
+    """Maps to asset_condition_history table"""
+    asset_condition_history_id = models.IntegerField(primary_key=True, db_column='asset_condition_history_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', related_name='+')
+    condition = models.ForeignKey(PhysicalCondition, on_delete=models.CASCADE, db_column='condition_id', related_name='+')
+    notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    cosmetic_issues = models.CharField(max_length=128, blank=True, null=True, db_column='cosmetic_issues')
+    functional_issues = models.CharField(max_length=128, blank=True, null=True, db_column='functional_issues')
+    recommendation = models.CharField(max_length=128, blank=True, null=True, db_column='recommendation')
+    created_at = models.DateTimeField(blank=True, null=True, db_column='created_at')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_condition_history'
 
 
 class MaintenanceStepItemRequest(models.Model):

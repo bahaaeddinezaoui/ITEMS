@@ -8,6 +8,7 @@ import {
     consumableTypeService,
     consumableModelService,
     roomService,
+    physicalConditionService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -45,6 +46,16 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     const [removeLoading, setRemoveLoading] = useState(false);
     const [removeSubmitting, setRemoveSubmitting] = useState(false);
 
+    const [assetConditionEditorOpen, setAssetConditionEditorOpen] = useState(false);
+    const [assetConditionEditorStep, setAssetConditionEditorStep] = useState(null);
+    const [physicalConditions, setPhysicalConditions] = useState([]);
+    const [selectedConditionId, setSelectedConditionId] = useState('');
+    const [assetConditionNotes, setAssetConditionNotes] = useState('');
+    const [assetConditionCosmeticIssues, setAssetConditionCosmeticIssues] = useState('');
+    const [assetConditionFunctionalIssues, setAssetConditionFunctionalIssues] = useState('');
+    const [assetConditionRecommendation, setAssetConditionRecommendation] = useState('');
+    const [assetConditionSubmitting, setAssetConditionSubmitting] = useState(false);
+
     // New Step Form State
     const [newStepTypicalId, setNewStepTypicalId] = useState('');
     const [newStepPersonId, setNewStepPersonId] = useState('');
@@ -66,6 +77,12 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
 
     const canManageSteps = isChief || isMainTechnician;
 
+    const closeAddStepModal = () => {
+        setAddingStep(false);
+        setNewStepTypicalId('');
+        setNewStepPersonId('');
+    };
+
     useEffect(() => {
         loadData();
     }, [maintenanceId]);
@@ -81,6 +98,14 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
             setSteps(stepsData);
             setTypicalSteps(typicalStepsData);
             setTechnicians(techniciansData);
+
+            try {
+                const conds = await physicalConditionService.getAll();
+                setPhysicalConditions(Array.isArray(conds) ? conds : []);
+            } catch (err) {
+                console.error(err);
+                setPhysicalConditions([]);
+            }
 
             const [stockTypes, consumableTypesData] = await Promise.all([
                 stockItemTypeService.getAll(),
@@ -112,9 +137,7 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                 // Checking models... MaintenanceStep.person is NOT NULL.
                 // So we MUST send a person_id.
             });
-            setAddingStep(false);
-            setNewStepTypicalId('');
-            setNewStepPersonId('');
+            closeAddStepModal();
             loadData();
         } catch (err) {
             console.error(err);
@@ -166,6 +189,53 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
         setRemoveDestinationRoomId('');
         setRemoveLoading(false);
         setRemoveSubmitting(false);
+    };
+
+    const closeAssetConditionEditor = () => {
+        setAssetConditionEditorOpen(false);
+        setAssetConditionEditorStep(null);
+        setSelectedConditionId('');
+        setAssetConditionNotes('');
+        setAssetConditionCosmeticIssues('');
+        setAssetConditionFunctionalIssues('');
+        setAssetConditionRecommendation('');
+        setAssetConditionSubmitting(false);
+    };
+
+    const openAssetConditionEditor = (step) => {
+        setAssetConditionEditorOpen(true);
+        setAssetConditionEditorStep(step);
+        setSelectedConditionId('');
+        setAssetConditionNotes('');
+        setAssetConditionCosmeticIssues('');
+        setAssetConditionFunctionalIssues('');
+        setAssetConditionRecommendation('');
+        setAssetConditionSubmitting(false);
+    };
+
+    const submitAssetConditionEditor = async () => {
+        if (!assetConditionEditorStep) return;
+        if (!selectedConditionId) {
+            setError('Please select a condition');
+            return;
+        }
+        try {
+            setAssetConditionSubmitting(true);
+            await maintenanceStepService.updateAssetCondition(assetConditionEditorStep.maintenance_step_id, {
+                condition_id: Number(selectedConditionId),
+                notes: assetConditionNotes || null,
+                cosmetic_issues: assetConditionCosmeticIssues || null,
+                functional_issues: assetConditionFunctionalIssues || null,
+                recommendation: assetConditionRecommendation || null,
+            });
+            await loadData();
+            closeAssetConditionEditor();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to update asset condition');
+        } finally {
+            setAssetConditionSubmitting(false);
+        }
     };
 
     const openRemoveEditor = async (step) => {
@@ -395,112 +465,162 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
 
     return (
         <div className="maintenance-steps-container p-4 border-t" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
-            {/* Header */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h3 className="text-lg font-bold">Maintenance Steps</h3>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-                <div className="alert alert-error mb-4">
-                    {error}
-                </div>
-            )}
-
-            {/* Add Step Form */}
-            {canManageSteps && (
-                <div className="card mb-4" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
-                    <div className="card-body p-3">
-                        <h4 className="card-title text-sm mb-3">Add New Step</h4>
-                        <form onSubmit={handleAddStep} className="d-flex gap-3 align-items-end">
-                            <div className="form-group mb-0 flex-grow-1">
-                                <label className="form-label text-xs mb-1">Typical Step</label>
-                                <select
-                                    className="form-input text-sm"
-                                    value={newStepTypicalId}
-                                    onChange={e => setNewStepTypicalId(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Select Task...</option>
-                                    {typicalSteps.map(ts => (
-                                        <option key={ts.maintenance_typical_step_id} value={ts.maintenance_typical_step_id}>
-                                            {ts.description}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="form-group mb-0 flex-grow-1">
-                                <label className="form-label text-xs mb-1">Assign To</label>
-                                <select
-                                    className="form-input text-sm"
-                                    value={newStepPersonId}
-                                    onChange={e => setNewStepPersonId(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Select Technician...</option>
-                                    {technicians.map(tech => (
-                                        <option key={tech.person_id} value={tech.person_id}>
-                                            {tech.first_name} {tech.last_name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <button type="submit" className="btn btn-primary btn-sm" disabled={loading}>
-                                Add Step
+            <div className="card" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
+                <div className="card-body p-3">
+                    <div
+                        className="d-flex justify-content-between align-items-center mb-3"
+                        style={{ display: 'flex', alignItems: 'center', width: '100%' }}
+                    >
+                        <h3 className="text-lg font-bold mb-0">Maintenance Steps</h3>
+                        {canManageSteps && (
+                            <button
+                                className="btn btn-primary btn-sm"
+                                onClick={() => setAddingStep(true)}
+                                disabled={loading}
+                                style={{ width: 'auto', whiteSpace: 'nowrap', marginLeft: 'auto' }}
+                            >
+                                Create new maintenance step
                             </button>
+                        )}
+                    </div>
+
+                    {/* Error Message */}
+                    {error && (
+                        <div className="alert alert-error mb-4">
+                            {error}
+                        </div>
+                    )}
+
+            {addingStep && canManageSteps && (
+                <div className="modal-overlay" onClick={() => closeAddStepModal()}>
+                    <div
+                        className="modal"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            maxHeight: '80vh',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}
+                    >
+                        <div className="modal-header">
+                            <h3 className="modal-title">Create new maintenance step</h3>
+                            <button className="modal-close" onClick={() => closeAddStepModal()}>
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleAddStep} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                <div className="form-group">
+                                    <label className="form-label">Typical Step</label>
+                                    <select
+                                        className="form-input"
+                                        value={newStepTypicalId}
+                                        onChange={(e) => setNewStepTypicalId(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Select Task...</option>
+                                        {typicalSteps.map((ts) => (
+                                            <option key={ts.maintenance_typical_step_id} value={ts.maintenance_typical_step_id}>
+                                                {ts.description}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="form-label">Assign To</label>
+                                    <select
+                                        className="form-input"
+                                        value={newStepPersonId}
+                                        onChange={(e) => setNewStepPersonId(e.target.value)}
+                                        required
+                                    >
+                                        <option value="">Select Technician...</option>
+                                        {technicians.map((tech) => (
+                                            <option key={tech.person_id} value={tech.person_id}>
+                                                {tech.first_name} {tech.last_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => closeAddStepModal()}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-primary" disabled={loading}>
+                                    Create
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* Steps List */}
-            {loading && steps.length === 0 ? (
-                <div className="text-center py-4" style={{ color: 'var(--color-text-secondary)' }}>Loading steps...</div>
-            ) : steps.length === 0 ? (
-                <div className="empty-state p-4 text-center rounded border" style={{ color: 'var(--color-text-secondary)', backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)' }}>
-                    <p>No steps added yet.</p>
-                </div>
-            ) : (
-                <div className="table-container rounded border overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)' }}>
-                    <table className="data-table mb-0">
-                        <thead style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
-                            <tr>
-                                <th className="px-4 py-2">Step</th>
-                                <th className="px-4 py-2">Assigned To</th>
-                                <th className="px-4 py-2">Status</th>
-                                <th className="px-4 py-2 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {steps.map(step => (
-                                <tr key={step.maintenance_step_id} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
-                                    <td className="px-4 py-2">
-                                        {step.maintenance_typical_step?.description || `Step ${step.maintenance_step_id}`}
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        <span className="badge badge-info status-badge">
-                                            {step.person?.first_name} {step.person?.last_name}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        {step.maintenance_step_status ? (
-                                            <span className="badge badge-info">{step.maintenance_step_status}</span>
-                                        ) : (
-                                            <span className="badge badge-warning">-</span>
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-2 text-right">
-                                        {(user?.person?.person_id === step.person?.person_id || isChief) && (
-                                            <div className="d-flex gap-2 justify-content-end" style={{ flexWrap: 'wrap', position: 'relative' }}>
-                                                {step.maintenance_step_status !== 'done' && (
-                                                    <button
-                                                        className="btn btn-xs btn-secondary"
-                                                        style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                        onClick={() => openStatusEditor(step)}
-                                                    >
-                                                        Update status
-                                                    </button>
+                    {/* Steps List */}
+                    {loading && steps.length === 0 ? (
+                        <div className="text-center py-4" style={{ color: 'var(--color-text-secondary)', marginTop: 12 }}>Loading steps...</div>
+                    ) : steps.length === 0 ? (
+                        <div className="empty-state p-4 text-center rounded border" style={{ color: 'var(--color-text-secondary)', backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)', marginTop: 12 }}>
+                            <p>No steps added yet.</p>
+                        </div>
+                    ) : (
+                        <div className="table-container rounded border overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)', marginTop: 12 }}>
+                            <table className="data-table mb-0">
+                                <thead style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                                    <tr>
+                                        <th className="px-4 py-2">Step</th>
+                                        <th className="px-4 py-2">Assigned To</th>
+                                        <th className="px-4 py-2">Status</th>
+                                        <th className="px-4 py-2 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {steps.map(step => (
+                                        <tr key={step.maintenance_step_id} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
+                                            <td className="px-4 py-2">
+                                                {step.maintenance_typical_step?.description || `Step ${step.maintenance_step_id}`}
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                <span className="badge badge-info status-badge">
+                                                    {step.person?.first_name} {step.person?.last_name}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                {step.maintenance_step_status ? (
+                                                    <span className="badge badge-info">{step.maintenance_step_status}</span>
+                                                ) : (
+                                                    <span className="badge badge-warning">-</span>
                                                 )}
+                                            </td>
+                                            <td className="px-4 py-2 text-right">
+                                                {(user?.person?.person_id === step.person?.person_id || isChief) && (
+                                                    <div className="d-flex gap-2 justify-content-end" style={{ flexWrap: 'wrap', position: 'relative' }}>
+                                                        {step.maintenance_step_status !== 'done' && (
+                                                            <button
+                                                                className="btn btn-xs btn-secondary"
+                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                onClick={() => openStatusEditor(step)}
+                                                            >
+                                                                Update status
+                                                            </button>
+                                                        )}
+
+                                                        {step.maintenance_step_status !== 'done' && (
+                                                            <button
+                                                                className="btn btn-xs btn-secondary"
+                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                onClick={() => openAssetConditionEditor(step)}
+                                                            >
+                                                                Update asset condition
+                                                            </button>
+                                                        )}
 
                                                 {step.maintenance_step_status !== 'done' && step.maintenance_typical_step?.operation_type === 'remove' && (
                                                     <button
@@ -567,8 +687,10 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                             ))}
                         </tbody>
                     </table>
+                        </div>
+                    )}
                 </div>
-            )}
+            </div>
 
             {requestEditorOpen && requestEditorStep && (
                 <div
@@ -791,6 +913,107 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                     )}
                 </div>
             )}
+
+            {assetConditionEditorOpen && assetConditionEditorStep && (
+                <div
+                    className="card"
+                    style={{
+                        position: 'fixed',
+                        right: 20,
+                        bottom: 20,
+                        zIndex: 50,
+                        width: 420,
+                        padding: 'var(--space-4)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-bg-tertiary)',
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ fontWeight: 700 }}>Update asset condition</div>
+                        <button
+                            className="btn btn-xs btn-secondary"
+                            style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                            onClick={closeAssetConditionEditor}
+                            disabled={assetConditionSubmitting}
+                        >
+                            Close
+                        </button>
+                    </div>
+
+                    <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                        Step: <b>{assetConditionEditorStep.maintenance_step_id}</b>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 10 }}>
+                        <label className="form-label">Condition</label>
+                        <select
+                            className="form-input"
+                            value={selectedConditionId}
+                            onChange={(e) => setSelectedConditionId(e.target.value)}
+                            disabled={assetConditionSubmitting}
+                        >
+                            <option value="">Select condition...</option>
+                            {physicalConditions.map((c) => (
+                                <option key={c.condition_id} value={c.condition_id}>
+                                    {c.condition_label || c.condition_code || c.condition_id}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 10 }}>
+                        <label className="form-label">Notes</label>
+                        <textarea
+                            className="form-input"
+                            rows={3}
+                            value={assetConditionNotes}
+                            onChange={(e) => setAssetConditionNotes(e.target.value)}
+                            disabled={assetConditionSubmitting}
+                        />
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 10 }}>
+                        <label className="form-label">Cosmetic issues</label>
+                        <input
+                            className="form-input"
+                            value={assetConditionCosmeticIssues}
+                            onChange={(e) => setAssetConditionCosmeticIssues(e.target.value)}
+                            disabled={assetConditionSubmitting}
+                        />
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 10 }}>
+                        <label className="form-label">Functional issues</label>
+                        <input
+                            className="form-input"
+                            value={assetConditionFunctionalIssues}
+                            onChange={(e) => setAssetConditionFunctionalIssues(e.target.value)}
+                            disabled={assetConditionSubmitting}
+                        />
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 10 }}>
+                        <label className="form-label">Recommendation</label>
+                        <input
+                            className="form-input"
+                            value={assetConditionRecommendation}
+                            onChange={(e) => setAssetConditionRecommendation(e.target.value)}
+                            disabled={assetConditionSubmitting}
+                        />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 10 }}>
+                        <button
+                            className="btn btn-primary btn-sm"
+                            onClick={submitAssetConditionEditor}
+                            disabled={assetConditionSubmitting || !selectedConditionId}
+                        >
+                            {assetConditionSubmitting ? 'Saving...' : 'Save'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
