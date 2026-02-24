@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { roomService } from '../services/api';
+import { roomService, roomTypeService } from '../services/api';
 
 const RoomsPage = () => {
     const [rooms, setRooms] = useState([]);
+    const [roomTypes, setRoomTypes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
@@ -15,7 +16,17 @@ const RoomsPage = () => {
 
     useEffect(() => {
         fetchRooms();
+        fetchRoomTypes();
     }, []);
+
+    const fetchRoomTypes = async () => {
+        try {
+            const data = await roomTypeService.getAll();
+            setRoomTypes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setRoomTypes([]);
+        }
+    };
 
     const fetchRooms = async () => {
         setLoading(true);
@@ -183,14 +194,11 @@ const RoomsPage = () => {
                                 }}>
                                     Room Type *
                                 </label>
-                                <input
-                                    type="text"
+                                <select
                                     name="room_type"
                                     value={formData.room_type}
                                     onChange={handleInputChange}
                                     required
-                                    placeholder="e.g., Conference"
-                                    maxLength="24"
                                     style={{
                                         width: '100%',
                                         padding: 'var(--space-2) var(--space-3)',
@@ -200,7 +208,14 @@ const RoomsPage = () => {
                                         boxSizing: 'border-box',
                                         fontFamily: 'inherit'
                                     }}
-                                />
+                                >
+                                    <option value="">Select a room type</option>
+                                    {roomTypes.map((rt) => (
+                                        <option key={rt.room_type_id} value={rt.room_type_id}>
+                                            {rt.room_type_label}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -297,7 +312,7 @@ const RoomsPage = () => {
                                         </div>
                                     </div>
                                     <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                        {room.room_type}
+                                        {room.room_type_label || room.room_type}
                                     </div>
                                     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                         <button

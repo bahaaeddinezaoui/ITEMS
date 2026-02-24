@@ -16,6 +16,7 @@ import ReportsPage from './pages/ReportsPage';
 import AttributionOrdersPage from './pages/AttributionOrdersPage';
 import CompanyAssetRequestsPage from './pages/CompanyAssetRequestsPage';
 import AdministrativeCertificatesPage from './pages/AdministrativeCertificatesPage';
+import ItemRequestsInboxPage from './pages/ItemRequestsInboxPage';
 import './index.css';
 
 // Protected route wrapper
@@ -78,6 +79,7 @@ function App() {
                         <Route path="attribution-orders" element={<AttributionOrdersPage />} />
                         <Route path="company-asset-requests" element={<CompanyAssetRequestsPage />} />
                         <Route path="administrative-certificates" element={<AdministrativeCertificatesPage />} />
+                        <Route path="item-requests-inbox" element={<ItemRequestsInboxPage />} />
                     </Route>
 
                     {/* Redirect root to login */}

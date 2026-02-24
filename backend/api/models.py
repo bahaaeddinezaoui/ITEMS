@@ -261,7 +261,13 @@ class Room(models.Model):
     """Maps to room table"""
     room_id = models.AutoField(primary_key=True, db_column='room_id')
     room_name = models.CharField(max_length=30, db_column='room_name')
-    room_type = models.CharField(max_length=24, db_column='room_type')
+    room_type = models.ForeignKey(
+        RoomType,
+        on_delete=models.SET_NULL,
+        db_column='room_type_id',
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         managed = False
@@ -770,20 +776,147 @@ class MaintenanceStep(models.Model):
     maintenance = models.ForeignKey(Maintenance, on_delete=models.CASCADE, db_column='maintenance_id', related_name='steps')
     maintenance_typical_step = models.ForeignKey(MaintenanceTypicalStep, on_delete=models.CASCADE, db_column='maintenance_typical_step_id')
     person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    is_successful = models.BooleanField(default=False, db_column='is_successful')
+    start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
+    end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
     maintenance_step_status = models.CharField(max_length=60, blank=True, null=True, db_column='maintenance_step_status')
     asset_condition_history = models.IntegerField(blank=True, null=True, db_column='asset_condition_history_id')
     stock_item_condition_history = models.IntegerField(blank=True, null=True, db_column='stock_item_condition_history_id')
     consumable_condition_history = models.IntegerField(blank=True, null=True, db_column='consumable_condition_history_id')
-    start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
-    end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
-    is_successful = models.BooleanField(blank=True, null=True, db_column='is_successful')
 
     class Meta:
         managed = False
         db_table = 'maintenance_step'
 
     def __str__(self):
-        return f'Step {self.maintenance_step_id} of Maintenance {self.maintenance_id}'
+        return f'Step {self.maintenance_step_id} for maintenance {self.maintenance_id}'
+
+
+class StockItemIsCompatibleWithAsset(models.Model):
+    """Maps to stock_item_is_compatible_with_asset table"""
+    stock_item_model = models.ForeignKey(
+        StockItemModel,
+        on_delete=models.CASCADE,
+        db_column='stock_item_model_id',
+        primary_key=True,
+        related_name='+',
+    )
+    asset_model = models.ForeignKey(
+        AssetModel,
+        on_delete=models.CASCADE,
+        db_column='asset_model_id',
+        related_name='+',
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_is_compatible_with_asset'
+        unique_together = (('stock_item_model', 'asset_model'),)
+
+
+class ConsumableIsCompatibleWithAsset(models.Model):
+    """Maps to consumable_is_compatible_with_asset table"""
+    consumable_model = models.ForeignKey(
+        ConsumableModel,
+        on_delete=models.CASCADE,
+        db_column='consumable_model_id',
+        primary_key=True,
+        related_name='+',
+    )
+    asset_model = models.ForeignKey(
+        AssetModel,
+        on_delete=models.CASCADE,
+        db_column='asset_model_id',
+        related_name='+',
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_is_compatible_with_asset'
+        unique_together = (('consumable_model', 'asset_model'),)
+
+
+class AssetIsComposedOfStockItemHistory(models.Model):
+    """Maps to asset_is_composed_of_stock_item_history table"""
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id', related_name='+')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', related_name='+')
+    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.CASCADE, db_column='maintenance_step_id', related_name='+')
+    start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
+    end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_is_composed_of_stock_item_history'
+        unique_together = (('stock_item', 'asset', 'maintenance_step'),)
+
+
+class AssetIsComposedOfConsumableHistory(models.Model):
+    """Maps to asset_is_composed_of_consumable_history table"""
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', related_name='+')
+    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.CASCADE, db_column='maintenance_step_id', related_name='+')
+    start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
+    end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_is_composed_of_consumable_history'
+        unique_together = (('consumable', 'asset', 'maintenance_step'),)
+
+
+class StockItemMovement(models.Model):
+    """Maps to stock_item_movement table"""
+    stock_item_movement_id = models.IntegerField(primary_key=True, db_column='stock_item_movement_id')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id', related_name='+')
+    source_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='source_room_id', related_name='+')
+    destination_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='destination_room_id', related_name='+')
+    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.SET_NULL, db_column='maintenance_step_id', null=True, blank=True, related_name='+')
+    external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
+    movement_reason = models.CharField(max_length=128, db_column='movement_reason')
+    movement_datetime = models.DateTimeField(db_column='movement_datetime')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_movement'
+
+
+class ConsumableMovement(models.Model):
+    """Maps to consumable_movement table"""
+    consumable_movement_id = models.IntegerField(primary_key=True, db_column='consumable_movement_id')
+    destination_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='destination_room_id', related_name='+')
+    source_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='source_room_id', related_name='+')
+    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.SET_NULL, db_column='maintenance_step_id', null=True, blank=True, related_name='+')
+    external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
+    movement_reason = models.CharField(max_length=128, db_column='movement_reason')
+    movement_datetime = models.DateTimeField(db_column='movement_datetime')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_movement'
+
+
+class MaintenanceStepItemRequest(models.Model):
+    """New table: maintenance_step_item_request"""
+    maintenance_step_item_request_id = models.IntegerField(primary_key=True, db_column='maintenance_step_item_request_id')
+    maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.CASCADE, db_column='maintenance_step_id', related_name='+')
+    requested_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='requested_by_person_id', related_name='+')
+    fulfilled_by_person = models.ForeignKey(Person, on_delete=models.SET_NULL, db_column='fulfilled_by_person_id', null=True, blank=True, related_name='+')
+    request_type = models.CharField(max_length=24, db_column='request_type')
+    status = models.CharField(max_length=24, db_column='status')
+    created_at = models.DateTimeField(db_column='created_at')
+    fulfilled_at = models.DateTimeField(blank=True, null=True, db_column='fulfilled_at')
+    requested_stock_item_model = models.ForeignKey(StockItemModel, on_delete=models.SET_NULL, db_column='requested_stock_item_model_id', null=True, blank=True, related_name='+')
+    requested_consumable_model = models.ForeignKey(ConsumableModel, on_delete=models.SET_NULL, db_column='requested_consumable_model_id', null=True, blank=True, related_name='+')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.SET_NULL, db_column='stock_item_id', null=True, blank=True, related_name='+')
+    consumable = models.ForeignKey(Consumable, on_delete=models.SET_NULL, db_column='consumable_id', null=True, blank=True, related_name='+')
+    source_room = models.ForeignKey(Room, on_delete=models.SET_NULL, db_column='source_room_id', null=True, blank=True, related_name='+')
+    destination_room = models.ForeignKey(Room, on_delete=models.SET_NULL, db_column='destination_room_id', null=True, blank=True, related_name='+')
+    note = models.CharField(max_length=256, blank=True, null=True, db_column='note')
+
+    class Meta:
+        managed = False
+        db_table = 'maintenance_step_item_request'
 
 
 class Warehouse(models.Model):

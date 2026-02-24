@@ -4,6 +4,7 @@ import hashlib
 import os
 
 from django.utils import timezone
+from django.db.models import OuterRef, Subquery
 from rest_framework import status, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -59,6 +60,13 @@ from .models import (
     ReceiptReport,
     AdministrativeCertificate,
     CompanyAssetRequest,
+    StockItemIsCompatibleWithAsset,
+    ConsumableIsCompatibleWithAsset,
+    AssetIsComposedOfStockItemHistory,
+    AssetIsComposedOfConsumableHistory,
+    StockItemMovement,
+    ConsumableMovement,
+    MaintenanceStepItemRequest,
 )
 from .serializers import (
     AssetAttributeDefinitionSerializer,
@@ -104,6 +112,7 @@ from .serializers import (
     ReceiptReportSerializer,
     AdministrativeCertificateSerializer,
     CompanyAssetRequestSerializer,
+    MaintenanceStepItemRequestSerializer,
 )
 
 
@@ -323,6 +332,402 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 pass
         return qs
+
+    def _get_user_person(self, request):
+        user_account = None
+        try:
+            if hasattr(request, "auth") and request.auth is not None:
+                user_id = request.auth.get("user_id")
+                if user_id:
+                    user_account = UserAccount.objects.select_related("person").get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            user_account = None
+
+        if user_account and user_account.person:
+            return user_account.person
+        return None
+
+    def _require_can_request_for_step(self, request, step: MaintenanceStep):
+        person = self._get_user_person(request)
+        if not person:
+            return None, Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        if (step.person_id == person.person_id) or ("maintenance_chief" in role_codes) or ("superuser" in role_codes):
+            return person, None
+
+        return None, Response({"error": "Not allowed to request items for this step"}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=True, methods=["post"], url_path="request-stock-item")
+    def request_stock_item(self, request, pk=None):
+        step = self.get_object()
+        person, denial = self._require_can_request_for_step(request, step)
+        if denial:
+            return denial
+
+        requested_stock_item_model_id = request.data.get("requested_stock_item_model_id")
+        note = request.data.get("note")
+        if not requested_stock_item_model_id:
+            return Response(
+                {"error": "requested_stock_item_model_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        maintenance = step.maintenance
+        asset_model_id = getattr(maintenance.asset, "asset_model_id", None)
+        if not asset_model_id:
+            return Response({"error": "Maintenance asset model not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        compatible_model_ids = list(
+            StockItemIsCompatibleWithAsset.objects.filter(asset_model_id=asset_model_id).values_list(
+                "stock_item_model_id", flat=True
+            )
+        )
+        if not compatible_model_ids:
+            return Response({"error": "No compatible stock item models for this asset"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            requested_stock_item_model_id_int = int(requested_stock_item_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid requested_stock_item_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if requested_stock_item_model_id_int not in set(compatible_model_ids):
+            return Response({"error": "Requested stock item model is not compatible with this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_req = MaintenanceStepItemRequest.objects.order_by("-maintenance_step_item_request_id").first()
+        next_req_id = (last_req.maintenance_step_item_request_id + 1) if last_req else 1
+
+        req = MaintenanceStepItemRequest.objects.create(
+            maintenance_step_item_request_id=next_req_id,
+            maintenance_step=step,
+            requested_by_person=person,
+            request_type="stock_item",
+            status="pending",
+            created_at=timezone.now(),
+            requested_stock_item_model_id=requested_stock_item_model_id_int,
+            note=note,
+        )
+
+        step.maintenance_step_status = "pending (waiting for stock item)"
+        step.save(update_fields=["maintenance_step_status"])
+
+        return Response(MaintenanceStepItemRequestSerializer(req).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="request-consumable")
+    def request_consumable(self, request, pk=None):
+        step = self.get_object()
+        person, denial = self._require_can_request_for_step(request, step)
+        if denial:
+            return denial
+
+        requested_consumable_model_id = request.data.get("requested_consumable_model_id")
+        note = request.data.get("note")
+        if not requested_consumable_model_id:
+            return Response(
+                {"error": "requested_consumable_model_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        maintenance = step.maintenance
+        asset_model_id = getattr(maintenance.asset, "asset_model_id", None)
+        if not asset_model_id:
+            return Response({"error": "Maintenance asset model not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        compatible_model_ids = list(
+            ConsumableIsCompatibleWithAsset.objects.filter(asset_model_id=asset_model_id).values_list(
+                "consumable_model_id", flat=True
+            )
+        )
+        if not compatible_model_ids:
+            return Response({"error": "No compatible consumable models for this asset"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            requested_consumable_model_id_int = int(requested_consumable_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid requested_consumable_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if requested_consumable_model_id_int not in set(compatible_model_ids):
+            return Response({"error": "Requested consumable model is not compatible with this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_req = MaintenanceStepItemRequest.objects.order_by("-maintenance_step_item_request_id").first()
+        next_req_id = (last_req.maintenance_step_item_request_id + 1) if last_req else 1
+
+        req = MaintenanceStepItemRequest.objects.create(
+            maintenance_step_item_request_id=next_req_id,
+            maintenance_step=step,
+            requested_by_person=person,
+            request_type="consumable",
+            status="pending",
+            created_at=timezone.now(),
+            requested_consumable_model_id=requested_consumable_model_id_int,
+            note=note,
+        )
+
+        step.maintenance_step_status = "pending (waiting for consumable)"
+        step.save(update_fields=["maintenance_step_status"])
+
+        return Response(MaintenanceStepItemRequestSerializer(req).data, status=status.HTTP_201_CREATED)
+
+
+class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
+    queryset = MaintenanceStepItemRequest.objects.all().order_by("-created_at")
+    serializer_class = MaintenanceStepItemRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = MaintenanceStepItemRequest.objects.all().order_by("-created_at")
+        user_account = SuperuserWriteMixin()._get_user_account(self.request)
+        if not user_account or not user_account.person:
+            return MaintenanceStepItemRequest.objects.none()
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+            return qs
+
+        return MaintenanceStepItemRequest.objects.none()
+
+    def _require_responsible(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return None, Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+            return user_account.person, None
+
+        return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=True, methods=["post"], url_path="fulfill")
+    def fulfill(self, request, pk=None):
+        person, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        req = self.get_object()
+        if req.status != "pending":
+            return Response({"error": "Only pending requests can be fulfilled"}, status=status.HTTP_400_BAD_REQUEST)
+
+        source_room_id = request.data.get("source_room_id")
+        destination_room_id = request.data.get("destination_room_id")
+        note = request.data.get("note")
+        if not source_room_id or not destination_room_id:
+            return Response({"error": "source_room_id and destination_room_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        source_room = Room.objects.filter(room_id=source_room_id).first()
+        destination_room = Room.objects.filter(room_id=destination_room_id).first()
+        if not source_room or not destination_room:
+            return Response({"error": "Invalid source/destination room"}, status=status.HTTP_400_BAD_REQUEST)
+
+        step = req.maintenance_step
+        maintenance = step.maintenance
+        asset_model_id = getattr(maintenance.asset, "asset_model_id", None)
+        if not asset_model_id:
+            return Response({"error": "Maintenance asset model not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if req.request_type == "stock_item":
+            stock_item_id = request.data.get("stock_item_id")
+            if not stock_item_id:
+                return Response({"error": "stock_item_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            stock_item = StockItem.objects.filter(stock_item_id=stock_item_id).first()
+            if not stock_item:
+                return Response({"error": "Stock item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            if req.requested_stock_item_model_id and (stock_item.stock_item_model_id != req.requested_stock_item_model_id):
+                return Response({"error": "Stock item model does not match requested model"}, status=status.HTTP_400_BAD_REQUEST)
+
+            is_compatible = StockItemIsCompatibleWithAsset.objects.filter(
+                asset_model_id=asset_model_id,
+                stock_item_model_id=stock_item.stock_item_model_id,
+            ).exists()
+            if not is_compatible:
+                return Response({"error": "Stock item model is not compatible with this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+            is_in_use = AssetIsComposedOfStockItemHistory.objects.filter(
+                stock_item_id=stock_item.stock_item_id,
+                end_datetime__isnull=True,
+            ).exists()
+            if is_in_use:
+                return Response({"error": "Stock item is currently assigned/in use"}, status=status.HTTP_400_BAD_REQUEST)
+
+            last_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+            next_move_id = (last_move.stock_item_movement_id + 1) if last_move else 1
+
+            StockItemMovement.objects.create(
+                stock_item_movement_id=next_move_id,
+                stock_item=stock_item,
+                source_room=source_room,
+                destination_room=destination_room,
+                maintenance_step=step,
+                movement_reason="maintenance_step_fulfill_request",
+                movement_datetime=timezone.now(),
+            )
+
+            req.stock_item = stock_item
+
+        elif req.request_type == "consumable":
+            consumable_id = request.data.get("consumable_id")
+            if not consumable_id:
+                return Response({"error": "consumable_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            consumable = Consumable.objects.filter(consumable_id=consumable_id).first()
+            if not consumable:
+                return Response({"error": "Consumable not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            if req.requested_consumable_model_id and (consumable.consumable_model_id != req.requested_consumable_model_id):
+                return Response({"error": "Consumable model does not match requested model"}, status=status.HTTP_400_BAD_REQUEST)
+
+            is_compatible = ConsumableIsCompatibleWithAsset.objects.filter(
+                asset_model_id=asset_model_id,
+                consumable_model_id=consumable.consumable_model_id,
+            ).exists()
+            if not is_compatible:
+                return Response({"error": "Consumable model is not compatible with this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+            is_in_use = AssetIsComposedOfConsumableHistory.objects.filter(
+                consumable_id=consumable.consumable_id,
+                end_datetime__isnull=True,
+            ).exists()
+            if is_in_use:
+                return Response({"error": "Consumable is currently assigned/in use"}, status=status.HTTP_400_BAD_REQUEST)
+
+            last_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+            next_move_id = (last_move.consumable_movement_id + 1) if last_move else 1
+
+            ConsumableMovement.objects.create(
+                consumable_movement_id=next_move_id,
+                consumable=consumable,
+                source_room=source_room,
+                destination_room=destination_room,
+                maintenance_step=step,
+                movement_reason="maintenance_step_fulfill_request",
+                movement_datetime=timezone.now(),
+            )
+
+            req.consumable = consumable
+        else:
+            return Response({"error": "Invalid request_type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        req.source_room = source_room
+        req.destination_room = destination_room
+        req.status = "fulfilled"
+        req.fulfilled_at = timezone.now()
+        req.fulfilled_by_person = person
+        if note is not None:
+            req.note = note
+        req.save()
+
+        step.maintenance_step_status = "In Progress"
+        step.save(update_fields=["maintenance_step_status"])
+
+        return Response(self.get_serializer(req).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="select-random")
+    def select_random(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        req = self.get_object()
+        if req.status != "pending":
+            return Response({"error": "Only pending requests can be fulfilled"}, status=status.HTTP_400_BAD_REQUEST)
+
+        step = req.maintenance_step
+        maintenance = step.maintenance
+        asset_model_id = getattr(maintenance.asset, "asset_model_id", None)
+        if not asset_model_id:
+            return Response({"error": "Maintenance asset model not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if req.request_type == "stock_item":
+            if not req.requested_stock_item_model_id:
+                return Response({"error": "Request missing requested_stock_item_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            is_compatible = StockItemIsCompatibleWithAsset.objects.filter(
+                asset_model_id=asset_model_id,
+                stock_item_model_id=req.requested_stock_item_model_id,
+            ).exists()
+            if not is_compatible:
+                return Response({"error": "Requested stock item model is not compatible with this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+            used_stock_item_ids = AssetIsComposedOfStockItemHistory.objects.filter(
+                end_datetime__isnull=True
+            ).values_list("stock_item_id", flat=True)
+
+            last_dest_room_subq = Subquery(
+                StockItemMovement.objects.filter(stock_item_id=OuterRef("stock_item_id"))
+                .order_by("-stock_item_movement_id")
+                .values("destination_room_id")[:1]
+            )
+
+            candidates = (
+                StockItem.objects.filter(stock_item_model_id=req.requested_stock_item_model_id)
+                .exclude(stock_item_id__in=used_stock_item_ids)
+                .annotate(current_room_id=last_dest_room_subq)
+                .exclude(current_room_id__isnull=True)
+                .order_by("?")
+            )
+            chosen = candidates.first()
+            if not chosen:
+                return Response({"error": "No available stock item found"}, status=status.HTTP_404_NOT_FOUND)
+
+            return Response(
+                {
+                    "request_type": "stock_item",
+                    "stock_item_id": chosen.stock_item_id,
+                    "source_room_id": getattr(chosen, "current_room_id", None),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        if req.request_type == "consumable":
+            if not req.requested_consumable_model_id:
+                return Response({"error": "Request missing requested_consumable_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            is_compatible = ConsumableIsCompatibleWithAsset.objects.filter(
+                asset_model_id=asset_model_id,
+                consumable_model_id=req.requested_consumable_model_id,
+            ).exists()
+            if not is_compatible:
+                return Response({"error": "Requested consumable model is not compatible with this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+            used_consumable_ids = AssetIsComposedOfConsumableHistory.objects.filter(
+                end_datetime__isnull=True
+            ).values_list("consumable_id", flat=True)
+
+            last_dest_room_subq = Subquery(
+                ConsumableMovement.objects.filter(consumable_id=OuterRef("consumable_id"))
+                .order_by("-consumable_movement_id")
+                .values("destination_room_id")[:1]
+            )
+
+            candidates = (
+                Consumable.objects.filter(consumable_model_id=req.requested_consumable_model_id)
+                .exclude(consumable_id__in=used_consumable_ids)
+                .annotate(current_room_id=last_dest_room_subq)
+                .exclude(current_room_id__isnull=True)
+                .order_by("?")
+            )
+            chosen = candidates.first()
+            if not chosen:
+                return Response({"error": "No available consumable found"}, status=status.HTTP_404_NOT_FOUND)
+
+            return Response(
+                {
+                    "request_type": "consumable",
+                    "consumable_id": chosen.consumable_id,
+                    "source_room_id": getattr(chosen, "current_room_id", None),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return Response({"error": "Invalid request_type"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MyItemsView(APIView):
@@ -868,6 +1273,18 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         item = StockItem.objects.create(stock_item_id=next_id, **serializer.validated_data)
         return Response(StockItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=["get"], url_path="current-room")
+    def current_room(self, request, pk=None):
+        stock_item = self.get_object()
+        last_move = (
+            StockItemMovement.objects.filter(stock_item_id=stock_item.stock_item_id)
+            .order_by("-stock_item_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response({"room_id": None}, status=status.HTTP_200_OK)
+        return Response({"room_id": last_move.destination_room_id}, status=status.HTTP_200_OK)
+
 
 class StockItemAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = StockItemAttributeDefinition.objects.all().order_by("stock_item_attribute_definition_id")
@@ -1043,6 +1460,18 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_item.consumable_id + 1) if last_item else 1
         item = Consumable.objects.create(consumable_id=next_id, **serializer.validated_data)
         return Response(ConsumableSerializer(item).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"], url_path="current-room")
+    def current_room(self, request, pk=None):
+        consumable = self.get_object()
+        last_move = (
+            ConsumableMovement.objects.filter(consumable_id=consumable.consumable_id)
+            .order_by("-consumable_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response({"room_id": None}, status=status.HTTP_200_OK)
+        return Response({"room_id": last_move.destination_room_id}, status=status.HTTP_200_OK)
 
 
 class ConsumableAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):

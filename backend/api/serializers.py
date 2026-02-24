@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest
+from .models import Person, UserAccount, Role, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest, MaintenanceStepItemRequest
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -144,10 +144,33 @@ class RoomTypeSerializer(serializers.ModelSerializer):
 
 class RoomSerializer(serializers.ModelSerializer):
     """Serializer for Room model"""
+    room_type_label = serializers.CharField(source='room_type.room_type_label', read_only=True)
     class Meta:
         model = Room
-        fields = ['room_id', 'room_name', 'room_type']
+        fields = ['room_id', 'room_name', 'room_type', 'room_type_label']
         read_only_fields = ['room_id']
+
+
+class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaintenanceStepItemRequest
+        fields = [
+            'maintenance_step_item_request_id',
+            'maintenance_step',
+            'requested_by_person',
+            'fulfilled_by_person',
+            'request_type',
+            'status',
+            'created_at',
+            'fulfilled_at',
+            'requested_stock_item_model',
+            'requested_consumable_model',
+            'stock_item',
+            'consumable',
+            'source_room',
+            'destination_room',
+            'note',
+        ]
 
 
 class PositionSerializer(serializers.ModelSerializer):
@@ -655,21 +678,20 @@ class MaintenanceStepSerializer(serializers.ModelSerializer):
     )
     maintenance_typical_step = MaintenanceTypicalStepSerializer(read_only=True)
 
-    def validate_maintenance_step_status(self, value):
-        if value is None or value == "":
-            return value
-
-        allowed = {
-            "started",
-            "pending (waiting for stock item)",
-            "pending (waiting for consumable)",
-            "in progress",
-            "done",
-            "failed (to be sent to a higher level)",
-        }
-        if value not in allowed:
-            raise serializers.ValidationError("Invalid maintenance_step_status")
-        return value
+    def validate(self, attrs):
+        status_value = attrs.get("maintenance_step_status")
+        if status_value is not None:
+            allowed = {
+                "started",
+                "pending (waiting for stock item)",
+                "pending (waiting for consumable)",
+                "In Progress",
+                "done",
+                "failed (to be sent to a higher level)",
+            }
+            if status_value not in allowed:
+                raise serializers.ValidationError({"maintenance_step_status": "Invalid status"})
+        return attrs
     
     class Meta:
         model = MaintenanceStep

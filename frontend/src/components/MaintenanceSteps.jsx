@@ -1,5 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
-import { maintenanceStepService, maintenanceTypicalStepService, personService } from '../services/api';
+import {
+    maintenanceStepService,
+    maintenanceTypicalStepService,
+    personService,
+    stockItemTypeService,
+    stockItemModelService,
+    consumableTypeService,
+    consumableModelService,
+} from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) => {
@@ -7,6 +15,8 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     const [steps, setSteps] = useState([]);
     const [typicalSteps, setTypicalSteps] = useState([]);
     const [technicians, setTechnicians] = useState([]);
+    const [stockItemTypes, setStockItemTypes] = useState([]);
+    const [consumableTypes, setConsumableTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [addingStep, setAddingStep] = useState(false);
@@ -20,7 +30,7 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
             'started',
             'pending (waiting for stock item)',
             'pending (waiting for consumable)',
-            'in progress',
+            'In Progress',
             'done',
             'failed (to be sent to a higher level)',
         ]
@@ -47,6 +57,13 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
             setSteps(stepsData);
             setTypicalSteps(typicalStepsData);
             setTechnicians(techniciansData);
+
+            const [stockTypes, consumableTypesData] = await Promise.all([
+                stockItemTypeService.getAll(),
+                consumableTypeService.getAll(),
+            ]);
+            setStockItemTypes(Array.isArray(stockTypes) ? stockTypes : []);
+            setConsumableTypes(Array.isArray(consumableTypesData) ? consumableTypesData : []);
         } catch (err) {
             console.error(err);
             setError('Failed to load steps data');
@@ -93,12 +110,73 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
         }
     };
 
+    const promptFromList = (label, items, getId, getLabel) => {
+        if (!items || items.length === 0) {
+            return window.prompt(`${label} id:`);
+        }
+
+        const options = items
+            .map(it => `${getId(it)}: ${getLabel(it)}`)
+            .join('\n');
+        return window.prompt(`${label} id:\n${options}`);
+    };
+
     const requestStockItem = async (step) => {
-        await handleUpdateStatus(step, 'pending (waiting for stock item)');
+        try {
+            const stockItemTypeId = promptFromList(
+                'Stock item type',
+                stockItemTypes,
+                (t) => t.stock_item_type_id,
+                (t) => t.stock_item_type_label,
+            );
+            if (!stockItemTypeId) return;
+
+            const models = await stockItemModelService.getByStockItemType(Number(stockItemTypeId));
+            const requestedModelId = promptFromList(
+                'Stock item model',
+                Array.isArray(models) ? models : [],
+                (m) => m.stock_item_model_id,
+                (m) => `${m.model_name}${m.model_code ? ` (${m.model_code})` : ''}`,
+            );
+            if (!requestedModelId) return;
+
+            await maintenanceStepService.requestStockItem(step.maintenance_step_id, {
+                requested_stock_item_model_id: Number(requestedModelId),
+            });
+            loadData();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to request stock item');
+        }
     };
 
     const requestConsumable = async (step) => {
-        await handleUpdateStatus(step, 'pending (waiting for consumable)');
+        try {
+            const consumableTypeId = promptFromList(
+                'Consumable type',
+                consumableTypes,
+                (t) => t.consumable_type_id,
+                (t) => t.consumable_type_label,
+            );
+            if (!consumableTypeId) return;
+
+            const models = await consumableModelService.getByConsumableType(Number(consumableTypeId));
+            const requestedModelId = promptFromList(
+                'Consumable model',
+                Array.isArray(models) ? models : [],
+                (m) => m.consumable_model_id,
+                (m) => `${m.model_name}${m.model_code ? ` (${m.model_code})` : ''}`,
+            );
+            if (!requestedModelId) return;
+
+            await maintenanceStepService.requestConsumable(step.maintenance_step_id, {
+                requested_consumable_model_id: Number(requestedModelId),
+            });
+            loadData();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to request consumable');
+        }
     };
 
     const handleAssignPerson = async (step, personId) => {

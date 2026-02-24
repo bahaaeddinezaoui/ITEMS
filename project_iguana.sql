@@ -1196,6 +1196,33 @@ CREATE TABLE public.maintenance_step (
 
 ALTER TABLE public.maintenance_step OWNER TO postgres;
 
+
+--
+-- TOC entry 9999 (class 1259 OID 999999)
+-- Name: maintenance_step_item_request; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.maintenance_step_item_request (
+    maintenance_step_item_request_id integer NOT NULL,
+    maintenance_step_id integer NOT NULL,
+    requested_by_person_id integer NOT NULL,
+    fulfilled_by_person_id integer,
+    request_type character varying(24) NOT NULL,
+    status character varying(24) NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    fulfilled_at timestamp without time zone,
+    requested_stock_item_model_id integer,
+    requested_consumable_model_id integer,
+    stock_item_id integer,
+    consumable_id integer,
+    source_room_id integer,
+    destination_room_id integer,
+    note character varying(256)
+);
+
+
+ALTER TABLE public.maintenance_step_item_request OWNER TO postgres;
+
 --
 -- TOC entry 266 (class 1259 OID 18391)
 -- Name: maintenance_typical_step; Type: TABLE; Schema: public; Owner: postgres
@@ -1460,21 +1487,11 @@ COMMENT ON COLUMN public.role.role_id IS 'Roles: TECHNICIAN, INVENTORY_MANAGER, 
 CREATE TABLE public.room (
     room_id integer NOT NULL,
     room_name character varying(30),
-    room_type character varying(24),
     room_type_id integer
 );
 
 
 ALTER TABLE public.room OWNER TO postgres;
-
---
--- TOC entry 5833 (class 0 OID 0)
--- Dependencies: 279
--- Name: COLUMN room.room_type; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.room.room_type IS 'It  can be either "Storage Location" or "Work room" (bureau)';
-
 
 --
 -- TOC entry 280 (class 1259 OID 18498)
@@ -2499,6 +2516,14 @@ COPY public.maintenance_step (maintenance_step_id, maintenance_id, maintenance_t
 
 
 --
+-- Data for Name: maintenance_step_item_request; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.maintenance_step_item_request (maintenance_step_item_request_id, maintenance_step_id, requested_by_person_id, request_type, status, created_at, fulfilled_at, stock_item_id, consumable_id, source_room_id, destination_room_id, note) FROM stdin;
+\.
+
+
+--
 -- TOC entry 5760 (class 0 OID 18391)
 -- Dependencies: 266
 -- Data for Name: maintenance_typical_step; Type: TABLE DATA; Schema: public; Owner: postgres
@@ -2646,29 +2671,29 @@ COPY public.role (role_id, role_code, role_label, description) FROM stdin;
 -- Data for Name: room; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.room (room_id, room_name, room_type, room_type_id) FROM stdin;
-1	Teaching Room 1	Teaching Room	1
-2	Teaching Room 2	Teaching Room	1
-3	Teaching Room 3	Teaching Room	1
-4	Teaching Room 4	Teaching Room	1
-5	Teaching Room 5	Teaching Room	1
-6	Teaching Room 6	Teaching Room	1
-7	Teaching Room 7	Teaching Room	1
-8	Teaching Room 8	Teaching Room	1
-9	Teaching Room 9	Teaching Room	1
-10	Teaching Room 10	Teaching Room	1
-11	Teaching Room 11	Teaching Room	1
-12	Teaching Room 12	Teaching Room	1
-13	Teaching Room 13	Teaching Room	1
-14	Teaching Room 14	Teaching Room	1
-15	Teaching Room 15	Teaching Room	1
-16	Teaching Room 16	Teaching Room	1
-17	Teaching Room 17 (2nd Site)	Teaching Room	1
-18	Teaching Room 18 (2nd Site)	Teaching Room	1
-19	Teaching Room 19 (2nd Site)	Teaching Room	1
-20	Teaching Room 20 (2nd Site)	Teaching Room	1
-21	Teaching Room 21 (2nd Site)	Teaching Room	1
-22	Teaching Room 22 (2nd Site)	Teaching Room	1
+COPY public.room (room_id, room_name, room_type_id) FROM stdin;
+1	Teaching Room 1	1
+2	Teaching Room 2	1
+3	Teaching Room 3	1
+4	Teaching Room 4	1
+5	Teaching Room 5	1
+6	Teaching Room 6	1
+7	Teaching Room 7	1
+8	Teaching Room 8	1
+9	Teaching Room 9	1
+10	Teaching Room 10	1
+11	Teaching Room 11	1
+12	Teaching Room 12	1
+13	Teaching Room 13	1
+14	Teaching Room 14	1
+15	Teaching Room 15	1
+16	Teaching Room 16	1
+17	Teaching Room 17 (2nd Site)	1
+18	Teaching Room 18 (2nd Site)	1
+19	Teaching Room 19 (2nd Site)	1
+20	Teaching Room 20 (2nd Site)	1
+21	Teaching Room 21 (2nd Site)	1
+22	Teaching Room 22 (2nd Site)	1
 \.
 
 

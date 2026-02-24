@@ -903,6 +903,11 @@ export const stockItemService = {
     delete: async (id) => {
         await api.delete(`stock-items/${id}/`);
     },
+
+    getCurrentRoom: async (id) => {
+        const response = await api.get(`stock-items/${id}/current-room/`);
+        return response.data;
+    },
 };
 
 // Consumable service
@@ -929,6 +934,11 @@ export const consumableService = {
 
     delete: async (id) => {
         await api.delete(`consumables/${id}/`);
+    },
+
+    getCurrentRoom: async (id) => {
+        const response = await api.get(`consumables/${id}/current-room/`);
+        return response.data;
     },
 };
 
@@ -991,8 +1001,35 @@ export const maintenanceStepService = {
         return response.data;
     },
 
+    requestStockItem: async (id, data) => {
+        const response = await api.post(`maintenance-steps/${id}/request-stock-item/`, data);
+        return response.data;
+    },
+
+    requestConsumable: async (id, data) => {
+        const response = await api.post(`maintenance-steps/${id}/request-consumable/`, data);
+        return response.data;
+    },
+
     delete: async (id) => {
         await api.delete(`maintenance-steps/${id}/`);
+    },
+};
+
+export const maintenanceStepItemRequestService = {
+    getAll: async (params) => {
+        const response = await api.get('maintenance-step-item-requests/', { params });
+        return response.data;
+    },
+
+    fulfill: async (id, data) => {
+        const response = await api.post(`maintenance-step-item-requests/${id}/fulfill/`, data);
+        return response.data;
+    },
+
+    selectRandom: async (id) => {
+        const response = await api.get(`maintenance-step-item-requests/${id}/select-random/`);
+        return response.data;
     },
 };
 
