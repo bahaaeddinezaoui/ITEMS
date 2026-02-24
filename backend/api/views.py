@@ -71,6 +71,117 @@ from .models import (
     PhysicalCondition,
     AssetConditionHistory,
 )
+
+
+def _sync_asset_attribute_values(asset: Asset) -> None:
+    model_defs = list(
+        AssetModelAttributeValue.objects.filter(asset_model_id=asset.asset_model_id).values(
+            "asset_attribute_definition_id",
+            "value_bool",
+            "value_string",
+            "value_number",
+            "value_date",
+        )
+    )
+    model_def_ids = {row["asset_attribute_definition_id"] for row in model_defs}
+
+    existing_qs = AssetAttributeValue.objects.filter(asset_id=asset.asset_id)
+    existing_def_ids = set(existing_qs.values_list("asset_attribute_definition_id", flat=True))
+
+    missing_ids = model_def_ids - existing_def_ids
+    extra_ids = existing_def_ids - model_def_ids
+
+    if extra_ids:
+        existing_qs.filter(asset_attribute_definition_id__in=extra_ids).delete()
+
+    if missing_ids:
+        model_map = {row["asset_attribute_definition_id"]: row for row in model_defs}
+        for definition_id in missing_ids:
+            row = model_map.get(definition_id)
+            if not row:
+                continue
+            instance = AssetAttributeValue()
+            instance.asset_attribute_definition_id = definition_id
+            instance.asset_id = asset.asset_id
+            instance.value_bool = row.get("value_bool")
+            instance.value_string = row.get("value_string")
+            instance.value_number = row.get("value_number")
+            instance.value_date = row.get("value_date")
+            instance.save(force_insert=True)
+
+
+def _sync_stock_item_attribute_values(stock_item: StockItem) -> None:
+    model_defs = list(
+        StockItemModelAttributeValue.objects.filter(stock_item_model_id=stock_item.stock_item_model_id).values(
+            "stock_item_attribute_definition_id",
+            "value_bool",
+            "value_string",
+            "value_number",
+            "value_date",
+        )
+    )
+    model_def_ids = {row["stock_item_attribute_definition_id"] for row in model_defs}
+
+    existing_qs = StockItemAttributeValue.objects.filter(stock_item_id=stock_item.stock_item_id)
+    existing_def_ids = set(existing_qs.values_list("stock_item_attribute_definition_id", flat=True))
+
+    missing_ids = model_def_ids - existing_def_ids
+    extra_ids = existing_def_ids - model_def_ids
+
+    if extra_ids:
+        existing_qs.filter(stock_item_attribute_definition_id__in=extra_ids).delete()
+
+    if missing_ids:
+        model_map = {row["stock_item_attribute_definition_id"]: row for row in model_defs}
+        for definition_id in missing_ids:
+            row = model_map.get(definition_id)
+            if not row:
+                continue
+            instance = StockItemAttributeValue()
+            instance.stock_item_attribute_definition_id = definition_id
+            instance.stock_item_id = stock_item.stock_item_id
+            instance.value_bool = row.get("value_bool")
+            instance.value_string = row.get("value_string")
+            instance.value_number = row.get("value_number")
+            instance.value_date = row.get("value_date")
+            instance.save(force_insert=True)
+
+
+def _sync_consumable_attribute_values(consumable: Consumable) -> None:
+    model_defs = list(
+        ConsumableModelAttributeValue.objects.filter(consumable_model_id=consumable.consumable_model_id).values(
+            "consumable_attribute_definition_id",
+            "value_bool",
+            "value_string",
+            "value_number",
+            "value_date",
+        )
+    )
+    model_def_ids = {row["consumable_attribute_definition_id"] for row in model_defs}
+
+    existing_qs = ConsumableAttributeValue.objects.filter(consumable_id=consumable.consumable_id)
+    existing_def_ids = set(existing_qs.values_list("consumable_attribute_definition_id", flat=True))
+
+    missing_ids = model_def_ids - existing_def_ids
+    extra_ids = existing_def_ids - model_def_ids
+
+    if extra_ids:
+        existing_qs.filter(consumable_attribute_definition_id__in=extra_ids).delete()
+
+    if missing_ids:
+        model_map = {row["consumable_attribute_definition_id"]: row for row in model_defs}
+        for definition_id in missing_ids:
+            row = model_map.get(definition_id)
+            if not row:
+                continue
+            instance = ConsumableAttributeValue()
+            instance.consumable_attribute_definition_id = definition_id
+            instance.consumable_id = consumable.consumable_id
+            instance.value_bool = row.get("value_bool")
+            instance.value_string = row.get("value_string")
+            instance.value_number = row.get("value_number")
+            instance.value_date = row.get("value_date")
+            instance.save(force_insert=True)
 from .serializers import (
     AssetAttributeDefinitionSerializer,
     AssetAttributeValueSerializer,
@@ -1641,7 +1752,14 @@ class AssetViewSet(viewsets.ModelViewSet):
         # Manually set the ID and validated data
         instance = Asset(asset_id=next_id, **serializer.validated_data)
         instance.save(force_insert=True)
+        _sync_asset_attribute_values(instance)
         return Response(self.get_serializer(instance).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        _sync_asset_attribute_values(instance)
+        return response
 
 
 class AssetAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -1809,7 +1927,14 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_item = StockItem.objects.order_by("-stock_item_id").first()
         next_id = (last_item.stock_item_id + 1) if last_item else 1
         item = StockItem.objects.create(stock_item_id=next_id, **serializer.validated_data)
+        _sync_stock_item_attribute_values(item)
         return Response(StockItemSerializer(item).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        _sync_stock_item_attribute_values(instance)
+        return response
 
     @action(detail=True, methods=["get"], url_path="current-room")
     def current_room(self, request, pk=None):
@@ -2074,7 +2199,14 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_item = Consumable.objects.order_by("-consumable_id").first()
         next_id = (last_item.consumable_id + 1) if last_item else 1
         item = Consumable.objects.create(consumable_id=next_id, **serializer.validated_data)
+        _sync_consumable_attribute_values(item)
         return Response(ConsumableSerializer(item).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        _sync_consumable_attribute_values(instance)
+        return response
 
     @action(detail=True, methods=["get"], url_path="current-room")
     def current_room(self, request, pk=None):
