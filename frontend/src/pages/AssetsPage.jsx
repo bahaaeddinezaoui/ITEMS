@@ -4,6 +4,7 @@ import {
     assetModelService,
     assetBrandService,
     assetService,
+    roomService,
     assetAttributeDefinitionService,
     assetTypeAttributeService,
     assetModelAttributeService,
@@ -102,6 +103,14 @@ const AssetsPage = () => {
 
     const [editingAsset, setEditingAsset] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    const [movingAsset, setMovingAsset] = useState(null);
+    const [showMoveModal, setShowMoveModal] = useState(false);
+    const [moveRooms, setMoveRooms] = useState([]);
+    const [moveCurrentRoomId, setMoveCurrentRoomId] = useState(null);
+    const [moveCurrentRoomLabel, setMoveCurrentRoomLabel] = useState('');
+    const [selectedMoveRoomId, setSelectedMoveRoomId] = useState('');
+    const [moveSubmitting, setMoveSubmitting] = useState(false);
 
     useEffect(() => {
         fetchAssetTypes();
@@ -709,10 +718,74 @@ const AssetsPage = () => {
         }
     };
 
+    const closeMoveModal = () => {
+        setShowMoveModal(false);
+        setMovingAsset(null);
+        setMoveRooms([]);
+        setMoveCurrentRoomId(null);
+        setMoveCurrentRoomLabel('');
+        setSelectedMoveRoomId('');
+        setMoveSubmitting(false);
+    };
+
+    const openMoveModal = async (asset) => {
+        setError(null);
+        setMovingAsset(asset);
+        setMoveCurrentRoomId(null);
+        setMoveCurrentRoomLabel('');
+        setSelectedMoveRoomId('');
+        setShowMoveModal(true);
+        try {
+            const [rooms, currentRoom] = await Promise.all([
+                roomService.getAll(),
+                assetService.getCurrentRoom(asset.asset_id),
+            ]);
+
+            const roomsArr = Array.isArray(rooms) ? rooms : [];
+            setMoveRooms(roomsArr);
+
+            const currentRoomId = currentRoom?.room_id ?? null;
+            setMoveCurrentRoomId(currentRoomId);
+            const currentRoomObj = roomsArr.find((r) => r.room_id === currentRoomId);
+            setMoveCurrentRoomLabel(
+                currentRoomObj?.room_name || (currentRoomId ? `Room ${currentRoomId}` : 'Unknown')
+            );
+        } catch (err) {
+            console.error(err);
+            setMoveRooms([]);
+            setError('Failed to load rooms');
+        }
+    };
+
+    const submitMove = async (e) => {
+        e.preventDefault();
+        if (!movingAsset) return;
+        if (!selectedMoveRoomId) {
+            setError('Please select a destination room');
+            return;
+        }
+        try {
+            setMoveSubmitting(true);
+            await assetService.move(movingAsset.asset_id, {
+                destination_room_id: Number(selectedMoveRoomId),
+            });
+            if (selectedAssetModel) {
+                await fetchAssets(selectedAssetModel.asset_model_id);
+            }
+            closeMoveModal();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to move asset');
+        } finally {
+            setMoveSubmitting(false);
+        }
+    };
+
     const userAccount = authService.getUser();
     const isSuperuser = userAccount?.is_superuser;
     const isAssetResponsible = userAccount?.roles?.some(r => r.role_code === 'asset_responsible') || isSuperuser;
     const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
+    const canMoveAssets = isAssetResponsible || isExploitationChief;
 
     const pendingConfirmations = assignments.filter(a => !a.is_confirmed_by_exploitation_chief && a.is_active);
 
@@ -1486,6 +1559,14 @@ const AssetsPage = () => {
                                                         >
                                                             Edit
                                                         </button>
+                                                        {canMoveAssets && (
+                                                            <button
+                                                                onClick={() => openMoveModal(asset)}
+                                                                style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
+                                                            >
+                                                                Move
+                                                            </button>
+                                                        )}
                                                         {isAssetResponsible && (
                                                             (() => {
                                                                 const activeAssignment = activeAssignmentsByAsset.get(asset.asset_id);
@@ -1826,6 +1907,107 @@ const AssetsPage = () => {
                                 {saving ? 'Discharging...' : 'Confirm Discharge'}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {showMoveModal && movingAsset && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        color: 'var(--color-text)',
+                        padding: 'var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        width: '100%',
+                        maxWidth: '520px',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.25)',
+                        border: '1px solid var(--color-border)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 'var(--space-4)' }}>
+                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
+                                Move Asset: {movingAsset.asset_name || `Asset ${movingAsset.asset_id}`}
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={() => !moveSubmitting && closeMoveModal()}
+                                style={{
+                                    border: '1px solid var(--color-border)',
+                                    background: 'var(--color-bg-secondary)',
+                                    color: 'var(--color-text)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    padding: '6px 10px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Close
+                            </button>
+                        </div>
+                        <form onSubmit={submitMove}>
+                            <div style={{ marginBottom: 'var(--space-6)' }}>
+                                <div style={{
+                                    marginBottom: 'var(--space-3)',
+                                    padding: 'var(--space-3)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--color-bg-secondary)',
+                                    color: 'var(--color-text)'
+                                }}>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Current room</div>
+                                    <div style={{ fontWeight: 600 }}>
+                                        {moveCurrentRoomLabel || 'Unknown'}
+                                    </div>
+                                </div>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Destination room</label>
+                                <select
+                                    value={selectedMoveRoomId}
+                                    onChange={(e) => setSelectedMoveRoomId(e.target.value)}
+                                    required
+                                    disabled={moveSubmitting}
+                                    style={{
+                                        width: '100%',
+                                        padding: 'var(--space-2)',
+                                        borderRadius: 'var(--radius-sm)',
+                                        border: '1px solid var(--color-border)',
+                                        background: 'var(--color-bg-secondary)',
+                                        color: 'var(--color-text)'
+                                    }}
+                                >
+                                    <option value="">Select a room...</option>
+                                    {moveRooms.map((r) => (
+                                        <option key={r.room_id} value={r.room_id}>
+                                            {r.room_name || `Room ${r.room_id}`}{r.room_type_label ? ` (${r.room_type_label})` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => !moveSubmitting && closeMoveModal()}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={moveSubmitting || !selectedMoveRoomId}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                                >
+                                    {moveSubmitting ? 'Moving...' : 'Move'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

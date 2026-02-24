@@ -881,6 +881,11 @@ export const assetService = {
         const response = await api.get(`assets/${id}/current-room/`);
         return response.data;
     },
+
+    move: async (id, data) => {
+        const response = await api.post(`assets/${id}/move/`, data);
+        return response.data;
+    },
 };
 
 // Stock Item service
@@ -913,6 +918,11 @@ export const stockItemService = {
         const response = await api.get(`stock-items/${id}/current-room/`);
         return response.data;
     },
+
+    move: async (id, data) => {
+        const response = await api.post(`stock-items/${id}/move/`, data);
+        return response.data;
+    },
 };
 
 // Consumable service
@@ -943,6 +953,11 @@ export const consumableService = {
 
     getCurrentRoom: async (id) => {
         const response = await api.get(`consumables/${id}/current-room/`);
+        return response.data;
+    },
+
+    move: async (id, data) => {
+        const response = await api.post(`consumables/${id}/move/`, data);
         return response.data;
     },
 };

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+    authService,
+    roomService,
     consumableTypeService,
     consumableModelService,
     consumableBrandService,
@@ -15,12 +17,20 @@ const ConsumablesPage = () => {
     const [consumableBrands, setConsumableBrands] = useState([]);
     const [consumableModels, setConsumableModels] = useState([]);
     const [consumables, setConsumables] = useState([]);
+    const [rooms, setRooms] = useState([]);
     const [consumableAttributeDefinitions, setConsumableAttributeDefinitions] = useState([]);
     const [consumableTypeAttributes, setConsumableTypeAttributes] = useState([]);
     const [consumableModelAttributes, setConsumableModelAttributes] = useState([]);
     const [consumableAttributes, setConsumableAttributes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    const [showMoveModal, setShowMoveModal] = useState(false);
+    const [movingConsumable, setMovingConsumable] = useState(null);
+    const [moveCurrentRoomId, setMoveCurrentRoomId] = useState(null);
+    const [moveCurrentRoomLabel, setMoveCurrentRoomLabel] = useState('');
+    const [selectedMoveRoomId, setSelectedMoveRoomId] = useState('');
+    const [moveSubmitting, setMoveSubmitting] = useState(false);
 
     // Attribute forms visibility
     const [showAttributeDefinitionForm, setShowAttributeDefinitionForm] = useState(false);
@@ -97,7 +107,38 @@ const ConsumablesPage = () => {
         fetchConsumableTypes();
         fetchConsumableBrands();
         fetchConsumableAttributeDefinitions();
+        fetchRooms();
     }, []);
+
+    const fetchRooms = async () => {
+        try {
+            const data = await roomService.getAll();
+            setRooms(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to fetch rooms:', err);
+            setRooms([]);
+        }
+    };
+
+    useEffect(() => {
+        const loadCurrentRoom = async () => {
+            if (!showMoveModal || !movingConsumable) return;
+            try {
+                const current = await consumableService.getCurrentRoom(movingConsumable.consumable_id);
+                const currentRoomId = current?.room_id ?? null;
+                setMoveCurrentRoomId(currentRoomId);
+                const currentRoomObj = rooms.find((r) => r.room_id === currentRoomId);
+                setMoveCurrentRoomLabel(
+                    currentRoomObj?.room_name || (currentRoomId ? `Room ${currentRoomId}` : 'Unknown')
+                );
+            } catch (err) {
+                console.error(err);
+                setMoveCurrentRoomId(null);
+                setMoveCurrentRoomLabel('Unknown');
+            }
+        };
+        loadCurrentRoom();
+    }, [showMoveModal, movingConsumable, rooms]);
 
     useEffect(() => {
         if (selectedConsumableType) {
@@ -609,6 +650,47 @@ const ConsumablesPage = () => {
             } catch (err) {
                 setError('Failed to delete consumable: ' + err.message);
             }
+        }
+    };
+
+    const userAccount = authService.getUser();
+    const isSuperuser = userAccount?.is_superuser;
+    const isStockConsumableResponsible = userAccount?.roles?.some(r => r.role_code === 'stock_consumable_responsible') || isSuperuser;
+    const canMoveConsumables = isStockConsumableResponsible;
+
+    const openMoveModal = (item) => {
+        setMovingConsumable(item);
+        setMoveCurrentRoomId(null);
+        setMoveCurrentRoomLabel('');
+        setSelectedMoveRoomId('');
+        setShowMoveModal(true);
+    };
+
+    const closeMoveModal = () => {
+        setShowMoveModal(false);
+        setMovingConsumable(null);
+        setMoveCurrentRoomId(null);
+        setMoveCurrentRoomLabel('');
+        setSelectedMoveRoomId('');
+    };
+
+    const submitMove = async (e) => {
+        e.preventDefault();
+        if (!movingConsumable || !selectedMoveRoomId) return;
+        setMoveSubmitting(true);
+        setError(null);
+        try {
+            await consumableService.move(movingConsumable.consumable_id, {
+                destination_room_id: selectedMoveRoomId,
+            });
+            if (selectedConsumableModel) {
+                await fetchConsumables(selectedConsumableModel.consumable_model_id);
+            }
+            closeMoveModal();
+        } catch (err) {
+            setError('Failed to move consumable: ' + (err?.response?.data?.error || err.message));
+        } finally {
+            setMoveSubmitting(false);
         }
     };
 
@@ -1336,6 +1418,14 @@ const ConsumablesPage = () => {
                                                         >
                                                             Edit
                                                         </button>
+                                                        {canMoveConsumables && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); openMoveModal(item); }}
+                                                                style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
+                                                            >
+                                                                Move
+                                                            </button>
+                                                        )}
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); handleDeleteConsumable(item.consumable_id); }}
                                                             style={{ background: 'none', border: 'none', color: '#c33', cursor: 'pointer', fontWeight: '500' }}
@@ -1511,6 +1601,107 @@ const ConsumablesPage = () => {
                     )}
                 </div>
             </div>
+
+            {showMoveModal && movingConsumable && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        backgroundColor: 'var(--color-bg-tertiary)',
+                        color: 'var(--color-text)',
+                        padding: 'var(--space-6)',
+                        borderRadius: 'var(--radius-md)',
+                        width: '100%',
+                        maxWidth: '520px',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.25)',
+                        border: '1px solid var(--color-border)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 'var(--space-4)' }}>
+                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
+                                Move Consumable: {movingConsumable.consumable_name || `Consumable ${movingConsumable.consumable_id}`}
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={() => !moveSubmitting && closeMoveModal()}
+                                style={{
+                                    border: '1px solid var(--color-border)',
+                                    background: 'var(--color-bg-secondary)',
+                                    color: 'var(--color-text)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    padding: '6px 10px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Close
+                            </button>
+                        </div>
+                        <form onSubmit={submitMove}>
+                            <div style={{ marginBottom: 'var(--space-6)' }}>
+                                <div style={{
+                                    marginBottom: 'var(--space-3)',
+                                    padding: 'var(--space-3)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--color-bg-secondary)',
+                                    color: 'var(--color-text)'
+                                }}>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Current room</div>
+                                    <div style={{ fontWeight: 600 }}>
+                                        {moveCurrentRoomLabel || 'Unknown'}
+                                    </div>
+                                </div>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Destination room</label>
+                                <select
+                                    value={selectedMoveRoomId}
+                                    onChange={(e) => setSelectedMoveRoomId(e.target.value)}
+                                    required
+                                    disabled={moveSubmitting}
+                                    style={{
+                                        width: '100%',
+                                        padding: 'var(--space-2)',
+                                        borderRadius: 'var(--radius-sm)',
+                                        border: '1px solid var(--color-border)',
+                                        background: 'var(--color-bg-secondary)',
+                                        color: 'var(--color-text)'
+                                    }}
+                                >
+                                    <option value="">Select a room...</option>
+                                    {rooms.map((r) => (
+                                        <option key={r.room_id} value={r.room_id}>
+                                            {r.room_name || `Room ${r.room_id}`}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => !moveSubmitting && closeMoveModal()}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={moveSubmitting || !selectedMoveRoomId}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                                >
+                                    {moveSubmitting ? 'Moving...' : 'Move'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

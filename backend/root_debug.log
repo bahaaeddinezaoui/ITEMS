@@ -21153,3 +21153,185 @@ ts/ -> 200
 [2026-02-24 18:12:45.615923] START GET /api/asset-model-attributes/
 [2026-02-24 18:12:45.657161] END   GET /api/assets/ -> 200
 [2026-02-24 18:12:45.658169] END   GET /api/asset-model-attributes/ -> 200
+[2026-02-24 18:20:03.815843] START GET /api/asset-types/
+
+[2026-02-24 18:20:03.816640] START GET /api/asset-attribute-definitions/
+[2026-02-24 18:20:03.817550] START GET /api/persons/
+[2026-02-24 18:20:03.818209] START GET /api/asset-assignments/
+[2026-02-24 18:20:03.876762] END   GET /api/asset-brands/ -> 200
+[2026-02-24 18:20:03.883066] END   GET /api/persons/ -> 200
+[2026-02-24 18:20:03.885355] END   GET /api/asset-types/ -> 200
+[2026-02-24 18:20:03.889828] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-24 18:20:03.890387] START GET /api/persons/
+[2026-02-24 18:20:03.904962] START GET /api/asset-types/
+[2026-02-24 18:20:03.905698] START GET /api/asset-attribute-definitions/
+[2026-02-24 18:20:03.927375] END   GET /api/asset-brands/ -> 200
+[2026-02-24 18:20:03.944065] END   GET /api/persons/ -> 200
+[2026-02-24 18:20:03.948407] END   GET /api/asset-types/ -> 200
+[2026-02-24 18:20:03.948517] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-24 18:20:04.007354] END   GET /api/asset-assignments/ -> 200
+[2026-02-24 18:20:04.011016] START GET /api/asset-assignments/
+[2026-02-24 18:20:04.052325] END   GET /api/asset-assignments/ -> 200
+[2026-02-24 18:20:55.919861] START GET /api/asset-models/
+[2026-02-24 18:20:55.920676] START GET /api/asset-type-attributes/
+[2026-02-24 18:20:55.966181] END   GET /api/asset-models/ -> 200
+[2026-02-24 18:20:55.966289] END   GET /api/asset-type-attributes/ -> 200
+[2026-02-24 18:20:58.012784] START GET /api/assets/
+[2026-02-24 18:20:58.013499] START GET /api/asset-model-attributes/
+[2026-02-24 18:20:58.055283] END   GET /api/assets/ -> 200
+[2026-02-24 18:20:58.056678] END   GET /api/asset-model-attributes/ -> 200
+[2026-02-24 18:23:58.813408] START GET /api/asset-types/
+[2026-02-24 18:23:58.813838] START GET /api/asset-brands/
+[2026-02-24 18:23:58.814643] START GET /api/asset-attribute-definitions/
+[2026-02-24 18:23:58.818182] START GET /api/persons/
+[2026-02-24 18:23:58.820811] START GET /api/asset-assignments/
+[2026-02-24 18:23:58.874527] END   GET /api/asset-types/ -> 200
+[2026-02-24 18:23:58.883687] END   GET /api/asset-brands/ -> 200
+[2026-02-24 18:23:58.891588] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-24 18:23:58.894713] END   GET /api/persons/ -> 200
+[2026-02-24 18:23:58.905311] END   GET /api/asset-assignments/ -> 200
+[2026-02-24 18:25:04.086141] START GET /api/asset-models/
+[2026-02-24 18:25:04.086798] START GET /api/asset-type-attributes/
+[2026-02-24 18:25:04.132267] END   GET /api/asset-models/ -> 200
+[2026-02-24 18:25:04.132459] END   GET /api/asset-type-attributes/ -> 200
+[2026-02-24 18:25:04.702105] START GET /api/assets/
+[2026-02-24 18:25:04.702905] START GET /api/asset-model-attributes/
+[2026-02-24 18:25:04.744120] END   GET /api/assets/ -> 200
+[2026-02-24 18:25:04.745522] END   GET /api/asset-model-attributes/ -> 200
+[2026-02-24 18:25:08.300779] START GET /api/rooms/
+[2026-02-24 18:25:08.352124] END   GET /api/rooms/ -> 200
+[2026-02-24 18:30:17.501453] START GET /api/asset-types/
+[2026-02-24 18:30:17.501796] START GET /api/asset-brands/
+[2026-02-24 18:30:17.502037] START GET /api/asset-attribute-definitions/
+[2026-02-24 18:30:17.502715] START GET /api/persons/
+[2026-02-24 18:30:17.508184] START GET /api/asset-assignments/
+[2026-02-24 18:30:17.560796] END   GET /api/asset-brands/ -> 200
+[2026-02-24 18:30:17.564220] END   GET /api/asset-types/ -> 200
+[2026-02-24 18:30:17.566219] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-24 18:30:17.566784] START GET /api/asset-brands/
+[2026-02-24 18:30:17.580409] END   GET /api/persons/ -> 200
+[2026-02-24 18:30:17.580121] START GET /api/asset-types/
+[2026-02-24 18:30:17.581246] START GET /api/asset-attribute-definitions/
+[2026-02-24 18:30:17.588120] END   GET /api/asset-assignments/ -> 200
+[2026-02-24 18:30:17.589375] START GET /api/persons/
+[2026-02-24 18:30:17.593784] START GET /api/asset-assignments/
+[2026-02-24 18:30:17.629559] END   GET /api/asset-types/ -> 200
+[2026-02-24 18:30:17.638860] END   GET /api/persons/ -> 200
+[2026-02-24 18:30:17.647235] END   GET /api/asset-assignments/ -> 200
+[2026-02-24 18:30:17.728488] END   GET /api/asset-brands/ -> 200
+[2026-02-24 18:30:17.744063] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-24 18:30:18.556355] START GET /api/asset-models/
+[2026-02-24 18:30:18.557226] START GET /api/asset-type-attributes/
+[2026-02-24 18:30:18.597343] END   GET /api/asset-models/ -> 200
+[2026-02-24 18:30:18.599553] END   GET /api/asset-type-attributes/ -> 200
+[2026-02-24 18:30:19.239672] START GET /api/assets/
+[2026-02-24 18:30:19.240303] START GET /api/asset-model-attributes/
+[2026-02-24 18:30:19.282219] END   GET /api/assets/ -> 200
+[2026-02-24 18:30:19.283299] END   GET /api/asset-model-attributes/ -> 200
+[2026-02-24 18:30:21.616553] START GET /api/rooms/
+[2026-02-24 18:30:21.664109] END   GET /api/rooms/ -> 200
+[2026-02-24 18:30:26.904721] START POST /api/assets/1/move/
+[2026-02-24 18:30:26.950283] END   POST /api/assets/1/move/ -> 201
+[2026-02-24 18:30:26.955593] START GET /api/assets/
+[2026-02-24 18:30:26.992510] END   GET /api/assets/ -> 200
+[2026-02-24 18:30:40.943801] START GET /api/rooms/
+[2026-02-24 18:30:40.991310] END   GET /api/rooms/ -> 200
+[2026-02-24 18:30:44.447468] START POST /api/assets/1/move/
+[2026-02-24 18:30:44.500068] END   POST /api/assets/1/move/ -> 201
+[2026-02-24 18:30:44.505601] START GET /api/assets/
+[2026-02-24 18:30:44.542211] END   GET /api/assets/ -> 200
+[2026-02-24 18:35:27.821238] START GET /api/asset-types/
+[2026-02-24 18:35:27.822034] START GET /api/asset-brands/
+-definitions/
+[2026-02-24 18:35:27.823571] START GET /api/persons/
+[2026-02-24 18:35:27.824483] START GET /api/asset-assignments/
+[2026-02-24 18:35:27.895457] END   GET /api/asset-types/ -> 200
+[2026-02-24 18:35:27.895806] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-24 18:35:27.903378] END   GET /api/persons/ -> 200
+[2026-02-24 18:35:27.903854] START GET /api/asset-types/
+[2026-02-24 18:35:27.919589] END   GET /api/asset-brands/ -> 200
+[2026-02-24 18:35:27.919323] START GET /api/asset-attribute-definitions/
+[2026-02-24 18:35:27.924689] START GET /api/persons/
+[2026-02-24 18:35:27.928702] START GET /api/asset-brands/
+[2026-02-24 18:35:27.943760] END   GET /api/asset-assignments/ -> 200
+[2026-02-24 18:35:27.949790] START GET /api/asset-assignments/
+[2026-02-24 18:35:27.974466] END   GET /api/asset-types/ -> 200
+[2026-02-24 18:35:27.978311] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-24 18:35:27.984535] END   GET /api/asset-brands/ -> 200
+[2026-02-24 18:35:27.984834] END   GET /api/persons/ -> 200
+[2026-02-24 18:35:27.999060] END   GET /api/asset-assignments/ -> 200
+[2026-02-24 18:38:22.926700] START POST /api/auth/login/
+[2026-02-24 18:38:22.976400] END   POST /api/auth/login/ -> 200
+[2026-02-24 18:38:24.637156] START GET /api/stock-item-types/
+[2026-02-24 18:38:24.637573] START GET /api/stock-item-brands/
+[2026-02-24 18:38:24.638182] START GET /api/stock-item-attribute-definitions/
+[2026-02-24 18:38:24.642666] START GET /api/rooms/
+[2026-02-24 18:38:24.681655] END   GET /api/stock-item-types/ -> 200
+[2026-02-24 18:38:24.685560] START GET /api/stock-item-types/
+[2026-02-24 18:38:24.689061] END   GET /api/stock-item-brands/ -> 200
+[2026-02-24 18:38:24.691694] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-24 18:38:24.693597] START GET /api/stock-item-brands/
+[2026-02-24 18:38:24.698289] START GET /api/stock-item-attribute-definitions/
+[2026-02-24 18:38:24.733756] END   GET /api/stock-item-types/ -> 200
+[2026-02-24 18:38:24.739656] END   GET /api/stock-item-brands/ -> 200
+[2026-02-24 18:38:24.744495] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-02-24 18:38:24.816020] END   GET /api/rooms/ -> 200
+[2026-02-24 18:38:24.820120] START GET /api/rooms/
+[2026-02-24 18:38:24.866056] END   GET /api/rooms/ -> 200
+[2026-02-24 18:38:25.509143] START GET /api/stock-item-models/
+[2026-02-24 18:38:25.509773] START GET /api/stock-item-type-attributes/
+[2026-02-24 18:38:25.553480] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-02-24 18:38:25.553631] END   GET /api/stock-item-models/ -> 200
+[2026-02-24 18:38:26.094986] START GET /api/stock-items/
+[2026-02-24 18:38:26.095768] START GET /api/stock-item-model-attributes/
+[2026-02-24 18:38:26.136760] END   GET /api/stock-items/ -> 200
+[2026-02-24 18:38:26.138194] END   GET /api/stock-item-model-attributes/ -> 200
+[2026-02-24 18:38:31.976989] START POST /api/stock-items/1/move/
+[2026-02-24 18:38:32.023295] END   POST /api/stock-items/1/move/ -> 400
+Response Body: {"error":"Cannot infer stock item current room (no movement history)"}
+[2026-02-24 18:38:41.019235] START GET /api/consumable-types/
+[2026-02-24 18:38:41.019687] START GET /api/consumable-brands/
+[2026-02-24 18:38:41.020387] START GET /api/consumable-attribute-definitions/
+[2026-02-24 18:38:41.023127] START GET /api/rooms/
+[2026-02-24 18:38:41.063649] END   GET /api/consumable-types/ -> 200
+[2026-02-24 18:38:41.067325] END   GET /api/consumable-brands/ -> 200
+[2026-02-24 18:38:41.071317] START GET /api/consumable-types/
+[2026-02-24 18:38:41.073660] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-02-24 18:38:41.072722] START GET /api/consumable-brands/
+[2026-02-24 18:38:41.082098] START GET /api/consumable-attribute-definitions/
+[2026-02-24 18:38:41.094754] END   GET /api/rooms/ -> 200
+[2026-02-24 18:38:41.099712] START GET /api/rooms/
+[2026-02-24 18:38:41.119678] END   GET /api/consumable-types/ -> 200
+[2026-02-24 18:38:41.121640] END   GET /api/consumable-brands/ -> 200
+[2026-02-24 18:38:41.151718] END   GET /api/rooms/ -> 200
+[2026-02-24 18:38:41.234398] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-02-24 18:38:41.888184] START GET /api/consumable-type-attributes/
+[2026-02-24 18:38:41.889176] START GET /api/consumable-models/
+[2026-02-24 18:38:41.934034] END   GET /api/consumable-type-attributes/ -> 200
+[2026-02-24 18:38:41.934313] END   GET /api/consumable-models/ -> 200
+[2026-02-24 18:38:42.618618] START GET /api/consumable-model-attributes/
+[2026-02-24 18:38:42.619350] START GET /api/consumables/
+[2026-02-24 18:38:42.662953] END   GET /api/consumables/ -> 200
+[2026-02-24 18:38:42.664020] END   GET /api/consumable-model-attributes/ -> 200
+[2026-02-24 18:38:48.604503] START POST /api/consumables/1/move/
+[2026-02-24 18:38:48.651310] END   POST /api/consumables/1/move/ -> 201
+[2026-02-24 18:38:48.656781] START GET /api/consumables/
+[2026-02-24 18:38:48.693720] END   GET /api/consumables/ -> 200
+[2026-02-24 18:41:18.810392] START GET /api/consumable-types/
+[2026-02-24 18:41:18.810840] START GET /api/consumable-brands/
+-definitions/
+[2026-02-24 18:41:18.811907] START GET /api/rooms/
+[2026-02-24 18:41:18.859992] END   GET /api/consumable-types/ -> 200
+[2026-02-24 18:41:18.863558] END   GET /api/consumable-brands/ -> 200
+[2026-02-24 18:41:18.867066] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-02-24 18:41:18.880341] END   GET /api/rooms/ -> 200
+[2026-02-24 18:42:08.366746] START GET /api/consumable-models/
+[2026-02-24 18:42:08.367422] START GET /api/consumable-type-attributes/
+[2026-02-24 18:42:08.413999] END   GET /api/consumable-type-attributes/ -> 200
+[2026-02-24 18:42:08.414108] END   GET /api/consumable-models/ -> 200
+[2026-02-24 18:42:08.891339] START GET /api/consumables/
+[2026-02-24 18:42:08.892173] START GET /api/consumable-model-attributes/
+[2026-02-24 18:42:08.932728] END   GET /api/consumables/ -> 200
+[2026-02-24 18:42:08.932999] END   GET /api/consumable-model-attributes/ -> 200
+[2026-02-24 18:42:11.011031] START GET /api/consumables/1/current-room/
+[2026-02-24 18:42:11.050534] END   GET /api/consumables/1/current-room/ -> 200

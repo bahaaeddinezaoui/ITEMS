@@ -1544,6 +1544,83 @@ class AssetViewSet(viewsets.ModelViewSet):
             return Response({"room": None}, status=status.HTTP_200_OK)
         return Response({"room": RoomSerializer(last_move.destination_room).data}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="move")
+    def move(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            allowed = ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes)
+
+        if not allowed:
+            return Response(
+                {"error": "Only Asset Responsible or superiors can move assets"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        asset = self.get_object()
+        destination_room_id = request.data.get("destination_room_id")
+        movement_reason = request.data.get("movement_reason") or "manual_move"
+        if not destination_room_id:
+            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            destination_room_id_int = int(destination_room_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
+        if not destination_room:
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_move = (
+            AssetMovement.objects.select_related("destination_room")
+            .filter(asset_id=asset.asset_id)
+            .order_by("-asset_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response(
+                {"error": "Cannot infer asset current room (no movement history)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        source_room = last_move.destination_room
+        if source_room.room_id == destination_room.room_id:
+            return Response({"error": "Asset is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+        next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+
+        AssetMovement.objects.create(
+            asset_movement_id=next_asset_move_id,
+            asset=asset,
+            source_room=source_room,
+            destination_room=destination_room,
+            maintenance_step=None,
+            external_maintenance_step_id=None,
+            movement_reason=movement_reason,
+            movement_datetime=timezone.now(),
+        )
+
+        return Response(
+            {
+                "asset_movement_id": next_asset_move_id,
+                "source_room_id": source_room.room_id,
+                "destination_room_id": destination_room.room_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
     def get_queryset(self):
         queryset = Asset.objects.select_related("asset_model").order_by("asset_id")
         asset_model_id = self.request.query_params.get("asset_model")
@@ -1746,6 +1823,83 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             return Response({"room_id": None}, status=status.HTTP_200_OK)
         return Response({"room_id": last_move.destination_room_id}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="move")
+    def move(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            allowed = "stock_consumable_responsible" in role_codes
+
+        if not allowed:
+            return Response(
+                {"error": "Only Stock/Consumable Responsible or superusers can move stock items"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        stock_item = self.get_object()
+        destination_room_id = request.data.get("destination_room_id")
+        movement_reason = request.data.get("movement_reason") or "manual_move"
+        if not destination_room_id:
+            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            destination_room_id_int = int(destination_room_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
+        if not destination_room:
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_move = (
+            StockItemMovement.objects.select_related("destination_room")
+            .filter(stock_item_id=stock_item.stock_item_id)
+            .order_by("-stock_item_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response(
+                {"error": "Cannot infer stock item current room (no movement history)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        source_room = last_move.destination_room
+        if source_room.room_id == destination_room.room_id:
+            return Response({"error": "Stock item is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_global_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+        next_move_id = (last_global_move.stock_item_movement_id + 1) if last_global_move else 1
+
+        StockItemMovement.objects.create(
+            stock_item_movement_id=next_move_id,
+            stock_item=stock_item,
+            source_room=source_room,
+            destination_room=destination_room,
+            maintenance_step=None,
+            external_maintenance_step_id=None,
+            movement_reason=movement_reason,
+            movement_datetime=timezone.now(),
+        )
+
+        return Response(
+            {
+                "stock_item_movement_id": next_move_id,
+                "source_room_id": source_room.room_id,
+                "destination_room_id": destination_room.room_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
 
 class StockItemAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = StockItemAttributeDefinition.objects.all().order_by("stock_item_attribute_definition_id")
@@ -1933,6 +2087,83 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if not last_move or not last_move.destination_room_id:
             return Response({"room_id": None}, status=status.HTTP_200_OK)
         return Response({"room_id": last_move.destination_room_id}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="move")
+    def move(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            allowed = "stock_consumable_responsible" in role_codes
+
+        if not allowed:
+            return Response(
+                {"error": "Only Stock/Consumable Responsible or superusers can move consumables"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        consumable = self.get_object()
+        destination_room_id = request.data.get("destination_room_id")
+        movement_reason = request.data.get("movement_reason") or "manual_move"
+        if not destination_room_id:
+            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            destination_room_id_int = int(destination_room_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
+        if not destination_room:
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_move = (
+            ConsumableMovement.objects.select_related("destination_room")
+            .filter(consumable_id=consumable.consumable_id)
+            .order_by("-consumable_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response(
+                {"error": "Cannot infer consumable current room (no movement history)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        source_room = last_move.destination_room
+        if source_room.room_id == destination_room.room_id:
+            return Response({"error": "Consumable is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_global_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+        next_move_id = (last_global_move.consumable_movement_id + 1) if last_global_move else 1
+
+        ConsumableMovement.objects.create(
+            consumable_movement_id=next_move_id,
+            consumable=consumable,
+            source_room=source_room,
+            destination_room=destination_room,
+            maintenance_step=None,
+            external_maintenance_step_id=None,
+            movement_reason=movement_reason,
+            movement_datetime=timezone.now(),
+        )
+
+        return Response(
+            {
+                "consumable_movement_id": next_move_id,
+                "source_room_id": source_room.room_id,
+                "destination_room_id": destination_room.room_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class ConsumableAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
