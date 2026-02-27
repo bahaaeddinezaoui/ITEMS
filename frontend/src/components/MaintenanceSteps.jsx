@@ -509,6 +509,27 @@ const MaintenanceSteps = ({
         return 'done';
     };
 
+    const getStatusColor = (status) => {
+        if (!status) return 'var(--color-text-secondary)';
+        const s = status.toLowerCase();
+        if (s.includes('done') || s === 'completed') return 'var(--color-success)';
+        if (s.includes('fail') || s.includes('cancel')) return 'var(--color-error)';
+        if (s.includes('progress') || s.includes('start')) return 'var(--color-info)';
+        if (s.includes('pending') || s.includes('wait')) return 'var(--color-warning)';
+        return 'var(--color-text-secondary)';
+    };
+
+    const formatDateTime = (dateString) => {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+    };
+
     const loadData = async () => {
         try {
             setLoading(true);
@@ -1248,7 +1269,7 @@ const MaintenanceSteps = ({
                 )
             )}
 
-                    {/* Steps List */}
+                    {/* Steps List - Timeline View */}
                     {loading && combinedSteps.length === 0 ? (
                         <div className="text-center py-4" style={{ color: 'var(--color-text-secondary)', marginTop: 12 }}>Loading steps...</div>
                     ) : combinedSteps.length === 0 ? (
@@ -1256,129 +1277,223 @@ const MaintenanceSteps = ({
                             <p>No steps added yet.</p>
                         </div>
                     ) : (
-                        <div className="table-container rounded border overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)', marginTop: 12 }}>
-                            <table className="data-table mb-0">
-                                <thead style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
-                                    <tr>
-                                        <th className="px-4 py-2">Step</th>
-                                        <th className="px-4 py-2">Level</th>
-                                        <th className="px-4 py-2">Assigned To</th>
-                                        <th className="px-4 py-2">Status</th>
-                                        <th className="px-4 py-2 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {combinedSteps.map(step => (
-                                        <tr key={step.__key} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
-                                            <td className="px-4 py-2">
-                                                {step.__step_type === 'internal'
-                                                    ? (step.maintenance_typical_step?.description || `Step ${step.maintenance_step_id}`)
-                                                    : (step.external_maintenance_typical_step_description || `External step ${step.external_maintenance_step_id}`)
-                                                }
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                <span className="badge badge-info">
-                                                    {step.__step_type === 'internal' ? 'Internal' : 'External'}
+                        <div className="steps-timeline" style={{ position: 'relative', paddingLeft: '2rem', marginTop: 12 }}>
+                            <style>{`
+                                .steps-timeline::before {
+                                    content: '';
+                                    position: absolute;
+                                    left: 0.75rem;
+                                    top: 0;
+                                    bottom: 0;
+                                    width: 2px;
+                                    background: var(--color-border);
+                                }
+                                .step-timeline-entry {
+                                    position: relative;
+                                    padding-bottom: 1.5rem;
+                                }
+                                .step-timeline-entry:last-child {
+                                    padding-bottom: 0;
+                                }
+                                .step-timeline-marker {
+                                    position: absolute;
+                                    left: -1.5rem;
+                                    top: 0.25rem;
+                                    width: 1.5rem;
+                                    height: 1.5rem;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 0.75rem;
+                                    font-weight: 600;
+                                    background: var(--color-bg-primary);
+                                    border: 2px solid var(--color-border);
+                                    z-index: 1;
+                                }
+                                .step-timeline-marker.internal {
+                                    background: var(--color-info);
+                                    border-color: var(--color-info);
+                                    color: white;
+                                }
+                                .step-timeline-marker.external {
+                                    background: var(--color-warning);
+                                    border-color: var(--color-warning);
+                                    color: white;
+                                }
+                                .step-timeline-content {
+                                    background: var(--color-bg-secondary);
+                                    border: 1px solid var(--color-border);
+                                    border-radius: var(--radius-md);
+                                    padding: 1rem;
+                                    margin-left: 0.5rem;
+                                }
+                                .step-timeline-header {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: flex-start;
+                                    margin-bottom: 0.5rem;
+                                    flex-wrap: wrap;
+                                    gap: 0.5rem;
+                                }
+                                .step-timeline-title {
+                                    font-weight: 600;
+                                    font-size: var(--font-size-md);
+                                    color: var(--color-text-primary);
+                                    margin: 0;
+                                }
+                                .step-timeline-header-right {
+                                    display: flex;
+                                    flex-direction: column;
+                                    align-items: flex-end;
+                                    gap: 0.5rem;
+                                }
+                                .step-timeline-meta {
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    align-items: center;
+                                    gap: 0.75rem;
+                                    font-size: var(--font-size-sm);
+                                    color: var(--color-text-secondary);
+                                    margin-top: 0.5rem;
+                                }
+                                .step-timeline-meta-item {
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 0.25rem;
+                                }
+                                .step-timeline-actions {
+                                    display: flex;
+                                    gap: 0.35rem;
+                                    flex-wrap: wrap;
+                                    margin-left: auto;
+                                }
+                            `}</style>
+
+                            {combinedSteps.map((step) => {
+                                const isInternal = step.__step_type === 'internal';
+                                const description = isInternal
+                                    ? (step.maintenance_typical_step?.description || `Step ${step.maintenance_step_id}`)
+                                    : (step.external_maintenance_typical_step_description || `External step ${step.external_maintenance_step_id}`);
+                                const assignedTo = isInternal
+                                    ? `${step.person?.first_name || ''} ${step.person?.last_name || ''}`.trim()
+                                    : (step.external_maintenance_provider_name || 'External provider');
+                                const status = isInternal
+                                    ? (step.maintenance_step_status || '-')
+                                    : getExternalStatusLabel(step);
+                                const statusColor = isInternal
+                                    ? getStatusColor(step.maintenance_step_status)
+                                    : getStatusColor(getExternalStatusLabel(step));
+
+                                return (
+                                    <div key={step.__key} className="step-timeline-entry">
+                                        <div className={`step-timeline-marker ${isInternal ? 'internal' : 'external'}`}>
+                                            {isInternal ? 'I' : 'E'}
+                                        </div>
+                                        <div className="step-timeline-content">
+                                            <div className="step-timeline-header">
+                                                <h4 className="step-timeline-title">{description}</h4>
+                                                <span 
+                                                    className="badge badge-info"
+                                                    style={{ 
+                                                        backgroundColor: statusColor,
+                                                        color: 'white'
+                                                    }}
+                                                >
+                                                    {status}
                                                 </span>
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                <span className="badge badge-info status-badge">
-                                                    {step.__step_type === 'internal'
-                                                        ? `${step.person?.first_name || ''} ${step.person?.last_name || ''}`.trim()
-                                                        : (step.external_maintenance_provider_name || 'External provider')
-                                                    }
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-2">
-                                                {step.__step_type === 'internal' ? (
-                                                    step.maintenance_step_status ? (
-                                                        <span className="badge badge-info">{step.maintenance_step_status}</span>
-                                                    ) : (
-                                                        <span className="badge badge-warning">-</span>
-                                                    )
-                                                ) : (
-                                                    <span className="badge badge-info">{getExternalStatusLabel(step)}</span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-2 text-right">
-                                                {step.__step_type === 'internal' && !maintenanceEnded && (user?.person?.person_id === step.person?.person_id || isChief) && (
-                                                    <div className="d-flex gap-2 justify-content-end" style={{ flexWrap: 'wrap', position: 'relative' }}>
-                                                        {step.maintenance_step_status !== 'done' && (
-                                                            <button
-                                                                className="btn btn-xs btn-secondary"
-                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                onClick={() => openStatusEditor(step)}
-                                                                title="Update status"
-                                                                aria-label="Update status"
-                                                            >
-                                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <path d="M12 20h9" />
-                                                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                                                                </svg>
-                                                            </button>
-                                                        )}
-
-                                                        {step.maintenance_step_status !== 'done' && (
-                                                            <button
-                                                                className="btn btn-xs btn-secondary"
-                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                onClick={() => openAttributeEditor(step)}
-                                                                title="Queue attribute changes"
-                                                                aria-label="Queue attribute changes"
-                                                            >
-                                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <path d="M12 20h9" />
-                                                                    <path d="M12 4h9" />
-                                                                    <path d="M4 9h6" />
-                                                                    <path d="M4 15h6" />
-                                                                    <path d="M9 7l-2 2 2 2" />
-                                                                    <path d="M9 13l-2 2 2 2" />
-                                                                </svg>
-                                                            </button>
-                                                        )}
-
-                                                        {step.maintenance_step_status !== 'done' && (
-                                                            <button
-                                                                className="btn btn-xs btn-secondary"
-                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                onClick={() => openAssetConditionEditor(step)}
-                                                                title="Update asset condition"
-                                                                aria-label="Update asset condition"
-                                                            >
-                                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <path d="M9 18h6" />
-                                                                    <path d="M10 22h4" />
-                                                                    <path d="M12 2a7 7 0 0 0-4 12.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26A7 7 0 0 0 12 2z" />
-                                                                </svg>
-                                                            </button>
-                                                        )}
-
-                                                {step.maintenance_step_status !== 'done' && step.maintenance_typical_step?.operation_type === 'remove' && (
-                                                    <button
-                                                        className="btn btn-xs btn-danger"
-                                                        style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                        onClick={() => openRemoveEditor(step)}
-                                                        disabled={removeLoading || removeSubmitting}
-                                                        title="Remove component"
-                                                        aria-label="Remove component"
-                                                    >
-                                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <polyline points="3 6 5 6 21 6" />
-                                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                                            <path d="M10 11v6" />
-                                                            <path d="M14 11v6" />
-                                                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                                                        </svg>
-                                                    </button>
-                                                )}
-
                                             </div>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                            <div className="step-timeline-meta">
+                                                <div className="step-timeline-meta-item">
+                                                    <span className="badge badge-info">
+                                                        {isInternal ? 'Internal' : 'External'}
+                                                    </span>
+                                                </div>
+                                                <div className="step-timeline-meta-item">
+                                                    <strong>Assigned to:</strong> {assignedTo || '-'}
+                                                </div>
+                                                {isInternal && step.start_datetime && (
+                                                    <div className="step-timeline-meta-item">
+                                                        <strong>Started:</strong> {formatDateTime(step.start_datetime)}
+                                                    </div>
+                                                )}
+                                                {isInternal && step.end_datetime && (
+                                                    <div className="step-timeline-meta-item">
+                                                        <strong>Ended:</strong> {formatDateTime(step.end_datetime)}
+                                                    </div>
+                                                )}
+                                                {isInternal && !maintenanceEnded && (user?.person?.person_id === step.person?.person_id || isChief) && (
+                                                    <div className="step-timeline-actions">
+                                                        {step.maintenance_step_status !== 'done' && (
+                                                            <>
+                                                                <button
+                                                                    className="btn btn-xs btn-secondary"
+                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                    onClick={() => openStatusEditor(step)}
+                                                                    title="Update status"
+                                                                    aria-label="Update status"
+                                                                >
+                                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M12 20h9" />
+                                                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button
+                                                                    className="btn btn-xs btn-secondary"
+                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                    onClick={() => openAttributeEditor(step)}
+                                                                    title="Queue attribute changes"
+                                                                    aria-label="Queue attribute changes"
+                                                                >
+                                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M12 20h9" />
+                                                                        <path d="M12 4h9" />
+                                                                        <path d="M4 9h6" />
+                                                                        <path d="M4 15h6" />
+                                                                        <path d="M9 7l-2 2 2 2" />
+                                                                        <path d="M9 13l-2 2 2 2" />
+                                                                    </svg>
+                                                                </button>
+                                                                <button
+                                                                    className="btn btn-xs btn-secondary"
+                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                    onClick={() => openAssetConditionEditor(step)}
+                                                                    title="Update asset condition"
+                                                                    aria-label="Update asset condition"
+                                                                >
+                                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M9 18h6" />
+                                                                        <path d="M10 22h4" />
+                                                                        <path d="M12 2a7 7 0 0 0-4 12.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26A7 7 0 0 0 12 2z" />
+                                                                    </svg>
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {step.maintenance_step_status !== 'done' && step.maintenance_typical_step?.operation_type === 'remove' && (
+                                                            <button
+                                                                className="btn btn-xs btn-danger"
+                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                onClick={() => openRemoveEditor(step)}
+                                                                disabled={removeLoading || removeSubmitting}
+                                                                title="Remove component"
+                                                                aria-label="Remove component"
+                                                            >
+                                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <polyline points="3 6 5 6 21 6" />
+                                                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                                    <path d="M10 11v6" />
+                                                                    <path d="M14 11v6" />
+                                                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                                </svg>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
                 </div>

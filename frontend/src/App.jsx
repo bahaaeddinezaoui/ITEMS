@@ -50,6 +50,23 @@ const ProtectedRoute = ({ children }) => {
     return children;
 };
 
+const RoleProtectedRoute = ({ children, allowedRoles }) => {
+    const { user, isSuperuser } = useAuth();
+
+    if (isSuperuser) {
+        return children;
+    }
+
+    const roleCodes = Array.isArray(user?.roles) ? user.roles.map((r) => r.role_code).filter(Boolean) : [];
+    const isAllowed = Array.isArray(allowedRoles) && allowedRoles.some((r) => roleCodes.includes(r));
+
+    if (!isAllowed) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return children;
+};
+
 // Public route wrapper (redirect to dashboard if already logged in)
 const PublicRoute = ({ children }) => {
     const { isAuthenticated } = useAuth();
@@ -86,45 +103,312 @@ function App() {
                         }
                     >
                         <Route index element={<DashboardHome />} />
-                        <Route path="persons" element={<PersonsPage />} />
-                        <Route path="assets" element={<Navigate to="/dashboard/assets/types" replace />} />
-                        <Route path="assets/types" element={<AssetsTypesPage />} />
-                        <Route path="assets/types/attributes" element={<AssetsTypeAttributesPage />} />
-                        <Route path="assets/models" element={<AssetsModelsPage />} />
-                        <Route path="assets/models/default-composition" element={<AssetModelDefaultCompositionSelectPage />} />
-                        <Route path="assets/models/:modelId/default-composition" element={<AssetModelDefaultCompositionSelectPage />} />
-                        <Route path="assets/models/:modelId/compatibility" element={<AssetModelCompatibilityPage />} />
-                        <Route path="assets/instances" element={<AssetsPage />} />
-                        <Route path="assets/attribute-definitions" element={<AssetsAttributeDefinitionsPage />} />
-                        <Route path="maintenances" element={<MaintenancesPage />} />
-                        <Route path="maintenances/:maintenanceId/steps" element={<MaintenanceStepsPage />} />
-                        <Route path="stock-items" element={<Navigate to="/dashboard/stock-items/types" replace />} />
-                        <Route path="stock-items/types" element={<StockItemsTypesPage />} />
-                        <Route path="stock-items/types/attributes" element={<StockItemsTypeAttributesPage />} />
-                        <Route path="stock-items/models" element={<StockItemsModelsPage />} />
-                        <Route path="stock-items/models/:modelId/compatibility" element={<StockItemModelCompatibilityPage />} />
-                        <Route path="stock-items/instances" element={<StockItemsPage />} />
-                        <Route path="stock-items/attribute-definitions" element={<StockItemsAttributeDefinitionsPage />} />
-                        <Route path="consumables" element={<Navigate to="/dashboard/consumables/types" replace />} />
-                        <Route path="consumables/types" element={<ConsumablesTypesPage />} />
-                        <Route path="consumables/types/attributes" element={<ConsumablesTypeAttributesPage />} />
-                        <Route path="consumables/models" element={<ConsumablesModelsPage />} />
-                        <Route path="consumables/models/:modelId/compatibility" element={<ConsumableModelCompatibilityPage />} />
-                        <Route path="consumables/instances" element={<ConsumablesPage />} />
-                        <Route path="consumables/attribute-definitions" element={<ConsumablesAttributeDefinitionsPage />} />
+
+                        <Route
+                            path="persons"
+                            element={
+                                <RoleProtectedRoute allowedRoles={[]}>
+                                    <PersonsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="assets"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <Navigate to="/dashboard/assets/types" replace />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/types"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <AssetsTypesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/types/attributes"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <AssetsTypeAttributesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/models"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <AssetsModelsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/models/default-composition"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <AssetModelDefaultCompositionSelectPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/models/:modelId/default-composition"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <AssetModelDefaultCompositionSelectPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/models/:modelId/compatibility"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <AssetModelCompatibilityPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/instances"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <AssetsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/attribute-definitions"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief']}>
+                                    <AssetsAttributeDefinitionsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="maintenances"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'maintenance_technician']}>
+                                    <MaintenancesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="maintenances/:maintenanceId/steps"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'maintenance_technician']}>
+                                    <MaintenanceStepsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="stock-items"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <Navigate to="/dashboard/stock-items/types" replace />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/types"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <StockItemsTypesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/types/attributes"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <StockItemsTypeAttributesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/models"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <StockItemsModelsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/models/:modelId/compatibility"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <StockItemModelCompatibilityPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/instances"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <StockItemsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/attribute-definitions"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <StockItemsAttributeDefinitionsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="consumables"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <Navigate to="/dashboard/consumables/types" replace />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="consumables/types"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <ConsumablesTypesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="consumables/types/attributes"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <ConsumablesTypeAttributesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="consumables/models"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <ConsumablesModelsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="consumables/models/:modelId/compatibility"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <ConsumableModelCompatibilityPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="consumables/instances"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <ConsumablesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="consumables/attribute-definitions"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <ConsumablesAttributeDefinitionsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
                         <Route path="my-items" element={<MyItemsPage />} />
                         <Route path="my-items/assets/:assetId/maintenance-timeline" element={<AssetMaintenanceTimelinePage />} />
-                        <Route path="reports" element={<ReportsPage />} />
-                        <Route path="rooms" element={<RoomsPage />} />
-                        <Route path="positions" element={<PositionsPage />} />
-                        <Route path="organizational-structure" element={<OrganizationalStructurePage />} />
-                        <Route path="attribution-orders" element={<AttributionOrdersPage />} />
-                        <Route path="attribution-orders/assets/:rowId/included-items" element={<AttributionOrderAssetIncludedItemsPage />} />
-                        <Route path="attribution-orders/assets/:rowId/included-items/:itemKind" element={<AttributionOrderAssetIncludedItemsPage />} />
-                        <Route path="company-asset-requests" element={<CompanyAssetRequestsPage />} />
-                        <Route path="administrative-certificates" element={<AdministrativeCertificatesPage />} />
-                        <Route path="item-requests-inbox" element={<ItemRequestsInboxPage />} />
-                        <Route path="external-maintenances" element={<ExternalMaintenancesPage />} />
+
+                        <Route
+                            path="reports"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'exploitation_chief']}>
+                                    <ReportsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="rooms"
+                            element={
+                                <RoleProtectedRoute allowedRoles={[]}>
+                                    <RoomsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="positions"
+                            element={
+                                <RoleProtectedRoute allowedRoles={[]}>
+                                    <PositionsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="organizational-structure"
+                            element={
+                                <RoleProtectedRoute allowedRoles={[]}>
+                                    <OrganizationalStructurePage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="attribution-orders"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <AttributionOrdersPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="attribution-orders/assets/:rowId/included-items"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <AttributionOrderAssetIncludedItemsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="attribution-orders/assets/:rowId/included-items/:itemKind"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <AttributionOrderAssetIncludedItemsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="company-asset-requests"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <CompanyAssetRequestsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="administrative-certificates"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <AdministrativeCertificatesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="item-requests-inbox"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <ItemRequestsInboxPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="external-maintenances"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <ExternalMaintenancesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
                     </Route>
 
                     {/* Redirect root to login */}
