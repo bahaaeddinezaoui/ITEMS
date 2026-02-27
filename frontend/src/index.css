@@ -262,6 +262,38 @@ option {
     color: var(--color-text-muted);
 }
 
+.password-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    right: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle-btn:hover {
+    color: var(--color-text-primary);
+    background: var(--color-bg-card-hover);
+}
+
+.password-toggle-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
 .btn {
     display: inline-flex;
     align-items: center;
@@ -310,6 +342,10 @@ option {
     margin-bottom: var(--space-5);
 }
 
+.error-message.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
 .success-message {
     background: rgba(16, 185, 129, 0.1);
     border: 1px solid rgba(16, 185, 129, 0.3);
@@ -332,6 +368,18 @@ option {
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-2px);
+    }
+    20%, 40%, 60%, 80% {
+        transform: translateX(2px);
     }
 }
 

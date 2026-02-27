@@ -41730,3 +41730,15 @@ s/ -> 200
 [2026-02-27 22:48:57.926830] END   GET /api/my-items/ -> 200
 [2026-02-27 22:49:05.398535] START POST /api/auth/login/
 [2026-02-27 22:49:05.447540] END   POST /api/auth/login/ -> 200
+[2026-02-27 22:49:45.140968] START POST /api/auth/login/
+[2026-02-27 22:49:45.183878] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-27 22:49:49.788450] START POST /api/auth/login/
+[2026-02-27 22:49:49.828508] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-27 22:51:51.947297] START POST /api/auth/login/
+[2026-02-27 22:51:51.987476] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-02-27 22:57:09.250112] START POST /api/auth/login/
+[2026-02-27 22:57:09.296226] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}

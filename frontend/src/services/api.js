@@ -36,6 +36,12 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response?.status === 401) {
+            const requestUrl = error?.config?.url || '';
+
+            if (requestUrl.includes('auth/login/')) {
+                return Promise.reject(error);
+            }
+
             // Clear tokens and redirect to login
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');

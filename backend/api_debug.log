@@ -698,3 +698,15 @@ Password mismatch for user: bensimessaouddaoud
 [2026-02-27 21:38:34.954101+00:00] Login attempt for: asset_resp
 
 [2026-02-27 21:49:05.399945+00:00] Login attempt for: admin
+
+[2026-02-27 21:49:45.142478+00:00] Login attempt for: ererzre
+User not found: ererzre
+
+[2026-02-27 21:49:49.789598+00:00] Login attempt for: zrzerze
+User not found: zrzerze
+
+[2026-02-27 21:51:51.948361+00:00] Login attempt for: fsdfsd
+User not found: fsdfsd
+
+[2026-02-27 21:57:09.251442+00:00] Login attempt for: dzedsf
+User not found: dzedsf
