@@ -1,9 +1,12 @@
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const DashboardLayout = () => {
     const { user, logout, isSuperuser } = useAuth();
     const navigate = useNavigate();
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const userMenuRef = useRef(null);
 
     const handleLogout = () => {
         logout();
@@ -31,6 +34,31 @@ const DashboardLayout = () => {
         }
         return 'User';
     };
+
+    useEffect(() => {
+        if (!isUserMenuOpen) return;
+
+        const handleOutsideClick = (event) => {
+            if (!userMenuRef.current) return;
+            if (!userMenuRef.current.contains(event.target)) {
+                setIsUserMenuOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsUserMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleOutsideClick);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isUserMenuOpen]);
 
     const isMaintenanceChief = user?.roles?.some(role => role.role_code === 'maintenance_chief');
     const isMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'maintenance_technician');
@@ -275,13 +303,65 @@ const DashboardLayout = () => {
                 </nav>
 
                 <div className="sidebar-footer">
-                    <div className="user-info">
+                    <div
+                        className="user-info"
+                        ref={userMenuRef}
+                        role="button"
+                        tabIndex={0}
+                        aria-haspopup="menu"
+                        aria-expanded={isUserMenuOpen}
+                        onClick={() => setIsUserMenuOpen((v) => !v)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                setIsUserMenuOpen((v) => !v);
+                            }
+                        }}
+                    >
                         <div className="user-avatar">{getInitials()}</div>
                         <div className="user-details">
                             <div className="user-name">{getFullName()}</div>
                             <div className="user-role">{getRoleLabel()}</div>
                         </div>
-                        <button className="logout-btn" onClick={handleLogout} title="Logout">
+                        {isUserMenuOpen && (
+                            <div
+                                className="user-menu"
+                                role="menu"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <button
+                                    type="button"
+                                    className="user-menu-item"
+                                    role="menuitem"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsUserMenuOpen(false);
+                                        navigate('/dashboard/options');
+                                    }}
+                                >
+                                    Options
+                                </button>
+                                <button
+                                    type="button"
+                                    className="user-menu-item"
+                                    role="menuitem"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsUserMenuOpen(false);
+                                    }}
+                                >
+                                    Profile
+                                </button>
+                            </div>
+                        )}
+                        <button
+                            className="logout-btn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleLogout();
+                            }}
+                            title="Logout"
+                        >
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                                 <polyline points="16,17 21,12 16,7" />

@@ -920,6 +920,47 @@ class AssetMaintenanceTimelineView(APIView):
         })
 
 
+class ChangePasswordView(APIView):
+    """Handle user password change."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = None
+        try:
+            if hasattr(request, "auth") and request.auth is not None:
+                user_id = request.auth.get("user_id")
+        except Exception:
+            pass
+
+        if not user_id and hasattr(request, "user") and request.user:
+            user_id = getattr(request.user, "user_id", None)
+
+        if not user_id:
+            return Response({"error": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            user = UserAccount.objects.get(user_id=user_id)
+        except UserAccount.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+
+        if not old_password or not new_password:
+            return Response({"error": "Both old and new passwords are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Hash old password to check against database
+        if user.password_hash != hash_password(old_password):
+            return Response({"error": "Invalid old password"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update password
+        user.password_hash = hash_password(new_password)
+        user.password_last_changed_datetime = timezone.now()
+        user.save(update_fields=["password_hash", "password_last_changed_datetime"])
+
+        return Response({"message": "Password changed successfully"})
+
+
 class MaintenanceStepViewSet(viewsets.ModelViewSet):
     queryset = MaintenanceStep.objects.all().order_by("maintenance_step_id")
     serializer_class = MaintenanceStepSerializer

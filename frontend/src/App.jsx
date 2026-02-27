@@ -28,6 +28,7 @@ import RoomsPage from './pages/RoomsPage';
 import PositionsPage from './pages/PositionsPage';
 import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
 import MyItemsPage from './pages/MyItemsPage';
+import OptionsPage from './pages/OptionsPage';
 import ReportsPage from './pages/ReportsPage';
 import AttributionOrdersPage from './pages/AttributionOrdersPage';
 import AttributionOrderAssetIncludedItemsPage from './pages/AttributionOrderAssetIncludedItemsPage';
@@ -318,6 +319,7 @@ function App() {
                         />
                         <Route path="my-items" element={<MyItemsPage />} />
                         <Route path="my-items/assets/:assetId/maintenance-timeline" element={<AssetMaintenanceTimelinePage />} />
+                        <Route path="options" element={<OptionsPage />} />
 
                         <Route
                             path="reports"

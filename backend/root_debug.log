@@ -41817,3 +41817,165 @@ Response Body: {"error":"Invalid credentials"}
 [2026-02-27 23:21:44.997907] END   GET /api/maintenances/ -> 200
 [2026-02-27 23:21:45.003723] START GET /api/maintenances/
 [2026-02-27 23:21:45.068560] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:22:58.906443] START GET /api/maintenances/18/
+[2026-02-27 23:22:58.910731] START GET /api/maintenance-steps/
+[2026-02-27 23:22:58.963021] END   GET /api/maintenance-steps/ -> 200
+[2026-02-27 23:22:58.967370] START GET /api/maintenance-steps/
+[2026-02-27 23:22:58.970543] END   GET /api/maintenances/18/ -> 200
+[2026-02-27 23:22:58.974941] START GET /api/maintenances/18/
+[2026-02-27 23:22:58.984858] START GET /api/external-maintenance-steps/
+[2026-02-27 23:22:58.989306] START GET /api/maintenance-typical-steps/
+[2026-02-27 23:22:58.990524] START GET /api/persons/
+[2026-02-27 23:22:58.993209] START GET /api/external-maintenances/
+[2026-02-27 23:22:59.028405] END   GET /api/maintenance-steps/ -> 200
+[2026-02-27 23:22:59.033094] START GET /api/external-maintenance-typical-steps/
+[2026-02-27 23:22:59.048286] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-27 23:22:59.048534] END   GET /api/maintenances/18/ -> 200
+[2026-02-27 23:22:59.048713] END   GET /api/external-maintenance-steps/ -> 200
+[2026-02-27 23:22:59.048818] END   GET /api/external-maintenances/ -> 200
+[2026-02-27 23:22:59.052352] END   GET /api/persons/ -> 200
+[2026-02-27 23:22:59.057130] START GET /api/maintenance-steps/
+[2026-02-27 23:22:59.057581] START GET /api/maintenance-typical-steps/
+[2026-02-27 23:22:59.058592] START GET /api/external-maintenances/
+[2026-02-27 23:22:59.061002] START GET /api/external-maintenance-steps/
+[2026-02-27 23:22:59.064903] START GET /api/persons/
+[2026-02-27 23:22:59.084750] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-02-27 23:22:59.089911] START GET /api/external-maintenance-typical-steps/
+[2026-02-27 23:22:59.113616] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-27 23:22:59.122939] END   GET /api/external-maintenances/ -> 200
+[2026-02-27 23:22:59.127417] END   GET /api/persons/ -> 200
+[2026-02-27 23:22:59.127476] END   GET /api/external-maintenance-steps/ -> 200
+[2026-02-27 23:22:59.135349] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-02-27 23:22:59.209358] END   GET /api/maintenance-steps/ -> 200
+[2026-02-27 23:22:59.213867] START GET /api/maintenance-steps/
+[2026-02-27 23:22:59.216575] START GET /api/physical-conditions/
+[2026-02-27 23:22:59.261091] END   GET /api/physical-conditions/ -> 200
+[2026-02-27 23:22:59.268434] END   GET /api/maintenance-steps/ -> 200
+[2026-02-27 23:22:59.269115] START GET /api/stock-item-types/
+[2026-02-27 23:22:59.270101] START GET /api/consumable-types/
+[2026-02-27 23:22:59.281279] START GET /api/physical-conditions/
+[2026-02-27 23:22:59.315339] END   GET /api/stock-item-types/ -> 200
+[2026-02-27 23:22:59.317691] END   GET /api/consumable-types/ -> 200
+[2026-02-27 23:22:59.325385] END   GET /api/physical-conditions/ -> 200
+[2026-02-27 23:22:59.337658] START GET /api/stock-item-types/
+[2026-02-27 23:22:59.338385] START GET /api/consumable-types/
+[2026-02-27 23:22:59.380984] END   GET /api/stock-item-types/ -> 200
+[2026-02-27 23:22:59.381090] END   GET /api/consumable-types/ -> 200
+[2026-02-27 23:23:03.881162] START GET /api/maintenances/
+[2026-02-27 23:23:03.938538] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:23:03.943008] START GET /api/maintenances/
+[2026-02-27 23:23:04.001575] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:23:16.352319] START GET /api/maintenances/13/
+[2026-02-27 23:23:16.355715] START GET /api/maintenance-steps/
+[2026-02-27 23:23:16.396924] END   GET /api/maintenance-steps/ -> 200
+[2026-02-27 23:23:16.401259] START GET /api/maintenance-steps/
+[2026-02-27 23:23:16.405017] END   GET /api/maintenances/13/ -> 200
+[2026-02-27 23:23:16.409549] START GET /api/maintenances/13/
+[2026-02-27 23:23:16.420038] START GET /api/external-maintenance-steps/
+[2026-02-27 23:23:16.420732] START GET /api/maintenance-typical-steps/
+[2026-02-27 23:23:16.422155] START GET /api/persons/
+[2026-02-27 23:23:16.424665] START GET /api/external-maintenances/
+[2026-02-27 23:23:16.449679] END   GET /api/maintenance-steps/ -> 200
+[2026-02-27 23:23:16.454280] START GET /api/external-maintenance-typical-steps/
+[2026-02-27 23:23:16.466746] END   GET /api/maintenances/13/ -> 200
+[2026-02-27 23:23:16.467869] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-27 23:23:16.472232] START GET /api/maintenance-steps/
+[2026-02-27 23:23:16.477083] END   GET /api/persons/ -> 200
+[2026-02-27 23:23:16.477205] END   GET /api/external-maintenances/ -> 200
+[2026-02-27 23:23:16.475727] START GET /api/maintenance-typical-steps/
+[2026-02-27 23:23:16.483699] START GET /api/persons/
+[2026-02-27 23:23:16.485699] START GET /api/external-maintenances/
+[2026-02-27 23:23:16.495821] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-02-27 23:23:16.500342] START GET /api/external-maintenance-typical-steps/
+[2026-02-27 23:23:16.524554] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-02-27 23:23:16.528741] END   GET /api/persons/ -> 200
+/ -> 200
+[2026-02-27 23:23:16.534401] END   GET /api/external-maintenances/ -> 200
+[2026-02-27 23:23:16.534315] START GET /api/maintenance-steps/
+[2026-02-27 23:23:16.558877] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-02-27 23:23:16.578855] END   GET /api/maintenance-steps/ -> 200
+[2026-02-27 23:23:16.586359] END   GET /api/external-maintenance-steps/ -> 200
+[2026-02-27 23:23:16.590001] START GET /api/external-maintenance-steps/
+[2026-02-27 23:23:16.592910] START GET /api/physical-conditions/
+[2026-02-27 23:23:16.634428] END   GET /api/physical-conditions/ -> 200
+[2026-02-27 23:23:16.638016] END   GET /api/external-maintenance-steps/ -> 200
+[2026-02-27 23:23:16.640898] START GET /api/stock-item-types/
+[2026-02-27 23:23:16.641553] START GET /api/consumable-types/
+[2026-02-27 23:23:16.645456] START GET /api/physical-conditions/
+[2026-02-27 23:23:16.682079] END   GET /api/stock-item-types/ -> 200
+[2026-02-27 23:23:16.682146] END   GET /api/consumable-types/ -> 200
+[2026-02-27 23:23:16.684007] END   GET /api/physical-conditions/ -> 200
+[2026-02-27 23:23:16.693494] START GET /api/stock-item-types/
+[2026-02-27 23:23:16.694072] START GET /api/consumable-types/
+[2026-02-27 23:23:16.735338] END   GET /api/stock-item-types/ -> 200
+[2026-02-27 23:23:16.735455] END   GET /api/consumable-types/ -> 200
+[2026-02-27 23:23:17.630675] START GET /api/maintenances/
+[2026-02-27 23:23:17.690777] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:23:17.695365] START GET /api/maintenances/
+[2026-02-27 23:23:17.754401] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:23:28.176685] START GET /api/my-items/
+[2026-02-27 23:23:28.225737] END   GET /api/my-items/ -> 200
+[2026-02-27 23:23:28.231517] START GET /api/my-items/
+[2026-02-27 23:23:28.283615] END   GET /api/my-items/ -> 200
+[2026-02-27 23:23:38.421369] START GET /api/my-items/
+[2026-02-27 23:23:38.472168] END   GET /api/my-items/ -> 200
+[2026-02-27 23:23:38.478300] START GET /api/my-items/
+[2026-02-27 23:23:38.636800] END   GET /api/my-items/ -> 200
+[2026-02-27 23:23:39.009240] START GET /api/maintenances/
+[2026-02-27 23:23:39.176725] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:23:39.181176] START GET /api/maintenances/
+[2026-02-27 23:23:39.241736] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:24:49.493203] START GET /api/my-items/
+[2026-02-27 23:24:49.751568] END   GET /api/my-items/ -> 200
+[2026-02-27 23:24:49.756411] START GET /api/my-items/
+[2026-02-27 23:24:49.818917] END   GET /api/my-items/ -> 200
+[2026-02-27 23:25:02.774949] START POST /api/auth/login/
+[2026-02-27 23:25:02.821386] END   POST /api/auth/login/ -> 200
+[2026-02-27 23:25:09.115807] START GET /api/maintenances/
+[2026-02-27 23:25:09.116650] START GET /api/persons/
+[2026-02-27 23:25:09.118433] START GET /api/assets/
+[2026-02-27 23:25:09.168596] END   GET /api/assets/ -> 200
+[2026-02-27 23:25:09.168891] END   GET /api/persons/ -> 200
+[2026-02-27 23:25:09.173865] START GET /api/assets/
+[2026-02-27 23:25:09.175246] START GET /api/persons/
+[2026-02-27 23:25:09.192839] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:25:09.198209] START GET /api/maintenances/
+[2026-02-27 23:25:09.222560] END   GET /api/assets/ -> 200
+[2026-02-27 23:25:09.223710] END   GET /api/persons/ -> 200
+[2026-02-27 23:25:09.264662] END   GET /api/maintenances/ -> 200
+[2026-02-27 23:28:01.099982] START POST /api/auth/login/
+[2026-02-27 23:28:01.146790] END   POST /api/auth/login/ -> 200
+[2026-02-27 23:29:01.113128] START POST /api/auth/login/
+[2026-02-27 23:29:01.160387] END   POST /api/auth/login/ -> 200
+[2026-02-27 23:42:05.435628] START POST /api/auth/change-password/
+[2026-02-27 23:42:05.472787] END   POST /api/auth/change-password/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/auth/change-password/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; ma
+[2026-02-27 23:42:32.426986] START POST /api/auth/change-password/
+[2026-02-27 23:42:32.442340] END   POST /api/auth/change-password/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/auth/change-password/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; ma
+[2026-02-27 23:50:47.440587] START POST /api/auth/change-password/
+[2026-02-27 23:50:47.615742] END   POST /api/auth/change-password/ -> 200

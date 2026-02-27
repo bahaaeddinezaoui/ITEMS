@@ -638,6 +638,47 @@ option {
     padding: var(--space-3);
     background: var(--color-bg-card);
     border-radius: var(--radius-md);
+    position: relative;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.user-info:hover {
+    background: var(--color-bg-card-hover);
+}
+
+.user-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: calc(100% + var(--space-2));
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    z-index: 10;
+}
+
+.user-menu-item {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.user-menu-item:hover {
+    background: var(--color-bg-card-hover);
 }
 
 .user-avatar {

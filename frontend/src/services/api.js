@@ -84,6 +84,14 @@ export const authService = {
         const user = authService.getUser();
         return user?.is_superuser || false;
     },
+
+    changePassword: async (oldPassword, newPassword) => {
+        const response = await api.post('auth/change-password/', {
+            old_password: oldPassword,
+            new_password: newPassword,
+        });
+        return response.data;
+    },
 };
 
 // Company Asset Request service
