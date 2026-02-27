@@ -101,6 +101,84 @@ export const companyAssetRequestService = {
     },
 };
 
+// External Maintenance services
+export const externalMaintenanceProviderService = {
+    getAll: async () => {
+        const response = await api.get('external-maintenance-providers/');
+        return response.data;
+    },
+};
+
+export const externalMaintenanceTypicalStepService = {
+    getAll: async () => {
+        const response = await api.get('external-maintenance-typical-steps/');
+        return response.data;
+    },
+};
+
+export const externalMaintenanceService = {
+    getAll: async (params) => {
+        const response = await api.get('external-maintenances/', { params });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`external-maintenances/${id}/`);
+        return response.data;
+    },
+
+    createForMaintenance: async (maintenance_id) => {
+        const response = await api.post('external-maintenances/create-for-maintenance/', {
+            maintenance_id,
+        });
+        return response.data;
+    },
+
+    sendToProvider: async (external_maintenance_id, external_maintenance_provider_id, destination_room_id) => {
+        const response = await api.post(`external-maintenances/${external_maintenance_id}/send-to-provider/`, {
+            external_maintenance_provider_id,
+            destination_room_id,
+        });
+        return response.data;
+    },
+
+    createStep: async (external_maintenance_id, external_maintenance_typical_step_id) => {
+        const response = await api.post(`external-maintenances/${external_maintenance_id}/create-step/`, {
+            external_maintenance_typical_step_id,
+        });
+        return response.data;
+    },
+
+    confirmReceivedByProvider: async (external_maintenance_id) => {
+        const response = await api.post(`external-maintenances/${external_maintenance_id}/confirm-received-by-provider/`);
+        return response.data;
+    },
+
+    confirmSentToCompany: async (external_maintenance_id) => {
+        const response = await api.post(`external-maintenances/${external_maintenance_id}/confirm-sent-to-company/`);
+        return response.data;
+    },
+
+    confirmReceivedByCompany: async (external_maintenance_id, destination_room_id) => {
+        const response = await api.post(`external-maintenances/${external_maintenance_id}/confirm-received-by-company/`, {
+            destination_room_id,
+        });
+        return response.data;
+    },
+};
+
+export const externalMaintenanceStepService = {
+    getAll: async (params) => {
+        const response = await api.get('external-maintenance-steps/', { params });
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`external-maintenance-steps/${id}/`);
+        return response.data;
+    },
+};
+
 // Person service
 export const personService = {
     getAll: async (params) => {
@@ -243,6 +321,79 @@ export const assetModelService = {
 
     delete: async (id) => {
         await api.delete(`asset-models/${id}/`);
+    },
+
+    getCompatibleStockItemModels: async (assetModelId) => {
+        const response = await api.get(`asset-models/${assetModelId}/compatible-stock-item-models/`);
+        return response.data;
+    },
+
+    addCompatibleStockItemModel: async (assetModelId, stock_item_model_id) => {
+        const response = await api.post(`asset-models/${assetModelId}/compatible-stock-item-models/`, {
+            stock_item_model_id,
+        });
+        return response.data;
+    },
+
+    removeCompatibleStockItemModel: async (assetModelId, stockItemModelId) => {
+        const response = await api.delete(`asset-models/${assetModelId}/compatible-stock-item-models/${stockItemModelId}/`);
+        return response.data;
+    },
+
+    getCompatibleConsumableModels: async (assetModelId) => {
+        const response = await api.get(`asset-models/${assetModelId}/compatible-consumable-models/`);
+        return response.data;
+    },
+
+    addCompatibleConsumableModel: async (assetModelId, consumable_model_id) => {
+        const response = await api.post(`asset-models/${assetModelId}/compatible-consumable-models/`, {
+            consumable_model_id,
+        });
+        return response.data;
+    },
+
+    removeCompatibleConsumableModel: async (assetModelId, consumableModelId) => {
+        const response = await api.delete(`asset-models/${assetModelId}/compatible-consumable-models/${consumableModelId}/`);
+        return response.data;
+    },
+
+    // Default composition management
+    getDefaultStockItems: async (assetModelId) => {
+        const response = await api.get(`asset-model-default-stock-items/?asset_model=${assetModelId}`);
+        return response.data;
+    },
+
+    addDefaultStockItem: async (assetModelId, stockItemModelId, quantity = 1, notes = '') => {
+        const response = await api.post('asset-model-default-stock-items/', {
+            asset_model: assetModelId,
+            stock_item_model: stockItemModelId,
+            quantity,
+            notes,
+        });
+        return response.data;
+    },
+
+    removeDefaultStockItem: async (id) => {
+        await api.delete(`asset-model-default-stock-items/${id}/`);
+    },
+
+    getDefaultConsumables: async (assetModelId) => {
+        const response = await api.get(`asset-model-default-consumables/?asset_model=${assetModelId}`);
+        return response.data;
+    },
+
+    addDefaultConsumable: async (assetModelId, consumableModelId, quantity = 1, notes = '') => {
+        const response = await api.post('asset-model-default-consumables/', {
+            asset_model: assetModelId,
+            consumable_model: consumableModelId,
+            quantity,
+            notes,
+        });
+        return response.data;
+    },
+
+    removeDefaultConsumable: async (id) => {
+        await api.delete(`asset-model-default-consumables/${id}/`);
     },
 };
 
@@ -621,6 +772,23 @@ export const stockItemModelService = {
     delete: async (id) => {
         await api.delete(`stock-item-models/${id}/`);
     },
+
+    getCompatibleAssetModels: async (stockItemModelId) => {
+        const response = await api.get(`stock-item-models/${stockItemModelId}/compatible-asset-models/`);
+        return response.data;
+    },
+
+    addCompatibleAssetModel: async (stockItemModelId, asset_model_id) => {
+        const response = await api.post(`stock-item-models/${stockItemModelId}/compatible-asset-models/`, {
+            asset_model_id,
+        });
+        return response.data;
+    },
+
+    removeCompatibleAssetModel: async (stockItemModelId, assetModelId) => {
+        const response = await api.delete(`stock-item-models/${stockItemModelId}/compatible-asset-models/${assetModelId}/`);
+        return response.data;
+    },
 };
 
 // Consumable Type service
@@ -706,6 +874,23 @@ export const consumableModelService = {
 
     delete: async (id) => {
         await api.delete(`consumable-models/${id}/`);
+    },
+
+    getCompatibleAssetModels: async (consumableModelId) => {
+        const response = await api.get(`consumable-models/${consumableModelId}/compatible-asset-models/`);
+        return response.data;
+    },
+
+    addCompatibleAssetModel: async (consumableModelId, asset_model_id) => {
+        const response = await api.post(`consumable-models/${consumableModelId}/compatible-asset-models/`, {
+            asset_model_id,
+        });
+        return response.data;
+    },
+
+    removeCompatibleAssetModel: async (consumableModelId, assetModelId) => {
+        const response = await api.delete(`consumable-models/${consumableModelId}/compatible-asset-models/${assetModelId}/`);
+        return response.data;
     },
 };
 
@@ -984,6 +1169,11 @@ export const maintenanceService = {
         return response.data;
     },
 
+    end: async (id, data) => {
+        const response = await api.post(`maintenances/${id}/end/`, data || {});
+        return response.data;
+    },
+
     update: async (id, maintenanceData) => {
         const response = await api.put(`maintenances/${id}/`, maintenanceData);
         return response.data;
@@ -1058,6 +1248,19 @@ export const physicalConditionService = {
     },
 };
 
+// Asset Maintenance Timeline service
+export const assetMaintenanceTimelineService = {
+    getAll: async () => {
+        const response = await api.get('asset-maintenance-timeline/');
+        return response.data;
+    },
+
+    getByAssetId: async (assetId) => {
+        const response = await api.get(`asset-maintenance-timeline/${assetId}/`);
+        return response.data;
+    },
+};
+
 export const maintenanceStepItemRequestService = {
     getAll: async (params) => {
         const response = await api.get('maintenance-step-item-requests/', { params });
@@ -1066,6 +1269,11 @@ export const maintenanceStepItemRequestService = {
 
     fulfill: async (id, data) => {
         const response = await api.post(`maintenance-step-item-requests/${id}/fulfill/`, data);
+        return response.data;
+    },
+
+    reject: async (id, data) => {
+        const response = await api.post(`maintenance-step-item-requests/${id}/reject/`, data);
         return response.data;
     },
 
@@ -1176,6 +1384,10 @@ export const attributionOrderService = {
     },
     create: async (data) => {
         const response = await api.post('attribution-orders/', data);
+        return response.data;
+    },
+    getIncludedItems: async (id) => {
+        const response = await api.get(`attribution-orders/${id}/included-items/`);
         return response.data;
     },
 };

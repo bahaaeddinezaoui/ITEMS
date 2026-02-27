@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     attributionOrderService,
     warehouseService,
@@ -10,6 +11,7 @@ import {
 } from '../services/api';
 
 const AttributionOrdersPage = () => {
+    const navigate = useNavigate();
     const [warehouses, setWarehouses] = useState([]);
     const [assetTypes, setAssetTypes] = useState([]);
     const [assetModels, setAssetModels] = useState({});
@@ -25,9 +27,7 @@ const AttributionOrdersPage = () => {
         attribution_order_barcode: ''
     });
 
-    const [assets, setAssets] = useState([
-        { id: Date.now(), asset_type: '', asset_model: '', asset_serial_number: '', asset_inventory_number: '', asset_name: '' }
-    ]);
+    const [assets, setAssets] = useState([]);
 
     const [bulkAdd, setBulkAdd] = useState({
         asset_type: '',
@@ -43,6 +43,9 @@ const AttributionOrdersPage = () => {
     const [receiptData, setReceiptData] = useState({ report_full_code: '', digital_copy: null });
     const [orderReceipt, setOrderReceipt] = useState(null);
     const [previewReceipt, setPreviewReceipt] = useState(false);
+    const [includedItems, setIncludedItems] = useState({ stock_items: [], consumables: [] });
+
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const getMimeType = (b64) => {
         if (!b64) return 'application/octet-stream';
@@ -53,18 +56,95 @@ const AttributionOrdersPage = () => {
     };
 
     useEffect(() => {
+        // Load draft data first, then handle URL params
+        try {
+            const draftAssets = JSON.parse(sessionStorage.getItem('attribution_order_create_draft_assets') || '[]');
+            if (Array.isArray(draftAssets) && draftAssets.length > 0) {
+                setAssets(draftAssets);
+                // Pre-fetch models for asset types in draft
+                const typeIds = [...new Set(draftAssets.map(a => a.asset_type).filter(Boolean))];
+                typeIds.forEach(async (typeId) => {
+                    try {
+                        const models = await assetModelService.getByAssetType(typeId);
+                        setAssetModels(prev => ({ ...prev, [typeId]: models }));
+                    } catch (err) {
+                        console.error('Failed to fetch models for type', typeId);
+                    }
+                });
+            }
+        } catch (e) {
+            // ignore
+        }
+        try {
+            const draftOrderData = JSON.parse(sessionStorage.getItem('attribution_order_create_draft_order_data') || 'null');
+            if (draftOrderData) {
+                setOrderData(draftOrderData);
+            }
+        } catch (e) {
+            // ignore
+        }
+
+        // Handle URL params for mode switching
+        const mode = searchParams.get('mode');
+        const orderId = searchParams.get('orderId');
+        
+        if (mode === 'create') {
+            setViewMode('create');
+            searchParams.delete('mode');
+            setSearchParams(searchParams);
+        } else if (orderId) {
+            const loadOrder = async () => {
+                try {
+                    const order = await attributionOrderService.getById(orderId);
+                    if (order) {
+                        setSelectedOrder(order);
+                        setViewMode('detail');
+                        const assetsData = await assetService.getAll({ attribution_order: order.attribution_order_id });
+                        setOrderAssets(assetsData.results || assetsData || []);
+                    }
+                } catch (err) {
+                    console.error('Failed to load order:', err);
+                }
+            };
+            loadOrder();
+            searchParams.delete('orderId');
+            setSearchParams(searchParams);
+        }
+    }, []);
+
+    useEffect(() => {
         fetchInitialData();
     }, []);
 
     useEffect(() => {
-        if (viewMode === 'list') {
+        // Only fetch list if we're in list mode AND not about to switch to create/detail mode
+        const mode = searchParams.get('mode');
+        const orderId = searchParams.get('orderId');
+        if (viewMode === 'list' && !mode && !orderId) {
             fetchOrdersList();
             setSelectedOrder(null);
             setOrderAssets([]);
             setOrderReceipt(null);
             setShowReceiptForm(false);
+            setIncludedItems({ stock_items: [], consumables: [] });
         }
     }, [viewMode]);
+
+    const persistDraftAssets = (nextAssets) => {
+        try {
+            sessionStorage.setItem('attribution_order_create_draft_assets', JSON.stringify(nextAssets));
+        } catch (e) {
+            // ignore
+        }
+    };
+
+    const persistDraftOrderData = (data) => {
+        try {
+            sessionStorage.setItem('attribution_order_create_draft_order_data', JSON.stringify(data));
+        } catch (e) {
+            // ignore
+        }
+    };
 
     const handleRowClick = async (order) => {
         setSelectedOrder(order);
@@ -82,6 +162,10 @@ const AttributionOrdersPage = () => {
                 const receiptInfo = await receiptReportService.getById(receiptId);
                 setOrderReceipt(receiptInfo);
             }
+
+            // Fetch included items (stock items and consumables)
+            const itemsData = await attributionOrderService.getIncludedItems(order.attribution_order_id);
+            setIncludedItems(itemsData);
         } catch (err) {
             setError('Failed to fetch assets or receipt for this order');
         } finally {
@@ -119,7 +203,9 @@ const AttributionOrdersPage = () => {
     };
 
     const handleOrderChange = (e) => {
-        setOrderData({ ...orderData, [e.target.name]: e.target.value });
+        const newData = { ...orderData, [e.target.name]: e.target.value };
+        setOrderData(newData);
+        persistDraftOrderData(newData);
     };
 
     const handleAssetChange = async (index, field, value) => {
@@ -138,6 +224,7 @@ const AttributionOrdersPage = () => {
             }
         }
         setAssets(newAssets);
+        persistDraftAssets(newAssets);
     };
 
     const handleBulkTypeChange = async (value) => {
@@ -167,29 +254,32 @@ const AttributionOrdersPage = () => {
         }));
 
         setAssets((prev) => {
-            if (
-                prev.length === 1 &&
-                !prev[0].asset_type &&
-                !prev[0].asset_model &&
-                !prev[0].asset_serial_number &&
-                !prev[0].asset_inventory_number &&
-                !prev[0].asset_name
-            ) {
-                return newRows;
-            }
-            return [...prev, ...newRows];
+            const merged = [...prev, ...newRows];
+            persistDraftAssets(merged);
+            return merged;
         });
         setBulkAdd((prev) => ({ ...prev, quantity: 1 }));
     };
 
     const addAssetRow = () => {
-        setAssets([...assets, { id: Date.now(), asset_type: '', asset_model: '', asset_serial_number: '', asset_inventory_number: '', asset_name: '' }]);
+        const next = [...assets, { id: Date.now(), asset_type: '', asset_model: '', asset_serial_number: '', asset_inventory_number: '', asset_name: '' }];
+        setAssets(next);
+        persistDraftAssets(next);
     };
 
     const removeAssetRow = (index) => {
-        if (assets.length > 1) {
-            setAssets(assets.filter((_, i) => i !== index));
+        if (assets.length > 0) {
+            const next = assets.filter((_, i) => i !== index);
+            setAssets(next);
+            persistDraftAssets(next);
         }
+    };
+
+    const configureIncludedItemsForRow = (asset, itemKind) => {
+        // Ensure latest draft is persisted before navigating
+        persistDraftAssets(assets);
+        const context = viewMode === 'create' ? 'create' : selectedOrder?.attribution_order_id;
+        navigate(`/dashboard/attribution-orders/assets/${asset.id}/included-items/${itemKind}?context=${context}`);
     };
 
     const handleSubmit = async (e) => {
@@ -199,18 +289,37 @@ const AttributionOrdersPage = () => {
         setSuccess(null);
 
         try {
+            let draftIncluded = {};
+            try {
+                draftIncluded = JSON.parse(sessionStorage.getItem('attribution_order_create_draft_included_items') || '{}');
+            } catch (e) {
+                draftIncluded = {};
+            }
+
             // 1. Create the Attribution Order
             const orderResponse = await attributionOrderService.create(orderData);
             const orderId = orderResponse.attribution_order_id;
 
             // 2. Create all Assets linked to this order sequentially to avoid DB unique constraint conflicts
+            console.log('[handleSubmit] draftIncluded:', draftIncluded);
+            console.log('[handleSubmit] assets:', assets);
+            
             for (const asset of assets) {
                 const { id, ...assetCleanData } = asset;
-                await assetService.create({
+                const draftForRow = draftIncluded?.[String(id)] || draftIncluded?.[id] || null;
+                console.log(`[handleSubmit] Asset id: ${id}, String(id): ${String(id)}`);
+                console.log(`[handleSubmit] draftForRow for asset ${id}:`, draftForRow);
+                
+                const payload = {
                     ...assetCleanData,
                     attribution_order: orderId,
-                    asset_status: 'In Stock'
-                });
+                    asset_status: 'In Stock',
+                    included_stock_items: Array.isArray(draftForRow?.stock_items) ? draftForRow.stock_items : [],
+                    included_consumables: Array.isArray(draftForRow?.consumables) ? draftForRow.consumables : [],
+                };
+                console.log(`[handleSubmit] Sending payload for asset ${id}:`, payload);
+                
+                await assetService.create(payload);
             }
 
             setSuccess('Attribution Order and Assets created successfully!');
@@ -221,7 +330,15 @@ const AttributionOrdersPage = () => {
                 warehouse: '',
                 attribution_order_barcode: ''
             });
-            setAssets([{ id: Date.now(), asset_type: '', asset_model: '', asset_serial_number: '', asset_inventory_number: '', asset_name: '' }]);
+            setAssets([]);
+
+            try {
+                sessionStorage.removeItem('attribution_order_create_draft_assets');
+                sessionStorage.removeItem('attribution_order_create_draft_order_data');
+                sessionStorage.removeItem('attribution_order_create_draft_included_items');
+            } catch (e) {
+                // ignore
+            }
 
             // Go back to list mode after 2 seconds
             setTimeout(() => setViewMode('list'), 2000);
@@ -277,14 +394,30 @@ const AttributionOrdersPage = () => {
                     <p className="page-subtitle">
                         {viewMode === 'list' ? 'Consult and manage your attribution orders' : viewMode === 'detail' ? 'Consult associated order details and assets' : 'Register new equipment and link them to an attribution order'}
                     </p>
+                    {viewMode === 'detail' && (
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => setViewMode('list')}
+                            style={{ marginTop: 'var(--space-2)' }}
+                            title="Back"
+                            aria-label="Back"
+                        >
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M15 18l-6-6 6-6" />
+                            </svg>
+                        </button>
+                    )}
                 </div>
-                {viewMode === 'list' ? (
-                    <button className="btn btn-primary" onClick={() => setViewMode('create')}>
-                        + New Order
-                    </button>
-                ) : (
-                    <button className="btn btn-secondary" onClick={() => setViewMode('list')}>
-                        Back to List
+                {viewMode !== 'list' && viewMode !== 'detail' && (
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => setViewMode('list')}
+                        title="Back to List"
+                        aria-label="Back to List"
+                    >
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M15 18l-6-6 6-6" />
+                        </svg>
                     </button>
                 )}
             </div>
@@ -296,6 +429,9 @@ const AttributionOrdersPage = () => {
                 <div className="card">
                     <div className="card-header">
                         <h2 className="card-title">All Attribution Orders</h2>
+                        <button className="btn btn-primary" style={{ width: 'auto' }} onClick={() => setViewMode('create')}>
+                            + New Order
+                        </button>
                     </div>
                     <div className="table-container">
                         <table className="data-table">
@@ -469,6 +605,68 @@ const AttributionOrdersPage = () => {
                             </table>
                         </div>
                     </div>
+
+                    {/* Included Stock Items */}
+                    {includedItems.stock_items.length > 0 && (
+                        <div className="card">
+                            <div className="card-header">
+                                <h2 className="card-title">Included Stock Items</h2>
+                            </div>
+                            <div className="table-container">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th>Model</th>
+                                            <th>Asset</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {includedItems.stock_items.map(item => (
+                                            <tr key={item.id}>
+                                                <td style={{ fontWeight: '500' }}>{item.name || '-'}</td>
+                                                <td>{item.model || '-'}</td>
+                                                <td>{item.asset_name || `Asset #${item.asset_id}`}</td>
+                                                <td><span className={`status-badge status-${item.status?.replace(/\s+/g, '-').toLowerCase()}`}>{item.status}</span></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Included Consumables */}
+                    {includedItems.consumables.length > 0 && (
+                        <div className="card">
+                            <div className="card-header">
+                                <h2 className="card-title">Included Consumables</h2>
+                            </div>
+                            <div className="table-container">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th>Model</th>
+                                            <th>Asset</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {includedItems.consumables.map(item => (
+                                            <tr key={item.id}>
+                                                <td style={{ fontWeight: '500' }}>{item.name || '-'}</td>
+                                                <td>{item.model || '-'}</td>
+                                                <td>{item.asset_name || `Asset #${item.asset_id}`}</td>
+                                                <td><span className={`status-badge status-${item.status?.replace(/\s+/g, '-').toLowerCase()}`}>{item.status}</span></td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <form onSubmit={handleSubmit}>
@@ -680,13 +878,40 @@ const AttributionOrdersPage = () => {
                                                     placeholder="Asset Name"
                                                 />
                                             </td>
-                                            <td style={{ textAlign: 'center' }}>
+                                            <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => configureIncludedItemsForRow(asset, 'stock')}
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '6px', marginRight: '8px' }}
+                                                    disabled={!asset.asset_model}
+                                                    title={!asset.asset_model ? 'Select a model first' : 'Configure included stock items'}
+                                                >
+                                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => configureIncludedItemsForRow(asset, 'consumables')}
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '6px', marginRight: '8px' }}
+                                                    disabled={!asset.asset_model}
+                                                    title={!asset.asset_model ? 'Select a model first' : 'Configure included consumables'}
+                                                >
+                                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                                        <path d="M12 2v6m0 0v14m0-14c-2 0-6 1-6 5s4 5 6 5 6-1 6-5-4-5-6-5z"/>
+                                                        <path d="M6 12c0 4 2.5 8 6 10 3.5-2 6-6 6-10" fill="none"/>
+                                                    </svg>
+                                                </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => removeAssetRow(index)}
                                                     className="logout-btn"
                                                     title="Remove row"
-                                                    disabled={assets.length === 1}
+                                                    disabled={assets.length === 0}
                                                 >
                                                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                                                         <polyline points="3 6 5 6 21 6" />

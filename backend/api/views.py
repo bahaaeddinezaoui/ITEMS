@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import hashlib
 import os
+import datetime
+from decimal import Decimal
 
 from django.utils import timezone
-from django.db.models import OuterRef, Subquery
+from django.db import connection
+from django.db.models import OuterRef, Subquery, Q
 from rest_framework import status, viewsets
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.db import IntegrityError, connection
+from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
@@ -21,6 +25,8 @@ from .models import (
     AssetIsAssignedToPerson,
     AssetModel,
     AssetModelAttributeValue,
+    AssetModelDefaultStockItem,
+    AssetModelDefaultConsumable,
     AssetType,
     AssetTypeAttribute,
     Consumable,
@@ -32,6 +38,7 @@ from .models import (
     ConsumableModelAttributeValue,
     ConsumableType,
     ConsumableTypeAttribute,
+    ExternalMaintenance,
     Maintenance,
     MaintenanceStep,
     MaintenanceTypicalStep,
@@ -64,13 +71,291 @@ from .models import (
     ConsumableIsCompatibleWithAsset,
     AssetIsComposedOfStockItemHistory,
     AssetIsComposedOfConsumableHistory,
+    ConsumableIsUsedInStockItemHistory,
     StockItemMovement,
     ConsumableMovement,
     MaintenanceStepItemRequest,
     AssetMovement,
     PhysicalCondition,
     AssetConditionHistory,
+    ExternalMaintenanceProvider,
+    ExternalMaintenance,
+    ExternalMaintenanceStep,
+    ExternalMaintenanceTypicalStep,
+    ExternalMaintenanceDocument,
 )
+
+
+def _parse_default_value(data_type: str | None, default_value: str | None):
+    if default_value is None:
+        return {"value_bool": None, "value_string": None, "value_number": None, "value_date": None}
+
+    dt = (data_type or "").strip().lower()
+    raw = default_value.strip()
+
+    if dt in {"bool", "boolean"}:
+        if raw.lower() in {"true", "1", "yes", "y", "t"}:
+            return {"value_bool": True, "value_string": None, "value_number": None, "value_date": None}
+        if raw.lower() in {"false", "0", "no", "n", "f"}:
+            return {"value_bool": False, "value_string": None, "value_number": None, "value_date": None}
+        return {"value_bool": None, "value_string": raw, "value_number": None, "value_date": None}
+
+    if dt in {"number", "numeric", "decimal", "int", "integer", "float", "double"}:
+        try:
+            return {"value_bool": None, "value_string": None, "value_number": Decimal(raw), "value_date": None}
+        except Exception:
+            return {"value_bool": None, "value_string": raw, "value_number": None, "value_date": None}
+
+    if dt in {"date"}:
+        try:
+            return {
+                "value_bool": None,
+                "value_string": None,
+                "value_number": None,
+                "value_date": datetime.date.fromisoformat(raw),
+            }
+        except Exception:
+            return {"value_bool": None, "value_string": raw, "value_number": None, "value_date": None}
+
+    return {"value_bool": None, "value_string": raw, "value_number": None, "value_date": None}
+
+
+def _cascade_move_composed_items(
+    *,
+    asset_id: int,
+    source_room_id: int,
+    destination_room_id: int,
+    movement_reason: str,
+    movement_datetime,
+    maintenance_step_id=None,
+    external_maintenance_step_id=None,
+):
+    stock_item_ids = list(
+        AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list(
+            "stock_item_id", flat=True
+        )
+    )
+    consumable_ids = list(
+        AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list(
+            "consumable_id", flat=True
+        )
+    )
+
+    last_stock_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+    next_stock_move_id = (last_stock_move.stock_item_movement_id + 1) if last_stock_move else 1
+
+    for stock_item_id in stock_item_ids:
+        last_move = (
+            StockItemMovement.objects.filter(stock_item_id=stock_item_id)
+            .order_by("-stock_item_movement_id")
+            .first()
+        )
+        current_room_id = last_move.destination_room_id if last_move else source_room_id
+        if current_room_id == destination_room_id:
+            continue
+
+        StockItemMovement.objects.create(
+            stock_item_movement_id=next_stock_move_id,
+            stock_item_id=stock_item_id,
+            source_room_id=current_room_id,
+            destination_room_id=destination_room_id,
+            maintenance_step_id=maintenance_step_id,
+            external_maintenance_step_id=external_maintenance_step_id,
+            movement_reason=movement_reason,
+            movement_datetime=movement_datetime,
+        )
+        next_stock_move_id += 1
+
+    last_consumable_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+    next_consumable_move_id = (last_consumable_move.consumable_movement_id + 1) if last_consumable_move else 1
+
+    for consumable_id in consumable_ids:
+        last_move = (
+            ConsumableMovement.objects.filter(consumable_id=consumable_id)
+            .order_by("-consumable_movement_id")
+            .first()
+        )
+        current_room_id = last_move.destination_room_id if last_move else source_room_id
+        if current_room_id == destination_room_id:
+            continue
+
+        ConsumableMovement.objects.create(
+            consumable_movement_id=next_consumable_move_id,
+            consumable_id=consumable_id,
+            source_room_id=current_room_id,
+            destination_room_id=destination_room_id,
+            maintenance_step_id=maintenance_step_id,
+            external_maintenance_step_id=external_maintenance_step_id,
+            movement_reason=movement_reason,
+            movement_datetime=movement_datetime,
+        )
+        next_consumable_move_id += 1
+
+
+def _cascade_move_stock_item_consumables(
+    *,
+    stock_item_id: int,
+    source_room_id: int,
+    destination_room_id: int,
+    movement_reason: str,
+    movement_datetime,
+    maintenance_step_id=None,
+    external_maintenance_step_id=None,
+):
+    consumable_ids = list(
+        ConsumableIsUsedInStockItemHistory.objects.filter(
+            stock_item_id=stock_item_id,
+            end_datetime__isnull=True,
+        ).values_list("consumable_id", flat=True)
+    )
+
+    last_consumable_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+    next_consumable_move_id = (last_consumable_move.consumable_movement_id + 1) if last_consumable_move else 1
+
+    for consumable_id in consumable_ids:
+        last_move = (
+            ConsumableMovement.objects.filter(consumable_id=consumable_id)
+            .order_by("-consumable_movement_id")
+            .first()
+        )
+        current_room_id = last_move.destination_room_id if last_move else source_room_id
+        if current_room_id == destination_room_id:
+            continue
+
+        ConsumableMovement.objects.create(
+            consumable_movement_id=next_consumable_move_id,
+            consumable_id=consumable_id,
+            source_room_id=current_room_id,
+            destination_room_id=destination_room_id,
+            maintenance_step_id=maintenance_step_id,
+            external_maintenance_step_id=external_maintenance_step_id,
+            movement_reason=movement_reason,
+            movement_datetime=movement_datetime,
+        )
+        next_consumable_move_id += 1
+
+
+def _sync_asset_model_attribute_values(asset_model: AssetModel) -> None:
+    type_attrs = list(
+        AssetTypeAttribute.objects.select_related("asset_attribute_definition")
+        .filter(asset_type_id=asset_model.asset_type_id)
+        .values(
+            "asset_attribute_definition_id",
+            "default_value",
+            "asset_attribute_definition__data_type",
+        )
+    )
+    type_def_ids = {row["asset_attribute_definition_id"] for row in type_attrs}
+
+    existing_qs = AssetModelAttributeValue.objects.filter(asset_model_id=asset_model.asset_model_id)
+    existing_def_ids = set(existing_qs.values_list("asset_attribute_definition_id", flat=True))
+
+    missing_ids = type_def_ids - existing_def_ids
+    extra_ids = existing_def_ids - type_def_ids
+
+    if extra_ids:
+        existing_qs.filter(asset_attribute_definition_id__in=extra_ids).delete()
+
+    if missing_ids:
+        type_map = {row["asset_attribute_definition_id"]: row for row in type_attrs}
+        for definition_id in missing_ids:
+            row = type_map.get(definition_id)
+            if not row:
+                continue
+            parsed = _parse_default_value(
+                row.get("asset_attribute_definition__data_type"),
+                row.get("default_value"),
+            )
+            instance = AssetModelAttributeValue()
+            instance.asset_model_id = asset_model.asset_model_id
+            instance.asset_attribute_definition_id = definition_id
+            instance.value_bool = parsed["value_bool"]
+            instance.value_string = parsed["value_string"]
+            instance.value_number = parsed["value_number"]
+            instance.value_date = parsed["value_date"]
+            instance.save(force_insert=True)
+
+
+def _sync_stock_item_model_attribute_values(stock_item_model: StockItemModel) -> None:
+    type_attrs = list(
+        StockItemTypeAttribute.objects.select_related("stock_item_attribute_definition")
+        .filter(stock_item_type_id=stock_item_model.stock_item_type_id)
+        .values(
+            "stock_item_attribute_definition_id",
+            "default_value",
+            "stock_item_attribute_definition__data_type",
+        )
+    )
+    type_def_ids = {row["stock_item_attribute_definition_id"] for row in type_attrs}
+
+    existing_qs = StockItemModelAttributeValue.objects.filter(stock_item_model_id=stock_item_model.stock_item_model_id)
+    existing_def_ids = set(existing_qs.values_list("stock_item_attribute_definition_id", flat=True))
+
+    missing_ids = type_def_ids - existing_def_ids
+    extra_ids = existing_def_ids - type_def_ids
+
+    if extra_ids:
+        existing_qs.filter(stock_item_attribute_definition_id__in=extra_ids).delete()
+
+    if missing_ids:
+        type_map = {row["stock_item_attribute_definition_id"]: row for row in type_attrs}
+        for definition_id in missing_ids:
+            row = type_map.get(definition_id)
+            if not row:
+                continue
+            parsed = _parse_default_value(
+                row.get("stock_item_attribute_definition__data_type"),
+                row.get("default_value"),
+            )
+            instance = StockItemModelAttributeValue()
+            instance.stock_item_model_id = stock_item_model.stock_item_model_id
+            instance.stock_item_attribute_definition_id = definition_id
+            instance.value_bool = parsed["value_bool"]
+            instance.value_string = parsed["value_string"]
+            instance.value_number = parsed["value_number"]
+            instance.value_date = parsed["value_date"]
+            instance.save(force_insert=True)
+
+
+def _sync_consumable_model_attribute_values(consumable_model: ConsumableModel) -> None:
+    type_attrs = list(
+        ConsumableTypeAttribute.objects.select_related("consumable_attribute_definition")
+        .filter(consumable_type_id=consumable_model.consumable_type_id)
+        .values(
+            "consumable_attribute_definition_id",
+            "default_value",
+            "consumable_attribute_definition__data_type",
+        )
+    )
+    type_def_ids = {row["consumable_attribute_definition_id"] for row in type_attrs}
+
+    existing_qs = ConsumableModelAttributeValue.objects.filter(consumable_model_id=consumable_model.consumable_model_id)
+    existing_def_ids = set(existing_qs.values_list("consumable_attribute_definition_id", flat=True))
+
+    missing_ids = type_def_ids - existing_def_ids
+    extra_ids = existing_def_ids - type_def_ids
+
+    if extra_ids:
+        existing_qs.filter(consumable_attribute_definition_id__in=extra_ids).delete()
+
+    if missing_ids:
+        type_map = {row["consumable_attribute_definition_id"]: row for row in type_attrs}
+        for definition_id in missing_ids:
+            row = type_map.get(definition_id)
+            if not row:
+                continue
+            parsed = _parse_default_value(
+                row.get("consumable_attribute_definition__data_type"),
+                row.get("default_value"),
+            )
+            instance = ConsumableModelAttributeValue()
+            instance.consumable_model_id = consumable_model.consumable_model_id
+            instance.consumable_attribute_definition_id = definition_id
+            instance.value_bool = parsed["value_bool"]
+            instance.value_string = parsed["value_string"]
+            instance.value_number = parsed["value_number"]
+            instance.value_date = parsed["value_date"]
+            instance.save(force_insert=True)
 
 
 def _sync_asset_attribute_values(asset: Asset) -> None:
@@ -188,6 +473,8 @@ from .serializers import (
     AssetBrandSerializer,
     AssetIsAssignedToPersonSerializer,
     AssetModelAttributeValueSerializer,
+    AssetModelDefaultStockItemSerializer,
+    AssetModelDefaultConsumableSerializer,
     AssetModelSerializer,
     AssetSerializer,
     AssetTypeAttributeSerializer,
@@ -204,6 +491,7 @@ from .serializers import (
     LoginSerializer,
     MaintenanceStepSerializer,
     MaintenanceSerializer,
+    MaintenanceTypicalStepSerializer,
     MaintenanceTypicalStepSerializer,
     PhysicalConditionSerializer,
     OrganizationalStructureRelationSerializer,
@@ -228,6 +516,10 @@ from .serializers import (
     AdministrativeCertificateSerializer,
     CompanyAssetRequestSerializer,
     MaintenanceStepItemRequestSerializer,
+    ExternalMaintenanceProviderSerializer,
+    ExternalMaintenanceSerializer,
+    ExternalMaintenanceStepSerializer,
+    ExternalMaintenanceTypicalStepSerializer,
 )
 
 
@@ -348,6 +640,107 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         return Response(self.get_serializer(maintenance).data, status=status.HTTP_201_CREATED)
 
 
+    def destroy(self, request, *args, **kwargs):
+        maintenance = self.get_object()
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None) if user_account else None
+        
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        is_allowed = False
+        if user_account.is_superuser():
+            is_allowed = True
+        elif person:
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            if "maintenance_chief" in role_codes:
+                is_allowed = True
+            elif maintenance.performed_by_person_id == person.person_id:
+                is_allowed = True
+
+        if not is_allowed:
+            return Response({"error": "Not allowed to cancel this maintenance"}, status=status.HTTP_403_FORBIDDEN)
+
+        if maintenance.steps.exists():
+            return Response({"error": "Cannot cancel maintenance that has steps"}, status=status.HTTP_400_BAD_REQUEST)
+
+        from .models import ExternalMaintenance
+        if ExternalMaintenance.objects.filter(maintenance=maintenance).exists():
+            return Response({"error": "Cannot cancel maintenance that has external maintenances"}, status=status.HTTP_400_BAD_REQUEST)
+
+        maintenance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="end")
+    def end(self, request, pk=None):
+        maintenance = self.get_object()
+
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None) if user_account else None
+        if not person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        is_allowed = False
+        if user_account and user_account.is_superuser():
+            is_allowed = True
+        else:
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes:
+                is_allowed = True
+            elif getattr(maintenance, "performed_by_person_id", None) == getattr(person, "person_id", None):
+                is_allowed = True
+
+        if not is_allowed:
+            return Response({"error": "Not allowed to end this maintenance"}, status=status.HTTP_403_FORBIDDEN)
+
+        if getattr(maintenance, "end_datetime", None) is not None:
+            return Response({"error": "Maintenance already ended"}, status=status.HTTP_400_BAD_REQUEST)
+
+        terminal_statuses = {
+            "done",
+            "failed (to be sent to a higher level)",
+            "cancelled",
+        }
+        non_terminal_exists = maintenance.steps.exclude(maintenance_step_status__in=terminal_statuses).exists()
+        if non_terminal_exists:
+            return Response(
+                {"error": "Cannot end maintenance while some steps are not done/failed/cancelled"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        is_successful_raw = request.data.get("is_successful", "__missing__") if hasattr(request, "data") else "__missing__"
+        is_successful_value = "__missing__"
+        if is_successful_raw != "__missing__":
+            if is_successful_raw is None:
+                is_successful_value = None
+            elif isinstance(is_successful_raw, bool):
+                is_successful_value = is_successful_raw
+            elif isinstance(is_successful_raw, (int, float)):
+                is_successful_value = bool(is_successful_raw)
+            else:
+                s = str(is_successful_raw).strip().lower()
+                if s in {"true", "1", "yes", "y"}:
+                    is_successful_value = True
+                elif s in {"false", "0", "no", "n"}:
+                    is_successful_value = False
+                elif s in {"null", "none", ""}:
+                    is_successful_value = None
+                else:
+                    return Response({"error": "Invalid is_successful"}, status=status.HTTP_400_BAD_REQUEST)
+
+        update_payload = {"end_datetime": timezone.now()}
+        if is_successful_value != "__missing__":
+            update_payload["is_successful"] = is_successful_value
+
+        Maintenance.objects.filter(maintenance_id=maintenance.maintenance_id).update(**update_payload)
+        maintenance.refresh_from_db()
+        return Response(self.get_serializer(maintenance).data, status=status.HTTP_200_OK)
+
+
     @action(detail=False, methods=["post"], url_path="create-direct")
     def create_direct(self, request):
         user_account = self._get_user_account(request)
@@ -421,6 +814,15 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 movement_reason="maintenance_create",
                 movement_datetime=timezone.now(),
             )
+            _cascade_move_composed_items(
+                asset_id=asset.asset_id,
+                source_room_id=current_room.room_id,
+                destination_room_id=destination_room.room_id,
+                movement_reason="maintenance_create",
+                movement_datetime=timezone.now(),
+                maintenance_step_id=None,
+                external_maintenance_step_id=None,
+            )
 
         technician = Person.objects.filter(person_id=technician_person_id).first()
         if not technician:
@@ -438,7 +840,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 maintenance_status="pending",
                 description=description,
                 start_datetime=timezone.now(),
-                end_datetime=timezone.now(),
+                end_datetime=None,
             )
         except IntegrityError:
             return Response(
@@ -452,17 +854,130 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         return Response(self.get_serializer(maintenance).data, status=status.HTTP_201_CREATED)
 
 
+class AssetMaintenanceTimelineView(APIView):
+    """Returns maintenance timeline for assets where the user made a problem report"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, asset_id=None):
+        user_account = None
+        try:
+            if hasattr(request, "auth") and request.auth is not None:
+                user_id = request.auth.get("user_id")
+                if user_id:
+                    user_account = UserAccount.objects.select_related("person").get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            user_account = None
+
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = user_account.person
+
+        # Get assets for which the user made a problem report
+        reported_asset_ids = set(
+            PersonReportsProblemOnAsset.objects.filter(person=person)
+            .values_list("asset_id", flat=True)
+        )
+
+        # If asset_id is specified, check if user reported a problem on it
+        if asset_id is not None:
+            if int(asset_id) not in reported_asset_ids:
+                return Response({"error": "You have not reported a problem on this asset"}, status=status.HTTP_403_FORBIDDEN)
+            asset_ids = [int(asset_id)]
+        else:
+            asset_ids = list(reported_asset_ids)
+
+        if not asset_ids:
+            return Response({"maintenances": [], "steps": []})
+
+        # Get all maintenances for these assets
+        maintenances = (
+            Maintenance.objects.filter(asset_id__in=asset_ids)
+            .select_related("asset", "performed_by_person")
+            .order_by("-start_datetime", "-maintenance_id")
+        )
+
+        maintenance_ids = list(maintenances.values_list("maintenance_id", flat=True))
+
+        # Get all maintenance steps for these maintenances
+        steps = (
+            MaintenanceStep.objects.filter(maintenance_id__in=maintenance_ids)
+            .select_related("maintenance", "maintenance_typical_step", "person")
+            .order_by("maintenance_id", "maintenance_step_id")
+        )
+
+        # Serialize data
+        from .serializers import MaintenanceSerializer, MaintenanceStepSerializer
+
+        maintenances_data = MaintenanceSerializer(maintenances, many=True).data
+        steps_data = MaintenanceStepSerializer(steps, many=True).data
+
+        return Response({
+            "maintenances": maintenances_data,
+            "steps": steps_data,
+        })
+
+
 class MaintenanceStepViewSet(viewsets.ModelViewSet):
     queryset = MaintenanceStep.objects.all().order_by("maintenance_step_id")
     serializer_class = MaintenanceStepSerializer
     permission_classes = [IsAuthenticated]
+
+    _TERMINAL_STEP_STATUSES = {
+        "done",
+        "failed (to be sent to a higher level)",
+        "cancelled",
+    }
+
+    def _maybe_set_maintenance_start_datetime(self, step: MaintenanceStep, *, new_status: str | None = None):
+        try:
+            maintenance = getattr(step, "maintenance", None)
+            if not maintenance or getattr(maintenance, "start_datetime", None) is not None:
+                return
+
+            status_value = (new_status if new_status is not None else getattr(step, "maintenance_step_status", None))
+            if status_value != "started":
+                return
+
+            step_id = getattr(step, "maintenance_step_id", None)
+            if step_id is None:
+                return
+
+            first_step = (
+                MaintenanceStep.objects.filter(maintenance_id=maintenance.maintenance_id)
+                .order_by("maintenance_step_id")
+                .first()
+            )
+            if not first_step or first_step.maintenance_step_id != step_id:
+                return
+
+            Maintenance.objects.filter(maintenance_id=maintenance.maintenance_id, start_datetime__isnull=True).update(
+                start_datetime=timezone.now()
+            )
+        except Exception:
+            return
 
     def perform_update(self, serializer):
         instance = self.get_object()
         old_status = getattr(instance, "maintenance_step_status", None)
         new_status = serializer.validated_data.get("maintenance_step_status", old_status)
 
+        if old_status in self._TERMINAL_STEP_STATUSES and new_status != old_status:
+            raise ValidationError({"maintenance_step_status": "Cannot change status of a terminal step"})
+
         updated = serializer.save()
+
+        if new_status == "started" and old_status != "started":
+            try:
+                if getattr(updated, "start_datetime", None) is None:
+                    MaintenanceStep.objects.filter(
+                        maintenance_step_id=updated.maintenance_step_id,
+                        start_datetime__isnull=True,
+                    ).update(start_datetime=timezone.now())
+                    updated.start_datetime = timezone.now()
+            except Exception:
+                pass
+            self._maybe_set_maintenance_start_datetime(updated, new_status=new_status)
 
         try:
             if new_status != "done" or old_status == "done":
@@ -528,9 +1043,48 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
                     )
         except Exception:
             # Never break the status update due to automatic composition insert.
-            # Any unexpected DB constraint issue should be handled separately.
-            print(f"[maintenance-step] failed to auto-compose on done+add for step_id={getattr(updated, 'maintenance_step_id', None)}")
+            print(
+                f"[maintenance-step] failed to auto-compose on done+add for step_id={getattr(updated, 'maintenance_step_id', None)}"
+            )
             return
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        maintenance = getattr(instance, "maintenance", None)
+        if maintenance and getattr(maintenance, "end_datetime", None) is not None:
+            return Response({"error": "Maintenance is ended"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate assignment permission if person_id is being changed
+        person_id = request.data.get("person_id")
+        if person_id is not None:
+            try:
+                person_id_int = int(person_id)
+                is_allowed, error_response = self._validate_assignment_permission(request, person_id_int)
+                if not is_allowed:
+                    return error_response
+            except (ValueError, TypeError):
+                return Response({"error": "Invalid person_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        maintenance = getattr(instance, "maintenance", None)
+        if maintenance and getattr(maintenance, "end_datetime", None) is not None:
+            return Response({"error": "Maintenance is ended"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate assignment permission if person_id is being changed
+        person_id = request.data.get("person_id")
+        if person_id is not None:
+            try:
+                person_id_int = int(person_id)
+                is_allowed, error_response = self._validate_assignment_permission(request, person_id_int)
+                if not is_allowed:
+                    return error_response
+            except (ValueError, TypeError):
+                return Response({"error": "Invalid person_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().partial_update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         last_item = MaintenanceStep.objects.order_by("-maintenance_step_id").first()
@@ -539,9 +1093,50 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        maintenance = serializer.validated_data.get("maintenance")
+        if maintenance and getattr(maintenance, "end_datetime", None) is not None:
+            return Response({"error": "Maintenance is ended"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate assignment permission
+        person_data = serializer.validated_data.get("person")
+        target_person_id = getattr(person_data, "person_id", None) if person_data else request.data.get("person_id")
+        if target_person_id:
+            try:
+                target_person_id = int(target_person_id)
+                is_allowed, error_response = self._validate_assignment_permission(request, target_person_id)
+                if not is_allowed:
+                    return error_response
+            except (ValueError, TypeError):
+                return Response({"error": "Invalid person_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        asset_id = getattr(maintenance, "asset_id", None) if maintenance else None
+        if asset_id:
+            open_external_maintenance_q = (
+                Q(
+                    external_maintenance_status__isnull=True,
+                    item_sent_to_external_maintenance_datetime__isnull=False,
+                    item_received_by_company_datetime__isnull=True,
+                )
+                | (
+                    Q(external_maintenance_status__isnull=False)
+                    & ~Q(external_maintenance_status__in=["DRAFT", "RECEIVED_BY_COMPANY"])
+                )
+            )
+            if (
+                ExternalMaintenance.objects.filter(maintenance__asset_id=asset_id)
+                .filter(open_external_maintenance_q)
+                .exists()
+            ):
+                return Response(
+                    {
+                        "error": "Cannot create maintenance steps while the asset has an ongoing external maintenance.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
         data = dict(serializer.validated_data)
         if not data.get("maintenance_step_status"):
-            data["maintenance_step_status"] = "started"
+            data["maintenance_step_status"] = "pending"
 
         try:
             step = MaintenanceStep.objects.create(
@@ -555,6 +1150,8 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        self._maybe_set_maintenance_start_datetime(step, new_status=getattr(step, "maintenance_step_status", None))
 
         return Response(self.get_serializer(step).data, status=status.HTTP_201_CREATED)
 
@@ -586,6 +1183,43 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             return user_account.person
         return None
 
+    def _validate_assignment_permission(self, request, target_person_id: int | None):
+        """
+        Validates that the current user can assign a maintenance step to the target person.
+        A maintenance_technician cannot assign a step to a maintenance_chief.
+        Only maintenance_chiefs (or superusers) can assign steps to maintenance_chiefs.
+        Returns (is_allowed, error_response)
+        """
+        if target_person_id is None:
+            return True, None
+
+        person = self._get_user_person(request)
+        if not person:
+            return False, Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get current user's roles
+        user_role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        # Superusers and maintenance_chiefs can assign to anyone
+        if "superuser" in user_role_codes or "maintenance_chief" in user_role_codes:
+            return True, None
+
+        # Check if target person is a maintenance_chief
+        target_is_chief = PersonRoleMapping.objects.filter(
+            person_id=target_person_id,
+            role__role_code="maintenance_chief"
+        ).exists()
+
+        if target_is_chief:
+            return False, Response(
+                {"error": "Only maintenance chiefs can assign steps to other maintenance chiefs"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return True, None
+
     def _require_can_request_for_step(self, request, step: MaintenanceStep):
         person = self._get_user_person(request)
         if not person:
@@ -611,7 +1245,7 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         if denial:
             return denial
 
-        if getattr(step, "maintenance_step_status", None) == "done":
+        if getattr(step, "maintenance_step_status", None) in self._TERMINAL_STEP_STATUSES:
             return Response({"error": "Step is done"}, status=status.HTTP_400_BAD_REQUEST)
 
         condition_id = request.data.get("condition_id")
@@ -798,6 +1432,15 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
                 maintenance_step=step,
                 movement_reason="maintenance_step_remove",
                 movement_datetime=now_dt,
+            )
+            _cascade_move_stock_item_consumables(
+                stock_item_id=component_id_int,
+                source_room_id=source_room.room_id,
+                destination_room_id=destination_room.room_id,
+                movement_reason="maintenance_step_remove",
+                movement_datetime=now_dt,
+                maintenance_step_id=step.maintenance_step_id,
+                external_maintenance_step_id=None,
             )
         elif destination_room and component_type == "consumable":
             last_move = (
@@ -1035,6 +1678,16 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
                 movement_datetime=timezone.now(),
             )
 
+            _cascade_move_stock_item_consumables(
+                stock_item_id=stock_item.stock_item_id,
+                source_room_id=source_room.room_id,
+                destination_room_id=destination_room.room_id,
+                movement_reason="maintenance_step_fulfill_request",
+                movement_datetime=timezone.now(),
+                maintenance_step_id=step.maintenance_step_id,
+                external_maintenance_step_id=None,
+            )
+
             req.stock_item = stock_item
 
         elif req.request_type == "consumable":
@@ -1090,6 +1743,38 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
         req.save()
 
         step.maintenance_step_status = "In Progress"
+        step.save(update_fields=["maintenance_step_status"])
+
+        return Response(self.get_serializer(req).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request, pk=None):
+        person, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        req = self.get_object()
+        if req.status != "pending":
+            return Response({"error": "Only pending requests can be rejected"}, status=status.HTTP_400_BAD_REQUEST)
+
+        note = request.data.get("note")
+
+        req.status = "rejected"
+        req.rejected_at = timezone.now()
+        req.rejected_by_person = person
+
+        req.fulfilled_at = None
+        req.fulfilled_by_person = None
+        req.source_room = None
+        req.destination_room = None
+        req.stock_item = None
+        req.consumable = None
+        if note is not None:
+            req.note = note
+        req.save()
+
+        step = req.maintenance_step
+        step.maintenance_step_status = "started"
         step.save(update_fields=["maintenance_step_status"])
 
         return Response(self.get_serializer(req).data, status=status.HTTP_200_OK)
@@ -1289,6 +1974,503 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
         return Response({"error": "Invalid request_type"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ExternalMaintenanceProviderViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ExternalMaintenanceProvider.objects.all().order_by("external_maintenance_provider_id")
+    serializer_class = ExternalMaintenanceProviderSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class ExternalMaintenanceTypicalStepViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ExternalMaintenanceTypicalStep.objects.all().order_by("external_maintenance_typical_step_id")
+    serializer_class = ExternalMaintenanceTypicalStepSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ExternalMaintenance.objects.select_related("maintenance", "maintenance__asset").all().order_by(
+        "-external_maintenance_id"
+    )
+    serializer_class = ExternalMaintenanceSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        maintenance_id = self.request.query_params.get("maintenance")
+        if maintenance_id is not None:
+            try:
+                qs = qs.filter(maintenance_id=int(maintenance_id))
+            except (ValueError, TypeError):
+                pass
+        return qs
+
+    @action(detail=False, methods=["post"], url_path="create-for-maintenance")
+    def create_for_maintenance(self, request):
+        maintenance_id = request.data.get("maintenance_id")
+
+        if not maintenance_id:
+            return Response({"error": "maintenance_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            maintenance_id_int = int(maintenance_id)
+        except (ValueError, TypeError):
+            return Response({"error": "Invalid ids"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            maintenance = Maintenance.objects.select_related("asset").get(maintenance_id=maintenance_id_int)
+        except Maintenance.DoesNotExist:
+            return Response({"error": "Maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        asset_id = getattr(maintenance, "asset_id", None)
+        if asset_id and ExternalMaintenance.objects.filter(
+            maintenance__asset_id=asset_id,
+        ).filter(
+            Q(external_maintenance_status__isnull=True, item_received_by_company_datetime__isnull=True)
+            | (Q(external_maintenance_status__isnull=False) & ~Q(external_maintenance_status="RECEIVED_BY_COMPANY"))
+        ).exists():
+            return Response(
+                {
+                    "error": "Cannot create a new external maintenance because an external maintenance is already open for this asset.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        last_em = ExternalMaintenance.objects.order_by("-external_maintenance_id").first()
+        next_em_id = (last_em.external_maintenance_id + 1) if last_em else 1
+
+        try:
+            em = ExternalMaintenance.objects.create(
+                external_maintenance_id=next_em_id,
+                maintenance_id=maintenance_id_int,
+                external_maintenance_status="DRAFT",
+            )
+        except IntegrityError:
+            return Response(
+                {"error": "Failed to create external maintenance due to database constraints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payload = ExternalMaintenanceSerializer(em).data
+        return Response(payload, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="send-to-provider")
+    def send_to_provider(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes):
+            return Response(
+                {"error": "Only asset responsible can send to external maintenance provider"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        provider_id = request.data.get("external_maintenance_provider_id")
+        if not provider_id:
+            return Response(
+                {"error": "external_maintenance_provider_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        destination_room_id = request.data.get("destination_room_id")
+        if not destination_room_id:
+            return Response(
+                {"error": "destination_room_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            provider_id_int = int(provider_id)
+            destination_room_id_int = int(destination_room_id)
+        except (ValueError, TypeError):
+            return Response({"error": "Invalid ids"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            em = ExternalMaintenance.objects.select_related("maintenance", "maintenance__asset").get(
+                external_maintenance_id=int(pk)
+            )
+        except (ExternalMaintenance.DoesNotExist, ValueError, TypeError):
+            return Response({"error": "External maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if em.item_sent_to_external_maintenance_datetime is not None:
+            return Response({"error": "External maintenance already sent"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ExternalMaintenanceProvider.objects.get(external_maintenance_provider_id=provider_id_int)
+        except ExternalMaintenanceProvider.DoesNotExist:
+            return Response({"error": "Provider not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            destination_room = Room.objects.select_related("room_type").get(room_id=destination_room_id_int)
+        except Room.DoesNotExist:
+            return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not destination_room.room_type or destination_room.room_type.room_type_label != "External Maintenance Center":
+            return Response(
+                {"error": "Destination room must be of type 'External Maintenance Center'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        asset_id = getattr(em.maintenance, "asset_id", None)
+        if not asset_id:
+            return Response({"error": "External maintenance has no associated asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_move = (
+            AssetMovement.objects.select_related("destination_room")
+            .filter(asset_id=asset_id)
+            .order_by("-asset_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response(
+                {"error": "Cannot infer asset current room (no movement history)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+        next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+
+        now = timezone.now()
+        try:
+            AssetMovement.objects.create(
+                asset_movement_id=next_asset_move_id,
+                asset_id=asset_id,
+                source_room_id=last_move.destination_room_id,
+                destination_room_id=destination_room_id_int,
+                maintenance_step_id=None,
+                external_maintenance_step_id=None,
+                movement_reason="Sent to external maintenance provider",
+                movement_datetime=now,
+            )
+            _cascade_move_composed_items(
+                asset_id=asset_id,
+                source_room_id=last_move.destination_room_id,
+                destination_room_id=destination_room_id_int,
+                movement_reason="Sent to external maintenance provider",
+                movement_datetime=now,
+                maintenance_step_id=None,
+                external_maintenance_step_id=None,
+            )
+            em.item_sent_to_external_maintenance_datetime = now
+            em.external_maintenance_status = "SENT_TO_PROVIDER"
+            em.external_maintenance_provider_id = provider_id_int
+            em.save(
+                update_fields=[
+                    "item_sent_to_external_maintenance_datetime",
+                    "external_maintenance_status",
+                    "external_maintenance_provider",
+                ]
+            )
+        except IntegrityError:
+            return Response(
+                {"error": "Failed to send to external maintenance provider due to database constraints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payload = ExternalMaintenanceSerializer(em).data
+        return Response(payload, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="create-step")
+    def create_step(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("maintenance_technician" not in role_codes):
+            return Response(
+                {"error": "Only maintenance technician can create external maintenance steps"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        typical_step_id = request.data.get("external_maintenance_typical_step_id")
+        if not typical_step_id:
+            return Response(
+                {"error": "external_maintenance_typical_step_id is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            typical_step_id_int = int(typical_step_id)
+        except (ValueError, TypeError):
+            return Response({"error": "Invalid ids"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            em = ExternalMaintenance.objects.get(external_maintenance_id=int(pk))
+        except (ExternalMaintenance.DoesNotExist, ValueError, TypeError):
+            return Response({"error": "External maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if em.item_sent_to_external_maintenance_datetime is None:
+            return Response({"error": "External maintenance not sent yet"}, status=status.HTTP_400_BAD_REQUEST)
+
+        em_status = getattr(em, "external_maintenance_status", None)
+        if em_status is not None:
+            if em_status != "RECEIVED_BY_PROVIDER":
+                return Response(
+                    {"error": "External maintenance is not received by provider yet"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            if em.item_received_by_maintenance_provider_datetime is None:
+                return Response(
+                    {"error": "External maintenance is not received by provider yet"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if em.item_received_by_company_datetime is not None:
+            return Response({"error": "External maintenance already received by company"}, status=status.HTTP_400_BAD_REQUEST)
+
+        provider_id_int = getattr(em, "external_maintenance_provider_id", None)
+        if not provider_id_int:
+            return Response(
+                {"error": "External maintenance has no provider selected yet"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            typical_step = ExternalMaintenanceTypicalStep.objects.get(
+                external_maintenance_typical_step_id=typical_step_id_int
+            )
+        except ExternalMaintenanceTypicalStep.DoesNotExist:
+            return Response({"error": "Typical step not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        last_step = ExternalMaintenanceStep.objects.order_by("-external_maintenance_step_id").first()
+        next_step_id = (last_step.external_maintenance_step_id + 1) if last_step else 1
+
+        now = timezone.now()
+        try:
+            step = ExternalMaintenanceStep.objects.create(
+                external_maintenance_step_id=next_step_id,
+                external_maintenance=em,
+                external_maintenance_typical_step=typical_step,
+                start_datetime=now,
+            )
+        except IntegrityError:
+            return Response(
+                {"error": "Failed to create external maintenance step due to database constraints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payload = ExternalMaintenanceStepSerializer(step).data
+        return Response(payload, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="confirm-received-by-provider")
+    def confirm_received_by_provider(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes):
+            return Response(
+                {"error": "Only asset responsible can confirm receipt by maintenance provider"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            em = ExternalMaintenance.objects.get(external_maintenance_id=int(pk))
+        except (ExternalMaintenance.DoesNotExist, ValueError, TypeError):
+            return Response({"error": "External maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if em.item_sent_to_external_maintenance_datetime is None:
+            return Response({"error": "External maintenance not sent yet"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if em.item_received_by_maintenance_provider_datetime is not None:
+            return Response({"error": "Already confirmed as received by maintenance provider"}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = timezone.now()
+        try:
+            em.item_received_by_maintenance_provider_datetime = now
+            em.external_maintenance_status = "RECEIVED_BY_PROVIDER"
+            em.save(
+                update_fields=[
+                    "item_received_by_maintenance_provider_datetime",
+                    "external_maintenance_status",
+                ]
+            )
+        except IntegrityError:
+            return Response(
+                {"error": "Failed to confirm receipt due to database constraints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payload = ExternalMaintenanceSerializer(em).data
+        return Response(payload, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="confirm-received-by-company")
+    def confirm_received_by_company(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes):
+            return Response(
+                {"error": "Only asset responsible can confirm asset received by company"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        destination_room_id = request.data.get("destination_room_id")
+        if not destination_room_id:
+            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            destination_room_id_int = int(destination_room_id)
+        except (ValueError, TypeError):
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            em = ExternalMaintenance.objects.select_related("maintenance").get(external_maintenance_id=int(pk))
+        except (ExternalMaintenance.DoesNotExist, ValueError, TypeError):
+            return Response({"error": "External maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if em.item_sent_to_company_datetime is None:
+            return Response({"error": "Asset not sent to company yet"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if em.item_received_by_company_datetime is not None:
+            return Response({"error": "Already confirmed as received by company"}, status=status.HTTP_400_BAD_REQUEST)
+
+        asset_id = getattr(em.maintenance, "asset_id", None)
+        if not asset_id:
+            return Response({"error": "External maintenance has no associated asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            destination_room = Room.objects.get(room_id=destination_room_id_int)
+        except Room.DoesNotExist:
+            return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        last_move = (
+            AssetMovement.objects.select_related("destination_room")
+            .filter(asset_id=asset_id)
+            .order_by("-asset_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response(
+                {"error": "Cannot infer asset current room (no movement history)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if last_move.destination_room_id == destination_room_id_int:
+            return Response({"error": "Asset is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+        next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+
+        last_external_step = (
+            ExternalMaintenanceStep.objects.filter(external_maintenance=em)
+            .order_by("-external_maintenance_step_id")
+            .first()
+        )
+        external_step_id = last_external_step.external_maintenance_step_id if last_external_step else None
+
+        now = timezone.now()
+        try:
+            AssetMovement.objects.create(
+                asset_movement_id=next_asset_move_id,
+                asset_id=asset_id,
+                source_room_id=last_move.destination_room_id,
+                destination_room_id=destination_room_id_int,
+                maintenance_step_id=None,
+                external_maintenance_step_id=external_step_id,
+                movement_reason="Received by company from external maintenance",
+                movement_datetime=now,
+            )
+            _cascade_move_composed_items(
+                asset_id=asset_id,
+                source_room_id=last_move.destination_room_id,
+                destination_room_id=destination_room_id_int,
+                movement_reason="Received by company from external maintenance",
+                movement_datetime=now,
+                maintenance_step_id=None,
+                external_maintenance_step_id=external_step_id,
+            )
+            em.item_received_by_company_datetime = now
+            em.external_maintenance_status = "RECEIVED_BY_COMPANY"
+            em.save(update_fields=["item_received_by_company_datetime", "external_maintenance_status"])
+        except IntegrityError:
+            return Response(
+                {"error": "Failed to confirm received by company due to database constraints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payload = ExternalMaintenanceSerializer(em).data
+        payload["destination_room"] = {"room_id": destination_room.room_id, "room_name": destination_room.room_name}
+        return Response(payload, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="confirm-sent-to-company")
+    def confirm_sent_to_company(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes):
+            return Response(
+                {"error": "Only asset responsible can confirm asset sent to company"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            em = ExternalMaintenance.objects.get(external_maintenance_id=int(pk))
+        except (ExternalMaintenance.DoesNotExist, ValueError, TypeError):
+            return Response({"error": "External maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if em.item_received_by_maintenance_provider_datetime is None:
+            return Response(
+                {"error": "Cannot confirm sent to company before being received by maintenance provider"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if em.item_sent_to_company_datetime is not None:
+            return Response({"error": "Already confirmed as sent to company"}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = timezone.now()
+        try:
+            em.item_sent_to_company_datetime = now
+            em.external_maintenance_status = "SENT_TO_COMPANY"
+            em.save(update_fields=["item_sent_to_company_datetime", "external_maintenance_status"])
+        except IntegrityError:
+            return Response(
+                {"error": "Failed to confirm sent to company due to database constraints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        payload = ExternalMaintenanceSerializer(em).data
+        return Response(payload, status=status.HTTP_200_OK)
+
+
+class ExternalMaintenanceStepViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = ExternalMaintenanceStep.objects.select_related(
+        "external_maintenance",
+        "external_maintenance__maintenance",
+        "external_maintenance__external_maintenance_provider",
+        "external_maintenance_typical_step",
+    ).all().order_by("-external_maintenance_step_id")
+    serializer_class = ExternalMaintenanceStepSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        maintenance_id = self.request.query_params.get("maintenance")
+        if maintenance_id is not None:
+            try:
+                qs = qs.filter(external_maintenance__maintenance_id=int(maintenance_id))
+            except (ValueError, TypeError):
+                pass
+        return qs
+
+
 class MyItemsView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -1370,6 +2552,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 "report_id": report.report_id,
                 "item_id": getattr(report, item_type).pk if getattr(report, item_type, None) else None,
                 "person_id": report.person_id if hasattr(report, "person_id") else report.person.person_id,
+                "person_name": f"{report.person.first_name} {report.person.last_name}",
                 "report_datetime": report.report_datetime,
                 "owner_observation": report.owner_observation,
             }
@@ -1612,6 +2795,143 @@ class AssetModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = AssetModel.objects.all().order_by("asset_model_id")
     serializer_class = AssetModelSerializer
 
+    def _insert_compatibility_row(self, table_name, columns, values):
+        with connection.cursor() as cursor:
+            cols = ",".join(columns)
+            placeholders = ",".join(["%s"] * len(values))
+            cursor.execute(
+                f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders}) ON CONFLICT DO NOTHING",
+                values,
+            )
+
+    def _delete_compatibility_row(self, table_name, where_columns, where_values):
+        with connection.cursor() as cursor:
+            where_sql = " AND ".join([f"{c} = %s" for c in where_columns])
+            cursor.execute(
+                f"DELETE FROM {table_name} WHERE {where_sql}",
+                where_values,
+            )
+
+    @action(detail=True, methods=["get", "post"], url_path="compatible-stock-item-models")
+    def compatible_stock_item_models(self, request, pk=None):
+        asset_model = self.get_object()
+
+        if request.method.lower() == "get":
+            ids = list(
+                StockItemIsCompatibleWithAsset.objects.filter(asset_model_id=asset_model.asset_model_id).values_list(
+                    "stock_item_model_id", flat=True
+                )
+            )
+            models = StockItemModel.objects.select_related("stock_item_brand", "stock_item_type").filter(
+                stock_item_model_id__in=ids
+            )
+            return Response(StockItemModelSerializer(models, many=True).data, status=status.HTTP_200_OK)
+
+        denial = self._require_superuser(request, "update asset model compatibility")
+        if denial:
+            return denial
+
+        stock_item_model_id = request.data.get("stock_item_model_id")
+        if not stock_item_model_id:
+            return Response({"error": "stock_item_model_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            stock_item_model_id_int = int(stock_item_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid stock_item_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not StockItemModel.objects.filter(stock_item_model_id=stock_item_model_id_int).exists():
+            return Response({"error": "Stock item model not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        self._insert_compatibility_row(
+            "public.stock_item_is_compatible_with_asset",
+            ["stock_item_model_id", "asset_model_id"],
+            [stock_item_model_id_int, asset_model.asset_model_id],
+        )
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path=r"compatible-stock-item-models/(?P<stock_item_model_id>[^/.]+)",
+    )
+    def remove_compatible_stock_item_model(self, request, pk=None, stock_item_model_id=None):
+        denial = self._require_superuser(request, "update asset model compatibility")
+        if denial:
+            return denial
+
+        asset_model = self.get_object()
+        try:
+            stock_item_model_id_int = int(stock_item_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid stock_item_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        self._delete_compatibility_row(
+            "public.stock_item_is_compatible_with_asset",
+            ["stock_item_model_id", "asset_model_id"],
+            [stock_item_model_id_int, asset_model.asset_model_id],
+        )
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get", "post"], url_path="compatible-consumable-models")
+    def compatible_consumable_models(self, request, pk=None):
+        asset_model = self.get_object()
+
+        if request.method.lower() == "get":
+            ids = list(
+                ConsumableIsCompatibleWithAsset.objects.filter(asset_model_id=asset_model.asset_model_id).values_list(
+                    "consumable_model_id", flat=True
+                )
+            )
+            models = ConsumableModel.objects.select_related("consumable_brand", "consumable_type").filter(
+                consumable_model_id__in=ids
+            )
+            return Response(ConsumableModelSerializer(models, many=True).data, status=status.HTTP_200_OK)
+
+        denial = self._require_superuser(request, "update asset model compatibility")
+        if denial:
+            return denial
+
+        consumable_model_id = request.data.get("consumable_model_id")
+        if not consumable_model_id:
+            return Response({"error": "consumable_model_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            consumable_model_id_int = int(consumable_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid consumable_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not ConsumableModel.objects.filter(consumable_model_id=consumable_model_id_int).exists():
+            return Response({"error": "Consumable model not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        self._insert_compatibility_row(
+            "public.consumable_is_compatible_with_asset",
+            ["consumable_model_id", "asset_model_id"],
+            [consumable_model_id_int, asset_model.asset_model_id],
+        )
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path=r"compatible-consumable-models/(?P<consumable_model_id>[^/.]+)",
+    )
+    def remove_compatible_consumable_model(self, request, pk=None, consumable_model_id=None):
+        denial = self._require_superuser(request, "update asset model compatibility")
+        if denial:
+            return denial
+
+        asset_model = self.get_object()
+        try:
+            consumable_model_id_int = int(consumable_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid consumable_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        self._delete_compatibility_row(
+            "public.consumable_is_compatible_with_asset",
+            ["consumable_model_id", "asset_model_id"],
+            [consumable_model_id_int, asset_model.asset_model_id],
+        )
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
     def get_queryset(self):
         queryset = AssetModel.objects.select_related("asset_brand", "asset_type").order_by("asset_model_id")
         asset_type_id = self.request.query_params.get("asset_type")
@@ -1634,13 +2954,220 @@ class AssetModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_model.asset_model_id + 1) if last_model else 1
         
         asset_model = AssetModel.objects.create(asset_model_id=next_id, **serializer.validated_data)
+        _sync_asset_model_attribute_values(asset_model)
         return Response(AssetModelSerializer(asset_model).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_object()
+        _sync_asset_model_attribute_values(instance)
+        return response
+
+
+class AssetModelDefaultStockItemViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing default stock items included with asset models"""
+    queryset = AssetModelDefaultStockItem.objects.all().order_by('asset_model__model_name')
+    serializer_class = AssetModelDefaultStockItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # item = AssetModelDefaultStockItem.objects.create(**serializer.validated_data)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AssetModelDefaultConsumableViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing default consumables included with asset models"""
+    queryset = AssetModelDefaultConsumable.objects.all().order_by('asset_model__model_name')
+    serializer_class = AssetModelDefaultConsumableSerializer
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # item = AssetModelDefaultConsumable.objects.create(**serializer.validated_data)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class AssetViewSet(viewsets.ModelViewSet):
     queryset = Asset.objects.all().order_by("asset_id")
     serializer_class = AssetSerializer
     permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # Debug: log incoming data
+        print(f"[AssetViewSet.create] request.data: {request.data}")
+        print(f"[AssetViewSet.create] validated_data keys: {list(serializer.validated_data.keys())}")
+        
+        # Extract included items before creating the asset
+        included_stock_items = serializer.validated_data.pop('included_stock_items', [])
+        included_consumables = serializer.validated_data.pop('included_consumables', [])
+        
+        print(f"[AssetViewSet.create] included_stock_items: {included_stock_items}")
+        print(f"[AssetViewSet.create] included_consumables: {included_consumables}")
+        
+        # Make a clean copy of validated_data without the extra fields
+        asset_data = {k: v for k, v in serializer.validated_data.items() 
+                      if k not in ('included_stock_items', 'included_consumables')}
+        
+        print(f"[AssetViewSet.create] asset_data keys: {list(asset_data.keys())}")
+        
+        # Get the last asset to determine next ID
+        last_asset = Asset.objects.order_by("-asset_id").first()
+        next_asset_id = (last_asset.asset_id + 1) if last_asset else 1
+        
+        # Create the asset with only model fields
+        asset = Asset.objects.create(asset_id=next_asset_id, **asset_data)
+        
+        # If asset has an attribution_order, create default composition
+        attribution_order_obj = serializer.validated_data.get('attribution_order')
+        attribution_order_id = getattr(attribution_order_obj, 'attribution_order_id', attribution_order_obj)
+        asset_model_obj = serializer.validated_data.get('asset_model')
+        asset_model_id = getattr(asset_model_obj, 'asset_model_id', asset_model_obj)
+        
+        if attribution_order_id and asset_model_id:
+            if included_stock_items or included_consumables:
+                self._create_included_items(asset, attribution_order_id, included_stock_items, included_consumables)
+            else:
+                self._create_default_composition(asset, asset_model_id, attribution_order_id)
+
+        _sync_asset_attribute_values(asset)
+        
+        return Response(self.get_serializer(asset).data, status=status.HTTP_201_CREATED)
+
+    def _create_included_items(self, asset, attribution_order_id, included_stock_items, included_consumables):
+        now = timezone.now()
+
+        for item in (included_stock_items or []):
+            stock_item_model_id = item.get('stock_item_model')
+            quantity = int(item.get('quantity') or 1)
+            instances = item.get('instances') if isinstance(item, dict) else None
+            if not stock_item_model_id or quantity < 1:
+                continue
+
+            for _ in range(quantity):
+                last_si = StockItem.objects.order_by("-stock_item_id").first()
+                next_si_id = (last_si.stock_item_id + 1) if last_si else 1
+
+                inst_payload = None
+                if isinstance(instances, list) and len(instances) > 0:
+                    inst_payload = instances.pop(0)
+
+                stock_item = StockItem.objects.create(
+                    stock_item_id=next_si_id,
+                    stock_item_model_id=stock_item_model_id,
+                    stock_item_name=(inst_payload or {}).get('stock_item_name') or f"Stock item model {stock_item_model_id} (included with {asset})",
+                    stock_item_inventory_number=(inst_payload or {}).get('stock_item_inventory_number') or None,
+                    stock_item_status='Included with Asset'
+                )
+
+                AssetIsComposedOfStockItemHistory.objects.create(
+                    stock_item=stock_item,
+                    asset=asset,
+                    maintenance_step=None,
+                    attribution_order_id=attribution_order_id,
+                    start_datetime=now,
+                    end_datetime=None
+                )
+
+        for item in (included_consumables or []):
+            consumable_model_id = item.get('consumable_model')
+            quantity = int(item.get('quantity') or 1)
+            instances = item.get('instances') if isinstance(item, dict) else None
+            if not consumable_model_id or quantity < 1:
+                continue
+
+            for _ in range(quantity):
+                last_cons = Consumable.objects.order_by("-consumable_id").first()
+                next_cons_id = (last_cons.consumable_id + 1) if last_cons else 1
+
+                inst_payload = None
+                if isinstance(instances, list) and len(instances) > 0:
+                    inst_payload = instances.pop(0)
+
+                consumable = Consumable.objects.create(
+                    consumable_id=next_cons_id,
+                    consumable_model_id=consumable_model_id,
+                    consumable_name=(inst_payload or {}).get('consumable_name') or f"Consumable model {consumable_model_id} (included with {asset})",
+                    consumable_serial_number=(inst_payload or {}).get('consumable_serial_number') or None,
+                    consumable_inventory_number=(inst_payload or {}).get('consumable_inventory_number') or None,
+                    consumable_status='Included with Asset'
+                )
+
+                AssetIsComposedOfConsumableHistory.objects.create(
+                    consumable=consumable,
+                    asset=asset,
+                    maintenance_step=None,
+                    attribution_order_id=attribution_order_id,
+                    start_datetime=now,
+                    end_datetime=None
+                )
+    
+    def _create_default_composition(self, asset, asset_model_id, attribution_order_id):
+        """Create stock items/consumables based on asset model defaults and record composition history"""
+        now = timezone.now()
+        
+        # Get default stock items for this asset model
+        default_stock_items = AssetModelDefaultStockItem.objects.filter(
+            asset_model_id=asset_model_id
+        ).select_related('stock_item_model')
+        
+        for default_item in default_stock_items:
+            # Create StockItem records for each quantity
+            for _ in range(default_item.quantity):
+                last_si = StockItem.objects.order_by("-stock_item_id").first()
+                next_si_id = (last_si.stock_item_id + 1) if last_si else 1
+                
+                stock_item = StockItem.objects.create(
+                    stock_item_id=next_si_id,
+                    stock_item_model_id=default_item.stock_item_model_id,
+                    stock_item_name=f"{default_item.stock_item_model} (included with {asset})",
+                    stock_item_status='Included with Asset'
+                )
+                
+                # Record composition history
+                AssetIsComposedOfStockItemHistory.objects.create(
+                    stock_item=stock_item,
+                    asset=asset,
+                    maintenance_step=None,
+                    attribution_order_id=attribution_order_id,
+                    start_datetime=now,
+                    end_datetime=None
+                )
+        
+        # Get default consumables for this asset model
+        default_consumables = AssetModelDefaultConsumable.objects.filter(
+            asset_model_id=asset_model_id
+        ).select_related('consumable_model')
+        
+        for default_item in default_consumables:
+            # Create Consumable records for each quantity
+            for _ in range(default_item.quantity):
+                last_cons = Consumable.objects.order_by("-consumable_id").first()
+                next_cons_id = (last_cons.consumable_id + 1) if last_cons else 1
+                
+                consumable = Consumable.objects.create(
+                    consumable_id=next_cons_id,
+                    consumable_model_id=default_item.consumable_model_id,
+                    consumable_name=f"{default_item.consumable_model} (included with {asset})",
+                    consumable_status='Included with Asset'
+                )
+                
+                # Record composition history
+                AssetIsComposedOfConsumableHistory.objects.create(
+                    consumable=consumable,
+                    asset=asset,
+                    maintenance_step=None,
+                    attribution_order_id=attribution_order_id,
+                    start_datetime=now,
+                    end_datetime=None
+                )
 
     @action(detail=True, methods=["get"], url_path="current-room")
     def current_room(self, request, pk=None):
@@ -1723,6 +3250,16 @@ class AssetViewSet(viewsets.ModelViewSet):
             movement_datetime=timezone.now(),
         )
 
+        _cascade_move_composed_items(
+            asset_id=asset.asset_id,
+            source_room_id=source_room.room_id,
+            destination_room_id=destination_room.room_id,
+            movement_reason=movement_reason,
+            movement_datetime=timezone.now(),
+            maintenance_step_id=None,
+            external_maintenance_step_id=None,
+        )
+
         return Response(
             {
                 "asset_movement_id": next_asset_move_id,
@@ -1734,26 +3271,20 @@ class AssetViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Asset.objects.select_related("asset_model").order_by("asset_id")
+        attribution_order_id = self.request.query_params.get("attribution_order")
         asset_model_id = self.request.query_params.get("asset_model")
+
+        if attribution_order_id is not None:
+            try:
+                queryset = queryset.filter(attribution_order_id=int(attribution_order_id))
+            except (ValueError, TypeError):
+                pass
         if asset_model_id is not None:
             try:
                 queryset = queryset.filter(asset_model_id=int(asset_model_id))
             except (ValueError, TypeError):
                 pass
         return queryset
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        last_asset = Asset.objects.all().order_by("-asset_id").first()
-        next_id = (last_asset.asset_id + 1) if last_asset else 1
-        
-        # Manually set the ID and validated data
-        instance = Asset(asset_id=next_id, **serializer.validated_data)
-        instance.save(force_insert=True)
-        _sync_asset_attribute_values(instance)
-        return Response(self.get_serializer(instance).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
@@ -1807,9 +3338,22 @@ class AssetTypeAttributeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             ).delete()
             if deleted == 0:
                 return Response({"error": "Mapping not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            for model in AssetModel.objects.filter(asset_type_id=asset_type_id):
+                _sync_asset_model_attribute_values(model)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return super().destroy(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        for model in AssetModel.objects.filter(asset_type_id=instance.asset_type_id):
+            _sync_asset_model_attribute_values(model)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        for model in AssetModel.objects.filter(asset_type_id=instance.asset_type_id):
+            _sync_asset_model_attribute_values(model)
 
 
 class AssetModelAttributeValueViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -1882,6 +3426,33 @@ class StockItemTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = StockItemType.objects.all().order_by("stock_item_type_id")
     serializer_class = StockItemTypeSerializer
 
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create stock item types")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        last_type = StockItemType.objects.all().order_by("-stock_item_type_id").first()
+        next_id = (last_type.stock_item_type_id + 1) if last_type else 1
+
+        try:
+            stock_item_type = StockItemType.objects.create(
+                stock_item_type_id=next_id,
+                **serializer.validated_data,
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Failed to create stock item type due to database constraints.",
+                    "details": "Check required fields and uniqueness constraints.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(StockItemTypeSerializer(stock_item_type).data, status=status.HTTP_201_CREATED)
+
 
 class StockItemBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = StockItemBrand.objects.all().order_by("stock_item_brand_id")
@@ -1892,6 +3463,81 @@ class StockItemModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = StockItemModel.objects.all().order_by("stock_item_model_id")
     serializer_class = StockItemModelSerializer
 
+    def _insert_compatibility_row(self, table_name, columns, values):
+        with connection.cursor() as cursor:
+            cols = ",".join(columns)
+            placeholders = ",".join(["%s"] * len(values))
+            cursor.execute(
+                f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders}) ON CONFLICT DO NOTHING",
+                values,
+            )
+
+    def _delete_compatibility_row(self, table_name, where_columns, where_values):
+        with connection.cursor() as cursor:
+            where_sql = " AND ".join([f"{c} = %s" for c in where_columns])
+            cursor.execute(
+                f"DELETE FROM {table_name} WHERE {where_sql}",
+                where_values,
+            )
+
+    @action(detail=True, methods=["get", "post"], url_path="compatible-asset-models")
+    def compatible_asset_models(self, request, pk=None):
+        stock_item_model = self.get_object()
+
+        if request.method.lower() == "get":
+            ids = list(
+                StockItemIsCompatibleWithAsset.objects.filter(stock_item_model_id=stock_item_model.stock_item_model_id).values_list(
+                    "asset_model_id", flat=True
+                )
+            )
+            models = AssetModel.objects.select_related("asset_brand", "asset_type").filter(asset_model_id__in=ids)
+            return Response(AssetModelSerializer(models, many=True).data, status=status.HTTP_200_OK)
+
+        denial = self._require_superuser(request, "update stock item model compatibility")
+        if denial:
+            return denial
+
+        asset_model_id = request.data.get("asset_model_id")
+        if not asset_model_id:
+            return Response({"error": "asset_model_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            asset_model_id_int = int(asset_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid asset_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not AssetModel.objects.filter(asset_model_id=asset_model_id_int).exists():
+            return Response({"error": "Asset model not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        self._insert_compatibility_row(
+            "public.stock_item_is_compatible_with_asset",
+            ["stock_item_model_id", "asset_model_id"],
+            [stock_item_model.stock_item_model_id, asset_model_id_int],
+        )
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path=r"compatible-asset-models/(?P<asset_model_id>[^/.]+)",
+    )
+    def remove_compatible_asset_model(self, request, pk=None, asset_model_id=None):
+        denial = self._require_superuser(request, "update stock item model compatibility")
+        if denial:
+            return denial
+
+        stock_item_model = self.get_object()
+        try:
+            asset_model_id_int = int(asset_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid asset_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        self._delete_compatibility_row(
+            "public.stock_item_is_compatible_with_asset",
+            ["stock_item_model_id", "asset_model_id"],
+            [stock_item_model.stock_item_model_id, asset_model_id_int],
+        )
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
     def get_queryset(self):
         queryset = StockItemModel.objects.select_related("stock_item_brand", "stock_item_type").order_by("stock_item_model_id")
         stock_item_type_id = self.request.query_params.get("stock_item_type")
@@ -1901,6 +3547,29 @@ class StockItemModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 pass
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create stock item models")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        last_model = StockItemModel.objects.all().order_by("-stock_item_model_id").first()
+        next_id = (last_model.stock_item_model_id + 1) if last_model else 1
+
+        stock_item_model = StockItemModel.objects.create(stock_item_model_id=next_id, **serializer.validated_data)
+        _sync_stock_item_model_attribute_values(stock_item_model)
+        return Response(StockItemModelSerializer(stock_item_model).data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        _sync_stock_item_model_attribute_values(instance)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        _sync_stock_item_model_attribute_values(instance)
 
 
 class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -2016,6 +3685,16 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             movement_datetime=timezone.now(),
         )
 
+        _cascade_move_stock_item_consumables(
+            stock_item_id=stock_item.stock_item_id,
+            source_room_id=source_room.room_id,
+            destination_room_id=destination_room.room_id,
+            movement_reason=movement_reason,
+            movement_datetime=timezone.now(),
+            maintenance_step_id=None,
+            external_maintenance_step_id=None,
+        )
+
         return Response(
             {
                 "stock_item_movement_id": next_move_id,
@@ -2073,9 +3752,22 @@ class StockItemTypeAttributeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             ).delete()
             if deleted == 0:
                 return Response({"error": "Mapping not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            for model in StockItemModel.objects.filter(stock_item_type_id=stock_item_type_id):
+                _sync_stock_item_model_attribute_values(model)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return super().destroy(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        for model in StockItemModel.objects.filter(stock_item_type_id=instance.stock_item_type_id):
+            _sync_stock_item_model_attribute_values(model)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        for model in StockItemModel.objects.filter(stock_item_type_id=instance.stock_item_type_id):
+            _sync_stock_item_model_attribute_values(model)
 
 
 class StockItemModelAttributeValueViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -2152,6 +3844,33 @@ class ConsumableTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = ConsumableType.objects.all().order_by("consumable_type_id")
     serializer_class = ConsumableTypeSerializer
 
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create consumable types")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        last_type = ConsumableType.objects.all().order_by("-consumable_type_id").first()
+        next_id = (last_type.consumable_type_id + 1) if last_type else 1
+
+        try:
+            consumable_type = ConsumableType.objects.create(
+                consumable_type_id=next_id,
+                **serializer.validated_data,
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Failed to create consumable type due to database constraints.",
+                    "details": "Check required fields and uniqueness constraints.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(ConsumableTypeSerializer(consumable_type).data, status=status.HTTP_201_CREATED)
+
 
 class ConsumableBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = ConsumableBrand.objects.all().order_by("consumable_brand_id")
@@ -2161,6 +3880,81 @@ class ConsumableBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 class ConsumableModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = ConsumableModel.objects.all().order_by("consumable_model_id")
     serializer_class = ConsumableModelSerializer
+
+    def _insert_compatibility_row(self, table_name, columns, values):
+        with connection.cursor() as cursor:
+            cols = ",".join(columns)
+            placeholders = ",".join(["%s"] * len(values))
+            cursor.execute(
+                f"INSERT INTO {table_name} ({cols}) VALUES ({placeholders}) ON CONFLICT DO NOTHING",
+                values,
+            )
+
+    def _delete_compatibility_row(self, table_name, where_columns, where_values):
+        with connection.cursor() as cursor:
+            where_sql = " AND ".join([f"{c} = %s" for c in where_columns])
+            cursor.execute(
+                f"DELETE FROM {table_name} WHERE {where_sql}",
+                where_values,
+            )
+
+    @action(detail=True, methods=["get", "post"], url_path="compatible-asset-models")
+    def compatible_asset_models(self, request, pk=None):
+        consumable_model = self.get_object()
+
+        if request.method.lower() == "get":
+            ids = list(
+                ConsumableIsCompatibleWithAsset.objects.filter(consumable_model_id=consumable_model.consumable_model_id).values_list(
+                    "asset_model_id", flat=True
+                )
+            )
+            models = AssetModel.objects.select_related("asset_brand", "asset_type").filter(asset_model_id__in=ids)
+            return Response(AssetModelSerializer(models, many=True).data, status=status.HTTP_200_OK)
+
+        denial = self._require_superuser(request, "update consumable model compatibility")
+        if denial:
+            return denial
+
+        asset_model_id = request.data.get("asset_model_id")
+        if not asset_model_id:
+            return Response({"error": "asset_model_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            asset_model_id_int = int(asset_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid asset_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not AssetModel.objects.filter(asset_model_id=asset_model_id_int).exists():
+            return Response({"error": "Asset model not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        self._insert_compatibility_row(
+            "public.consumable_is_compatible_with_asset",
+            ["consumable_model_id", "asset_model_id"],
+            [consumable_model.consumable_model_id, asset_model_id_int],
+        )
+        return Response({"ok": True}, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path=r"compatible-asset-models/(?P<asset_model_id>[^/.]+)",
+    )
+    def remove_compatible_asset_model(self, request, pk=None, asset_model_id=None):
+        denial = self._require_superuser(request, "update consumable model compatibility")
+        if denial:
+            return denial
+
+        consumable_model = self.get_object()
+        try:
+            asset_model_id_int = int(asset_model_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid asset_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        self._delete_compatibility_row(
+            "public.consumable_is_compatible_with_asset",
+            ["consumable_model_id", "asset_model_id"],
+            [consumable_model.consumable_model_id, asset_model_id_int],
+        )
+        return Response({"ok": True}, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         queryset = ConsumableModel.objects.select_related("consumable_brand", "consumable_type").order_by(
@@ -2173,6 +3967,29 @@ class ConsumableModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             except (ValueError, TypeError):
                 pass
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create consumable models")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        last_model = ConsumableModel.objects.all().order_by("-consumable_model_id").first()
+        next_id = (last_model.consumable_model_id + 1) if last_model else 1
+
+        consumable_model = ConsumableModel.objects.create(consumable_model_id=next_id, **serializer.validated_data)
+        _sync_consumable_model_attribute_values(consumable_model)
+        return Response(ConsumableModelSerializer(consumable_model).data, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        _sync_consumable_model_attribute_values(instance)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        _sync_consumable_model_attribute_values(instance)
 
 
 class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -2345,9 +4162,22 @@ class ConsumableTypeAttributeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet)
             ).delete()
             if deleted == 0:
                 return Response({"error": "Mapping not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            for model in ConsumableModel.objects.filter(consumable_type_id=consumable_type_id):
+                _sync_consumable_model_attribute_values(model)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
         return super().destroy(request, *args, **kwargs)
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        for model in ConsumableModel.objects.filter(consumable_type_id=instance.consumable_type_id):
+            _sync_consumable_model_attribute_values(model)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        for model in ConsumableModel.objects.filter(consumable_type_id=instance.consumable_type_id):
+            _sync_consumable_model_attribute_values(model)
 
 
 class ConsumableModelAttributeValueViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -2891,6 +4721,52 @@ class AttributionOrderViewSet(viewsets.ModelViewSet):
         next_id = (last_item.attribution_order_id + 1) if last_item else 1
         item = AttributionOrder.objects.create(attribution_order_id=next_id, **serializer.validated_data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"], url_path="included-items")
+    def included_items(self, request, pk=None):
+        """Get all stock items and consumables included with assets in this attribution order"""
+        order = self.get_object()
+        
+        # Get stock items included in this attribution order
+        stock_item_history = AssetIsComposedOfStockItemHistory.objects.filter(
+            attribution_order=order
+        ).select_related('stock_item', 'stock_item__stock_item_model', 'asset')
+        
+        stock_items = [
+            {
+                'id': h.stock_item.stock_item_id,
+                'name': h.stock_item.stock_item_name,
+                'model': str(h.stock_item.stock_item_model),
+                'status': h.stock_item.stock_item_status,
+                'asset_id': h.asset.asset_id,
+                'asset_name': h.asset.asset_name,
+                'start_datetime': h.start_datetime,
+            }
+            for h in stock_item_history
+        ]
+        
+        # Get consumables included in this attribution order
+        consumable_history = AssetIsComposedOfConsumableHistory.objects.filter(
+            attribution_order=order
+        ).select_related('consumable', 'consumable__consumable_model', 'asset')
+        
+        consumables = [
+            {
+                'id': h.consumable.consumable_id,
+                'name': h.consumable.consumable_name,
+                'model': str(h.consumable.consumable_model),
+                'status': h.consumable.consumable_status,
+                'asset_id': h.asset.asset_id,
+                'asset_name': h.asset.asset_name,
+                'start_datetime': h.start_datetime,
+            }
+            for h in consumable_history
+        ]
+        
+        return Response({
+            'stock_items': stock_items,
+            'consumables': consumables,
+        })
 
 
 class ReceiptReportViewSet(viewsets.ModelViewSet):

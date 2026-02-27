@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { myItemsService, problemReportService } from '../services/api';
 
 const MyItemsPage = () => {
     const { user, isSuperuser } = useAuth();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('assets');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -183,13 +185,22 @@ const MyItemsPage = () => {
                 key: 'actions',
                 label: 'Actions',
                 render: (r) => (
-                    <button
-                        className="btn btn-secondary"
-                        onClick={() => openReportModal({ item_type: 'asset', item_id: r.id, item_label: r.name })}
-                        style={{ padding: '0.25rem 0.5rem' }}
-                    >
-                        Report problem
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => navigate(`/dashboard/my-items/assets/${r.id}/maintenance-timeline`)}
+                            style={{ padding: '0.25rem 0.5rem' }}
+                        >
+                            View Maintenance
+                        </button>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => openReportModal({ item_type: 'asset', item_id: r.id, item_label: r.name })}
+                            style={{ padding: '0.25rem 0.5rem' }}
+                        >
+                            Report problem
+                        </button>
+                    </div>
                 ),
             },
         ],
@@ -282,13 +293,13 @@ const MyItemsPage = () => {
 
             <div className="card">
                 <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    <button className={`btn ${activeTab === 'assets' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('assets')}>
+                    <button className={`btn ${activeTab === 'assets' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('assets')} style={{ flex: 1, whiteSpace: 'nowrap' }}>
                         Assets
                     </button>
-                    <button className={`btn ${activeTab === 'stock_items' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('stock_items')}>
+                    <button className={`btn ${activeTab === 'stock_items' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('stock_items')} style={{ flex: 1, whiteSpace: 'nowrap' }}>
                         Stock Items
                     </button>
-                    <button className={`btn ${activeTab === 'consumables' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('consumables')}>
+                    <button className={`btn ${activeTab === 'consumables' ? 'btn-primary' : 'btn-secondary'}`} onClick={() => setActiveTab('consumables')} style={{ flex: 1, whiteSpace: 'nowrap' }}>
                         Consumables
                     </button>
                 </div>

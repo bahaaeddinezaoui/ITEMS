@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest, MaintenanceStepItemRequest
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -140,6 +140,28 @@ class ConsumableModelSerializer(serializers.ModelSerializer):
         read_only_fields = ['consumable_model_id']
 
 
+class AssetModelDefaultStockItemSerializer(serializers.ModelSerializer):
+    """Serializer for AssetModelDefaultStockItem model"""
+    stock_item_model_name = serializers.CharField(source='stock_item_model.model_name', read_only=True)
+    asset_model_name = serializers.CharField(source='asset_model.model_name', read_only=True)
+    
+    class Meta:
+        model = AssetModelDefaultStockItem
+        fields = ['id', 'asset_model', 'asset_model_name', 'stock_item_model', 'stock_item_model_name', 'quantity', 'notes']
+        read_only_fields = ['id']
+
+
+class AssetModelDefaultConsumableSerializer(serializers.ModelSerializer):
+    """Serializer for AssetModelDefaultConsumable model"""
+    consumable_model_name = serializers.CharField(source='consumable_model.model_name', read_only=True)
+    asset_model_name = serializers.CharField(source='asset_model.model_name', read_only=True)
+    
+    class Meta:
+        model = AssetModelDefaultConsumable
+        fields = ['id', 'asset_model', 'asset_model_name', 'consumable_model', 'consumable_model_name', 'quantity', 'notes']
+        read_only_fields = ['id']
+
+
 class RoomTypeSerializer(serializers.ModelSerializer):
     """Serializer for RoomType model"""
     class Meta:
@@ -166,10 +188,12 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
             'maintenance_step',
             'requested_by_person',
             'fulfilled_by_person',
+            'rejected_by_person',
             'request_type',
             'status',
             'created_at',
             'fulfilled_at',
+            'rejected_at',
             'requested_stock_item_model',
             'requested_consumable_model',
             'stock_item',
@@ -239,13 +263,28 @@ class OrganizationalStructureRelationSerializer(serializers.ModelSerializer):
 
 class AssetSerializer(serializers.ModelSerializer):
     """Serializer for Asset model"""
+
+    included_stock_items = serializers.ListField(
+        child=serializers.DictField(), required=False, write_only=True, default=list
+    )
+    included_consumables = serializers.ListField(
+        child=serializers.DictField(), required=False, write_only=True, default=list
+    )
+
     class Meta:
         model = Asset
         fields = [
             'asset_id', 'asset_model', 'attribution_order', 'asset_serial_number',
-            'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag'
+            'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag',
+            'included_stock_items', 'included_consumables'
         ]
         read_only_fields = ['asset_id']
+
+    def create(self, validated_data):
+        # Remove non-model fields before creating the Asset
+        included_stock_items = validated_data.pop('included_stock_items', [])
+        included_consumables = validated_data.pop('included_consumables', [])
+        return Asset.objects.create(**validated_data)
 
 
 class AssetAttributeDefinitionSerializer(serializers.ModelSerializer):
@@ -688,16 +727,48 @@ class MaintenanceStepSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         status_value = attrs.get("maintenance_step_status")
         if status_value is not None:
+            if status_value == "in progress":
+                status_value = "In Progress"
+                attrs["maintenance_step_status"] = status_value
+
             allowed = {
+                "pending",
                 "started",
                 "pending (waiting for stock item)",
                 "pending (waiting for consumable)",
                 "In Progress",
                 "done",
                 "failed (to be sent to a higher level)",
+                "cancelled",
             }
             if status_value not in allowed:
                 raise serializers.ValidationError({"maintenance_step_status": "Invalid status"})
+
+            current = getattr(self, "instance", None)
+            old_status = getattr(current, "maintenance_step_status", None) if current is not None else None
+            if old_status is not None:
+                if old_status == "in progress":
+                    old_status = "In Progress"
+
+                order = {
+                    "pending": 10,
+                    "started": 20,
+                    "pending (waiting for stock item)": 30,
+                    "pending (waiting for consumable)": 30,
+                    "In Progress": 40,
+                    "done": 50,
+                    "failed (to be sent to a higher level)": 50,
+                    "cancelled": 50,
+                }
+                old_rank = order.get(old_status)
+                new_rank = order.get(status_value)
+                if old_rank is not None and new_rank is not None and new_rank < old_rank:
+                    if old_status == "In Progress" and status_value in {
+                        "pending (waiting for stock item)",
+                        "pending (waiting for consumable)",
+                    }:
+                        return attrs
+                    raise serializers.ValidationError({"maintenance_step_status": "Status cannot be set to an earlier value"})
         return attrs
     
     class Meta:
@@ -717,6 +788,8 @@ class MaintenanceSerializer(serializers.ModelSerializer):
 
     performed_by_person_name = serializers.SerializerMethodField()
     asset_name = serializers.SerializerMethodField()
+    has_steps = serializers.SerializerMethodField()
+    has_external_maintenances = serializers.SerializerMethodField()
 
     class Meta:
         model = Maintenance
@@ -726,9 +799,13 @@ class MaintenanceSerializer(serializers.ModelSerializer):
             'description',
             'maintenance_status',
             'start_datetime',
+            'end_datetime',
+            'is_successful',
             'performed_by_person',
             'performed_by_person_name',
             'asset_name',
+            'has_steps',
+            'has_external_maintenances',
         ]
         read_only_fields = ['maintenance_id']
 
@@ -746,6 +823,13 @@ class MaintenanceSerializer(serializers.ModelSerializer):
         if not asset:
             return None
         return getattr(asset, 'asset_name', None) or None
+
+    def get_has_steps(self, obj):
+        return obj.steps.exists()
+
+    def get_has_external_maintenances(self, obj):
+        from .models import ExternalMaintenance
+        return ExternalMaintenance.objects.filter(maintenance=obj).exists()
 
 
 class WarehouseSerializer(serializers.ModelSerializer):
@@ -812,3 +896,87 @@ class CompanyAssetRequestSerializer(serializers.ModelSerializer):
             'digital_copy',
         ]
         read_only_fields = ['company_asset_request_id']
+
+
+class ExternalMaintenanceProviderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExternalMaintenanceProvider
+        fields = [
+            'external_maintenance_provider_id',
+            'external_maintenance_provider_name',
+            'external_maintenance_provider_location',
+        ]
+
+
+class ExternalMaintenanceTypicalStepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExternalMaintenanceTypicalStep
+        fields = [
+            'external_maintenance_typical_step_id',
+            'estimated_cost',
+            'actual_cost',
+            'maintenance_type',
+            'description',
+        ]
+
+
+class ExternalMaintenanceStepSerializer(serializers.ModelSerializer):
+    external_maintenance_provider_id = serializers.IntegerField(
+        source='external_maintenance.external_maintenance_provider_id',
+        read_only=True,
+    )
+    external_maintenance_provider_name = serializers.CharField(
+        source='external_maintenance.external_maintenance_provider.external_maintenance_provider_name',
+        read_only=True,
+    )
+    external_maintenance_typical_step_description = serializers.CharField(
+        source='external_maintenance_typical_step.description',
+        read_only=True,
+    )
+
+    class Meta:
+        model = ExternalMaintenanceStep
+        fields = [
+            'external_maintenance_step_id',
+            'external_maintenance_provider_id',
+            'external_maintenance_provider_name',
+            'external_maintenance',
+            'external_maintenance_typical_step',
+            'external_maintenance_typical_step_description',
+            'start_datetime',
+            'end_datetime',
+            'is_successful',
+        ]
+
+
+class ExternalMaintenanceDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExternalMaintenanceDocument
+        fields = [
+            'external_maintenance_document_id',
+            'external_maintenance',
+            'document_is_signed',
+            'item_is_received_by_maintenance_provider',
+            'maintenance_provider_final_decision',
+            'digital_copy',
+        ]
+
+
+class ExternalMaintenanceSerializer(serializers.ModelSerializer):
+    maintenance_asset_id = serializers.IntegerField(source='maintenance.asset_id', read_only=True)
+    maintenance_asset_name = serializers.CharField(source='maintenance.asset.asset_name', read_only=True)
+
+    class Meta:
+        model = ExternalMaintenance
+        fields = [
+            'external_maintenance_id',
+            'maintenance',
+            'maintenance_asset_id',
+            'maintenance_asset_name',
+            'external_maintenance_provider',
+            'external_maintenance_status',
+            'item_received_by_maintenance_provider_datetime',
+            'item_sent_to_company_datetime',
+            'item_sent_to_external_maintenance_datetime',
+            'item_received_by_company_datetime',
+        ]

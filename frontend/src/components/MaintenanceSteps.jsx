@@ -1,8 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
+import SearchableSelect from './SearchableSelect';
 import {
     maintenanceStepService,
     maintenanceTypicalStepService,
     personService,
+    externalMaintenanceService,
+    externalMaintenanceStepService,
+    externalMaintenanceProviderService,
+    externalMaintenanceTypicalStepService,
     stockItemTypeService,
     stockItemModelService,
     consumableTypeService,
@@ -12,9 +18,19 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) => {
+const MaintenanceSteps = ({
+    maintenanceId,
+    maintenancePerformedBy,
+    maintenanceEnded,
+    isChief,
+    onStepsChange,
+    canShowEndMaintenanceButton,
+    endMaintenanceDisabled,
+    onEndMaintenance,
+}) => {
     const { user } = useAuth();
     const [steps, setSteps] = useState([]);
+    const [externalSteps, setExternalSteps] = useState([]);
     const [typicalSteps, setTypicalSteps] = useState([]);
     const [technicians, setTechnicians] = useState([]);
     const [stockItemTypes, setStockItemTypes] = useState([]);
@@ -22,6 +38,18 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [addingStep, setAddingStep] = useState(false);
+
+    const [externalMaintenanceModalOpen, setExternalMaintenanceModalOpen] = useState(false);
+    const [externalMaintenanceSubmitting, setExternalMaintenanceSubmitting] = useState(false);
+    const [externalMaintenanceMessage, setExternalMaintenanceMessage] = useState(null);
+    const [externalMaintenanceCreated, setExternalMaintenanceCreated] = useState(false);
+
+    const [externalMaintenances, setExternalMaintenances] = useState([]);
+    const [externalStepModalOpen, setExternalStepModalOpen] = useState(false);
+    const [externalStepSubmitting, setExternalStepSubmitting] = useState(false);
+    const [externalStepMessage, setExternalStepMessage] = useState(null);
+    const [externalStepTypicalStepId, setExternalStepTypicalStepId] = useState('');
+    const [externalMaintenanceTypicalSteps, setExternalMaintenanceTypicalSteps] = useState([]);
 
     const [statusEditorStepId, setStatusEditorStepId] = useState(null);
     const [statusEditorValue, setStatusEditorValue] = useState('');
@@ -62,14 +90,56 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
 
     const stepStatusOptions = useMemo(() => (
         [
+            'pending',
             'started',
             'pending (waiting for stock item)',
             'pending (waiting for consumable)',
             'In Progress',
             'done',
             'failed (to be sent to a higher level)',
+            'cancelled',
         ]
     ), []);
+
+    const stepStatusOrder = useMemo(() => (
+        {
+            'pending': 10,
+            'started': 20,
+            'pending (waiting for stock item)': 30,
+            'pending (waiting for consumable)': 30,
+            'In Progress': 40,
+            'done': 50,
+            'failed (to be sent to a higher level)': 50,
+            'cancelled': 50,
+        }
+    ), []);
+
+    const getAllowedStepStatusOptions = (currentStatusRaw) => {
+        const currentStatus = currentStatusRaw === 'in progress' ? 'In Progress' : currentStatusRaw;
+        const currentRank = stepStatusOrder[currentStatus] ?? stepStatusOrder['pending'];
+
+        const allowed = stepStatusOptions.filter((s) => {
+            const rank = stepStatusOrder[s];
+            if (rank == null) return false;
+            return rank >= currentRank;
+        });
+
+        if (currentStatus === 'started') {
+            return allowed.filter((s) => s !== 'started');
+        }
+
+        if (currentStatus === 'In Progress') {
+            for (const s of ['pending (waiting for stock item)', 'pending (waiting for consumable)']) {
+                if (!allowed.includes(s)) allowed.unshift(s);
+            }
+        }
+
+        if (currentStatus && !allowed.includes(currentStatus) && stepStatusOrder[currentStatus] != null) {
+            return [currentStatus, ...allowed];
+        }
+
+        return allowed;
+    };
 
     const isMainTechnician = useMemo(() => {
         return user?.person?.person_id === maintenancePerformedBy;
@@ -77,27 +147,185 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
 
     const canManageSteps = isChief || isMainTechnician;
 
+    const hasOngoingExternalMaintenance = useMemo(() => {
+        if (!Array.isArray(externalMaintenances) || externalMaintenances.length === 0) return false;
+        return externalMaintenances.some((em) => {
+            const status = em?.external_maintenance_status;
+            if (status) {
+                return status !== 'DRAFT' && status !== 'RECEIVED_BY_COMPANY';
+            }
+
+            const sent = em?.item_sent_to_external_maintenance_datetime;
+            const receivedByCompany = em?.item_received_by_company_datetime;
+            return Boolean(sent) && !receivedByCompany;
+        });
+    }, [externalMaintenances]);
+
+    const hasOpenExternalMaintenance = useMemo(() => {
+        if (!Array.isArray(externalMaintenances) || externalMaintenances.length === 0) return false;
+        return externalMaintenances.some((em) => {
+            const status = em?.external_maintenance_status;
+            if (status) {
+                return status !== 'RECEIVED_BY_COMPANY';
+            }
+
+            const receivedByCompany = em?.item_received_by_company_datetime;
+            return !receivedByCompany;
+        });
+    }, [externalMaintenances]);
+
+    const openExternalMaintenanceModal = () => {
+        setExternalMaintenanceMessage(null);
+        setExternalMaintenanceCreated(false);
+        setExternalMaintenanceSubmitting(false);
+        setExternalMaintenanceModalOpen(true);
+    };
+
+    const openExternalStepModal = () => {
+        setExternalStepMessage(null);
+        setExternalStepTypicalStepId('');
+        setExternalStepSubmitting(false);
+        setExternalStepModalOpen(true);
+    };
+
+    const closeExternalMaintenanceModal = () => {
+        setExternalMaintenanceModalOpen(false);
+        setExternalMaintenanceSubmitting(false);
+        setExternalMaintenanceMessage(null);
+        setExternalMaintenanceCreated(false);
+    };
+
+    const submitCreateExternalStep = async (e) => {
+        e.preventDefault();
+
+        const em = Array.isArray(externalMaintenances) ? externalMaintenances[0] : null;
+        if (!em?.external_maintenance_id) {
+            setExternalStepMessage({ type: 'error', text: 'No external maintenance found for this maintenance.' });
+            return;
+        }
+        if (!externalStepTypicalStepId) {
+            setExternalStepMessage({ type: 'error', text: 'Please select typical step.' });
+            return;
+        }
+
+        try {
+            setExternalStepSubmitting(true);
+            setExternalStepMessage(null);
+            await externalMaintenanceService.createStep(
+                Number(em.external_maintenance_id),
+                Number(externalStepTypicalStepId),
+            );
+            setExternalStepMessage({ type: 'success', text: 'External maintenance step created successfully.' });
+            await loadData();
+        } catch (err) {
+            console.error(err);
+            setExternalStepMessage({ type: 'error', text: err.response?.data?.error || 'Failed to create external maintenance step.' });
+        } finally {
+            setExternalStepSubmitting(false);
+        }
+    };
+
     const closeAddStepModal = () => {
         setAddingStep(false);
         setNewStepTypicalId('');
         setNewStepPersonId('');
     };
 
+    const closeExternalStepModal = () => {
+        setExternalStepModalOpen(false);
+        setExternalStepSubmitting(false);
+        setExternalStepMessage(null);
+        setExternalStepTypicalStepId('');
+    };
+
     useEffect(() => {
+        closeExternalMaintenanceModal();
+        closeExternalStepModal();
+        closeAddStepModal();
         loadData();
     }, [maintenanceId]);
+
+    useEffect(() => {
+        if (!maintenanceEnded) return;
+        closeStatusEditor();
+        closeAddStepModal();
+        closeRequestEditor();
+        closeRemoveEditor();
+        closeAssetConditionEditor();
+    }, [maintenanceEnded]);
+
+    const submitExternalMaintenance = async (e) => {
+        e.preventDefault();
+        if (externalMaintenanceCreated) return;
+
+        try {
+            setExternalMaintenanceSubmitting(true);
+            setExternalMaintenanceMessage(null);
+            await externalMaintenanceService.createForMaintenance(Number(maintenanceId));
+            setExternalMaintenanceMessage({ type: 'success', text: 'External maintenance created successfully.' });
+            setExternalMaintenanceCreated(true);
+        } catch (err) {
+            console.error(err);
+            setExternalMaintenanceMessage({ type: 'error', text: err.response?.data?.error || 'Failed to create external maintenance.' });
+        } finally {
+            setExternalMaintenanceSubmitting(false);
+        }
+    };
+
+    const combinedSteps = useMemo(() => {
+        const internal = (Array.isArray(steps) ? steps : []).map((s) => ({
+            ...s,
+            __step_type: 'internal',
+            __key: `internal-${s.maintenance_step_id}`,
+        }));
+        const external = (Array.isArray(externalSteps) ? externalSteps : []).map((s) => ({
+            ...s,
+            __step_type: 'external',
+            __key: `external-${s.external_maintenance_step_id}`,
+        }));
+
+        return [...internal, ...external];
+    }, [steps, externalSteps]);
+
+    const getExternalStatusLabel = (step) => {
+        if (!step) return '-';
+        if (!step.end_datetime) return 'In Progress';
+        if (step.is_successful === true) return 'done';
+        if (step.is_successful === false) return 'failed';
+        return 'done';
+    };
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const [stepsData, typicalStepsData, techniciansData] = await Promise.all([
+            // Fetch both technicians and chiefs so chiefs can assign themselves
+            const [stepsData, externalStepsData, typicalStepsData, techniciansData, chiefsData, externalMaintenancesData, externalTypicalStepsData] = await Promise.all([
                 maintenanceStepService.getAll({ maintenance: maintenanceId }),
+                externalMaintenanceStepService.getAll({ maintenance: maintenanceId }),
                 maintenanceTypicalStepService.getAll(),
-                personService.getAll({ role: 'maintenance_technician' })
+                personService.getAll({ role: 'maintenance_technician' }),
+                isChief ? personService.getAll({ role: 'maintenance_chief' }) : Promise.resolve([]),
+                externalMaintenanceService.getAll({ maintenance: maintenanceId }),
+                externalMaintenanceTypicalStepService.getAll(),
             ]);
             setSteps(stepsData);
+            if (typeof onStepsChange === 'function') {
+                onStepsChange(Array.isArray(stepsData) ? stepsData : []);
+            }
+            setExternalSteps(Array.isArray(externalStepsData) ? externalStepsData : []);
             setTypicalSteps(typicalStepsData);
-            setTechnicians(techniciansData);
+            // Combine technicians and chiefs, removing duplicates
+            const combinedPeople = [...(Array.isArray(techniciansData) ? techniciansData : [])];
+            if (Array.isArray(chiefsData)) {
+                chiefsData.forEach(chief => {
+                    if (!combinedPeople.some(p => p.person_id === chief.person_id)) {
+                        combinedPeople.push(chief);
+                    }
+                });
+            }
+            setTechnicians(combinedPeople);
+            setExternalMaintenances(Array.isArray(externalMaintenancesData) ? externalMaintenancesData : []);
+            setExternalMaintenanceTypicalSteps(Array.isArray(externalTypicalStepsData) ? externalTypicalStepsData : []);
 
             try {
                 const conds = await physicalConditionService.getAll();
@@ -123,6 +351,10 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
 
     const handleAddStep = async (e) => {
         e.preventDefault();
+        if (hasOngoingExternalMaintenance) {
+            setError('Cannot create maintenance steps while the asset has an ongoing external maintenance.');
+            return;
+        }
         if (!newStepTypicalId) return;
 
         try {
@@ -141,12 +373,17 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
             loadData();
         } catch (err) {
             console.error(err);
-            setError('Failed to add step');
+            const apiMsg = err?.response?.data?.error;
+            setError(apiMsg || 'Failed to add step');
         }
     };
 
     const handleUpdateStatus = async (step, statusValue) => {
         try {
+            if (maintenanceEnded) {
+                setError('Maintenance is ended');
+                return;
+            }
             await maintenanceStepService.patch(step.maintenance_step_id, {
                 maintenance_step_status: statusValue,
             });
@@ -158,8 +395,16 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     };
 
     const openStatusEditor = (step) => {
+        if (maintenanceEnded) {
+            setError('Maintenance is ended');
+            return;
+        }
         setStatusEditorStepId(step.maintenance_step_id);
-        setStatusEditorValue(step.maintenance_step_status || '');
+        if (step.maintenance_step_status === 'started') {
+            setStatusEditorValue('');
+        } else {
+            setStatusEditorValue(step.maintenance_step_status || '');
+        }
     };
 
     const closeStatusEditor = () => {
@@ -203,6 +448,10 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     };
 
     const openAssetConditionEditor = (step) => {
+        if (maintenanceEnded) {
+            setError('Maintenance is ended');
+            return;
+        }
         setAssetConditionEditorOpen(true);
         setAssetConditionEditorStep(step);
         setSelectedConditionId('');
@@ -239,6 +488,10 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
     };
 
     const openRemoveEditor = async (step) => {
+        if (maintenanceEnded) {
+            setError('Maintenance is ended');
+            return;
+        }
         setRemoveEditorOpen(true);
         setRemoveEditorStep(step);
         setRemoveComponents({ stock_items: [], consumables: [] });
@@ -472,17 +725,211 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                         style={{ display: 'flex', alignItems: 'center', width: '100%' }}
                     >
                         <h3 className="text-lg font-bold mb-0">Maintenance Steps</h3>
-                        {canManageSteps && (
-                            <button
-                                className="btn btn-primary btn-sm"
-                                onClick={() => setAddingStep(true)}
-                                disabled={loading}
-                                style={{ width: 'auto', whiteSpace: 'nowrap', marginLeft: 'auto' }}
-                            >
-                                Create new maintenance step
-                            </button>
-                        )}
+                        <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            {!!canShowEndMaintenanceButton && (
+                                <button
+                                    className="btn btn-secondary btn-sm"
+                                    onClick={() => {
+                                        if (typeof onEndMaintenance === 'function') {
+                                            onEndMaintenance();
+                                        }
+                                    }}
+                                    disabled={!!endMaintenanceDisabled}
+                                    style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
+                                    title="End maintenance"
+                                    aria-label="End maintenance"
+                                >
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M12 2v10" />
+                                        <path d="M18.4 6.6a9 9 0 1 1-12.8 0" />
+                                    </svg>
+                                </button>
+                            )}
+
+                            {canManageSteps && (
+                                <>
+                                    <button
+                                        className="btn btn-secondary btn-sm"
+                                        onClick={() => {
+                                            if (hasOpenExternalMaintenance) {
+                                                setError('Cannot create a new external maintenance while there is an open one.');
+                                                return;
+                                            }
+                                            openExternalMaintenanceModal();
+                                        }}
+                                        disabled={loading || hasOpenExternalMaintenance}
+                                        style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
+                                        title="Create external maintenance"
+                                        aria-label="Create external maintenance"
+                                    >
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                                            <path d="M12 8v8" />
+                                            <path d="M8 12h8" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        className="btn btn-secondary btn-sm"
+                                        onClick={() => openExternalStepModal()}
+                                        disabled={loading}
+                                        style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
+                                        title="Create new external maintenance step"
+                                        aria-label="Create new external maintenance step"
+                                    >
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                            <path d="M12 8v8" />
+                                            <path d="M8 12h8" />
+                                        </svg>
+                                    </button>
+                                    <button
+                                        className="btn btn-primary btn-sm"
+                                        onClick={() => {
+                                            if (maintenanceEnded) {
+                                                setError('Maintenance is ended');
+                                                return;
+                                            }
+                                            if (hasOngoingExternalMaintenance) {
+                                                setError('Cannot create maintenance steps while the asset has an ongoing external maintenance.');
+                                                return;
+                                            }
+                                            setAddingStep(true);
+                                        }}
+                                        disabled={loading || hasOngoingExternalMaintenance || maintenanceEnded}
+                                        style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
+                                        title="Create new maintenance step"
+                                        aria-label="Create new maintenance step"
+                                    >
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                            <path d="M14 2v6h6" />
+                                            <path d="M12 11v6" />
+                                            <path d="M9 14h6" />
+                                        </svg>
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
+
+                    {externalMaintenanceModalOpen && canManageSteps && (
+                        createPortal(
+                            <div className="modal-overlay" onClick={() => closeExternalMaintenanceModal()}>
+                                <div
+                                    className="modal"
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{
+                                        maxHeight: '80vh',
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                >
+                                    <div className="modal-header">
+                                        <h3 className="modal-title">Create external maintenance</h3>
+                                        <button className="modal-close" onClick={() => closeExternalMaintenanceModal()}>
+                                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <line x1="18" y1="6" x2="6" y2="18" />
+                                                <line x1="6" y1="6" x2="18" y2="18" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <form onSubmit={submitExternalMaintenance} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                                        <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                            {externalMaintenanceMessage && (
+                                                <div className={`alert ${externalMaintenanceMessage.type === 'error' ? 'alert-error' : 'alert-success'} mb-4`}>
+                                                    {externalMaintenanceMessage.text}
+                                                </div>
+                                            )}
+                                            <div className="alert alert-info mb-0">
+                                                This will create the external maintenance record. The asset responsible will later select the external maintenance provider and send the asset.
+                                            </div>
+                                        </div>
+
+                                        <div className="modal-footer">
+                                            <button type="button" className="btn btn-secondary" onClick={() => closeExternalMaintenanceModal()}>
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className="btn btn-primary"
+                                                disabled={externalMaintenanceSubmitting || externalMaintenanceCreated}
+                                            >
+                                                Create
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>,
+                            document.body,
+                        )
+                    )}
+
+                    {externalStepModalOpen && canManageSteps && (
+                        createPortal(
+                            <div className="modal-overlay" onClick={() => closeExternalStepModal()}>
+                                <div
+                                    className="modal"
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{
+                                        maxHeight: '80vh',
+                                        overflow: 'hidden',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                    }}
+                                >
+                                    <div className="modal-header">
+                                        <h3 className="modal-title">Create new external maintenance step</h3>
+                                        <button className="modal-close" onClick={() => closeExternalStepModal()}>
+                                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <line x1="18" y1="6" x2="6" y2="18" />
+                                                <line x1="6" y1="6" x2="18" y2="18" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <form onSubmit={submitCreateExternalStep} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                                        <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                            {externalStepMessage && (
+                                                <div className={`alert ${externalStepMessage.type === 'error' ? 'alert-error' : 'alert-success'} mb-4`}>
+                                                    {externalStepMessage.text}
+                                                </div>
+                                            )}
+
+                                            <div className="form-group">
+                                                <label className="form-label">Typical step</label>
+                                                <select
+                                                    className="form-input"
+                                                    value={externalStepTypicalStepId}
+                                                    onChange={(e) => setExternalStepTypicalStepId(e.target.value)}
+                                                    disabled={externalStepSubmitting}
+                                                    required
+                                                >
+                                                    <option value="">Select typical step...</option>
+                                                    {externalMaintenanceTypicalSteps.map((ts) => (
+                                                        <option key={ts.external_maintenance_typical_step_id} value={ts.external_maintenance_typical_step_id}>
+                                                            {ts.description}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="modal-footer">
+                                            <button type="button" className="btn btn-secondary" onClick={() => closeExternalStepModal()}>
+                                                Cancel
+                                            </button>
+                                            <button type="submit" className="btn btn-primary" disabled={externalStepSubmitting}>
+                                                {externalStepSubmitting ? 'Creating...' : 'Create'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>,
+                            document.body,
+                        )
+                    )}
 
                     {/* Error Message */}
                     {error && (
@@ -492,81 +939,82 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                     )}
 
             {addingStep && canManageSteps && (
-                <div className="modal-overlay" onClick={() => closeAddStepModal()}>
-                    <div
-                        className="modal"
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            maxHeight: '80vh',
-                            overflow: 'hidden',
-                            display: 'flex',
-                            flexDirection: 'column',
-                        }}
-                    >
-                        <div className="modal-header">
-                            <h3 className="modal-title">Create new maintenance step</h3>
-                            <button className="modal-close" onClick={() => closeAddStepModal()}>
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <line x1="18" y1="6" x2="6" y2="18" />
-                                    <line x1="6" y1="6" x2="18" y2="18" />
-                                </svg>
-                            </button>
+                createPortal(
+                    <div className="modal-overlay" onClick={() => closeAddStepModal()}>
+                        <div
+                            className="modal"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                maxHeight: '80vh',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <div className="modal-header">
+                                <h3 className="modal-title">Create new maintenance step</h3>
+                                <button className="modal-close" onClick={() => closeAddStepModal()}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleAddStep} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                                <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                    <div className="form-group">
+                                        <label className="form-label">Typical Step</label>
+                                        <SearchableSelect
+                                            value={newStepTypicalId}
+                                            onChange={(e) => setNewStepTypicalId(e.target.value)}
+                                            options={typicalSteps.map((ts) => ({
+                                                value: ts.maintenance_typical_step_id,
+                                                label: ts.description,
+                                            }))}
+                                            placeholder="Select Task..."
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label">Assign To</label>
+                                        <select
+                                            className="form-input"
+                                            value={newStepPersonId}
+                                            onChange={(e) => setNewStepPersonId(e.target.value)}
+                                            required
+                                        >
+                                            <option value="">Select Person...</option>
+                                            {technicians.map((tech) => (
+                                                <option key={tech.person_id} value={tech.person_id}>
+                                                    {tech.first_name} {tech.last_name}
+                                                    {tech.role_code === 'maintenance_chief' ? ' (Chief)' : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={() => closeAddStepModal()}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                                        Create
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-
-                        <form onSubmit={handleAddStep} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
-                                <div className="form-group">
-                                    <label className="form-label">Typical Step</label>
-                                    <select
-                                        className="form-input"
-                                        value={newStepTypicalId}
-                                        onChange={(e) => setNewStepTypicalId(e.target.value)}
-                                        required
-                                    >
-                                        <option value="">Select Task...</option>
-                                        {typicalSteps.map((ts) => (
-                                            <option key={ts.maintenance_typical_step_id} value={ts.maintenance_typical_step_id}>
-                                                {ts.description}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="form-label">Assign To</label>
-                                    <select
-                                        className="form-input"
-                                        value={newStepPersonId}
-                                        onChange={(e) => setNewStepPersonId(e.target.value)}
-                                        required
-                                    >
-                                        <option value="">Select Technician...</option>
-                                        {technicians.map((tech) => (
-                                            <option key={tech.person_id} value={tech.person_id}>
-                                                {tech.first_name} {tech.last_name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={() => closeAddStepModal()}>
-                                    Cancel
-                                </button>
-                                <button type="submit" className="btn btn-primary" disabled={loading}>
-                                    Create
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                    </div>,
+                    document.body,
+                )
             )}
 
                     {/* Steps List */}
-                    {loading && steps.length === 0 ? (
+                    {loading && combinedSteps.length === 0 ? (
                         <div className="text-center py-4" style={{ color: 'var(--color-text-secondary)', marginTop: 12 }}>Loading steps...</div>
-                    ) : steps.length === 0 ? (
+                    ) : combinedSteps.length === 0 ? (
                         <div className="empty-state p-4 text-center rounded border" style={{ color: 'var(--color-text-secondary)', backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)', marginTop: 12 }}>
                             <p>No steps added yet.</p>
                         </div>
@@ -576,39 +1024,60 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                 <thead style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                                     <tr>
                                         <th className="px-4 py-2">Step</th>
+                                        <th className="px-4 py-2">Level</th>
                                         <th className="px-4 py-2">Assigned To</th>
                                         <th className="px-4 py-2">Status</th>
                                         <th className="px-4 py-2 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {steps.map(step => (
-                                        <tr key={step.maintenance_step_id} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
+                                    {combinedSteps.map(step => (
+                                        <tr key={step.__key} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
                                             <td className="px-4 py-2">
-                                                {step.maintenance_typical_step?.description || `Step ${step.maintenance_step_id}`}
+                                                {step.__step_type === 'internal'
+                                                    ? (step.maintenance_typical_step?.description || `Step ${step.maintenance_step_id}`)
+                                                    : (step.external_maintenance_typical_step_description || `External step ${step.external_maintenance_step_id}`)
+                                                }
                                             </td>
                                             <td className="px-4 py-2">
-                                                <span className="badge badge-info status-badge">
-                                                    {step.person?.first_name} {step.person?.last_name}
+                                                <span className="badge badge-info">
+                                                    {step.__step_type === 'internal' ? 'Internal' : 'External'}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-2">
-                                                {step.maintenance_step_status ? (
-                                                    <span className="badge badge-info">{step.maintenance_step_status}</span>
+                                                <span className="badge badge-info status-badge">
+                                                    {step.__step_type === 'internal'
+                                                        ? `${step.person?.first_name || ''} ${step.person?.last_name || ''}`.trim()
+                                                        : (step.external_maintenance_provider_name || 'External provider')
+                                                    }
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-2">
+                                                {step.__step_type === 'internal' ? (
+                                                    step.maintenance_step_status ? (
+                                                        <span className="badge badge-info">{step.maintenance_step_status}</span>
+                                                    ) : (
+                                                        <span className="badge badge-warning">-</span>
+                                                    )
                                                 ) : (
-                                                    <span className="badge badge-warning">-</span>
+                                                    <span className="badge badge-info">{getExternalStatusLabel(step)}</span>
                                                 )}
                                             </td>
                                             <td className="px-4 py-2 text-right">
-                                                {(user?.person?.person_id === step.person?.person_id || isChief) && (
+                                                {step.__step_type === 'internal' && !maintenanceEnded && (user?.person?.person_id === step.person?.person_id || isChief) && (
                                                     <div className="d-flex gap-2 justify-content-end" style={{ flexWrap: 'wrap', position: 'relative' }}>
                                                         {step.maintenance_step_status !== 'done' && (
                                                             <button
                                                                 className="btn btn-xs btn-secondary"
                                                                 style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
                                                                 onClick={() => openStatusEditor(step)}
+                                                                title="Update status"
+                                                                aria-label="Update status"
                                                             >
-                                                                Update status
+                                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <path d="M12 20h9" />
+                                                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                                                                </svg>
                                                             </button>
                                                         )}
 
@@ -617,8 +1086,14 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                                                 className="btn btn-xs btn-secondary"
                                                                 style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
                                                                 onClick={() => openAssetConditionEditor(step)}
+                                                                title="Update asset condition"
+                                                                aria-label="Update asset condition"
                                                             >
-                                                                Update asset condition
+                                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <path d="M9 18h6" />
+                                                                    <path d="M10 22h4" />
+                                                                    <path d="M12 2a7 7 0 0 0-4 12.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26A7 7 0 0 0 12 2z" />
+                                                                </svg>
                                                             </button>
                                                         )}
 
@@ -628,58 +1103,19 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                                                         style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
                                                         onClick={() => openRemoveEditor(step)}
                                                         disabled={removeLoading || removeSubmitting}
+                                                        title="Remove component"
+                                                        aria-label="Remove component"
                                                     >
-                                                        Remove
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <polyline points="3 6 5 6 21 6" />
+                                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                            <path d="M10 11v6" />
+                                                            <path d="M14 11v6" />
+                                                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                        </svg>
                                                     </button>
                                                 )}
 
-                                                {step.maintenance_step_status !== 'done' && statusEditorStepId === step.maintenance_step_id && (
-                                                    <div
-                                                        className="card"
-                                                        style={{
-                                                            position: 'absolute',
-                                                            right: 0,
-                                                            top: 'calc(100% + 6px)',
-                                                            zIndex: 20,
-                                                            width: 280,
-                                                            padding: 'var(--space-3)',
-                                                            border: '1px solid var(--color-border)',
-                                                            background: 'var(--color-bg-tertiary)',
-                                                        }}
-                                                    >
-                                                        <div style={{ fontWeight: 600, marginBottom: 8 }}>Update status</div>
-                                                        <select
-                                                            className="form-input"
-                                                            value={statusEditorValue}
-                                                            onChange={(e) => setStatusEditorValue(e.target.value)}
-                                                        >
-                                                            <option value="">Select status...</option>
-                                                            {stepStatusOptions.map((s) => (
-                                                                <option key={s} value={s}>
-                                                                    {s}
-                                                                </option>
-                                                            ))}
-                                                        </select>
-                                                        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', marginTop: 'var(--space-3)' }}>
-                                                            <button
-                                                                className="btn btn-xs btn-secondary"
-                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                onClick={closeStatusEditor}
-                                                                disabled={statusSaving}
-                                                            >
-                                                                Cancel
-                                                            </button>
-                                                            <button
-                                                                className="btn btn-xs btn-primary"
-                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                onClick={() => saveStatusEditor(step)}
-                                                                disabled={statusSaving || !statusEditorValue}
-                                                            >
-                                                                {statusSaving ? 'Saving...' : 'Save'}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </div>
                                         )}
                                     </td>
@@ -800,6 +1236,72 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
                 </div>
             )}
 
+            {statusEditorStepId && (
+                createPortal(
+                    <div className="modal-overlay" onClick={() => closeStatusEditor()}>
+                        <div
+                            className="modal"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                maxHeight: '80vh',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <div className="modal-header">
+                                <h3 className="modal-title">Update status</h3>
+                                <button className="modal-close" onClick={() => closeStatusEditor()} disabled={statusSaving}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">Status</label>
+                                    <select
+                                        className="form-input"
+                                        value={statusEditorValue}
+                                        onChange={(e) => setStatusEditorValue(e.target.value)}
+                                        disabled={statusSaving}
+                                    >
+                                        <option value="">Select status...</option>
+                                        {getAllowedStepStatusOptions(
+                                            steps.find((s) => s.maintenance_step_id === statusEditorStepId)?.maintenance_step_status,
+                                        ).map((s) => (
+                                            <option key={s} value={s}>
+                                                {s}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => closeStatusEditor()} disabled={statusSaving}>
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={() => {
+                                        const step = steps.find((s) => s.maintenance_step_id === statusEditorStepId);
+                                        if (step) saveStatusEditor(step);
+                                    }}
+                                    disabled={statusSaving || !statusEditorValue}
+                                >
+                                    {statusSaving ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body,
+                )
+            )}
+
             {removeEditorOpen && removeEditorStep && (
                 <div
                     className="card"
@@ -915,103 +1417,109 @@ const MaintenanceSteps = ({ maintenanceId, maintenancePerformedBy, isChief }) =>
             )}
 
             {assetConditionEditorOpen && assetConditionEditorStep && (
-                <div
-                    className="card"
-                    style={{
-                        position: 'fixed',
-                        right: 20,
-                        bottom: 20,
-                        zIndex: 50,
-                        width: 420,
-                        padding: 'var(--space-4)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg-tertiary)',
-                    }}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ fontWeight: 700 }}>Update asset condition</div>
-                        <button
-                            className="btn btn-xs btn-secondary"
-                            style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                            onClick={closeAssetConditionEditor}
-                            disabled={assetConditionSubmitting}
+                createPortal(
+                    <div className="modal-overlay" onClick={() => closeAssetConditionEditor()}>
+                        <div
+                            className="modal"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                maxHeight: '80vh',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
                         >
-                            Close
-                        </button>
-                    </div>
+                            <div className="modal-header">
+                                <h3 className="modal-title">Update asset condition</h3>
+                                <button className="modal-close" onClick={() => closeAssetConditionEditor()} disabled={assetConditionSubmitting}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
 
-                    <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
-                        Step: <b>{assetConditionEditorStep.maintenance_step_id}</b>
-                    </div>
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                                    Step: <b>{assetConditionEditorStep.maintenance_step_id}</b>
+                                </div>
 
-                    <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">Condition</label>
-                        <select
-                            className="form-input"
-                            value={selectedConditionId}
-                            onChange={(e) => setSelectedConditionId(e.target.value)}
-                            disabled={assetConditionSubmitting}
-                        >
-                            <option value="">Select condition...</option>
-                            {physicalConditions.map((c) => (
-                                <option key={c.condition_id} value={c.condition_id}>
-                                    {c.condition_label || c.condition_code || c.condition_id}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">Condition</label>
+                                    <select
+                                        className="form-input"
+                                        value={selectedConditionId}
+                                        onChange={(e) => setSelectedConditionId(e.target.value)}
+                                        disabled={assetConditionSubmitting}
+                                    >
+                                        <option value="">Select condition...</option>
+                                        {physicalConditions.map((c) => (
+                                            <option key={c.condition_id} value={c.condition_id}>
+                                                {c.condition_label || c.condition_code || c.condition_id}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                    <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">Notes</label>
-                        <textarea
-                            className="form-input"
-                            rows={3}
-                            value={assetConditionNotes}
-                            onChange={(e) => setAssetConditionNotes(e.target.value)}
-                            disabled={assetConditionSubmitting}
-                        />
-                    </div>
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">Notes</label>
+                                    <textarea
+                                        className="form-input"
+                                        rows={3}
+                                        value={assetConditionNotes}
+                                        onChange={(e) => setAssetConditionNotes(e.target.value)}
+                                        disabled={assetConditionSubmitting}
+                                    />
+                                </div>
 
-                    <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">Cosmetic issues</label>
-                        <input
-                            className="form-input"
-                            value={assetConditionCosmeticIssues}
-                            onChange={(e) => setAssetConditionCosmeticIssues(e.target.value)}
-                            disabled={assetConditionSubmitting}
-                        />
-                    </div>
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">Cosmetic issues</label>
+                                    <input
+                                        className="form-input"
+                                        value={assetConditionCosmeticIssues}
+                                        onChange={(e) => setAssetConditionCosmeticIssues(e.target.value)}
+                                        disabled={assetConditionSubmitting}
+                                    />
+                                </div>
 
-                    <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">Functional issues</label>
-                        <input
-                            className="form-input"
-                            value={assetConditionFunctionalIssues}
-                            onChange={(e) => setAssetConditionFunctionalIssues(e.target.value)}
-                            disabled={assetConditionSubmitting}
-                        />
-                    </div>
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">Functional issues</label>
+                                    <input
+                                        className="form-input"
+                                        value={assetConditionFunctionalIssues}
+                                        onChange={(e) => setAssetConditionFunctionalIssues(e.target.value)}
+                                        disabled={assetConditionSubmitting}
+                                    />
+                                </div>
 
-                    <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">Recommendation</label>
-                        <input
-                            className="form-input"
-                            value={assetConditionRecommendation}
-                            onChange={(e) => setAssetConditionRecommendation(e.target.value)}
-                            disabled={assetConditionSubmitting}
-                        />
-                    </div>
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">Recommendation</label>
+                                    <input
+                                        className="form-input"
+                                        value={assetConditionRecommendation}
+                                        onChange={(e) => setAssetConditionRecommendation(e.target.value)}
+                                        disabled={assetConditionSubmitting}
+                                    />
+                                </div>
+                            </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 10 }}>
-                        <button
-                            className="btn btn-primary btn-sm"
-                            onClick={submitAssetConditionEditor}
-                            disabled={assetConditionSubmitting || !selectedConditionId}
-                        >
-                            {assetConditionSubmitting ? 'Saving...' : 'Save'}
-                        </button>
-                    </div>
-                </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={closeAssetConditionEditor} disabled={assetConditionSubmitting}>
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={submitAssetConditionEditor}
+                                    disabled={assetConditionSubmitting || !selectedConditionId}
+                                >
+                                    {assetConditionSubmitting ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body,
+                )
             )}
 
         </div>

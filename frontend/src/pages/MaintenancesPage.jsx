@@ -25,6 +25,9 @@ const MaintenancesPage = () => {
     const [selectedMaintenanceRoom, setSelectedMaintenanceRoom] = useState('');
     const [loadingAssetRoom, setLoadingAssetRoom] = useState(false);
 
+    const [sortKey, setSortKey] = useState('start_datetime');
+    const [sortDirection, setSortDirection] = useState('desc');
+
 
 
     const isChief = useMemo(() => {
@@ -170,6 +173,23 @@ const MaintenancesPage = () => {
         }
     };
 
+    const handleCancelMaintenance = async (maintenanceId) => {
+        if (!window.confirm('Are you sure you want to cancel this maintenance? This will delete it from the database.')) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await maintenanceService.delete(maintenanceId);
+            loadMaintenances();
+        } catch (err) {
+            const msg = err?.response?.data?.error || err?.message || 'Failed to cancel maintenance';
+            setError(typeof msg === 'string' ? msg : 'Failed to cancel maintenance');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const formatDate = (dateString) => {
         if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -179,6 +199,84 @@ const MaintenancesPage = () => {
             hour: '2-digit',
             minute: '2-digit'
         });
+    };
+
+    const getAssetLabel = (maintenance) => {
+        return (
+            maintenance?.asset_name ||
+            maintenance?.stock_item_name ||
+            maintenance?.consumable_name ||
+            (maintenance?.asset
+                ? `Asset ${maintenance.asset}`
+                : maintenance?.stock_item
+                    ? `Stock Item ${maintenance.stock_item}`
+                    : maintenance?.consumable
+                        ? `Consumable ${maintenance.consumable}`
+                        : 'Unknown')
+        );
+    };
+
+    const getSortValue = (maintenance, key) => {
+        switch (key) {
+            case 'maintenance_id':
+                return Number(maintenance?.maintenance_id ?? 0);
+            case 'asset':
+                return (getAssetLabel(maintenance) || '').toString().toLowerCase();
+            case 'description':
+                return (maintenance?.description || '').toString().toLowerCase();
+            case 'maintenance_status':
+                return (maintenance?.maintenance_status || '').toString().toLowerCase();
+            case 'start_datetime': {
+                const dt = maintenance?.start_datetime ? new Date(maintenance.start_datetime).getTime() : null;
+                return Number.isFinite(dt) ? dt : null;
+            }
+            case 'end_datetime': {
+                const dt = maintenance?.end_datetime ? new Date(maintenance.end_datetime).getTime() : null;
+                return Number.isFinite(dt) ? dt : null;
+            }
+            case 'performed_by_person_name':
+                return (maintenance?.performed_by_person_name || '').toString().toLowerCase();
+            default:
+                return '';
+        }
+    };
+
+    const sortedMaintenances = useMemo(() => {
+        const list = Array.isArray(maintenances) ? maintenances : [];
+        const dir = sortDirection === 'asc' ? 1 : -1;
+
+        return [...list].sort((a, b) => {
+            const av = getSortValue(a, sortKey);
+            const bv = getSortValue(b, sortKey);
+
+            if (av == null && bv == null) return 0;
+            if (av == null) return 1;
+            if (bv == null) return -1;
+
+            if (typeof av === 'number' && typeof bv === 'number') {
+                if (av === bv) return 0;
+                return av > bv ? dir : -dir;
+            }
+
+            const as = String(av);
+            const bs = String(bv);
+            const cmp = as.localeCompare(bs);
+            return cmp === 0 ? 0 : cmp * dir;
+        });
+    }, [maintenances, sortDirection, sortKey]);
+
+    const toggleSort = (key) => {
+        if (sortKey === key) {
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            return;
+        }
+        setSortKey(key);
+        setSortDirection('asc');
+    };
+
+    const getSortIndicator = (key) => {
+        if (sortKey !== key) return '';
+        return sortDirection === 'asc' ? ' ▲' : ' ▼';
     };
 
     return (
@@ -233,27 +331,42 @@ const MaintenancesPage = () => {
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Asset</th>
-                                    <th>Description</th>
-                                    {isChief && <th>Status</th>}
-                                    <th>Start Date</th>
-                                    <th>Technician</th>
+                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('maintenance_id')}>
+                                        ID{getSortIndicator('maintenance_id')}
+                                    </th>
+                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('asset')}>
+                                        Asset{getSortIndicator('asset')}
+                                    </th>
+                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('description')}>
+                                        Description{getSortIndicator('description')}
+                                    </th>
+                                    {isChief && (
+                                        <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('maintenance_status')}>
+                                            Status{getSortIndicator('maintenance_status')}
+                                        </th>
+                                    )}
+                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('start_datetime')}>
+                                        Start Date{getSortIndicator('start_datetime')}
+                                    </th>
+                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('end_datetime')}>
+                                        End Date{getSortIndicator('end_datetime')}
+                                    </th>
+                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('performed_by_person_name')}>
+                                        Technician{getSortIndicator('performed_by_person_name')}
+                                    </th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {maintenances.map((maintenance) => (
-                                        <tr key={maintenance.maintenance_id}>
+                                {sortedMaintenances.map((maintenance) => (
+                                        <tr
+                                            key={maintenance.maintenance_id}
+                                            style={{ cursor: 'pointer' }}
+                                            onClick={() => navigate(`/dashboard/maintenances/${maintenance.maintenance_id}/steps`)}
+                                        >
                                             <td>{maintenance.maintenance_id}</td>
                                             <td>
-                                                {maintenance.asset_name ||
-                                                    maintenance.stock_item_name ||
-                                                    maintenance.consumable_name ||
-                                                    (maintenance.asset ? `Asset ${maintenance.asset}` :
-                                                        maintenance.stock_item ? `Stock Item ${maintenance.stock_item}` :
-                                                            maintenance.consumable ? `Consumable ${maintenance.consumable}` :
-                                                                'Unknown')}
+                                                {getAssetLabel(maintenance)}
                                             </td>
                                             <td>{maintenance.description}</td>
                                             {isChief && (
@@ -266,6 +379,7 @@ const MaintenancesPage = () => {
                                                 </td>
                                             )}
                                             <td>{formatDate(maintenance.start_datetime)}</td>
+                                            <td>{formatDate(maintenance.end_datetime)}</td>
                                             <td>
                                                 {maintenance.performed_by_person_name ? (
                                                     <span className="badge badge-info">{maintenance.performed_by_person_name}</span>
@@ -278,18 +392,26 @@ const MaintenancesPage = () => {
                                                     {!maintenance.performed_by_person && isChief && (
                                                         <button
                                                             className="btn btn-sm btn-secondary"
-                                                            onClick={() => handleAssignClick(maintenance)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleAssignClick(maintenance);
+                                                            }}
                                                         >
                                                             Assign
                                                         </button>
                                                     )}
-                                                    <button
-                                                        className="btn btn-sm btn-info ml-2"
-                                                        onClick={() => navigate(`/dashboard/maintenances/${maintenance.maintenance_id}/steps`)}
-                                                        style={{ marginLeft: '0.5rem' }}
-                                                    >
-                                                        Steps
-                                                    </button>
+                                                    {(!maintenance.has_steps && !maintenance.has_external_maintenances) && (isSuperuser || isChief || maintenance.performed_by_person === user?.person?.person_id) && (
+                                                        <button
+                                                            className="btn btn-sm btn-danger ml-2"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleCancelMaintenance(maintenance.maintenance_id);
+                                                            }}
+                                                            style={{ marginLeft: '0.5rem' }}
+                                                        >
+                                                            Cancel maintenance
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

@@ -1,12 +1,14 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetViewSet, AssetIsAssignedToPersonViewSet, StockItemIsAssignedToPersonViewSet, ConsumableIsAssignedToPersonViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, MaintenanceStepItemRequestViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PhysicalConditionViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, WarehouseViewSet, AttributionOrderViewSet, ReceiptReportViewSet, AdministrativeCertificateViewSet, CompanyAssetRequestViewSet
+from .views import LoginView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetModelDefaultStockItemViewSet, AssetModelDefaultConsumableViewSet, AssetViewSet, AssetIsAssignedToPersonViewSet, StockItemIsAssignedToPersonViewSet, ConsumableIsAssignedToPersonViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, MaintenanceStepItemRequestViewSet, ProblemReportViewSet, MyItemsView, RoomTypeViewSet, RoomViewSet, PhysicalConditionViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, WarehouseViewSet, AttributionOrderViewSet, ReceiptReportViewSet, AdministrativeCertificateViewSet, CompanyAssetRequestViewSet, ExternalMaintenanceProviderViewSet, ExternalMaintenanceTypicalStepViewSet, ExternalMaintenanceViewSet, ExternalMaintenanceStepViewSet, AssetMaintenanceTimelineView
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
 router.register(r'asset-types', AssetTypeViewSet, basename='assettype')
 router.register(r'asset-brands', AssetBrandViewSet, basename='assetbrand')
 router.register(r'asset-models', AssetModelViewSet, basename='assetmodel')
+router.register(r'asset-model-default-stock-items', AssetModelDefaultStockItemViewSet, basename='assetmodeldefaultstockitem')
+router.register(r'asset-model-default-consumables', AssetModelDefaultConsumableViewSet, basename='assetmodeldefaultconsumable')
 router.register(r'assets', AssetViewSet, basename='asset')
 router.register(r'asset-assignments', AssetIsAssignedToPersonViewSet, basename='assetassignment')
 router.register(r'stock-item-assignments', StockItemIsAssignedToPersonViewSet, basename='stockitemassignment')
@@ -47,10 +49,16 @@ router.register(r'attribution-orders', AttributionOrderViewSet, basename='attrib
 router.register(r'receipt-reports', ReceiptReportViewSet, basename='receiptreport')
 router.register(r'administrative-certificates', AdministrativeCertificateViewSet, basename='administrativecertificate')
 router.register(r'company-asset-requests', CompanyAssetRequestViewSet, basename='companyassetrequest')
+router.register(r'external-maintenance-providers', ExternalMaintenanceProviderViewSet, basename='externalmaintenanceprovider')
+router.register(r'external-maintenance-typical-steps', ExternalMaintenanceTypicalStepViewSet, basename='externalmaintenancetypicalstep')
+router.register(r'external-maintenances', ExternalMaintenanceViewSet, basename='externalmaintenance')
+router.register(r'external-maintenance-steps', ExternalMaintenanceStepViewSet, basename='externalmaintenancestep')
 
 urlpatterns = [
     path('auth/login/', LoginView.as_view(), name='login'),
     path('my-items/', MyItemsView.as_view(), name='my-items'),
+    path('asset-maintenance-timeline/', AssetMaintenanceTimelineView.as_view(), name='asset-maintenance-timeline'),
+    path('asset-maintenance-timeline/<int:asset_id>/', AssetMaintenanceTimelineView.as_view(), name='asset-maintenance-timeline-detail'),
     # All endpoints have been restored and are now available
     path('', include(router.urls)),
 ]

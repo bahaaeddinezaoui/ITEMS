@@ -1,0 +1,5 @@
+On create (create-for-maintenance): DRAFT
+On send (send-to-provider): SENT_TO_PROVIDER
+On confirm received by provider: RECEIVED_BY_PROVIDER
+On confirm sent to company: SENT_TO_COMPANY
+On confirm received by company: RECEIVED_BY_COMPANY

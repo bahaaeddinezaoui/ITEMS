@@ -59,6 +59,26 @@ const ItemRequestsInboxPage = () => {
         }
     };
 
+    const handleReject = async (req) => {
+        const id = req.maintenance_step_item_request_id;
+        setSubmittingId(id);
+        setError(null);
+        setSuccess(null);
+
+        try {
+            const note = window.prompt('Rejection note (optional):', '') ?? '';
+            const payload = {};
+            if (note !== '') payload.note = note;
+            await maintenanceStepItemRequestService.reject(id, payload);
+            setSuccess(`Request #${id} rejected successfully`);
+            await fetchData();
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to reject request');
+        } finally {
+            setSubmittingId(null);
+        }
+    };
+
     useEffect(() => {
         if (!isStockConsumableResponsible) return;
         fetchData();
@@ -404,6 +424,14 @@ const ItemRequestsInboxPage = () => {
                                                     onClick={() => handleFulfill(req)}
                                                 >
                                                     {submittingId === id ? 'Fulfilling...' : 'Fulfill'}
+                                                </button>
+
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    disabled={submittingId === id}
+                                                    onClick={() => handleReject(req)}
+                                                >
+                                                    {submittingId === id ? 'Rejecting...' : 'Reject'}
                                                 </button>
 
                                                 <button

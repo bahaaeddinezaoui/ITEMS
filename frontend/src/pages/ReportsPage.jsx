@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { personService, problemReportService } from '../services/api';
+import { assetService, personService, problemReportService } from '../services/api';
 
 const ReportsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -14,6 +14,10 @@ const ReportsPage = () => {
     const [selectedTechnician, setSelectedTechnician] = useState('');
     const [maintenanceDescription, setMaintenanceDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    const [showAssetModal, setShowAssetModal] = useState(false);
+    const [selectedAsset, setSelectedAsset] = useState(null);
+    const [loadingAsset, setLoadingAsset] = useState(false);
 
     const canView = useMemo(() => {
         if (isSuperuser) return true;
@@ -63,6 +67,21 @@ const ReportsPage = () => {
         setSelectedTechnician('');
         setMaintenanceDescription(report?.owner_observation || '');
         setShowCreateMaintenanceModal(true);
+    };
+
+    const openAssetDetails = async (report) => {
+        if (report.item_type !== 'asset') return;
+        try {
+            setLoadingAsset(true);
+            setError('');
+            const asset = await assetService.getById(report.item_id);
+            setSelectedAsset(asset);
+            setShowAssetModal(true);
+        } catch {
+            setError('Failed to load asset details');
+        } finally {
+            setLoadingAsset(false);
+        }
     };
 
     const submitCreateMaintenance = async (e) => {
@@ -148,7 +167,7 @@ const ReportsPage = () => {
                                     <th>Report ID</th>
                                     <th>Type</th>
                                     <th>Item ID</th>
-                                    <th>Person ID</th>
+                                    <th>Person</th>
                                     <th>Date</th>
                                     <th>Observation</th>
                                     {canCreateMaintenance && <th>Actions</th>}
@@ -159,8 +178,21 @@ const ReportsPage = () => {
                                     <tr key={`${r.item_type}-${r.report_id}`}>
                                         <td>{r.report_id}</td>
                                         <td>{r.item_type}</td>
-                                        <td>{r.item_id}</td>
-                                        <td>{r.person_id}</td>
+                                        <td>
+                                            {r.item_type === 'asset' ? (
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                                            onClick={() => openAssetDetails(r)}
+                                            disabled={loadingAsset}
+                                                >
+                                                    {r.item_id}
+                                                </button>
+                                            ) : (
+                                                r.item_id
+                                            )}
+                                        </td>
+                                        <td>{r.person_name || r.person_id}</td>
                                         <td>{r.report_datetime ? new Date(r.report_datetime).toLocaleString() : '-'}</td>
                                         <td>{r.owner_observation}</td>
                                         {canCreateMaintenance && (
@@ -238,6 +270,60 @@ const ReportsPage = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {showAssetModal && selectedAsset && (
+                <div className="modal-overlay" onClick={() => setShowAssetModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">Asset Details</h3>
+                            <button className="modal-close" onClick={() => setShowAssetModal(false)}>
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                                <div>
+                                    <strong>Asset ID:</strong> {selectedAsset.asset_id}
+                                </div>
+                                <div>
+                                    <strong>Name:</strong> {selectedAsset.asset_name || '-'}
+                                </div>
+                                <div>
+                                    <strong>Serial Number:</strong> {selectedAsset.asset_serial_number || '-'}
+                                </div>
+                                <div>
+                                    <strong>Inventory Number:</strong> {selectedAsset.asset_inventory_number || '-'}
+                                </div>
+                                <div>
+                                    <strong>Service Tag:</strong> {selectedAsset.asset_service_tag || '-'}
+                                </div>
+                                <div>
+                                    <strong>Status:</strong> {selectedAsset.asset_status || '-'}
+                                </div>
+                                <div>
+                                    <strong>Model:</strong> {selectedAsset.asset_model_name || selectedAsset.asset_model || '-'}
+                                </div>
+                                <div>
+                                    <strong>Brand:</strong> {selectedAsset.brand_name || '-'}
+                                </div>
+                                <div>
+                                    <strong>Type:</strong> {selectedAsset.asset_type_label || '-'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={() => setShowAssetModal(false)}>
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
