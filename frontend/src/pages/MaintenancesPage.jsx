@@ -201,6 +201,16 @@ const MaintenancesPage = () => {
         });
     };
 
+    const getStatusColor = (status) => {
+        if (!status) return 'var(--color-text-secondary)';
+        const s = status.toLowerCase();
+        if (s.includes('done') || s === 'completed') return 'var(--color-success)';
+        if (s.includes('fail') || s.includes('cancel')) return 'var(--color-error)';
+        if (s.includes('progress') || s.includes('start')) return 'var(--color-info)';
+        if (s.includes('pending') || s.includes('wait')) return 'var(--color-warning)';
+        return 'var(--color-text-secondary)';
+    };
+
     const getAssetLabel = (maintenance) => {
         return (
             maintenance?.asset_name ||
@@ -265,20 +275,6 @@ const MaintenancesPage = () => {
         });
     }, [maintenances, sortDirection, sortKey]);
 
-    const toggleSort = (key) => {
-        if (sortKey === key) {
-            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-            return;
-        }
-        setSortKey(key);
-        setSortDirection('asc');
-    };
-
-    const getSortIndicator = (key) => {
-        if (sortKey !== key) return '';
-        return sortDirection === 'asc' ? ' ▲' : ' ▼';
-    };
-
     return (
         <>
             <div className="page-header">
@@ -313,7 +309,34 @@ const MaintenancesPage = () => {
                     </div>
                 </div>
 
-                <div className="table-container">
+                <div className="card-body">
+                    {/* Sort Controls */}
+                    <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>Sort by:</span>
+                        <select
+                            className="form-input"
+                            style={{ width: 'auto', minWidth: '140px', padding: '0.35rem 0.75rem', fontSize: 'var(--font-size-sm)' }}
+                            value={sortKey}
+                            onChange={(e) => { setSortKey(e.target.value); setSortDirection('desc'); }}
+                        >
+                            <option value="start_datetime">Start Date</option>
+                            <option value="end_datetime">End Date</option>
+                            <option value="maintenance_id">ID</option>
+                            <option value="asset">Asset</option>
+                            <option value="description">Description</option>
+                            <option value="maintenance_status">Status</option>
+                            <option value="performed_by_person_name">Technician</option>
+                        </select>
+                        <button
+                            className="btn btn-sm btn-secondary"
+                            style={{ padding: '0.35rem 0.55rem' }}
+                            onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                            title={sortDirection === 'asc' ? 'Oldest first' : 'Newest first'}
+                        >
+                            {sortDirection === 'asc' ? '▲ Ascending' : '▼ Descending'}
+                        </button>
+                    </div>
+
                     {loading ? (
                         <div className="empty-state">
                             <div className="loading-spinner" style={{ margin: '0 auto' }} />
@@ -328,96 +351,227 @@ const MaintenancesPage = () => {
                             <h3 className="empty-state-title">No maintenances found</h3>
                         </div>
                     ) : (
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('maintenance_id')}>
-                                        ID{getSortIndicator('maintenance_id')}
-                                    </th>
-                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('asset')}>
-                                        Asset{getSortIndicator('asset')}
-                                    </th>
-                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('description')}>
-                                        Description{getSortIndicator('description')}
-                                    </th>
-                                    {isChief && (
-                                        <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('maintenance_status')}>
-                                            Status{getSortIndicator('maintenance_status')}
-                                        </th>
-                                    )}
-                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('start_datetime')}>
-                                        Start Date{getSortIndicator('start_datetime')}
-                                    </th>
-                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('end_datetime')}>
-                                        End Date{getSortIndicator('end_datetime')}
-                                    </th>
-                                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('performed_by_person_name')}>
-                                        Technician{getSortIndicator('performed_by_person_name')}
-                                    </th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sortedMaintenances.map((maintenance) => (
-                                        <tr
-                                            key={maintenance.maintenance_id}
-                                            style={{ cursor: 'pointer' }}
+                        <div className="maintenances-timeline">
+                            <style>{`
+                                .maintenances-timeline {
+                                    position: relative;
+                                    padding-left: 2rem;
+                                }
+                                .maintenances-timeline::before {
+                                    content: '';
+                                    position: absolute;
+                                    left: 0.75rem;
+                                    top: 0;
+                                    bottom: 0;
+                                    width: 2px;
+                                    background: var(--color-border);
+                                }
+                                .maintenance-timeline-entry {
+                                    position: relative;
+                                    padding-bottom: 1.5rem;
+                                }
+                                .maintenance-timeline-entry:last-child {
+                                    padding-bottom: 0;
+                                }
+                                .maintenance-timeline-marker {
+                                    position: absolute;
+                                    left: -1.5rem;
+                                    top: 0.25rem;
+                                    width: 1.5rem;
+                                    height: 1.5rem;
+                                    border-radius: 50%;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 0.75rem;
+                                    font-weight: 600;
+                                    background: var(--color-primary);
+                                    border-color: var(--color-primary);
+                                    color: white;
+                                    z-index: 1;
+                                }
+                                .maintenance-timeline-content {
+                                    background: var(--color-bg-secondary);
+                                    border: 1px solid var(--color-border);
+                                    border-radius: var(--radius-md);
+                                    padding: 1rem;
+                                    margin-left: 0.5rem;
+                                    cursor: pointer;
+                                    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+                                    border-left: 3px solid var(--color-primary);
+                                }
+                                .maintenance-timeline-content:hover {
+                                    border-color: var(--color-primary);
+                                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                                }
+                                .maintenance-timeline-header {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: flex-start;
+                                    margin-bottom: 0.5rem;
+                                    flex-wrap: wrap;
+                                    gap: 0.5rem;
+                                }
+                                .maintenance-timeline-title {
+                                    font-weight: 600;
+                                    font-size: var(--font-size-md);
+                                    color: var(--color-text-primary);
+                                    margin: 0;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 0.5rem;
+                                }
+                                .maintenance-timeline-badge {
+                                    display: inline-flex;
+                                    align-items: center;
+                                    padding: 0.25rem 0.5rem;
+                                    border-radius: var(--radius-sm);
+                                    font-size: var(--font-size-xs);
+                                    font-weight: 500;
+                                    color: white;
+                                }
+                                .maintenance-timeline-meta {
+                                    display: flex;
+                                    flex-wrap: wrap;
+                                    gap: 1rem;
+                                    font-size: var(--font-size-sm);
+                                    color: var(--color-text-secondary);
+                                    margin-top: 0.5rem;
+                                }
+                                .maintenance-timeline-meta-item {
+                                    display: flex;
+                                    flex-direction: column;
+                                    gap: 0.125rem;
+                                }
+                                .maintenance-timeline-meta-label {
+                                    font-size: var(--font-size-xs);
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.05em;
+                                    opacity: 0.7;
+                                }
+                                .maintenance-timeline-meta-value {
+                                    font-weight: 500;
+                                    color: var(--color-text-primary);
+                                }
+                                .maintenance-timeline-actions {
+                                    display: flex;
+                                    gap: 0.35rem;
+                                    flex-wrap: wrap;
+                                    margin-top: 0.75rem;
+                                    padding-top: 0.75rem;
+                                    border-top: 1px solid var(--color-border);
+                                }
+                            `}</style>
+
+                            {sortedMaintenances.map((maintenance) => {
+                                const statusColor = getStatusColor(maintenance.maintenance_status);
+                                return (
+                                    <div key={maintenance.maintenance_id} className="maintenance-timeline-entry">
+                                        <div className="maintenance-timeline-marker">
+                                            M
+                                        </div>
+                                        <div
+                                            className="maintenance-timeline-content"
                                             onClick={() => navigate(`/dashboard/maintenances/${maintenance.maintenance_id}/steps`)}
                                         >
-                                            <td>{maintenance.maintenance_id}</td>
-                                            <td>
-                                                {getAssetLabel(maintenance)}
-                                            </td>
-                                            <td>{maintenance.description}</td>
-                                            {isChief && (
-                                                <td>
-                                                    {maintenance.maintenance_status ? (
-                                                        <span className="badge badge-info">{maintenance.maintenance_status}</span>
-                                                    ) : (
-                                                        <span className="badge badge-warning">-</span>
-                                                    )}
-                                                </td>
-                                            )}
-                                            <td>{formatDate(maintenance.start_datetime)}</td>
-                                            <td>{formatDate(maintenance.end_datetime)}</td>
-                                            <td>
-                                                {maintenance.performed_by_person_name ? (
-                                                    <span className="badge badge-info">{maintenance.performed_by_person_name}</span>
-                                                ) : (
-                                                    <span className="badge badge-warning">Unassigned</span>
+                                            <div className="maintenance-timeline-header">
+                                                <h4 className="maintenance-timeline-title">
+                                                    <span style={{ opacity: 0.7 }}>#{maintenance.maintenance_id}</span>
+                                                    {maintenance.description && ` - ${maintenance.description}`}
+                                                </h4>
+                                                {maintenance.maintenance_status && (
+                                                    <span
+                                                        className="maintenance-timeline-badge"
+                                                        style={{ backgroundColor: statusColor }}
+                                                    >
+                                                        {maintenance.maintenance_status}
+                                                    </span>
                                                 )}
-                                            </td>
-                                            <td>
-                                                <div className="d-flex align-items-center">
-                                                    {!maintenance.performed_by_person && isChief && (
-                                                        <button
-                                                            className="btn btn-sm btn-secondary"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleAssignClick(maintenance);
-                                                            }}
-                                                        >
-                                                            Assign
-                                                        </button>
-                                                    )}
-                                                    {(!maintenance.has_steps && !maintenance.has_external_maintenances) && (isSuperuser || isChief || maintenance.performed_by_person === user?.person?.person_id) && (
-                                                        <button
-                                                            className="btn btn-sm btn-danger ml-2"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleCancelMaintenance(maintenance.maintenance_id);
-                                                            }}
-                                                            style={{ marginLeft: '0.5rem' }}
-                                                        >
-                                                            Cancel maintenance
-                                                        </button>
-                                                    )}
+                                            </div>
+
+                                            <div className="maintenance-timeline-meta">
+                                                <div className="maintenance-timeline-meta-item">
+                                                    <span className="maintenance-timeline-meta-label">Asset</span>
+                                                    <span className="maintenance-timeline-meta-value">{getAssetLabel(maintenance)}</span>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                                <div className="maintenance-timeline-meta-item">
+                                                    <span className="maintenance-timeline-meta-label">Started</span>
+                                                    <span className="maintenance-timeline-meta-value">{formatDate(maintenance.start_datetime)}</span>
+                                                </div>
+                                                <div className="maintenance-timeline-meta-item">
+                                                    <span className="maintenance-timeline-meta-label">Ended</span>
+                                                    <span className="maintenance-timeline-meta-value">{formatDate(maintenance.end_datetime)}</span>
+                                                </div>
+                                                <div className="maintenance-timeline-meta-item">
+                                                    <span className="maintenance-timeline-meta-label">Technician</span>
+                                                    <span className="maintenance-timeline-meta-value">
+                                                        {maintenance.performed_by_person_name || (
+                                                            <span style={{ color: 'var(--color-warning)' }}>Unassigned</span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="maintenance-timeline-actions">
+                                                <button
+                                                    className="btn btn-xs btn-secondary"
+                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/dashboard/maintenances/${maintenance.maintenance_id}/steps`);
+                                                    }}
+                                                    title="View steps"
+                                                >
+                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                        <path d="M14 2v6h6" />
+                                                        <path d="M12 11v6" />
+                                                        <path d="M9 14h6" />
+                                                    </svg>
+                                                </button>
+                                                {!maintenance.performed_by_person && isChief && (
+                                                    <button
+                                                        className="btn btn-xs btn-secondary"
+                                                        style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleAssignClick(maintenance);
+                                                        }}
+                                                        title="Assign technician"
+                                                    >
+                                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                                            <circle cx="8.5" cy="7" r="4" />
+                                                            <line x1="20" y1="8" x2="20" y2="14" />
+                                                            <line x1="23" y1="11" x2="17" y2="11" />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                                {(!maintenance.has_steps && !maintenance.has_external_maintenances) && (isSuperuser || isChief || maintenance.performed_by_person === user?.person?.person_id) && (
+                                                    <button
+                                                        className="btn btn-xs btn-danger"
+                                                        style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleCancelMaintenance(maintenance.maintenance_id);
+                                                        }}
+                                                        title="Cancel maintenance"
+                                                    >
+                                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <polyline points="3 6 5 6 21 6" />
+                                                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                            <path d="M10 11v6" />
+                                                            <path d="M14 11v6" />
+                                                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     )}
                 </div>
             </div>

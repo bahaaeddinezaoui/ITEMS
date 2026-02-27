@@ -6,6 +6,13 @@ const DashboardHome = () => {
     const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
 
+    const getFullName = () => {
+        if (user?.person) {
+            return `${user.person.first_name} ${user.person.last_name}`;
+        }
+        return user?.username || 'User';
+    };
+
     const roleCodes = useMemo(() => {
         return Array.isArray(user?.roles) ? user.roles.map((r) => r.role_code).filter(Boolean) : [];
     }, [user]);
@@ -142,8 +149,8 @@ const DashboardHome = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Dashboard</h1>
-                <p className="page-subtitle">Welcome to the Equipment Management System</p>
+                <h1 className="page-title">Welcome, {getFullName()}!</h1>
+                <p className="page-subtitle">Here's your Equipment Management System dashboard</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-6)' }}>
