@@ -23,6 +23,10 @@ const AssetsPage = () => {
     const modelIdParam = searchParams.get('modelId');
     const isInstancesMode = location.pathname.endsWith('/instances');
 
+    const formatModelLabel = (model) => {
+        return [model?.brand_name, model?.model_name].filter(Boolean).join(' ');
+    };
+
     const [assetTypes, setAssetTypes] = useState([]);
     const [assetBrands, setAssetBrands] = useState([]);
     const [assetModels, setAssetModels] = useState([]);
@@ -982,7 +986,7 @@ const AssetsPage = () => {
                                                     fontSize: 'var(--font-size-sm)'
                                                 }}
                                             >
-                                                <span>{model.model_name}</span>
+                                                <span>{formatModelLabel(model) || `Model ${model.asset_model_id}`}</span>
                                                 {selectedAssetModel?.asset_model_id === model.asset_model_id && (
                                                     <button
                                                         onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.asset_model_id); }}
@@ -1079,7 +1083,7 @@ const AssetsPage = () => {
                             }}>
                                 <div>
                                     <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                        {selectedAssetModel.model_name} <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)', fontWeight: 'normal' }}>({selectedAssetModel.model_code})</span>
+                                        {formatModelLabel(selectedAssetModel) || selectedAssetModel.model_name || ''} <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)', fontWeight: 'normal' }}>({selectedAssetModel.model_code})</span>
                                     </h2>
                                     <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
                                         {selectedAssetModel.brand_name} • {assets.length} Assets

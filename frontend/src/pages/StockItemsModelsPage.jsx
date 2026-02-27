@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { stockItemAttributeDefinitionService, stockItemBrandService, stockItemModelAttributeService, stockItemModelService, stockItemTypeService } from '../services/api';
+import { stockItemAttributeDefinitionService, stockItemBrandService, stockItemModelAttributeService, stockItemModelService, stockItemTypeService, authService } from '../services/api';
 
 const StockItemsModelsPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const typeId = searchParams.get('typeId');
+
+    const formatModelLabel = (model) => {
+        return [model?.brand_name, model?.model_name].filter(Boolean).join(' ');
+    };
 
     const [stockItemType, setStockItemType] = useState(null);
     const [stockItemModels, setStockItemModels] = useState([]);
@@ -15,6 +19,7 @@ const StockItemsModelsPage = () => {
     const [stockItemModelAttributes, setStockItemModelAttributes] = useState([]);
     const [showModelForm, setShowModelForm] = useState(false);
     const [modelSaving, setModelSaving] = useState(false);
+    const [editingModel, setEditingModel] = useState(null);
     const [modelForm, setModelForm] = useState({
         stock_item_brand: '',
         model_name: '',
@@ -31,6 +36,23 @@ const StockItemsModelsPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    const [showBrandForm, setShowBrandForm] = useState(false);
+    const [brandSaving, setBrandSaving] = useState(false);
+    const [brandForm, setBrandForm] = useState({
+        brand_name: '',
+        brand_photo: null
+    });
+    const [brandPhotoPreview, setBrandPhotoPreview] = useState(null);
+
+    const toBrandCode = (name) => {
+        const code = String(name || '')
+            .trim()
+            .toUpperCase()
+            .replace(/\s+/g, '_')
+            .replace(/[^A-Z0-9_\-]/g, '');
+        return code.slice(0, 16);
+    };
 
     useEffect(() => {
         if (!typeId) return;
@@ -78,6 +100,48 @@ const StockItemsModelsPage = () => {
             setSelectedStockItemModel(null);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleBrandInputChange = (e) => {
+        const { name, value, type, files } = e.target;
+        if (type === 'file' && files && files[0]) {
+            const file = files[0];
+            setBrandForm((prev) => ({ ...prev, [name]: file }));
+            setBrandPhotoPreview(URL.createObjectURL(file));
+        } else {
+            setBrandForm((prev) => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const handleBrandSubmit = async (e) => {
+        e.preventDefault();
+        if (!authService.isSuperuser()) return;
+        const brandName = brandForm.brand_name?.trim();
+        if (!brandName) {
+            setError('Please enter a brand name');
+            return;
+        }
+
+        setBrandSaving(true);
+        setError(null);
+        try {
+            const formData = new FormData();
+            formData.append('brand_name', brandName);
+            formData.append('brand_code', toBrandCode(brandName));
+            formData.append('is_active', 'true');
+            if (brandForm.brand_photo) {
+                formData.append('brand_photo', brandForm.brand_photo);
+            }
+            await stockItemBrandService.create(formData);
+            setBrandForm({ brand_name: '', brand_photo: null });
+            setBrandPhotoPreview(null);
+            setShowBrandForm(false);
+            await fetchStockItemBrands();
+        } catch (err) {
+            setError('Failed to create stock item brand: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setBrandSaving(false);
         }
     };
 
@@ -139,15 +203,36 @@ const StockItemsModelsPage = () => {
                 model_name: modelForm.model_name || null,
                 model_code: modelForm.model_code || null,
             };
-            await stockItemModelService.create(payload);
+            if (editingModel) {
+                await stockItemModelService.update(editingModel.stock_item_model_id, payload);
+            } else {
+                await stockItemModelService.create(payload);
+            }
             setModelForm({ stock_item_brand: '', model_name: '', model_code: '' });
             setShowModelForm(false);
+            setEditingModel(null);
             await fetchTypeAndModels(typeId);
         } catch (err) {
-            setError('Failed to create stock item model: ' + (err.response?.data?.error || err.message));
+            setError(`Failed to ${editingModel ? 'update' : 'create'} stock item model: ` + (err.response?.data?.error || err.message));
         } finally {
             setModelSaving(false);
         }
+    };
+
+    const handleEditModel = (model) => {
+        setEditingModel(model);
+        setModelForm({
+            stock_item_brand: model.stock_item_brand,
+            model_name: model.model_name || '',
+            model_code: model.model_code || ''
+        });
+        setShowModelForm(true);
+    };
+
+    const handleCancelModelForm = () => {
+        setShowModelForm(false);
+        setEditingModel(null);
+        setModelForm({ stock_item_brand: '', model_name: '', model_code: '' });
     };
 
     const handleModelAttributeSubmit = async (e) => {
@@ -316,24 +401,31 @@ const StockItemsModelsPage = () => {
                             </button>
                             <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Models</h2>
                         </div>
-                        <button
-                            onClick={() => setShowModelForm((v) => !v)}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: 'var(--font-size-lg)',
-                                color: 'var(--color-primary)',
-                                padding: '0 var(--space-2)'
-                            }}
-                            title="Add Model"
-                        >
-                            +
-                        </button>
+                        {authService.isSuperuser() && (
+                            <button
+                                onClick={() => {
+                                    setEditingModel(null);
+                                    setModelForm({ stock_item_brand: '', model_name: '', model_code: '' });
+                                    setShowModelForm((v) => !v);
+                                }}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: 'var(--font-size-lg)',
+                                    color: 'var(--color-primary)',
+                                    padding: '0 var(--space-2)'
+                                }}
+                                title="Add Model"
+                            >
+                                +
+                            </button>
+                        )}
                     </div>
 
                     {showModelForm && (
                         <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
+                            <h3 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-3)' }}>{editingModel ? 'Edit Model' : 'Add New Model'}</h3>
                             <form onSubmit={handleModelSubmit}>
                                 <select
                                     name="stock_item_brand"
@@ -366,8 +458,10 @@ const StockItemsModelsPage = () => {
                                     style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
                                 />
                                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                    <button type="submit" disabled={modelSaving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                    <button type="button" onClick={() => setShowModelForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                    <button type="submit" disabled={modelSaving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>
+                                        {editingModel ? 'Update' : 'Save'}
+                                    </button>
+                                    <button type="button" onClick={handleCancelModelForm} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
                                 </div>
                             </form>
                         </div>
@@ -386,11 +480,30 @@ const StockItemsModelsPage = () => {
                                 }}
                             >
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                    <span style={{ fontWeight: '500' }}>{model.model_name}</span>
+                                    <span style={{ fontWeight: '500' }}>{formatModelLabel(model) || `Model ${model.stock_item_model_id}`}</span>
                                     <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>{model.model_code}</span>
                                 </div>
 
                                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                    {authService.isSuperuser() && (
+                                        <button
+                                            onClick={() => handleEditModel(model)}
+                                            style={{
+                                                padding: 'var(--space-1) var(--space-2)',
+                                                border: '1px solid var(--color-border)',
+                                                background: 'var(--color-bg-tertiary)',
+                                                color: 'var(--color-primary)',
+                                                borderRadius: 'var(--radius-sm)',
+                                                cursor: 'pointer'
+                                            }}
+                                            title="Edit model"
+                                        >
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                            </svg>
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => setSelectedStockItemModel(model)}
                                         style={{
@@ -452,7 +565,7 @@ const StockItemsModelsPage = () => {
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
                         <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>
-                            Model Attributes {selectedStockItemModel ? `• ${selectedStockItemModel.model_name}` : ''}
+                            Model Attributes {selectedStockItemModel ? `• ${formatModelLabel(selectedStockItemModel) || selectedStockItemModel.model_name || ''}` : ''}
                         </h2>
                         <button
                             onClick={() => setShowModelAttributeForm((v) => !v)}
@@ -567,6 +680,65 @@ const StockItemsModelsPage = () => {
                         )}
                     </div>
                 </div>
+
+                {authService.isSuperuser() && (
+                    <div className="card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gridColumn: '1 / -1' }}>
+                        <div className="card-header" style={{
+                            padding: 'var(--space-4)',
+                            borderBottom: '1px solid var(--color-border)',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            backgroundColor: 'var(--color-bg-secondary)'
+                        }}>
+                            <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Brands</h2>
+                            <button
+                                onClick={() => setShowBrandForm((v) => !v)}
+                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                title="Add Brand"
+                            >
+                                + Add Brand
+                            </button>
+                        </div>
+
+                        <div style={{ padding: 'var(--space-4)' }}>
+                            {showBrandForm && (
+                                <form onSubmit={handleBrandSubmit}>
+                                    <input
+                                        type="text"
+                                        name="brand_name"
+                                        value={brandForm.brand_name}
+                                        onChange={handleBrandInputChange}
+                                        placeholder="Brand Name"
+                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                    />
+                                    <input
+                                        type="file"
+                                        name="brand_photo"
+                                        accept="image/*"
+                                        onChange={handleBrandInputChange}
+                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
+                                    />
+                                    {brandPhotoPreview && (
+                                        <div style={{ marginBottom: 'var(--space-2)' }}>
+                                            <img src={brandPhotoPreview} alt="Preview" style={{ maxWidth: '100px', maxHeight: '100px', borderRadius: 'var(--radius-sm)' }} />
+                                        </div>
+                                    )}
+                                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                        <button type="submit" disabled={brandSaving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
+                                        <button type="button" onClick={() => setShowBrandForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                    </div>
+                                </form>
+                            )}
+
+                            {!showBrandForm && (
+                                <div style={{ color: 'var(--color-text-secondary)' }}>
+                                    Add brands to populate the brand selector when creating models.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

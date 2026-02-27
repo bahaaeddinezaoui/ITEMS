@@ -278,7 +278,10 @@ export const assetBrandService = {
     },
 
     create: async (assetBrandData) => {
-        const response = await api.post('asset-brands/', assetBrandData);
+        const isFormData = typeof FormData !== 'undefined' && assetBrandData instanceof FormData;
+        const response = isFormData
+            ? await postForm('asset-brands/', assetBrandData)
+            : await api.post('asset-brands/', assetBrandData);
         return response.data;
     },
 
@@ -728,7 +731,10 @@ export const stockItemBrandService = {
     },
 
     create: async (stockItemBrandData) => {
-        const response = await api.post('stock-item-brands/', stockItemBrandData);
+        const isFormData = typeof FormData !== 'undefined' && stockItemBrandData instanceof FormData;
+        const response = isFormData
+            ? await postForm('stock-item-brands/', stockItemBrandData)
+            : await api.post('stock-item-brands/', stockItemBrandData);
         return response.data;
     },
 
@@ -831,7 +837,10 @@ export const consumableBrandService = {
     },
 
     create: async (consumableBrandData) => {
-        const response = await api.post('consumable-brands/', consumableBrandData);
+        const isFormData = typeof FormData !== 'undefined' && consumableBrandData instanceof FormData;
+        const response = isFormData
+            ? await postForm('consumable-brands/', consumableBrandData)
+            : await api.post('consumable-brands/', consumableBrandData);
         return response.data;
     },
 

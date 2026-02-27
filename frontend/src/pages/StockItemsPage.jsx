@@ -22,6 +22,10 @@ const StockItemsPage = () => {
     const modelIdParam = searchParams.get('modelId');
     const isInstancesMode = location.pathname.endsWith('/instances');
 
+    const formatModelLabel = (model) => {
+        return [model?.brand_name, model?.model_name].filter(Boolean).join(' ');
+    };
+
     const [stockItemTypes, setStockItemTypes] = useState([]);
     const [stockItemBrands, setStockItemBrands] = useState([]);
     const [stockItemModels, setStockItemModels] = useState([]);
@@ -866,7 +870,7 @@ const StockItemsPage = () => {
                                                     fontSize: 'var(--font-size-sm)'
                                                 }}
                                             >
-                                                <span>{model.model_name}</span>
+                                                <span>{formatModelLabel(model) || `Model ${model.stock_item_model_id}`}</span>
                                                 {selectedStockItemModel?.stock_item_model_id === model.stock_item_model_id && (
                                                      <button
                                                      onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.stock_item_model_id); }}
@@ -963,7 +967,7 @@ const StockItemsPage = () => {
                             }}>
                                 <div>
                                     <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                        {selectedStockItemModel.model_name} <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)', fontWeight: 'normal' }}>({selectedStockItemModel.model_code})</span>
+                                        {formatModelLabel(selectedStockItemModel) || selectedStockItemModel.model_name || ''} <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)', fontWeight: 'normal' }}>({selectedStockItemModel.model_code})</span>
                                     </h2>
                                     <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
                                         {selectedStockItemModel.brand_name} • {stockItems.length} Items

@@ -2781,14 +2781,42 @@ class AssetBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if denial:
             return denial
 
+        # Handle file upload
+        brand_photo_file = request.FILES.get('brand_photo')
+        brand_photo_path = None
+        if brand_photo_file:
+            from django.core.files.storage import default_storage
+            from django.core.files.base import ContentFile
+            import os
+            
+            # Save file to media/brands/
+            file_path = f"brands/assets/{brand_photo_file.name}"
+            brand_photo_path = default_storage.save(file_path, ContentFile(brand_photo_file.read()))
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         last_brand = AssetBrand.objects.all().order_by("-asset_brand_id").first()
         next_id = (last_brand.asset_brand_id + 1) if last_brand else 1
-        
-        brand = AssetBrand.objects.create(asset_brand_id=next_id, **serializer.validated_data)
-        return Response(AssetBrandSerializer(brand).data, status=status.HTTP_201_CREATED)
+
+        try:
+            data = serializer.validated_data.copy()
+            if brand_photo_path:
+                data['brand_photo'] = brand_photo_path
+            brand = AssetBrand.objects.create(
+                asset_brand_id=next_id,
+                **data,
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Failed to create asset brand due to database constraints.",
+                    "details": "Check required fields and uniqueness constraints.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(self.get_serializer(brand).data, status=status.HTTP_201_CREATED)
 
 
 class AssetModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -3458,6 +3486,47 @@ class StockItemBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = StockItemBrand.objects.all().order_by("stock_item_brand_id")
     serializer_class = StockItemBrandSerializer
 
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create stock item brands")
+        if denial:
+            return denial
+
+        # Handle file upload
+        brand_photo_file = request.FILES.get('brand_photo')
+        brand_photo_path = None
+        if brand_photo_file:
+            from django.core.files.storage import default_storage
+            from django.core.files.base import ContentFile
+            
+            # Save file to media/brands/
+            file_path = f"brands/stock_items/{brand_photo_file.name}"
+            brand_photo_path = default_storage.save(file_path, ContentFile(brand_photo_file.read()))
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        last_brand = StockItemBrand.objects.all().order_by("-stock_item_brand_id").first()
+        next_id = (last_brand.stock_item_brand_id + 1) if last_brand else 1
+
+        try:
+            data = serializer.validated_data.copy()
+            if brand_photo_path:
+                data['brand_photo'] = brand_photo_path
+            brand = StockItemBrand.objects.create(
+                stock_item_brand_id=next_id,
+                **data,
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Failed to create stock item brand due to database constraints.",
+                    "details": "Check required fields and uniqueness constraints.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(self.get_serializer(brand).data, status=status.HTTP_201_CREATED)
+
 
 class StockItemModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = StockItemModel.objects.all().order_by("stock_item_model_id")
@@ -3875,6 +3944,47 @@ class ConsumableTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 class ConsumableBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = ConsumableBrand.objects.all().order_by("consumable_brand_id")
     serializer_class = ConsumableBrandSerializer
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create consumable brands")
+        if denial:
+            return denial
+
+        # Handle file upload
+        brand_photo_file = request.FILES.get('brand_photo')
+        brand_photo_path = None
+        if brand_photo_file:
+            from django.core.files.storage import default_storage
+            from django.core.files.base import ContentFile
+            
+            # Save file to media/brands/
+            file_path = f"brands/consumables/{brand_photo_file.name}"
+            brand_photo_path = default_storage.save(file_path, ContentFile(brand_photo_file.read()))
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        last_brand = ConsumableBrand.objects.all().order_by("-consumable_brand_id").first()
+        next_id = (last_brand.consumable_brand_id + 1) if last_brand else 1
+
+        try:
+            data = serializer.validated_data.copy()
+            if brand_photo_path:
+                data['brand_photo'] = brand_photo_path
+            brand = ConsumableBrand.objects.create(
+                consumable_brand_id=next_id,
+                **data,
+            )
+        except IntegrityError:
+            return Response(
+                {
+                    "error": "Failed to create consumable brand due to database constraints.",
+                    "details": "Check required fields and uniqueness constraints.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(self.get_serializer(brand).data, status=status.HTTP_201_CREATED)
 
 
 class ConsumableModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):

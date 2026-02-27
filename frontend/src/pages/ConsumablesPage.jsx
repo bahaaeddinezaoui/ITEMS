@@ -23,6 +23,10 @@ const ConsumablesPage = () => {
     const modelIdParam = searchParams.get('modelId');
     const isInstancesMode = location.pathname.endsWith('/instances');
 
+    const formatModelLabel = (model) => {
+        return [model?.brand_name, model?.model_name].filter(Boolean).join(' ');
+    };
+
     const [consumableTypes, setConsumableTypes] = useState([]);
     const [consumableBrands, setConsumableBrands] = useState([]);
     const [consumableModels, setConsumableModels] = useState([]);
@@ -929,7 +933,7 @@ const ConsumablesPage = () => {
                                                     fontSize: 'var(--font-size-sm)'
                                                 }}
                                             >
-                                                <span>{model.model_name}</span>
+                                                <span>{formatModelLabel(model) || `Model ${model.consumable_model_id}`}</span>
                                                 {selectedConsumableModel?.consumable_model_id === model.consumable_model_id && (
                                                      <button
                                                      onClick={(e) => { e.stopPropagation(); handleDeleteModel(model.consumable_model_id); }}
@@ -1026,7 +1030,7 @@ const ConsumablesPage = () => {
                             }}>
                                 <div>
                                     <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                        {selectedConsumableModel.model_name} <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)', fontWeight: 'normal' }}>({selectedConsumableModel.model_code})</span>
+                                        {formatModelLabel(selectedConsumableModel) || selectedConsumableModel.model_name || ''} <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)', fontWeight: 'normal' }}>({selectedConsumableModel.model_code})</span>
                                     </h2>
                                     <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>
                                         {selectedConsumableModel.brand_name} • {consumables.length} Items
