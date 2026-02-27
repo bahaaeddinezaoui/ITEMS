@@ -3,207 +3,110 @@ import { organizationalStructureService, organizationalStructureRelationService 
 
 // Separate form component to maintain stable reference
 const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, handleCancel }) => (
-    <form onSubmit={handleSubmit} style={{ padding: 'var(--space-4)', maxWidth: '600px' }}>
-        <h3 style={{ marginBottom: 'var(--space-3)', color: 'var(--color-text-primary)' }}>
-            {editingId ? 'Edit Structure' : 'Add Structure'}
-        </h3>
+    <form onSubmit={handleSubmit} className="form">
+        <h3 className="form-title">{editingId ? 'Edit Structure' : 'Add Structure'}</h3>
 
-        <div style={{ marginBottom: 'var(--space-3)' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Structure Code*</label>
+        <div className="form-group">
+            <label className="form-label">Structure Code*</label>
             <input
                 type="text"
                 name="structure_code"
                 value={formData.structure_code}
                 onChange={handleFormChange}
                 required
-                style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: '3px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                }}
+                className="form-control"
             />
         </div>
 
-        <div style={{ marginBottom: 'var(--space-3)' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Structure Name*</label>
+        <div className="form-group">
+            <label className="form-label">Structure Name*</label>
             <input
                 type="text"
                 name="structure_name"
                 value={formData.structure_name}
                 onChange={handleFormChange}
                 required
-                style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: '3px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                }}
+                className="form-control"
             />
         </div>
 
-        <div style={{ marginBottom: 'var(--space-3)' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Structure Type*</label>
+        <div className="form-group">
+            <label className="form-label">Structure Type*</label>
             <input
                 type="text"
                 name="structure_type"
                 value={formData.structure_type}
                 onChange={handleFormChange}
                 required
-                style={{
-                    width: '100%',
-                    padding: '0.5rem',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: '3px',
-                    fontSize: '0.875rem',
-                    boxSizing: 'border-box',
-                }}
+                className="form-control"
             />
         </div>
 
-        <div style={{ marginBottom: 'var(--space-4)' }}>
-            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                <input
-                    type="checkbox"
-                    name="is_active"
-                    checked={formData.is_active}
-                    onChange={handleFormChange}
-                    style={{ marginRight: '0.5rem' }}
-                />
-                <span>Active</span>
-            </label>
+        <div className="form-group">
+            <label className="form-label">Active</label>
+            <input
+                type="checkbox"
+                name="is_active"
+                checked={formData.is_active}
+                onChange={handleFormChange}
+                className="form-checkbox"
+            />
         </div>
 
-        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-            <button
-                type="submit"
-                style={{
-                    flex: 1,
-                    padding: 'var(--space-3)',
-                    backgroundColor: 'var(--color-primary)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: 'var(--radius-sm)',
-                    fontSize: 'var(--font-size-sm)',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                }}
-            >
-                {editingId ? 'Update Structure' : 'Create Structure'}
-            </button>
+        <div className="form-actions">
+            <button type="submit" className="btn btn-primary">{editingId ? 'Update Structure' : 'Create Structure'}</button>
             {editingId && (
-                <button
-                    type="button"
-                    onClick={handleCancel}
-                    style={{
-                        flex: 1,
-                        padding: 'var(--space-3)',
-                        backgroundColor: 'var(--color-bg-secondary)',
-                        color: 'var(--color-text-primary)',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: 'var(--font-size-sm)',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                    }}
-                >
-                    Cancel
-                </button>
+                <button type="button" onClick={handleCancel} className="btn btn-secondary">Cancel</button>
             )}
         </div>
     </form>
 );
 
 const StructuresTabContent = ({ loading, structures, handleEdit, handleSelectStructureForRelations, setActiveTab, handleDelete }) => (
-    <div style={{ padding: 'var(--space-4)' }}>
-        <h3 style={{ marginBottom: 'var(--space-3)', color: 'var(--color-text-primary)' }}>
-            Organizational Structures List
-        </h3>
+    <div>
+        <h3 className="card-title">Organizational Structures List</h3>
         {loading ? (
-            <p>Loading...</p>
+            <div className="loading-state">
+                <div className="loading-spinner" />
+                <p>Loading structures...</p>
+            </div>
         ) : structures.length === 0 ? (
-            <p style={{ color: 'var(--color-text-secondary)' }}>No organizational structures found. Create one to get started!</p>
+            <div className="empty-state">
+                <h3 className="empty-state-title">No organizational structures found</h3>
+                <p className="empty-state-text">Create one to get started</p>
+            </div>
         ) : (
-            <div style={{
-                overflowX: 'auto',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--color-border)'
-            }}>
-                <table style={{
-                    width: '100%',
-                    borderCollapse: 'collapse',
-                    fontSize: 'var(--font-size-sm)',
-                }}>
+            <div className="table-container">
+                <table className="data-table">
                     <thead>
-                        <tr style={{ backgroundColor: 'var(--color-bg-secondary)', borderBottom: '2px solid var(--color-border)' }}>
-                            <th style={{ padding: 'var(--space-3)', textAlign: 'left', fontWeight: '600' }}>Code</th>
-                            <th style={{ padding: 'var(--space-3)', textAlign: 'left', fontWeight: '600' }}>Name</th>
-                            <th style={{ padding: 'var(--space-3)', textAlign: 'left', fontWeight: '600' }}>Type</th>
-                            <th style={{ padding: 'var(--space-3)', textAlign: 'center', fontWeight: '600' }}>Active</th>
-                            <th style={{ padding: 'var(--space-3)', textAlign: 'center', fontWeight: '600' }}>Actions</th>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Active</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {structures.map((structure) => (
-                            <tr key={structure.organizational_structure_id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                                <td style={{ padding: 'var(--space-3)' }}>{structure.structure_code}</td>
-                                <td style={{ padding: 'var(--space-3)' }}>{structure.structure_name}</td>
-                                <td style={{ padding: 'var(--space-3)' }}>{structure.structure_type}</td>
-                                <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
-                                    {structure.is_active ? '✓' : '✗'}
+                            <tr key={structure.organizational_structure_id}>
+                                <td>{structure.structure_code}</td>
+                                <td>{structure.structure_name}</td>
+                                <td>{structure.structure_type}</td>
+                                <td>
+                                    <span className={`badge ${structure.is_active ? 'badge-success' : 'badge-warning'}`}>
+                                        {structure.is_active ? 'Active' : 'Inactive'}
+                                    </span>
                                 </td>
-                                <td style={{ padding: 'var(--space-3)', textAlign: 'center' }}>
-                                    <button
-                                        onClick={() => handleEdit(structure)}
-                                        style={{
-                                            padding: '0.4rem 0.8rem',
-                                            marginRight: '0.5rem',
-                                            backgroundColor: 'var(--color-primary)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '3px',
-                                            cursor: 'pointer',
-                                            fontSize: '0.75rem',
-                                        }}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => {
+                                <td>
+                                    <div className="org-actions">
+                                        <button className="btn btn-primary" type="button" onClick={() => handleEdit(structure)}>Edit</button>
+                                        <button className="btn btn-secondary" type="button" onClick={() => {
                                             handleSelectStructureForRelations(structure);
                                             setActiveTab('relations_list');
-                                        }}
-                                        style={{
-                                            padding: '0.4rem 0.8rem',
-                                            marginRight: '0.5rem',
-                                            backgroundColor: '#1e7e34',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '3px',
-                                            cursor: 'pointer',
-                                            fontSize: '0.75rem',
-                                        }}
-                                    >
-                                        Relations
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(structure.organizational_structure_id)}
-                                        style={{
-                                            padding: '0.4rem 0.8rem',
-                                            backgroundColor: '#d9534f',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '3px',
-                                            cursor: 'pointer',
-                                            fontSize: '0.75rem',
-                                        }}
-                                    >
-                                        Delete
-                                    </button>
+                                        }}>Relations</button>
+                                        <button className="btn btn-secondary" type="button" onClick={() => handleDelete(structure.organizational_structure_id)}>Delete</button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -222,92 +125,48 @@ const RelationsListTabContent = ({
     handleDeleteRelation,
     setActiveTab
 }) => (
-    <div style={{ padding: 'var(--space-4)' }}>
+    <div>
         {!selectedStructure ? (
-            <p style={{ color: 'var(--color-text-secondary)' }}>
-                Please select a structure from the <strong>Structures</strong> tab first.
-            </p>
+            <p>Please select a structure from the <strong>Structures</strong> tab first.</p>
         ) : (
             <>
-                <h3 style={{ marginBottom: 'var(--space-3)', color: 'var(--color-text-primary)' }}>
-                    Relations for: <strong>{selectedStructure.structure_name}</strong>
-                </h3>
+                <h3>Relations for: <strong>{selectedStructure.structure_name}</strong></h3>
 
                 {/* Relations List */}
-                <div style={{ marginBottom: 'var(--space-4)' }}>
+                <div>
                     {loading ? (
-                        <p>Loading...</p>
+                        <div className="loading-state">
+                            <div className="loading-spinner" />
+                            <p>Loading relations...</p>
+                        </div>
                     ) : relations.length === 0 ? (
-                        <p style={{ color: 'var(--color-text-secondary)' }}>No relations found.</p>
+                        <div className="empty-state">
+                            <h3 className="empty-state-title">No relations found</h3>
+                            <p className="empty-state-text">Create one to connect structures</p>
+                        </div>
                     ) : (
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                            gap: 'var(--space-3)',
-                        }}>
+                        <div className="org-relations-grid">
                             {relations.map((relation) => (
-                                <div
-                                    key={`${relation.organizational_structure}-${relation.parent_organizational_structure}`}
-                                    style={{
-                                        padding: 'var(--space-3)',
-                                        border: '1px solid var(--color-border)',
-                                        borderRadius: 'var(--radius-sm)',
-                                        backgroundColor: 'var(--color-bg-secondary)',
-                                    }}
-                                >
-                                    <div style={{ marginBottom: '0.5rem' }}>
-                                        <strong style={{ fontSize: '0.85rem', color: 'var(--color-primary)' }}>
-                                            {relation.organizational_structure_name}
-                                        </strong>
-                                        <span style={{ display: 'block', margin: '0.25rem 0', color: 'var(--color-text-secondary)' }}>
-                                            ↑ Parent
-                                        </span>
-                                        <strong style={{ fontSize: '0.85rem', color: '#1e7e34' }}>
-                                            {relation.parent_organizational_structure_name}
-                                        </strong>
+                                <div key={`${relation.organizational_structure}-${relation.parent_organizational_structure}`} className="org-relation-card">
+                                    <div>
+                                        <strong>{relation.organizational_structure_name}</strong>
+                                        <span>↑ Parent</span>
+                                        <strong>{relation.parent_organizational_structure_name}</strong>
                                     </div>
                                     {relation.relation_type && (
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>
+                                        <div>
                                             <strong>Type:</strong> {relation.relation_type}
                                         </div>
                                     )}
-                                    <div style={{ display: 'flex', gap: '0.25rem' }}>
-                                        <button
-                                            onClick={() => {
-                                                handleEditRelation(relation);
-                                                setActiveTab('relations_form');
-                                            }}
-                                            style={{
-                                                flex: 1,
-                                                padding: '0.3rem 0.6rem',
-                                                backgroundColor: 'var(--color-primary)',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '2px',
-                                                cursor: 'pointer',
-                                                fontSize: '0.7rem',
-                                            }}
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteRelation(
-                                                relation.organizational_structure,
-                                                relation.parent_organizational_structure
-                                            )}
-                                            style={{
-                                                flex: 1,
-                                                padding: '0.3rem 0.6rem',
-                                                backgroundColor: '#d9534f',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '2px',
-                                                cursor: 'pointer',
-                                                fontSize: '0.7rem',
-                                            }}
-                                        >
-                                            Delete
-                                        </button>
+                                    <div className="org-actions">
+                                        <button className="btn btn-primary" type="button" onClick={() => {
+                                            handleEditRelation(relation);
+                                            setActiveTab('relations_form');
+                                        }}>Edit</button>
+                                        <button className="btn btn-secondary" type="button" onClick={() => handleDeleteRelation(
+                                            relation.organizational_structure,
+                                            relation.parent_organizational_structure
+                                        )}>Delete</button>
                                     </div>
                                 </div>
                             ))}
@@ -329,116 +188,54 @@ const RelationFormTabContent = ({
     handleCancelRelation,
     setActiveTab
 }) => (
-    <div style={{ padding: 'var(--space-4)' }}>
+    <div>
         {!selectedStructure ? (
-            <p style={{ color: 'var(--color-text-secondary)' }}>
-                Please select a structure from the <strong>Structures</strong> tab first.
-            </p>
+            <p>Please select a structure from the <strong>Structures</strong> tab first.</p>
         ) : (
-            <div style={{ maxWidth: '400px' }}>
-                <h3 style={{ marginBottom: 'var(--space-3)', color: 'var(--color-text-primary)' }}>
-                    Relation for: <strong>{selectedStructure.structure_name}</strong>
-                </h3>
-                <h4 style={{ marginBottom: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>
-                    {editingRelation ? 'Edit Relation' : 'Add New Relation'}
-                </h4>
+            <div>
+                <h3>Relation for: <strong>{selectedStructure.structure_name}</strong></h3>
+                <h4>{editingRelation ? 'Edit Relation' : 'Add New Relation'}</h4>
                 <form onSubmit={handleSubmitRelation}>
-                    <div style={{ marginBottom: 'var(--space-3)' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                            Parent Structure*
-                        </label>
+                    <div className="form-group">
+                        <label className="form-label">Parent Structure*</label>
                         <select
                             name="parent_organizational_structure"
                             value={relationFormData.parent_organizational_structure}
                             onChange={handleRelationFormChange}
                             required
                             disabled={!!editingRelation}
-                            style={{
-                                width: '100%',
-                                padding: '0.5rem',
-                                border: '1px solid var(--color-border)',
-                                borderRadius: '3px',
-                                fontSize: '0.875rem',
-                                boxSizing: 'border-box',
-                                backgroundColor: editingRelation ? 'var(--color-bg-secondary)' : 'white',
-                                color: editingRelation ? 'var(--color-text-secondary)' : 'inherit'
-                            }}
+                            className="form-control"
                         >
                             <option value="">Select a parent...</option>
                             {structures.filter(s => s.organizational_structure_id !== selectedStructure.organizational_structure_id).map(structure => (
-                                <option
-                                    key={structure.organizational_structure_id}
-                                    value={structure.organizational_structure_id}
-                                >
+                                <option key={structure.organizational_structure_id} value={structure.organizational_structure_id}>
                                     {structure.structure_name}
                                 </option>
                             ))}
                         </select>
                         {editingRelation && (
-                            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.25rem' }}>
-                                Parent structure cannot be changed once created. Create a new relation instead.
-                            </p>
+                            <p>Parent structure cannot be changed once created. Create a new relation instead.</p>
                         )}
                     </div>
 
-                    <div style={{ marginBottom: 'var(--space-3)' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-                            Relation Type (Optional)
-                        </label>
+                    <div className="form-group">
+                        <label className="form-label">Relation Type (Optional)</label>
                         <input
                             type="text"
                             name="relation_type"
                             value={relationFormData.relation_type}
                             onChange={handleRelationFormChange}
                             placeholder="e.g., Department, Division"
-                            style={{
-                                width: '100%',
-                                padding: '0.5rem',
-                                border: '1px solid var(--color-border)',
-                                borderRadius: '3px',
-                                fontSize: '0.875rem',
-                                boxSizing: 'border-box',
-                            }}
+                            className="form-control"
                         />
                     </div>
 
-                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <button
-                            type="submit"
-                            style={{
-                                flex: 1,
-                                padding: '0.5rem',
-                                backgroundColor: '#1e7e34',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: 'var(--radius-sm)',
-                                fontSize: 'var(--font-size-sm)',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            {editingRelation ? 'Update Relation' : 'Add Relation'}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                handleCancelRelation();
-                                setActiveTab('relations_list');
-                            }}
-                            style={{
-                                flex: 1,
-                                padding: '0.5rem',
-                                backgroundColor: 'var(--color-bg-secondary)',
-                                color: 'var(--color-text-primary)',
-                                border: '1px solid var(--color-border)',
-                                borderRadius: 'var(--radius-sm)',
-                                fontSize: 'var(--font-size-sm)',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            {editingRelation ? 'Cancel' : 'Clear Form'}
-                        </button>
+                    <div className="form-actions">
+                        <button type="submit" className="btn btn-primary">{editingRelation ? 'Update Relation' : 'Add Relation'}</button>
+                        <button type="button" className="btn btn-secondary" onClick={() => {
+                            handleCancelRelation();
+                            setActiveTab('relations_list');
+                        }}>{editingRelation ? 'Cancel' : 'Clear Form'}</button>
                     </div>
                 </form>
             </div>
@@ -666,145 +463,99 @@ const OrganizationalStructurePage = () => {
 
     // ============ MAIN RENDER ============
     return (
-        <div style={{ padding: 'var(--space-4)' }}>
+        <div className="page-container">
+            <div className="page-header">
+                <h1 className="page-title">Organizational Structure</h1>
+                <p className="page-subtitle">Manage structures and their parent-child relations</p>
+            </div>
+
             {error && (
-                <div style={{
-                    padding: 'var(--space-3)',
-                    backgroundColor: '#f8d7da',
-                    color: '#721c24',
-                    borderRadius: 'var(--radius-sm)',
-                    marginBottom: 'var(--space-3)',
-                    border: '1px solid #f5c6cb',
-                }}>
-                    {error}
-                </div>
+                <div className="error-message">{error}</div>
             )}
 
             {successMessage && (
-                <div style={{
-                    padding: 'var(--space-3)',
-                    backgroundColor: '#d4edda',
-                    color: '#155724',
-                    borderRadius: 'var(--radius-sm)',
-                    marginBottom: 'var(--space-3)',
-                    border: '1px solid #c3e6cb',
-                }}>
-                    {successMessage}
+                <div className="success-message">{successMessage}</div>
+            )}
+
+            <div className="card">
+                <div className="card-header">
+                    <h2 className="card-title">Management</h2>
+                    <div className="org-tabs">
+                        <button
+                            type="button"
+                            className={`org-tab ${activeTab === 'structures' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('structures')}
+                        >
+                            Structures
+                        </button>
+                        <button
+                            type="button"
+                            className={`org-tab ${activeTab === 'form' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('form')}
+                        >
+                            Add/Edit Structure
+                        </button>
+                        <button
+                            type="button"
+                            className={`org-tab ${activeTab === 'relations_list' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('relations_list')}
+                        >
+                            Relations List
+                        </button>
+                        <button
+                            type="button"
+                            className={`org-tab ${activeTab === 'relations_form' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('relations_form')}
+                        >
+                            Add/Edit Relation
+                        </button>
+                    </div>
                 </div>
-            )}
 
-            <h2 style={{ marginBottom: 'var(--space-4)', color: 'var(--color-text-primary)' }}>
-                Organizational Structure Management
-            </h2>
-
-            <div style={{
-                display: 'flex',
-                borderBottom: '2px solid var(--color-border)',
-                marginBottom: 'var(--space-4)',
-            }}>
-                <button
-                    onClick={() => setActiveTab('structures')}
-                    style={{
-                        padding: 'var(--space-3)',
-                        backgroundColor: activeTab === 'structures' ? 'var(--color-primary)' : 'transparent',
-                        color: activeTab === 'structures' ? 'white' : 'var(--color-text-primary)',
-                        border: 'none',
-                        borderBottom: activeTab === 'structures' ? '3px solid var(--color-primary)' : 'none',
-                        cursor: 'pointer',
-                        fontWeight: activeTab === 'structures' ? '600' : '400',
-                        fontSize: 'var(--font-size-sm)',
-                    }}
-                >
-                    📋 Structures
-                </button>
-                <button
-                    onClick={() => setActiveTab('form')}
-                    style={{
-                        padding: 'var(--space-3)',
-                        backgroundColor: activeTab === 'form' ? 'var(--color-primary)' : 'transparent',
-                        color: activeTab === 'form' ? 'white' : 'var(--color-text-primary)',
-                        border: 'none',
-                        borderBottom: activeTab === 'form' ? '3px solid var(--color-primary)' : 'none',
-                        cursor: 'pointer',
-                        fontWeight: activeTab === 'form' ? '600' : '400',
-                        fontSize: 'var(--font-size-sm)',
-                    }}
-                >
-                    ➕ Add/Edit Structure
-                </button>
-                <button
-                    onClick={() => setActiveTab('relations_list')}
-                    style={{
-                        padding: 'var(--space-3)',
-                        backgroundColor: activeTab === 'relations_list' ? 'var(--color-primary)' : 'transparent',
-                        color: activeTab === 'relations_list' ? 'white' : 'var(--color-text-primary)',
-                        border: 'none',
-                        borderBottom: activeTab === 'relations_list' ? '3px solid var(--color-primary)' : 'none',
-                        cursor: 'pointer',
-                        fontWeight: activeTab === 'relations_list' ? '600' : '400',
-                        fontSize: 'var(--font-size-sm)',
-                    }}
-                >
-                    🔗 Relations List
-                </button>
-                <button
-                    onClick={() => setActiveTab('relations_form')}
-                    style={{
-                        padding: 'var(--space-3)',
-                        backgroundColor: activeTab === 'relations_form' ? 'var(--color-primary)' : 'transparent',
-                        color: activeTab === 'relations_form' ? 'white' : 'var(--color-text-primary)',
-                        border: 'none',
-                        borderBottom: activeTab === 'relations_form' ? '3px solid var(--color-primary)' : 'none',
-                        cursor: 'pointer',
-                        fontWeight: activeTab === 'relations_form' ? '600' : '400',
-                        fontSize: 'var(--font-size-sm)',
-                    }}
-                >
-                    🔗 Add/Edit Relation
-                </button>
+                <div className="card-body">
+                    {activeTab === 'structures' && (
+                        <StructuresTabContent
+                            loading={loading}
+                            structures={structures}
+                            handleEdit={handleEdit}
+                            handleSelectStructureForRelations={handleSelectStructureForRelations}
+                            setActiveTab={setActiveTab}
+                            handleDelete={handleDelete}
+                        />
+                    )}
+                    {activeTab === 'form' && (
+                        <FormTabContent
+                            editingId={editingId}
+                            formData={formData}
+                            handleFormChange={handleFormChange}
+                            handleSubmit={handleSubmit}
+                            handleCancel={handleCancel}
+                        />
+                    )}
+                    {activeTab === 'relations_list' && (
+                        <RelationsListTabContent
+                            selectedStructure={selectedStructure}
+                            loading={loading}
+                            relations={relations}
+                            handleEditRelation={handleEditRelation}
+                            handleDeleteRelation={handleDeleteRelation}
+                            setActiveTab={setActiveTab}
+                        />
+                    )}
+                    {activeTab === 'relations_form' && (
+                        <RelationFormTabContent
+                            selectedStructure={selectedStructure}
+                            editingRelation={editingRelation}
+                            handleSubmitRelation={handleSubmitRelation}
+                            relationFormData={relationFormData}
+                            handleRelationFormChange={handleRelationFormChange}
+                            structures={structures}
+                            handleCancelRelation={handleCancelRelation}
+                            setActiveTab={setActiveTab}
+                        />
+                    )}
+                </div>
             </div>
-
-            {activeTab === 'structures' && (
-                <StructuresTabContent
-                    loading={loading}
-                    structures={structures}
-                    handleEdit={handleEdit}
-                    handleSelectStructureForRelations={handleSelectStructureForRelations}
-                    setActiveTab={setActiveTab}
-                    handleDelete={handleDelete}
-                />
-            )}
-            {activeTab === 'form' && (
-                <FormTabContent
-                    editingId={editingId}
-                    formData={formData}
-                    handleFormChange={handleFormChange}
-                    handleSubmit={handleSubmit}
-                    handleCancel={handleCancel}
-                />
-            )}
-            {activeTab === 'relations_list' && (
-                <RelationsListTabContent
-                    selectedStructure={selectedStructure}
-                    loading={loading}
-                    relations={relations}
-                    handleEditRelation={handleEditRelation}
-                    handleDeleteRelation={handleDeleteRelation}
-                    setActiveTab={setActiveTab}
-                />
-            )}
-            {activeTab === 'relations_form' && (
-                <RelationFormTabContent
-                    selectedStructure={selectedStructure}
-                    editingRelation={editingRelation}
-                    handleSubmitRelation={handleSubmitRelation}
-                    relationFormData={relationFormData}
-                    handleRelationFormChange={handleRelationFormChange}
-                    structures={structures}
-                    handleCancelRelation={handleCancelRelation}
-                    setActiveTab={setActiveTab}
-                />
-            )}
         </div>
     );
 };

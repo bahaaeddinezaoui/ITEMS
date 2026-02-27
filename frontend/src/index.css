@@ -310,6 +310,16 @@ option {
     margin-bottom: var(--space-5);
 }
 
+.success-message {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--color-success);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-5);
+}
+
 .loading-spinner {
     width: 20px;
     height: 20px;
@@ -323,6 +333,15 @@ option {
     to {
         transform: rotate(360deg);
     }
+}
+
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-8) var(--space-6);
+    color: var(--color-text-secondary);
 }
 
 /* ========================================
@@ -496,6 +515,12 @@ option {
     flex: 1;
     margin-left: var(--sidebar-width);
     padding: var(--space-8);
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
 }
 
 .page-header {
@@ -711,6 +736,121 @@ option {
 
 .form-row .form-group {
     margin-bottom: 0;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.form-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family);
+    color: var(--color-text-primary);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    outline: none;
+}
+
+.form-control:focus {
+    border-color: var(--color-accent-primary);
+    box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+.form-checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-accent-primary);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.form-actions .btn-primary {
+    width: auto;
+}
+
+/* ========================================
+   Organizational Structure Page
+   ======================================== */
+
+.org-actions {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.org-actions .btn {
+    width: auto;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-sm);
+}
+
+.org-tabs {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.org-tab {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.org-tab:hover {
+    background: var(--color-bg-card-hover);
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+}
+
+.org-tab.active {
+    background: var(--color-accent-glow);
+    border-color: rgba(99, 102, 241, 0.5);
+    color: var(--color-accent-tertiary);
+}
+
+.org-relations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-4);
+}
+
+.org-relation-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.org-relation-card:hover {
+    background: var(--color-bg-card-hover);
+    border-color: var(--color-border-hover);
 }
 
 /* ========================================
