@@ -41742,3 +41742,23 @@ Response Body: {"error":"Invalid credentials"}
 [2026-02-27 22:57:09.250112] START POST /api/auth/login/
 [2026-02-27 22:57:09.296226] END   POST /api/auth/login/ -> 401
 Response Body: {"error":"Invalid credentials"}
+[2026-02-27 23:15:02.137331] START POST /api/auth/login/
+[2026-02-27 23:15:02.185861] END   POST /api/auth/login/ -> 200
+[2026-02-27 23:15:03.831718] START GET /api/asset-types/
+[2026-02-27 23:15:03.834642] START GET /api/asset-attribute-definitions/
+[2026-02-27 23:15:03.875231] END   GET /api/asset-types/ -> 200
+[2026-02-27 23:15:03.875359] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-27 23:15:03.881862] START GET /api/asset-types/
+[2026-02-27 23:15:03.882537] START GET /api/asset-attribute-definitions/
+[2026-02-27 23:15:03.925622] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-02-27 23:15:03.925742] END   GET /api/asset-types/ -> 200
+[2026-02-27 23:15:06.651124] START GET /api/problem-reports/
+[2026-02-27 23:15:06.804238] END   GET /api/problem-reports/ -> 200
+[2026-02-27 23:15:06.809174] START GET /api/problem-reports/
+[2026-02-27 23:15:06.852654] END   GET /api/problem-reports/ -> 200
+[2026-02-27 23:15:14.923417] START GET /api/my-items/
+[2026-02-27 23:15:14.974450] END   GET /api/my-items/ -> 200
+[2026-02-27 23:15:14.979309] START GET /api/my-items/
+[2026-02-27 23:15:15.030803] END   GET /api/my-items/ -> 200
+[2026-02-27 23:16:05.845562] START POST /api/auth/login/
+[2026-02-27 23:16:05.894733] END   POST /api/auth/login/ -> 200
