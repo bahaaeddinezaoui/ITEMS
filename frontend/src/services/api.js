@@ -1245,6 +1245,12 @@ export const maintenanceStepService = {
         return response.data;
     },
 
+    addAttributeChanges: async (id, changes) => {
+        const payload = Array.isArray(changes) ? changes : { changes };
+        const response = await api.post(`maintenance-steps/${id}/attribute-changes/`, payload);
+        return response.data;
+    },
+
     delete: async (id) => {
         await api.delete(`maintenance-steps/${id}/`);
     },

@@ -15,6 +15,12 @@ import {
     consumableModelService,
     roomService,
     physicalConditionService,
+    assetAttributeDefinitionService,
+    stockItemAttributeDefinitionService,
+    consumableAttributeDefinitionService,
+    assetAttributeValueService,
+    stockItemAttributeValueService,
+    consumableAttributeValueService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -83,6 +89,26 @@ const MaintenanceSteps = ({
     const [assetConditionFunctionalIssues, setAssetConditionFunctionalIssues] = useState('');
     const [assetConditionRecommendation, setAssetConditionRecommendation] = useState('');
     const [assetConditionSubmitting, setAssetConditionSubmitting] = useState(false);
+
+    const [attributeEditorOpen, setAttributeEditorOpen] = useState(false);
+    const [attributeEditorStep, setAttributeEditorStep] = useState(null);
+    const [attributeEditorComponents, setAttributeEditorComponents] = useState({ stock_items: [], consumables: [] });
+    const [assetAttributeDefinitions, setAssetAttributeDefinitions] = useState([]);
+    const [stockItemAttributeDefinitions, setStockItemAttributeDefinitions] = useState([]);
+    const [consumableAttributeDefinitions, setConsumableAttributeDefinitions] = useState([]);
+
+    const [attributeTargetValue, setAttributeTargetValue] = useState('asset');
+    const [attributeComponentValue, setAttributeComponentValue] = useState('');
+    const [attributeDefinitionId, setAttributeDefinitionId] = useState('');
+    const [attributeValueString, setAttributeValueString] = useState('');
+    const [attributeValueBool, setAttributeValueBool] = useState(false);
+    const [attributeValueNumber, setAttributeValueNumber] = useState('');
+    const [attributeValueDate, setAttributeValueDate] = useState('');
+    const [attributePendingChanges, setAttributePendingChanges] = useState([]);
+    const [attributeSubmitting, setAttributeSubmitting] = useState(false);
+    const [attributeMessage, setAttributeMessage] = useState(null);
+    const [attributeCurrentValue, setAttributeCurrentValue] = useState(null);
+    const [attributeCurrentValueLoading, setAttributeCurrentValueLoading] = useState(false);
 
     // New Step Form State
     const [newStepTypicalId, setNewStepTypicalId] = useState('');
@@ -252,7 +278,195 @@ const MaintenanceSteps = ({
         closeRequestEditor();
         closeRemoveEditor();
         closeAssetConditionEditor();
+        closeAttributeEditor();
     }, [maintenanceEnded]);
+
+    const openAttributeEditor = async (step) => {
+        if (maintenanceEnded) {
+            setError('Maintenance is ended');
+            return;
+        }
+
+        setAttributeEditorOpen(true);
+        setAttributeEditorStep(step);
+        setAttributeEditorComponents({ stock_items: [], consumables: [] });
+        setAssetAttributeDefinitions([]);
+        setStockItemAttributeDefinitions([]);
+        setConsumableAttributeDefinitions([]);
+
+        setAttributeTargetValue('asset');
+        setAttributeComponentValue('');
+        setAttributeDefinitionId('');
+        setAttributeValueString('');
+        setAttributeValueBool(false);
+        setAttributeValueNumber('');
+        setAttributeValueDate('');
+        setAttributePendingChanges([]);
+        setAttributeMessage(null);
+
+        try {
+            const [componentsData, assetDefs, stockDefs, consDefs] = await Promise.all([
+                maintenanceStepService.getComponents(step.maintenance_step_id).catch(() => ({ stock_items: [], consumables: [] })),
+                assetAttributeDefinitionService.getAll().catch(() => []),
+                stockItemAttributeDefinitionService.getAll().catch(() => []),
+                consumableAttributeDefinitionService.getAll().catch(() => []),
+            ]);
+
+            setAttributeEditorComponents({
+                stock_items: Array.isArray(componentsData?.stock_items) ? componentsData.stock_items : [],
+                consumables: Array.isArray(componentsData?.consumables) ? componentsData.consumables : [],
+            });
+            setAssetAttributeDefinitions(Array.isArray(assetDefs) ? assetDefs : []);
+            setStockItemAttributeDefinitions(Array.isArray(stockDefs) ? stockDefs : []);
+            setConsumableAttributeDefinitions(Array.isArray(consDefs) ? consDefs : []);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const getSelectedAttributeDefinition = () => {
+        const rawId = Number(attributeDefinitionId);
+        if (!rawId || Number.isNaN(rawId)) return null;
+
+        if (attributeTargetValue === 'asset') {
+            return assetAttributeDefinitions.find((d) => Number(d.asset_attribute_definition_id) === rawId) || null;
+        }
+        if (attributeTargetValue === 'stock_item') {
+            return stockItemAttributeDefinitions.find((d) => Number(d.stock_item_attribute_definition_id) === rawId) || null;
+        }
+        return consumableAttributeDefinitions.find((d) => Number(d.consumable_attribute_definition_id) === rawId) || null;
+    };
+
+    const inferAttributeDataType = (def) => {
+        const raw = (def?.data_type || '').toString().trim().toLowerCase();
+        if (raw === 'bool' || raw === 'boolean') return 'bool';
+        if (raw === 'date') return 'date';
+        if (raw === 'number' || raw === 'numeric' || raw === 'decimal' || raw === 'int' || raw === 'integer' || raw === 'float' || raw === 'double') return 'number';
+        return 'string';
+    };
+
+    const addPendingAttributeChange = () => {
+        const def = getSelectedAttributeDefinition();
+        if (!def) {
+            setAttributeMessage({ type: 'error', text: 'Please select an attribute.' });
+            return;
+        }
+
+        let targetId = null;
+        if (attributeTargetValue === 'stock_item' || attributeTargetValue === 'consumable') {
+            if (!attributeComponentValue) {
+                setAttributeMessage({ type: 'error', text: 'Please select a component.' });
+                return;
+            }
+            targetId = Number(attributeComponentValue);
+            if (!targetId || Number.isNaN(targetId)) {
+                setAttributeMessage({ type: 'error', text: 'Invalid component.' });
+                return;
+            }
+        }
+
+        const dt = inferAttributeDataType(def);
+        const attributeDefinitionIdNumber = attributeTargetValue === 'asset'
+            ? Number(def.asset_attribute_definition_id)
+            : attributeTargetValue === 'stock_item'
+                ? Number(def.stock_item_attribute_definition_id)
+                : Number(def.consumable_attribute_definition_id);
+
+        const change = {
+            target_type: attributeTargetValue,
+            target_id: targetId,
+            attribute_definition_id: attributeDefinitionIdNumber,
+        };
+
+        if (dt === 'bool') {
+            change.value_bool = Boolean(attributeValueBool);
+        } else if (dt === 'date') {
+            if (!attributeValueDate) {
+                setAttributeMessage({ type: 'error', text: 'Please select a date.' });
+                return;
+            }
+            change.value_date = attributeValueDate;
+        } else if (dt === 'number') {
+            if (attributeValueNumber === '' || attributeValueNumber == null) {
+                setAttributeMessage({ type: 'error', text: 'Please enter a number.' });
+                return;
+            }
+            const n = Number(attributeValueNumber);
+            if (Number.isNaN(n)) {
+                setAttributeMessage({ type: 'error', text: 'Invalid number.' });
+                return;
+            }
+            change.value_number = n;
+        } else {
+            if (!attributeValueString) {
+                setAttributeMessage({ type: 'error', text: 'Please enter a value.' });
+                return;
+            }
+            change.value_string = attributeValueString;
+        }
+
+        setAttributePendingChanges((prev) => [...prev, change]);
+        setAttributeMessage({ type: 'success', text: 'Change added to queue.' });
+    };
+
+    const submitAttributeEditorChanges = async () => {
+        if (!attributeEditorStep) return;
+        if (!Array.isArray(attributePendingChanges) || attributePendingChanges.length === 0) {
+            setAttributeMessage({ type: 'error', text: 'No changes to submit.' });
+            return;
+        }
+
+        try {
+            setAttributeSubmitting(true);
+            setAttributeMessage(null);
+            await maintenanceStepService.addAttributeChanges(attributeEditorStep.maintenance_step_id, attributePendingChanges);
+            setAttributeMessage({ type: 'success', text: 'Attribute changes queued. They will apply when the step is done.' });
+            setAttributePendingChanges([]);
+        } catch (err) {
+            console.error(err);
+            setAttributeMessage({ type: 'error', text: err.response?.data?.error || 'Failed to queue attribute changes.' });
+        } finally {
+            setAttributeSubmitting(false);
+        }
+    };
+
+    const loadCurrentAttributeValue = async () => {
+        const defId = Number(attributeDefinitionId);
+        if (!defId || Number.isNaN(defId)) {
+            setAttributeCurrentValue(null);
+            return;
+        }
+        try {
+            setAttributeCurrentValueLoading(true);
+            let val = null;
+            const maintenance = attributeEditorStep?.maintenance;
+            const asset = maintenance?.asset;
+            if (attributeTargetValue === 'asset') {
+                if (asset?.asset_id) {
+                    const rows = await assetAttributeValueService.getByAsset(asset.asset_id);
+                    val = rows?.find(r => Number(r.attribute_definition_id || r.asset_attribute_definition_id) === defId) || null;
+                }
+            } else if (attributeTargetValue === 'stock_item') {
+                const sid = Number(attributeComponentValue);
+                if (sid && !Number.isNaN(sid)) {
+                    const rows = await stockItemAttributeValueService.getByStockItem(sid);
+                    val = rows?.find(r => Number(r.attribute_definition_id || r.stock_item_attribute_definition_id) === defId) || null;
+                }
+            } else if (attributeTargetValue === 'consumable') {
+                const cid = Number(attributeComponentValue);
+                if (cid && !Number.isNaN(cid)) {
+                    const rows = await consumableAttributeValueService.getByConsumable(cid);
+                    val = rows?.find(r => Number(r.attribute_definition_id || r.consumable_attribute_definition_id) === defId) || null;
+                }
+            }
+            setAttributeCurrentValue(val);
+        } catch (err) {
+            console.error('Failed to load current attribute value:', err);
+            setAttributeCurrentValue(null);
+        } finally {
+            setAttributeCurrentValueLoading(false);
+        }
+    };
 
     const submitExternalMaintenance = async (e) => {
         e.preventDefault();
@@ -446,6 +660,29 @@ const MaintenanceSteps = ({
         setAssetConditionRecommendation('');
         setAssetConditionSubmitting(false);
     };
+
+    const closeAttributeEditor = () => {
+        setAttributeEditorOpen(false);
+        setAttributeEditorStep(null);
+        setAttributeEditorComponents({ stock_items: [], consumables: [] });
+        setAttributeTargetValue('asset');
+        setAttributeComponentValue('');
+        setAttributeDefinitionId('');
+        setAttributeValueString('');
+        setAttributeValueBool(false);
+        setAttributeValueNumber('');
+        setAttributeValueDate('');
+        setAttributePendingChanges([]);
+        setAttributeSubmitting(false);
+        setAttributeMessage(null);
+        setAttributeCurrentValue(null);
+        setAttributeCurrentValueLoading(false);
+    };
+
+    useEffect(() => {
+        if (!attributeEditorOpen) return;
+        loadCurrentAttributeValue();
+    }, [attributeDefinitionId, attributeTargetValue, attributeComponentValue, attributeEditorStep]);
 
     const openAssetConditionEditor = (step) => {
         if (maintenanceEnded) {
@@ -1085,6 +1322,25 @@ const MaintenanceSteps = ({
                                                             <button
                                                                 className="btn btn-xs btn-secondary"
                                                                 style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                onClick={() => openAttributeEditor(step)}
+                                                                title="Queue attribute changes"
+                                                                aria-label="Queue attribute changes"
+                                                            >
+                                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                    <path d="M12 20h9" />
+                                                                    <path d="M12 4h9" />
+                                                                    <path d="M4 9h6" />
+                                                                    <path d="M4 15h6" />
+                                                                    <path d="M9 7l-2 2 2 2" />
+                                                                    <path d="M9 13l-2 2 2 2" />
+                                                                </svg>
+                                                            </button>
+                                                        )}
+
+                                                        {step.maintenance_step_status !== 'done' && (
+                                                            <button
+                                                                className="btn btn-xs btn-secondary"
+                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
                                                                 onClick={() => openAssetConditionEditor(step)}
                                                                 title="Update asset condition"
                                                                 aria-label="Update asset condition"
@@ -1515,6 +1771,285 @@ const MaintenanceSteps = ({
                                 >
                                     {assetConditionSubmitting ? 'Saving...' : 'Save'}
                                 </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body,
+                )
+            )}
+
+            {attributeEditorOpen && attributeEditorStep && (
+                createPortal(
+                    <div className="modal-overlay" onClick={() => closeAttributeEditor()}>
+                        <div
+                            className="modal"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                maxHeight: '80vh',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                width: 680,
+                            }}
+                        >
+                            <div className="modal-header">
+                                <h3 className="modal-title">Queue attribute changes</h3>
+                                <button className="modal-close" onClick={() => closeAttributeEditor()} disabled={attributeSubmitting}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                                    Step: <b>{attributeEditorStep.maintenance_step_id}</b>
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">Target</label>
+                                    <select
+                                        className="form-input"
+                                        value={attributeTargetValue}
+                                        onChange={(e) => {
+                                            setAttributeTargetValue(e.target.value);
+                                            setAttributeComponentValue('');
+                                            setAttributeDefinitionId('');
+                                            setAttributeMessage(null);
+                                        }}
+                                        disabled={attributeSubmitting}
+                                    >
+                                        <option value="asset">Asset</option>
+                                        <option value="stock_item">Stock item (composing asset)</option>
+                                        <option value="consumable">Consumable (composing asset)</option>
+                                    </select>
+                                </div>
+
+                                {(attributeTargetValue === 'stock_item' || attributeTargetValue === 'consumable') && (
+                                    <div className="form-group" style={{ marginBottom: 10 }}>
+                                        <label className="form-label">Component</label>
+                                        <select
+                                            className="form-input"
+                                            value={attributeComponentValue}
+                                            onChange={(e) => {
+                                                setAttributeComponentValue(e.target.value);
+                                                setAttributeMessage(null);
+                                            }}
+                                            disabled={attributeSubmitting}
+                                        >
+                                            <option value="">Select component...</option>
+                                            {(attributeTargetValue === 'stock_item'
+                                                ? attributeEditorComponents.stock_items
+                                                : attributeEditorComponents.consumables
+                                            ).map((it) => (
+                                                <option
+                                                    key={attributeTargetValue === 'stock_item' ? it.stock_item_id : it.consumable_id}
+                                                    value={attributeTargetValue === 'stock_item' ? it.stock_item_id : it.consumable_id}
+                                                >
+                                                    {attributeTargetValue === 'stock_item'
+                                                        ? `${it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}${it.stock_item_name || `Stock item ${it.stock_item_id}`}`
+                                                        : `${it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}${it.consumable_name || `Consumable ${it.consumable_id}`}`
+                                                    }
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">Attribute</label>
+                                    <select
+                                        className="form-input"
+                                        value={attributeDefinitionId}
+                                        onChange={(e) => {
+                                            setAttributeDefinitionId(e.target.value);
+                                            setAttributeMessage(null);
+                                        }}
+                                        disabled={attributeSubmitting}
+                                    >
+                                        <option value="">Select attribute...</option>
+                                        {(attributeTargetValue === 'asset'
+                                            ? assetAttributeDefinitions
+                                            : attributeTargetValue === 'stock_item'
+                                                ? stockItemAttributeDefinitions
+                                                : consumableAttributeDefinitions
+                                        ).map((d) => {
+                                            const id = attributeTargetValue === 'asset'
+                                                ? d.asset_attribute_definition_id
+                                                : attributeTargetValue === 'stock_item'
+                                                    ? d.stock_item_attribute_definition_id
+                                                    : d.consumable_attribute_definition_id;
+                                            return (
+                                                <option key={id} value={id}>
+                                                    {d.description || `Attribute ${id}`}{d.unit ? ` (${d.unit})` : ''}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                    {attributeDefinitionId && (
+                                        <div style={{ marginTop: 8, fontSize: 12, opacity: 0.85 }}>
+                                            <b>Current value:</b>{' '}
+                                            {attributeCurrentValueLoading ? (
+                                                'Loading...'
+                                            ) : attributeCurrentValue ? (
+                                                (() => {
+                                                    const v = attributeCurrentValue;
+                                                    if (v.value_string != null) return v.value_string;
+                                                    if (v.value_number != null) return String(v.value_number);
+                                                    if (v.value_date != null) return v.value_date;
+                                                    if (v.value_bool != null) return String(v.value_bool);
+                                                    return '-';
+                                                })()
+                                            ) : (
+                                                <span style={{ opacity: 0.6 }}>Not set</span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {(() => {
+                                    const def = getSelectedAttributeDefinition();
+                                    const dt = inferAttributeDataType(def);
+                                    if (dt === 'bool') {
+                                        return (
+                                            <div className="form-group" style={{ marginBottom: 10 }}>
+                                                <label className="form-label">Value</label>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!!attributeValueBool}
+                                                        onChange={(e) => setAttributeValueBool(e.target.checked)}
+                                                        disabled={attributeSubmitting}
+                                                    />
+                                                    <div style={{ fontSize: 12, opacity: 0.85 }}>Set to true/false</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    if (dt === 'date') {
+                                        return (
+                                            <div className="form-group" style={{ marginBottom: 10 }}>
+                                                <label className="form-label">Value</label>
+                                                <input
+                                                    type="date"
+                                                    className="form-input"
+                                                    value={attributeValueDate}
+                                                    onChange={(e) => setAttributeValueDate(e.target.value)}
+                                                    disabled={attributeSubmitting}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    if (dt === 'number') {
+                                        return (
+                                            <div className="form-group" style={{ marginBottom: 10 }}>
+                                                <label className="form-label">Value</label>
+                                                <input
+                                                    type="number"
+                                                    className="form-input"
+                                                    value={attributeValueNumber}
+                                                    onChange={(e) => setAttributeValueNumber(e.target.value)}
+                                                    disabled={attributeSubmitting}
+                                                />
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">Value</label>
+                                            <input
+                                                className="form-input"
+                                                value={attributeValueString}
+                                                onChange={(e) => setAttributeValueString(e.target.value)}
+                                                disabled={attributeSubmitting}
+                                            />
+                                        </div>
+                                    );
+                                })()}
+
+                                {attributeMessage && (
+                                    <div
+                                        className={attributeMessage.type === 'success' ? 'badge badge-success' : 'badge badge-danger'}
+                                        style={{
+                                            padding: 'var(--space-3)',
+                                            width: '100%',
+                                            marginBottom: 10,
+                                            borderRadius: 'var(--radius-md)',
+                                            display: 'block',
+                                        }}
+                                    >
+                                        {attributeMessage.text}
+                                    </div>
+                                )}
+
+                                {Array.isArray(attributePendingChanges) && attributePendingChanges.length > 0 && (
+                                    <div style={{ marginTop: 12 }}>
+                                        <div style={{ fontWeight: 700, marginBottom: 6 }}>Queued (local)</div>
+                                        <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 8 }}>
+                                            These will be sent to the server when you click "Submit".
+                                        </div>
+                                        <div className="table-container rounded border overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)' }}>
+                                            <table className="data-table mb-0">
+                                                <thead style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+                                                    <tr>
+                                                        <th className="px-4 py-2">Target</th>
+                                                        <th className="px-4 py-2">Definition</th>
+                                                        <th className="px-4 py-2">Value</th>
+                                                        <th className="px-4 py-2 text-right">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {attributePendingChanges.map((c, idx) => (
+                                                        <tr key={`chg-${idx}`} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
+                                                            <td className="px-4 py-2">
+                                                                {c.target_type}{c.target_id ? ` #${c.target_id}` : ''}
+                                                            </td>
+                                                            <td className="px-4 py-2">{c.attribute_definition_id}</td>
+                                                            <td className="px-4 py-2">
+                                                                {c.value_string != null ? c.value_string : c.value_number != null ? String(c.value_number) : c.value_date != null ? c.value_date : String(!!c.value_bool)}
+                                                            </td>
+                                                            <td className="px-4 py-2 text-right">
+                                                                <button
+                                                                    className="btn btn-xs btn-danger"
+                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                    onClick={() => setAttributePendingChanges((prev) => prev.filter((_, i) => i !== idx))}
+                                                                    disabled={attributeSubmitting}
+                                                                >
+                                                                    Remove
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                                <button type="button" className="btn btn-secondary" onClick={closeAttributeEditor} disabled={attributeSubmitting}>
+                                    Close
+                                </button>
+                                <div style={{ display: 'flex', gap: 10 }}>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={addPendingAttributeChange}
+                                        disabled={attributeSubmitting}
+                                    >
+                                        Add to queue
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary"
+                                        onClick={submitAttributeEditorChanges}
+                                        disabled={attributeSubmitting}
+                                    >
+                                        {attributeSubmitting ? 'Submitting...' : 'Submit'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>,

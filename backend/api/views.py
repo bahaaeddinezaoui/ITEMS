@@ -7,6 +7,7 @@ from decimal import Decimal
 
 from django.utils import timezone
 from django.db import connection
+from django.db import transaction
 from django.db.models import OuterRef, Subquery, Q
 from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
@@ -83,6 +84,7 @@ from .models import (
     ExternalMaintenanceStep,
     ExternalMaintenanceTypicalStep,
     ExternalMaintenanceDocument,
+    MaintenanceStepAttributeChange,
 )
 
 
@@ -957,6 +959,200 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         except Exception:
             return
 
+    def _get_user_id(self, request):
+        try:
+            if hasattr(request, "user") and request.user and getattr(request.user, "is_authenticated", False):
+                if isinstance(request.user, UserAccount):
+                    return getattr(request.user, "user_id", None)
+        except Exception:
+            pass
+
+        try:
+            if hasattr(request, "auth") and request.auth is not None:
+                return request.auth.get("user_id")
+        except Exception:
+            return None
+
+        return None
+
+    def _require_asset_composition(self, *, asset_id: int, target_type: str, target_id: int | None):
+        if target_type == "asset":
+            return
+
+        if target_type == "stock_item":
+            if target_id is None:
+                raise ValidationError({"target_id": "target_id is required for stock_item"})
+            is_composed = AssetIsComposedOfStockItemHistory.objects.filter(
+                asset_id=asset_id,
+                stock_item_id=target_id,
+                end_datetime__isnull=True,
+            ).exists()
+            if not is_composed:
+                raise ValidationError({"target_id": "Stock item is not currently composed in this asset"})
+            return
+
+        if target_type == "consumable":
+            if target_id is None:
+                raise ValidationError({"target_id": "target_id is required for consumable"})
+            is_composed = AssetIsComposedOfConsumableHistory.objects.filter(
+                asset_id=asset_id,
+                consumable_id=target_id,
+                end_datetime__isnull=True,
+            ).exists()
+            if not is_composed:
+                raise ValidationError({"target_id": "Consumable is not currently composed in this asset"})
+            return
+
+        raise ValidationError({"target_type": "Invalid target_type"})
+
+    def _validate_and_normalize_change(self, change: dict):
+        target_type = change.get("target_type")
+        target_id = change.get("target_id")
+        attribute_definition_id = change.get("attribute_definition_id")
+
+        if target_type not in {"asset", "stock_item", "consumable"}:
+            raise ValidationError({"target_type": "target_type must be 'asset', 'stock_item', or 'consumable'"})
+
+        try:
+            if target_id not in (None, ""):
+                target_id = int(target_id)
+            else:
+                target_id = None
+        except (TypeError, ValueError):
+            raise ValidationError({"target_id": "Invalid target_id"})
+
+        try:
+            attribute_definition_id = int(attribute_definition_id)
+        except (TypeError, ValueError):
+            raise ValidationError({"attribute_definition_id": "Invalid attribute_definition_id"})
+
+        value_fields = [
+            "value_string",
+            "value_bool",
+            "value_number",
+            "value_date",
+        ]
+        provided = [f for f in value_fields if f in change and change.get(f) is not None]
+        if len(provided) > 1:
+            raise ValidationError({"value": "Only one value field can be set"})
+
+        if target_type == "asset":
+            if not AssetAttributeDefinition.objects.filter(asset_attribute_definition_id=attribute_definition_id).exists():
+                raise ValidationError({"attribute_definition_id": "Invalid asset attribute definition"})
+        elif target_type == "stock_item":
+            if not StockItemAttributeDefinition.objects.filter(stock_item_attribute_definition_id=attribute_definition_id).exists():
+                raise ValidationError({"attribute_definition_id": "Invalid stock item attribute definition"})
+        else:
+            if not ConsumableAttributeDefinition.objects.filter(consumable_attribute_definition_id=attribute_definition_id).exists():
+                raise ValidationError({"attribute_definition_id": "Invalid consumable attribute definition"})
+
+        normalized = {
+            "target_type": target_type,
+            "target_id": target_id,
+            "attribute_definition_id": attribute_definition_id,
+            "value_string": change.get("value_string"),
+            "value_bool": change.get("value_bool"),
+            "value_number": change.get("value_number"),
+            "value_date": change.get("value_date"),
+        }
+        return normalized
+
+    def _apply_pending_attribute_changes(self, step: MaintenanceStep):
+        maintenance = getattr(step, "maintenance", None)
+        asset = getattr(maintenance, "asset", None) if maintenance else None
+        if not asset:
+            raise ValidationError({"maintenance": "Maintenance asset not found"})
+
+        pending = list(
+            MaintenanceStepAttributeChange.objects.filter(
+                maintenance_step_id=step.maintenance_step_id,
+                applied_at_datetime__isnull=True,
+            ).order_by("maintenance_step_attribute_change_id")
+        )
+        if not pending:
+            return
+
+        now_dt = timezone.now()
+        with connection.cursor() as cursor:
+            for ch in pending:
+                self._require_asset_composition(
+                    asset_id=asset.asset_id,
+                    target_type=ch.target_type,
+                    target_id=ch.target_id,
+                )
+
+                if ch.target_type == "asset":
+                    cursor.execute(
+                        """
+                        INSERT INTO public.asset_attribute_value
+                            (asset_id, asset_attribute_definition_id, value_string, value_bool, value_date, value_number)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (asset_id, asset_attribute_definition_id)
+                        DO UPDATE SET
+                            value_string = EXCLUDED.value_string,
+                            value_bool = EXCLUDED.value_bool,
+                            value_date = EXCLUDED.value_date,
+                            value_number = EXCLUDED.value_number
+                        """,
+                        [
+                            asset.asset_id,
+                            ch.attribute_definition_id,
+                            ch.value_string,
+                            ch.value_bool,
+                            ch.value_date,
+                            ch.value_number,
+                        ],
+                    )
+                elif ch.target_type == "stock_item":
+                    cursor.execute(
+                        """
+                        INSERT INTO public.stock_item_attribute_value
+                            (stock_item_id, stock_item_attribute_definition_id, value_string, value_bool, value_date, value_number)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (stock_item_id, stock_item_attribute_definition_id)
+                        DO UPDATE SET
+                            value_string = EXCLUDED.value_string,
+                            value_bool = EXCLUDED.value_bool,
+                            value_date = EXCLUDED.value_date,
+                            value_number = EXCLUDED.value_number
+                        """,
+                        [
+                            ch.target_id,
+                            ch.attribute_definition_id,
+                            ch.value_string,
+                            ch.value_bool,
+                            ch.value_date,
+                            ch.value_number,
+                        ],
+                    )
+                else:
+                    cursor.execute(
+                        """
+                        INSERT INTO public.consumable_attribute_value
+                            (consumable_id, consumable_attribute_definition_id, value_string, value_bool, value_date, value_number)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (consumable_id, consumable_attribute_definition_id)
+                        DO UPDATE SET
+                            value_string = EXCLUDED.value_string,
+                            value_bool = EXCLUDED.value_bool,
+                            value_date = EXCLUDED.value_date,
+                            value_number = EXCLUDED.value_number
+                        """,
+                        [
+                            ch.target_id,
+                            ch.attribute_definition_id,
+                            ch.value_string,
+                            ch.value_bool,
+                            ch.value_date,
+                            ch.value_number,
+                        ],
+                    )
+
+        MaintenanceStepAttributeChange.objects.filter(
+            maintenance_step_id=step.maintenance_step_id,
+            applied_at_datetime__isnull=True,
+        ).update(applied_at_datetime=now_dt)
+
     def perform_update(self, serializer):
         instance = self.get_object()
         old_status = getattr(instance, "maintenance_step_status", None)
@@ -965,7 +1161,11 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         if old_status in self._TERMINAL_STEP_STATUSES and new_status != old_status:
             raise ValidationError({"maintenance_step_status": "Cannot change status of a terminal step"})
 
-        updated = serializer.save()
+        with transaction.atomic():
+            updated = serializer.save()
+
+            if new_status == "done" and old_status != "done":
+                self._apply_pending_attribute_changes(updated)
 
         if new_status == "started" and old_status != "started":
             try:
@@ -1047,6 +1247,61 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
                 f"[maintenance-step] failed to auto-compose on done+add for step_id={getattr(updated, 'maintenance_step_id', None)}"
             )
             return
+
+    @action(detail=True, methods=["post"], url_path="attribute-changes")
+    def attribute_changes(self, request, pk=None):
+        step = self.get_object()
+        _, denial = self._require_can_act_on_step(request, step)
+        if denial:
+            return denial
+
+        if getattr(step, "maintenance_step_status", None) in self._TERMINAL_STEP_STATUSES:
+            return Response({"error": "Step is done"}, status=status.HTTP_400_BAD_REQUEST)
+
+        maintenance = getattr(step, "maintenance", None)
+        asset = getattr(maintenance, "asset", None) if maintenance else None
+        if not asset:
+            return Response({"error": "Maintenance asset not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        payload = request.data
+        if isinstance(payload, list):
+            changes = payload
+        else:
+            changes = payload.get("changes")
+
+        if not changes or not isinstance(changes, list):
+            return Response({"error": "changes must be a non-empty list"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_id = self._get_user_id(request)
+        created_ids = []
+        for raw in changes:
+            if not isinstance(raw, dict):
+                raise ValidationError({"changes": "Each change must be an object"})
+
+            normalized = self._validate_and_normalize_change(raw)
+            self._require_asset_composition(
+                asset_id=asset.asset_id,
+                target_type=normalized["target_type"],
+                target_id=normalized["target_id"],
+            )
+
+            row = MaintenanceStepAttributeChange.objects.create(
+                maintenance_step_id=step.maintenance_step_id,
+                target_type=normalized["target_type"],
+                target_id=normalized["target_id"],
+                attribute_definition_id=normalized["attribute_definition_id"],
+                value_string=normalized["value_string"],
+                value_bool=normalized["value_bool"],
+                value_number=normalized["value_number"],
+                value_date=normalized["value_date"],
+                created_by_user_id=user_id,
+            )
+            created_ids.append(row.maintenance_step_attribute_change_id)
+
+        return Response(
+            {"created": len(created_ids), "maintenance_step_attribute_change_ids": created_ids},
+            status=status.HTTP_201_CREATED,
+        )
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -1289,11 +1544,6 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         _, denial = self._require_can_act_on_step(request, step)
         if denial:
             return denial
-
-        typical_step = getattr(step, "maintenance_typical_step", None)
-        op_type = getattr(typical_step, "operation_type", None)
-        if op_type != "remove":
-            return Response({"error": "This action is only available for operation_type 'remove'"}, status=status.HTTP_400_BAD_REQUEST)
 
         maintenance = getattr(step, "maintenance", None)
         asset = getattr(maintenance, "asset", None) if maintenance else None
