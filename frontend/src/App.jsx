@@ -40,6 +40,7 @@ import ItemRequestsInboxPage from './pages/ItemRequestsInboxPage';
 import MaintenanceStepsPage from './pages/MaintenanceStepsPage';
 import ExternalMaintenancesPage from './pages/ExternalMaintenancesPage';
 import AssetMaintenanceTimelinePage from './pages/AssetMaintenanceTimelinePage';
+import IncludedItemMovementsApprovalPage from './pages/IncludedItemMovementsApprovalPage';
 import './index.css';
 
 // Protected route wrapper
@@ -418,6 +419,15 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
                                     <ItemRequestsInboxPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="included-item-movements-approval"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <IncludedItemMovementsApprovalPage />
                                 </RoleProtectedRoute>
                             }
                         />

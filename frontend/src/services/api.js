@@ -261,6 +261,25 @@ export const problemReportService = {
     },
 };
 
+export const movementApprovalService = {
+    getPendingStockItemMovements: async () => {
+        const response = await api.get('stock-item-movements-approval/pending/');
+        return response.data;
+    },
+    decideStockItemMovement: async (movementId, decision) => {
+        const response = await api.post(`stock-item-movements-approval/${movementId}/decide/`, { decision });
+        return response.data;
+    },
+    getPendingConsumableMovements: async () => {
+        const response = await api.get('consumable-movements-approval/pending/');
+        return response.data;
+    },
+    decideConsumableMovement: async (movementId, decision) => {
+        const response = await api.post(`consumable-movements-approval/${movementId}/decide/`, { decision });
+        return response.data;
+    },
+};
+
 // Asset Type service
 export const assetTypeService = {
     getAll: async () => {

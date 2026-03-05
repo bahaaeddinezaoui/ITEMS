@@ -18,4 +18,4 @@ Assets responsible:
 asset_resp - password123
 
 Stock items and consumables responsible:
-stock_user3 - password123
+stock_cons_resp - password123

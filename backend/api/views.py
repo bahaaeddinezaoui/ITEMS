@@ -3222,14 +3222,24 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     last_move_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
                     next_stock_move_id = (last_move_global.stock_item_movement_id + 1) if last_move_global else 1
                     for stock_item_id_int in included_stock_item_ids:
-                        last_move = (
+                        last_accepted_move = (
+                            StockItemMovement.objects.filter(stock_item_id=stock_item_id_int, status="accepted")
+                            .order_by("-stock_item_movement_id")
+                            .first()
+                        )
+                        last_move_any = (
                             StockItemMovement.objects.filter(stock_item_id=stock_item_id_int)
                             .order_by("-stock_item_movement_id")
                             .first()
                         )
-                        if not last_move:
+                        if last_accepted_move:
+                            source_room = last_accepted_move.destination_room
+                        elif last_move_any and getattr(last_move_any, "status", None) == "pending":
+                            source_room = last_move_any.source_room
+                        elif last_move_any:
+                            source_room = last_move_any.destination_room
+                        else:
                             raise ValidationError({"error": f"Cannot infer stock item current room (no movement history) for stock_item_id={stock_item_id_int}"})
-                        source_room = last_move.destination_room
                         StockItemMovement.objects.create(
                             stock_item_movement_id=next_stock_move_id,
                             stock_item_id=stock_item_id_int,
@@ -3239,20 +3249,31 @@ class ProblemReportViewSet(viewsets.ViewSet):
                             external_maintenance_step_id=None,
                             movement_reason="problem_report_include",
                             movement_datetime=now_dt,
+                            status="pending",
                         )
                         next_stock_move_id += 1
 
                     last_move_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
                     next_consumable_move_id = (last_move_global.consumable_movement_id + 1) if last_move_global else 1
                     for consumable_id_int in included_consumable_ids:
-                        last_move = (
+                        last_accepted_move = (
+                            ConsumableMovement.objects.filter(consumable_id=consumable_id_int, status="accepted")
+                            .order_by("-consumable_movement_id")
+                            .first()
+                        )
+                        last_move_any = (
                             ConsumableMovement.objects.filter(consumable_id=consumable_id_int)
                             .order_by("-consumable_movement_id")
                             .first()
                         )
-                        if not last_move:
+                        if last_accepted_move:
+                            source_room = last_accepted_move.destination_room
+                        elif last_move_any and getattr(last_move_any, "status", None) == "pending":
+                            source_room = last_move_any.source_room
+                        elif last_move_any:
+                            source_room = last_move_any.destination_room
+                        else:
                             raise ValidationError({"error": f"Cannot infer consumable current room (no movement history) for consumable_id={consumable_id_int}"})
-                        source_room = last_move.destination_room
                         ConsumableMovement.objects.create(
                             consumable_movement_id=next_consumable_move_id,
                             consumable_id=consumable_id_int,
@@ -3262,6 +3283,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
                             external_maintenance_step_id=None,
                             movement_reason="problem_report_include",
                             movement_datetime=now_dt,
+                            status="pending",
                         )
                         next_consumable_move_id += 1
 
@@ -5479,6 +5501,170 @@ class ConsumableIsAssignedToPersonViewSet(viewsets.ModelViewSet):
         assignment.save()
 
         return Response(self.get_serializer(assignment).data)
+
+
+class StockItemMovementApprovalViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def _require_responsible(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return None, Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+            return user_account, None
+
+        return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=False, methods=["get"], url_path="pending")
+    def pending(self, request):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        qs = (
+            StockItemMovement.objects.filter(status="pending", movement_reason="problem_report_include")
+            .order_by("-movement_datetime", "-stock_item_movement_id")
+        )
+
+        data = [
+            {
+                "stock_item_movement_id": m.stock_item_movement_id,
+                "stock_item_id": m.stock_item_id,
+                "source_room_id": m.source_room_id,
+                "destination_room_id": m.destination_room_id,
+                "movement_reason": m.movement_reason,
+                "movement_datetime": m.movement_datetime,
+                "status": m.status,
+            }
+            for m in qs
+        ]
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="decide")
+    def decide(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        decision = request.data.get("decision")
+        if decision not in {"accepted", "rejected"}:
+            return Response({"error": "decision must be 'accepted' or 'rejected'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            movement_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid movement id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        movement = StockItemMovement.objects.filter(stock_item_movement_id=movement_id).first()
+        if not movement:
+            return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if movement.movement_reason != "problem_report_include":
+            return Response({"error": "Only problem_report_include movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if movement.status != "pending":
+            return Response({"error": "Only pending movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        StockItemMovement.objects.filter(stock_item_movement_id=movement.stock_item_movement_id).update(status=decision)
+        movement.refresh_from_db()
+        return Response(
+            {
+                "stock_item_movement_id": movement.stock_item_movement_id,
+                "stock_item_id": movement.stock_item_id,
+                "source_room_id": movement.source_room_id,
+                "destination_room_id": movement.destination_room_id,
+                "movement_reason": movement.movement_reason,
+                "movement_datetime": movement.movement_datetime,
+                "status": movement.status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def _require_responsible(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return None, Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+            return user_account, None
+
+        return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=False, methods=["get"], url_path="pending")
+    def pending(self, request):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        qs = (
+            ConsumableMovement.objects.filter(status="pending", movement_reason="problem_report_include")
+            .order_by("-movement_datetime", "-consumable_movement_id")
+        )
+
+        data = [
+            {
+                "consumable_movement_id": m.consumable_movement_id,
+                "consumable_id": m.consumable_id,
+                "source_room_id": m.source_room_id,
+                "destination_room_id": m.destination_room_id,
+                "movement_reason": m.movement_reason,
+                "movement_datetime": m.movement_datetime,
+                "status": m.status,
+            }
+            for m in qs
+        ]
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="decide")
+    def decide(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        decision = request.data.get("decision")
+        if decision not in {"accepted", "rejected"}:
+            return Response({"error": "decision must be 'accepted' or 'rejected'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            movement_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid movement id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        movement = ConsumableMovement.objects.filter(consumable_movement_id=movement_id).first()
+        if not movement:
+            return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if movement.movement_reason != "problem_report_include":
+            return Response({"error": "Only problem_report_include movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if movement.status != "pending":
+            return Response({"error": "Only pending movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ConsumableMovement.objects.filter(consumable_movement_id=movement.consumable_movement_id).update(status=decision)
+        movement.refresh_from_db()
+        return Response(
+            {
+                "consumable_movement_id": movement.consumable_movement_id,
+                "consumable_id": movement.consumable_id,
+                "source_room_id": movement.source_room_id,
+                "destination_room_id": movement.destination_room_id,
+                "movement_reason": movement.movement_reason,
+                "movement_datetime": movement.movement_datetime,
+                "status": movement.status,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 class WarehouseViewSet(viewsets.ModelViewSet):
     queryset = Warehouse.objects.all().order_by("warehouse_id")
