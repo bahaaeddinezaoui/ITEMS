@@ -229,7 +229,7 @@ const LoginPage = () => {
                     <div className="feature-ticker">
                         <div
                             className="feature-ticker-track"
-                            style={{ transform: `translateY(-${currentIndex * 120}px)` }}
+                            style={{ transform: `translateY(-${currentIndex * 136}px)` }}
                         >
                             {features.map((feature, index) => (
                                 <div

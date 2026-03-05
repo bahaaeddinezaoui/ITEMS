@@ -2160,7 +2160,13 @@ const MaintenanceSteps = ({
                                         disabled={assetConditionSubmitting}
                                     >
                                         <option value="">Select condition...</option>
-                                        {physicalConditions.map((c) => (
+                                        {physicalConditions
+                                            .filter((c) => {
+                                                const code = String(c?.condition_code || '').trim().toLowerCase();
+                                                const label = String(c?.condition_label || '').trim().toLowerCase();
+                                                return code !== 'failed' && label !== 'failed';
+                                            })
+                                            .map((c) => (
                                             <option key={c.condition_id} value={c.condition_id}>
                                                 {c.condition_label || c.condition_code || c.condition_id}
                                             </option>

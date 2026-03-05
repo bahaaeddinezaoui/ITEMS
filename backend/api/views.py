@@ -1857,6 +1857,14 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         if not condition:
             return Response({"error": "Invalid condition_id"}, status=status.HTTP_400_BAD_REQUEST)
 
+        condition_code = (getattr(condition, "condition_code", None) or "").strip().lower()
+        condition_label = (getattr(condition, "condition_label", None) or "").strip().lower()
+        if condition_code == "failed" or condition_label == "failed":
+            return Response(
+                {"error": "Asset physical condition can only be set to failed during external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         last_item = AssetConditionHistory.objects.order_by("-asset_condition_history_id").first()
         next_id = (last_item.asset_condition_history_id + 1) if last_item else 1
 
@@ -4306,6 +4314,24 @@ class AssetViewSet(viewsets.ModelViewSet):
     queryset = Asset.objects.all().order_by("asset_id")
     serializer_class = AssetSerializer
     permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        asset_status = request.data.get("asset_status")
+        if isinstance(asset_status, str) and asset_status.strip().lower() == "failed":
+            return Response(
+                {"error": "Asset status can only be set to failed during external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        asset_status = request.data.get("asset_status")
+        if isinstance(asset_status, str) and asset_status.strip().lower() == "failed":
+            return Response(
+                {"error": "Asset status can only be set to failed during external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().partial_update(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

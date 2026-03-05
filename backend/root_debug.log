@@ -47442,3 +47442,498 @@ Response Body: {"error":"You cannot report a problem on an asset that is already
 [2026-03-05 23:02:04.817970] END   GET /api/my-items/ -> 200
 [2026-03-05 23:02:04.828917] START GET /api/my-items/
 [2026-03-05 23:02:04.880141] END   GET /api/my-items/ -> 200
+[2026-03-05 23:04:23.976653] START POST /api/auth/login/
+[2026-03-05 23:04:24.047593] END   POST /api/auth/login/ -> 200
+[2026-03-05 23:04:25.045699] START GET /api/maintenances/
+[2026-03-05 23:04:25.232538] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:04:25.238392] START GET /api/maintenances/
+[2026-03-05 23:04:25.327591] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:04:26.310408] START GET /api/maintenances/31/
+[2026-03-05 23:04:26.311485] START GET /api/maintenance-steps/
+[2026-03-05 23:04:26.354463] END   GET /api/maintenances/31/ -> 200
+[2026-03-05 23:04:26.356801] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:04:26.358665] START GET /api/maintenances/31/
+[2026-03-05 23:04:26.361600] START GET /api/maintenance-steps/
+[2026-03-05 23:04:26.371798] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:04:26.372363] START GET /api/external-maintenance-steps/
+[2026-03-05 23:04:26.372965] START GET /api/persons/
+[2026-03-05 23:04:26.380788] START GET /api/external-maintenances/
+[2026-03-05 23:04:26.395241] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:04:26.399108] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:04:26.416585] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:04:26.417179] END   GET /api/persons/ -> 200
+[2026-03-05 23:04:26.417542] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:04:26.422854] START GET /api/maintenances/31/pending-return-to-owner-exists/
+[2026-03-05 23:04:26.425404] START GET /api/maintenance-steps/
+[2026-03-05 23:04:26.426268] START GET /api/external-maintenance-steps/
+[2026-03-05 23:04:26.431619] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:04:26.436361] START GET /api/external-maintenances/
+[2026-03-05 23:04:26.460827] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:04:26.463267] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:04:26.466157] START GET /api/persons/
+[2026-03-05 23:04:26.468267] END   GET /api/maintenances/31/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:04:26.468704] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:04:26.470612] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:04:26.474035] START GET /api/maintenance-steps/
+[2026-03-05 23:04:26.477130] START GET /api/maintenances/31/pending-return-to-owner-exists/
+[2026-03-05 23:04:26.501984] END   GET /api/persons/ -> 200
+[2026-03-05 23:04:26.509322] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:04:26.512685] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:04:26.515714] END   GET /api/maintenances/31/ -> 200
+[2026-03-05 23:04:26.519511] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:04:26.521904] END   GET /api/maintenances/31/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:04:26.524280] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:04:26.527257] START GET /api/physical-conditions/
+[2026-03-05 23:04:26.557542] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:04:26.557894] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:04:26.563911] START GET /api/physical-conditions/
+[2026-03-05 23:04:26.564314] START GET /api/consumable-types/
+[2026-03-05 23:04:26.564920] START GET /api/stock-item-types/
+[2026-03-05 23:04:26.598088] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:04:26.598147] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:04:26.599751] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:04:26.603968] START GET /api/stock-item-types/
+[2026-03-05 23:04:26.604915] START GET /api/consumable-types/
+[2026-03-05 23:04:26.637908] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:04:26.638244] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:04:27.962216] START GET /api/maintenances/
+[2026-03-05 23:04:28.033604] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:04:28.039134] START GET /api/maintenances/
+[2026-03-05 23:04:28.116421] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:04:28.829305] START GET /api/maintenances/30/
+[2026-03-05 23:04:28.833089] START GET /api/maintenance-steps/
+[2026-03-05 23:04:28.866484] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:04:28.869882] START GET /api/maintenance-steps/
+[2026-03-05 23:04:28.872032] END   GET /api/maintenances/30/ -> 200
+[2026-03-05 23:04:28.875500] START GET /api/maintenances/30/
+[2026-03-05 23:04:28.882097] START GET /api/external-maintenance-steps/
+[2026-03-05 23:04:28.882617] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:04:28.883194] START GET /api/persons/
+[2026-03-05 23:04:28.890702] START GET /api/external-maintenances/
+[2026-03-05 23:04:28.919712] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:04:28.920293] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:04:28.920413] END   GET /api/maintenances/30/ -> 200
+[2026-03-05 23:04:28.922504] END   GET /api/persons/ -> 200
+[2026-03-05 23:04:28.926263] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:04:28.926968] START GET /api/maintenances/30/pending-return-to-owner-exists/
+[2026-03-05 23:04:28.928977] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:04:28.931227] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:04:28.929985] START GET /api/external-maintenance-steps/
+[2026-03-05 23:04:28.938300] START GET /api/persons/
+[2026-03-05 23:04:28.959130] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:04:28.965043] START GET /api/external-maintenances/
+[2026-03-05 23:04:28.967723] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:04:28.972130] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:04:28.975620] END   GET /api/maintenances/30/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:04:28.975844] END   GET /api/persons/ -> 200
+[2026-03-05 23:04:28.976311] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:04:28.980411] START GET /api/maintenances/30/pending-return-to-owner-exists/
+[2026-03-05 23:04:29.003605] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:04:29.005849] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:04:29.009002] START GET /api/maintenance-steps/
+[2026-03-05 23:04:29.010195] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:04:29.021516] END   GET /api/maintenances/30/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:04:29.040895] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:04:29.044975] START GET /api/maintenance-steps/
+[2026-03-05 23:04:29.047089] START GET /api/physical-conditions/
+[2026-03-05 23:04:29.087671] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:04:29.088502] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:04:29.094357] START GET /api/stock-item-types/
+[2026-03-05 23:04:29.094901] START GET /api/consumable-types/
+[2026-03-05 23:04:29.095600] START GET /api/physical-conditions/
+[2026-03-05 23:04:29.129429] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:04:29.129484] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:04:29.131222] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:04:29.137673] START GET /api/stock-item-types/
+[2026-03-05 23:04:29.138341] START GET /api/consumable-types/
+[2026-03-05 23:04:29.175226] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:04:29.285367] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:04:33.892385] START POST /api/maintenance-steps/
+[2026-03-05 23:04:33.963883] END   POST /api/maintenance-steps/ -> 400
+Response Body: {"error":"Cannot create maintenance steps while the asset has an ongoing external maintenance."}
+[2026-03-05 23:04:41.659072] START GET /api/maintenances/
+[2026-03-05 23:04:41.733843] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:04:41.737073] START GET /api/maintenances/
+[2026-03-05 23:04:41.817603] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:04:54.476925] START POST /api/auth/login/
+[2026-03-05 23:04:54.694750] END   POST /api/auth/login/ -> 200
+[2026-03-05 23:04:55.934587] START GET /api/my-items/
+[2026-03-05 23:04:55.990410] END   GET /api/my-items/ -> 200
+[2026-03-05 23:04:55.995212] START GET /api/my-items/
+[2026-03-05 23:04:56.062782] END   GET /api/my-items/ -> 200
+[2026-03-05 23:04:59.031905] START GET /api/problem-reports/
+[2026-03-05 23:04:59.033034] START GET /api/persons/
+[2026-03-05 23:04:59.073076] END   GET /api/persons/ -> 200
+[2026-03-05 23:04:59.078851] START GET /api/persons/
+[2026-03-05 23:04:59.098822] END   GET /api/problem-reports/ -> 200
+[2026-03-05 23:04:59.104364] START GET /api/problem-reports/
+[2026-03-05 23:04:59.118292] END   GET /api/persons/ -> 200
+[2026-03-05 23:04:59.164625] END   GET /api/problem-reports/ -> 200
+[2026-03-05 23:04:59.406747] START GET /api/maintenances/
+[2026-03-05 23:04:59.408121] START GET /api/persons/
+[2026-03-05 23:04:59.410760] START GET /api/assets/
+[2026-03-05 23:04:59.451553] END   GET /api/assets/ -> 200
+[2026-03-05 23:04:59.458086] START GET /api/assets/
+[2026-03-05 23:04:59.486451] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:04:59.490162] START GET /api/maintenances/
+[2026-03-05 23:04:59.552681] END   GET /api/persons/ -> 200
+[2026-03-05 23:04:59.558956] START GET /api/persons/
+[2026-03-05 23:04:59.566016] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:04:59.598482] END   GET /api/assets/ -> 200
+[2026-03-05 23:04:59.606276] END   GET /api/persons/ -> 200
+[2026-03-05 23:05:03.799438] START GET /api/assets/15/current-room/
+[2026-03-05 23:05:03.963050] END   GET /api/assets/15/current-room/ -> 200
+[2026-03-05 23:05:05.222787] START GET /api/assets/18/current-room/
+[2026-03-05 23:05:05.265769] END   GET /api/assets/18/current-room/ -> 200
+[2026-03-05 23:05:06.388925] START GET /api/assets/19/current-room/
+[2026-03-05 23:05:06.538039] END   GET /api/assets/19/current-room/ -> 200
+[2026-03-05 23:05:08.433561] START GET /api/assets/12/current-room/
+[2026-03-05 23:05:08.488388] END   GET /api/assets/12/current-room/ -> 200
+[2026-03-05 23:05:09.351636] START GET /api/assets/3/current-room/
+[2026-03-05 23:05:09.495741] END   GET /api/assets/3/current-room/ -> 200
+[2026-03-05 23:05:10.663693] START GET /api/assets/4/current-room/
+[2026-03-05 23:05:10.715406] END   GET /api/assets/4/current-room/ -> 200
+[2026-03-05 23:05:11.706721] START GET /api/assets/6/current-room/
+[2026-03-05 23:05:11.745350] END   GET /api/assets/6/current-room/ -> 200
+[2026-03-05 23:05:12.703260] START GET /api/assets/2/current-room/
+[2026-03-05 23:05:12.751279] END   GET /api/assets/2/current-room/ -> 200
+[2026-03-05 23:05:13.482356] START GET /api/assets/1/current-room/
+[2026-03-05 23:05:13.550078] END   GET /api/assets/1/current-room/ -> 200
+[2026-03-05 23:05:14.658106] START GET /api/assets/4/current-room/
+[2026-03-05 23:05:14.857271] END   GET /api/assets/4/current-room/ -> 200
+[2026-03-05 23:05:15.588764] START GET /api/assets/5/current-room/
+[2026-03-05 23:05:15.655453] END   GET /api/assets/5/current-room/ -> 200
+[2026-03-05 23:05:15.670561] START GET /api/rooms/
+[2026-03-05 23:05:15.734615] END   GET /api/rooms/ -> 200
+[2026-03-05 23:05:20.965196] START POST /api/maintenances/create-direct/
+[2026-03-05 23:05:21.110506] END   POST /api/maintenances/create-direct/ -> 201
+[2026-03-05 23:05:21.122385] START GET /api/maintenances/
+[2026-03-05 23:05:21.257164] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:05:31.109330] START POST /api/auth/login/
+[2026-03-05 23:05:31.156594] END   POST /api/auth/login/ -> 200
+[2026-03-05 23:05:32.109664] START GET /api/asset-movements-approval/pending/
+[2026-03-05 23:05:32.151405] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-03-05 23:05:32.160445] START GET /api/asset-movements-approval/pending/
+[2026-03-05 23:05:32.203617] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-03-05 23:05:40.461046] START POST /api/asset-movements-approval/33/decide/
+[2026-03-05 23:05:40.520735] END   POST /api/asset-movements-approval/33/decide/ -> 200
+[2026-03-05 23:05:40.528655] START GET /api/asset-movements-approval/pending/
+[2026-03-05 23:05:40.568380] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-03-05 23:05:59.069006] START POST /api/auth/login/
+[2026-03-05 23:05:59.112570] END   POST /api/auth/login/ -> 200
+[2026-03-05 23:05:59.740606] START GET /api/maintenances/
+[2026-03-05 23:05:59.839310] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:05:59.844488] START GET /api/maintenances/
+[2026-03-05 23:05:59.961639] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:06:01.052852] START GET /api/maintenances/32/
+[2026-03-05 23:06:01.057475] START GET /api/maintenance-steps/
+[2026-03-05 23:06:01.092937] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:06:01.097312] START GET /api/maintenance-steps/
+[2026-03-05 23:06:01.099963] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:06:01.103631] START GET /api/maintenances/32/
+[2026-03-05 23:06:01.111776] START GET /api/external-maintenance-steps/
+[2026-03-05 23:06:01.114608] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:06:01.117325] START GET /api/persons/
+[2026-03-05 23:06:01.117738] START GET /api/external-maintenances/
+[2026-03-05 23:06:01.132690] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:06:01.136633] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:06:01.154752] END   GET /api/persons/ -> 200
+[2026-03-05 23:06:01.155261] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:06:01.155988] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:06:01.156798] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:06:01.161936] START GET /api/maintenance-steps/
+ing-return-to-owner-exists/
+[2026-03-05 23:06:01.162783] START GET /api/persons/
+[2026-03-05 23:06:01.167056] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:06:01.169968] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:06:01.174448] START GET /api/external-maintenances/
+[2026-03-05 23:06:01.202655] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:06:01.204256] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:06:01.204378] END   GET /api/persons/ -> 200
+[2026-03-05 23:06:01.206888] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:06:01.210573] START GET /api/external-maintenance-steps/
+[2026-03-05 23:06:01.210956] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:06:01.215153] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:06:01.213741] START GET /api/maintenance-steps/
+[2026-03-05 23:06:01.216001] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:06:01.220373] START GET /api/physical-conditions/
+[2026-03-05 23:06:01.247273] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:06:01.247731] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:06:01.248034] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:06:01.254480] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:06:01.255588] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:06:01.261651] START GET /api/stock-item-types/
+[2026-03-05 23:06:01.262687] START GET /api/consumable-types/
+[2026-03-05 23:06:01.265686] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:06:01.270870] START GET /api/physical-conditions/
+[2026-03-05 23:06:01.295481] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:06:01.297118] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:06:01.300411] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:06:01.306884] START GET /api/stock-item-types/
+[2026-03-05 23:06:01.307489] START GET /api/consumable-types/
+[2026-03-05 23:06:01.342320] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:06:01.342939] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:06:06.747214] START POST /api/maintenance-steps/
+[2026-03-05 23:06:06.842921] END   POST /api/maintenance-steps/ -> 201
+[2026-03-05 23:06:06.853379] START GET /api/maintenance-steps/
+[2026-03-05 23:06:06.854140] START GET /api/external-maintenance-steps/
+[2026-03-05 23:06:06.860584] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:06:06.861903] START GET /api/persons/
+[2026-03-05 23:06:06.865742] START GET /api/external-maintenances/
+[2026-03-05 23:06:06.869186] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:06:06.896032] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:06:06.897648] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:06:06.898889] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:06:06.902585] END   GET /api/persons/ -> 200
+[2026-03-05 23:06:06.905241] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:06:06.905700] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:06:06.906097] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:06:06.945141] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:06:06.950295] START GET /api/physical-conditions/
+[2026-03-05 23:06:07.128564] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:06:07.137123] START GET /api/stock-item-types/
+[2026-03-05 23:06:07.137754] START GET /api/consumable-types/
+[2026-03-05 23:06:07.168592] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:06:07.174845] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:09:19.186255] START POST /api/maintenance-steps/31/update-asset-condition/
+[2026-03-05 23:09:19.283522] END   POST /api/maintenance-steps/31/update-asset-condition/ -> 400
+Response Body: {"error":"Asset physical condition can only be set to failed during external maintenance."}
+[2026-03-05 23:11:32.037000] START GET /api/maintenances/32/
+[2026-03-05 23:11:32.037533] START GET /api/maintenance-steps/
+[2026-03-05 23:11:32.078950] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:11:32.084040] START GET /api/maintenance-steps/
+[2026-03-05 23:11:32.099024] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:11:32.103719] START GET /api/maintenances/32/
+[2026-03-05 23:11:32.111493] START GET /api/external-maintenance-steps/
+[2026-03-05 23:11:32.111102] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:11:32.112156] START GET /api/persons/
+[2026-03-05 23:11:32.112723] START GET /api/external-maintenances/
+[2026-03-05 23:11:32.145304] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:11:32.150103] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:11:32.155341] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:11:32.158789] END   GET /api/persons/ -> 200
+[2026-03-05 23:11:32.159194] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:11:32.160203] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:11:32.163288] START GET /api/external-maintenance-steps/
+[2026-03-05 23:11:32.164002] START GET /api/persons/
+[2026-03-05 23:11:32.183060] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:11:32.187329] START GET /api/external-maintenances/
+[2026-03-05 23:11:32.203352] END   GET /api/persons/ -> 200
+[2026-03-05 23:11:32.203416] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:11:32.206583] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:11:32.208276] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:11:32.211186] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:11:32.222885] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:11:32.224032] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:11:32.228259] START GET /api/maintenance-steps/
+[2026-03-05 23:11:32.245608] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:11:32.253946] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:11:32.264807] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:11:32.266868] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:11:32.268873] START GET /api/maintenance-steps/
+[2026-03-05 23:11:32.271658] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:11:32.302906] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:11:32.367522] START GET /api/physical-conditions/
+[2026-03-05 23:11:32.405428] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:11:32.408452] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:11:32.411136] START GET /api/stock-item-types/
+[2026-03-05 23:11:32.411887] START GET /api/consumable-types/
+[2026-03-05 23:11:32.414291] START GET /api/physical-conditions/
+[2026-03-05 23:11:32.444060] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:11:32.447960] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:11:32.448271] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:11:32.455869] START GET /api/stock-item-types/
+[2026-03-05 23:11:32.458378] START GET /api/consumable-types/
+[2026-03-05 23:11:32.491174] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:11:32.491536] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:11:48.127536] START GET /api/maintenances/
+[2026-03-05 23:11:48.308319] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:11:48.313175] START GET /api/maintenances/
+[2026-03-05 23:11:48.416852] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:11:49.363490] START GET /api/maintenances/32/
+[2026-03-05 23:11:49.366626] START GET /api/maintenance-steps/
+[2026-03-05 23:11:49.415097] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:11:49.418332] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:11:49.419190] START GET /api/maintenance-steps/
+[2026-03-05 23:11:49.422092] START GET /api/maintenances/32/
+[2026-03-05 23:11:49.448442] START GET /api/external-maintenance-steps/
+[2026-03-05 23:11:49.449083] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:11:49.453298] START GET /api/external-maintenances/
+[2026-03-05 23:11:49.449842] START GET /api/persons/
+[2026-03-05 23:11:49.462182] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:11:49.467903] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:11:49.470331] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:11:49.474157] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:11:49.487067] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:11:49.487975] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:11:49.491356] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:11:49.492207] START GET /api/maintenance-steps/
+[2026-03-05 23:11:49.492990] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:11:49.496130] END   GET /api/persons/ -> 200
+[2026-03-05 23:11:49.496478] START GET /api/external-maintenance-steps/
+[2026-03-05 23:11:49.503107] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:11:49.503751] START GET /api/external-maintenances/
+[2026-03-05 23:11:49.508383] START GET /api/persons/
+[2026-03-05 23:11:49.518434] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:11:49.522208] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:11:49.541871] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:11:49.541968] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:11:49.542044] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:11:49.542122] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:11:49.547224] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:11:49.547978] START GET /api/maintenance-steps/
+[2026-03-05 23:11:49.550040] START GET /api/physical-conditions/
+[2026-03-05 23:11:49.555444] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:11:49.589456] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:11:49.589537] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:11:49.592163] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:11:49.611172] START GET /api/stock-item-types/
+[2026-03-05 23:11:49.612369] START GET /api/consumable-types/
+[2026-03-05 23:11:49.643997] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:11:49.651604] END   GET /api/persons/ -> 200
+[2026-03-05 23:11:49.653270] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:11:49.656822] START GET /api/physical-conditions/
+[2026-03-05 23:11:49.688922] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:11:49.694887] START GET /api/stock-item-types/
+[2026-03-05 23:11:49.695530] START GET /api/consumable-types/
+[2026-03-05 23:11:49.725400] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:11:49.730875] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:12:09.095141] START GET /api/asset-attribute-definitions/
+s/
+[2026-03-05 23:12:09.096126] START GET /api/stock-item-attribute-definitions/
+[2026-03-05 23:12:09.099390] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:12:09.138941] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-05 23:12:09.139650] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-05 23:12:09.140140] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:12:09.146937] END   GET /api/maintenance-steps/31/components/ -> 200
+[2026-03-05 23:12:25.320862] START GET /api/maintenances/
+[2026-03-05 23:12:25.387353] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:12:25.391319] START GET /api/maintenances/
+[2026-03-05 23:12:25.452146] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:12:28.150769] START GET /api/maintenances/32/
+[2026-03-05 23:12:28.151502] START GET /api/maintenance-steps/
+[2026-03-05 23:12:28.194267] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:12:28.197784] START GET /api/maintenance-steps/
+[2026-03-05 23:12:28.200192] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:12:28.204763] START GET /api/maintenances/32/
+[2026-03-05 23:12:28.209944] START GET /api/external-maintenance-steps/
+[2026-03-05 23:12:28.210857] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:12:28.212817] START GET /api/persons/
+[2026-03-05 23:12:28.213637] START GET /api/external-maintenances/
+[2026-03-05 23:12:28.244077] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:12:28.246354] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:12:28.250834] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:12:28.250707] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:12:28.251518] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:12:28.254645] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:12:28.256069] END   GET /api/persons/ -> 200
+[2026-03-05 23:12:28.256484] START GET /api/external-maintenance-steps/
+[2026-03-05 23:12:28.260414] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:12:28.261385] START GET /api/external-maintenances/
+[2026-03-05 23:12:28.288301] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:12:28.297207] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:12:28.297409] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:12:28.297462] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:12:28.297840] START GET /api/persons/
+[2026-03-05 23:12:28.299398] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:12:28.302073] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:12:28.303176] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:12:28.336715] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:12:28.337676] END   GET /api/persons/ -> 200
+[2026-03-05 23:12:28.337823] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:12:28.341560] START GET /api/maintenance-steps/
+[2026-03-05 23:12:28.346656] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:12:28.487551] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:12:28.493016] START GET /api/maintenance-steps/
+[2026-03-05 23:12:28.493770] START GET /api/physical-conditions/
+[2026-03-05 23:12:28.532249] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:12:28.532684] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:12:28.541463] START GET /api/stock-item-types/
+[2026-03-05 23:12:28.544508] START GET /api/consumable-types/
+[2026-03-05 23:12:28.546537] START GET /api/physical-conditions/
+[2026-03-05 23:12:28.569065] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:12:28.575407] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:12:28.580147] START GET /api/stock-item-types/
+[2026-03-05 23:12:28.585732] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:12:28.589732] START GET /api/consumable-types/
+[2026-03-05 23:12:28.611648] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:12:28.618219] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:12:31.270289] START GET /api/asset-attribute-definitions/
+[2026-03-05 23:12:31.269621] START GET /api/maintenance-steps/31/components/
+[2026-03-05 23:12:31.271679] START GET /api/stock-item-attribute-definitions/
+[2026-03-05 23:12:31.276617] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:12:31.317850] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-05 23:12:31.318795] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:12:31.319162] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-05 23:12:31.329176] END   GET /api/maintenance-steps/31/components/ -> 200
+[2026-03-05 23:12:54.602177] START GET /api/maintenances/
+[2026-03-05 23:12:54.685086] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:12:54.689743] START GET /api/maintenances/
+[2026-03-05 23:12:54.775189] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:14:11.795585] START GET /api/maintenances/32/
+[2026-03-05 23:14:11.796304] START GET /api/maintenance-steps/
+[2026-03-05 23:14:11.837111] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:14:11.837431] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:14:11.852182] START GET /api/maintenance-steps/
+[2026-03-05 23:14:11.855666] START GET /api/maintenances/32/
+[2026-03-05 23:14:11.856618] START GET /api/external-maintenance-steps/
+[2026-03-05 23:14:11.860710] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:14:11.861645] START GET /api/persons/
+[2026-03-05 23:14:11.863896] START GET /api/external-maintenances/
+[2026-03-05 23:14:11.895046] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:14:11.907861] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:14:11.907954] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:14:11.905203] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:14:11.908150] END   GET /api/persons/ -> 200
+[2026-03-05 23:14:11.910500] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:14:11.912184] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:14:11.919556] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:14:11.920371] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:14:11.921386] START GET /api/persons/
+[2026-03-05 23:14:11.928088] START GET /api/external-maintenance-steps/
+[2026-03-05 23:14:11.949878] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:14:11.954887] START GET /api/external-maintenances/
+[2026-03-05 23:14:11.971656] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:14:11.975482] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:14:11.975970] END   GET /api/persons/ -> 200
+[2026-03-05 23:14:11.976536] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:14:11.978408] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:14:11.981894] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:14:11.982333] START GET /api/maintenance-steps/
+[2026-03-05 23:14:11.984544] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:14:11.986430] START GET /api/physical-conditions/
+[2026-03-05 23:14:11.994466] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:14:12.016610] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:14:12.029263] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:14:12.029609] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:14:12.038246] START GET /api/stock-item-types/
+[2026-03-05 23:14:12.040802] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:14:12.039462] START GET /api/consumable-types/
+[2026-03-05 23:14:12.047349] START GET /api/physical-conditions/
+[2026-03-05 23:14:12.074067] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:14:12.076545] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:14:12.080773] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:14:12.086086] START GET /api/stock-item-types/
+[2026-03-05 23:14:12.086862] START GET /api/consumable-types/
+[2026-03-05 23:14:12.121874] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:14:12.122414] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:14:15.206495] START GET /api/maintenance-steps/31/components/
+[2026-03-05 23:14:15.207638] START GET /api/asset-attribute-definitions/
+[2026-03-05 23:14:15.210519] START GET /api/stock-item-attribute-definitions/
+[2026-03-05 23:14:15.213109] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:14:15.249822] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-05 23:14:15.253534] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-05 23:14:15.256783] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:14:15.363308] END   GET /api/maintenance-steps/31/components/ -> 200
+[2026-03-05 23:14:38.870616] START GET /api/my-items/
+[2026-03-05 23:14:38.942892] END   GET /api/my-items/ -> 200
+[2026-03-05 23:14:38.949998] START GET /api/my-items/
+[2026-03-05 23:14:39.005319] END   GET /api/my-items/ -> 200
+[2026-03-05 23:14:39.504152] START GET /api/maintenances/
+[2026-03-05 23:14:39.569817] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:14:39.574394] START GET /api/maintenances/
+[2026-03-05 23:14:39.662752] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:14:40.405166] START GET /api/my-items/
+[2026-03-05 23:14:40.576190] END   GET /api/my-items/ -> 200
+[2026-03-05 23:14:40.579280] START GET /api/my-items/
+[2026-03-05 23:14:40.628969] END   GET /api/my-items/ -> 200

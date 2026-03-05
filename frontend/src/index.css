@@ -210,7 +210,7 @@ option {
 }
 
 .feature-ticker {
-    height: 120px;
+    height: 136px;
     overflow: hidden;
     margin-bottom: var(--space-6);
 }
