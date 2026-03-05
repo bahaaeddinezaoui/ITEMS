@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -876,6 +876,44 @@ class AttributionOrderSerializer(serializers.ModelSerializer):
             'is_signed_by_central_chief', 'attribution_order_barcode'
         ]
         read_only_fields = ['attribution_order_id']
+
+
+class AttributionOrderAssetStockItemAccessorySerializer(serializers.ModelSerializer):
+    """Serializer for AttributionOrderAssetStockItemAccessory model"""
+
+    stock_item_name = serializers.CharField(source='stock_item.stock_item_name', read_only=True)
+    asset_name = serializers.CharField(source='asset.asset_name', read_only=True)
+
+    class Meta:
+        model = AttributionOrderAssetStockItemAccessory
+        fields = [
+            'id',
+            'attribution_order',
+            'asset',
+            'asset_name',
+            'stock_item',
+            'stock_item_name',
+        ]
+        read_only_fields = ['id']
+
+
+class AttributionOrderAssetConsumableAccessorySerializer(serializers.ModelSerializer):
+    """Serializer for AttributionOrderAssetConsumableAccessory model"""
+
+    consumable_name = serializers.CharField(source='consumable.consumable_name', read_only=True)
+    asset_name = serializers.CharField(source='asset.asset_name', read_only=True)
+
+    class Meta:
+        model = AttributionOrderAssetConsumableAccessory
+        fields = [
+            'id',
+            'attribution_order',
+            'asset',
+            'asset_name',
+            'consumable',
+            'consumable_name',
+        ]
+        read_only_fields = ['id']
 
 
 class ReceiptReportSerializer(serializers.ModelSerializer):

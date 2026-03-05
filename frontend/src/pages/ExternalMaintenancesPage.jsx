@@ -41,6 +41,10 @@ const ExternalMaintenancesPage = () => {
     const [receiveCompanyMessage, setReceiveCompanyMessage] = useState(null);
     const [receiveCompanyRoomId, setReceiveCompanyRoomId] = useState('');
 
+    const [markFailedSubmitting, setMarkFailedSubmitting] = useState(false);
+    const [markFailedMessage, setMarkFailedMessage] = useState(null);
+    const [includeComposedOnFailed, setIncludeComposedOnFailed] = useState(false);
+
     const isAssetResponsible = useMemo(() => {
         if (isSuperuser) return true;
         return user?.roles?.some(r => r.role_code === 'asset_responsible') || false;
@@ -155,6 +159,30 @@ const ExternalMaintenancesPage = () => {
         setReceiveCompanySubmitting(false);
         setReceiveCompanyMessage(null);
         setReceiveCompanyRoomId('');
+        setMarkFailedSubmitting(false);
+        setMarkFailedMessage(null);
+        setIncludeComposedOnFailed(false);
+    };
+
+    const submitMarkFailed = async () => {
+        if (!selectedItem) return;
+
+        try {
+            setMarkFailedSubmitting(true);
+            setMarkFailedMessage(null);
+            const updated = await externalMaintenanceService.markFailed(selectedItem.external_maintenance_id, {
+                target_type: 'asset',
+                include_composed: includeComposedOnFailed,
+            });
+            setMarkFailedMessage({ type: 'success', text: 'Marked as failed.' });
+            setSelectedItem(updated);
+            await load();
+        } catch (err) {
+            console.error(err);
+            setMarkFailedMessage({ type: 'error', text: err.response?.data?.error || 'Failed to mark as failed.' });
+        } finally {
+            setMarkFailedSubmitting(false);
+        }
     };
 
     useEffect(() => {
@@ -330,6 +358,37 @@ const ExternalMaintenancesPage = () => {
                         </div>
 
                         <div style={{ padding: '0 var(--space-5) var(--space-5)', display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                            {isAssetResponsible && (selectedItem.external_maintenance_status === 'RECEIVED_BY_PROVIDER' || !!selectedItem.item_received_by_maintenance_provider_datetime) && (
+                                <div className="card" style={{ background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' }}>
+                                    <div style={{ fontWeight: 600, marginBottom: 'var(--space-3)' }}>Set Failed</div>
+
+                                    {markFailedMessage && (
+                                        <div className={`alert ${markFailedMessage.type === 'error' ? 'alert-error' : 'alert-success'} mb-3`}>
+                                            {markFailedMessage.text}
+                                        </div>
+                                    )}
+
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={includeComposedOnFailed}
+                                            onChange={(e) => setIncludeComposedOnFailed(e.target.checked)}
+                                            disabled={markFailedSubmitting}
+                                        />
+                                        Also mark composed stock items/consumables as failed
+                                    </label>
+
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() => submitMarkFailed()}
+                                        disabled={markFailedSubmitting}
+                                        style={{ marginTop: 'var(--space-3)' }}
+                                    >
+                                        {markFailedSubmitting ? 'Saving...' : 'Mark Failed'}
+                                    </button>
+                                </div>
+                            )}
+
                             {isAssetResponsible && !selectedItem.item_sent_to_external_maintenance_datetime && (
                                 <div className="card" style={{ background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)' }}>
                                     <div style={{ fontWeight: 600, marginBottom: 'var(--space-3)' }}>Send to External Maintenance Provider</div>

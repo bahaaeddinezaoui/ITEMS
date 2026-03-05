@@ -6,6 +6,8 @@ import {
     assetTypeService,
     assetModelService,
     assetService,
+    attributionOrderAssetStockItemAccessoryService,
+    attributionOrderAssetConsumableAccessoryService,
     receiptReportService,
     administrativeCertificateService
 } from '../services/api';
@@ -282,6 +284,12 @@ const AttributionOrdersPage = () => {
         navigate(`/dashboard/attribution-orders/assets/${asset.id}/included-items/${itemKind}?context=${context}`);
     };
 
+    const configureAccessoriesForRow = (asset) => {
+        persistDraftAssets(assets);
+        const context = viewMode === 'create' ? 'create' : selectedOrder?.attribution_order_id;
+        navigate(`/dashboard/attribution-orders/assets/${asset.id}/accessories?context=${context}`);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -303,6 +311,13 @@ const AttributionOrdersPage = () => {
             // 2. Create all Assets linked to this order sequentially to avoid DB unique constraint conflicts
             console.log('[handleSubmit] draftIncluded:', draftIncluded);
             console.log('[handleSubmit] assets:', assets);
+
+            let draftAccessories = {};
+            try {
+                draftAccessories = JSON.parse(sessionStorage.getItem('attribution_order_create_draft_accessories') || '{}');
+            } catch (e) {
+                draftAccessories = {};
+            }
             
             for (const asset of assets) {
                 const { id, ...assetCleanData } = asset;
@@ -318,8 +333,47 @@ const AttributionOrdersPage = () => {
                     included_consumables: Array.isArray(draftForRow?.consumables) ? draftForRow.consumables : [],
                 };
                 console.log(`[handleSubmit] Sending payload for asset ${id}:`, payload);
-                
-                await assetService.create(payload);
+
+                const createdAsset = await assetService.create(payload);
+                const createdAssetId = createdAsset?.asset_id;
+
+                const accDraft = draftAccessories?.[String(id)] || draftAccessories?.[id] || null;
+                const draftAccessoryStockItems = Array.isArray(accDraft?.stock_items) ? accDraft.stock_items : [];
+                const draftAccessoryConsumables = Array.isArray(accDraft?.consumables) ? accDraft.consumables : [];
+
+                if (createdAssetId) {
+                    for (const draftStockItem of draftAccessoryStockItems) {
+                        const stockItemModelId = Number(draftStockItem?.stock_item_model);
+                        if (!stockItemModelId) continue;
+
+                        await attributionOrderAssetStockItemAccessoryService.create({
+                            attribution_order: orderId,
+                            asset: createdAssetId,
+                            stock_item_data: {
+                                stock_item_model: stockItemModelId,
+                                stock_item_inventory_number: draftStockItem?.stock_item_inventory_number || null,
+                                stock_item_name: draftStockItem?.stock_item_name || null,
+                                stock_item_status: draftStockItem?.stock_item_status || 'active',
+                            },
+                        });
+                    }
+                    for (const draftConsumable of draftAccessoryConsumables) {
+                        const consumableModelId = Number(draftConsumable?.consumable_model);
+                        if (!consumableModelId) continue;
+
+                        await attributionOrderAssetConsumableAccessoryService.create({
+                            attribution_order: orderId,
+                            asset: createdAssetId,
+                            consumable_data: {
+                                consumable_model: consumableModelId,
+                                consumable_serial_number: draftConsumable?.consumable_serial_number || null,
+                                consumable_inventory_number: draftConsumable?.consumable_inventory_number || null,
+                                consumable_name: draftConsumable?.consumable_name || null,
+                                consumable_status: draftConsumable?.consumable_status || 'active',
+                            },
+                        });
+                    }
+                }
             }
 
             setSuccess('Attribution Order and Assets created successfully!');
@@ -336,6 +390,7 @@ const AttributionOrdersPage = () => {
                 sessionStorage.removeItem('attribution_order_create_draft_assets');
                 sessionStorage.removeItem('attribution_order_create_draft_order_data');
                 sessionStorage.removeItem('attribution_order_create_draft_included_items');
+                sessionStorage.removeItem('attribution_order_create_draft_accessories');
             } catch (e) {
                 // ignore
             }
@@ -344,7 +399,11 @@ const AttributionOrdersPage = () => {
             setTimeout(() => setViewMode('list'), 2000);
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to create Attribution Order and Assets');
+            const apiData = err?.response?.data;
+            const apiError = apiData?.error;
+            setError(
+                apiError || (apiData ? JSON.stringify(apiData) : null) || 'Failed to create Attribution Order and Assets'
+            );
         } finally {
             setSubmitting(false);
         }
@@ -584,12 +643,13 @@ const AttributionOrdersPage = () => {
                                         <th>Inventory #</th>
                                         <th>Serial #</th>
                                         <th>Status</th>
+                                        <th style={{ width: '70px' }}> </th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {orderAssets.length === 0 ? (
                                         <tr>
-                                            <td colSpan="4" style={{ textAlign: 'center', padding: 'var(--space-4)' }}>No assets linked to this order.</td>
+                                            <td colSpan="5" style={{ textAlign: 'center', padding: 'var(--space-4)' }}>No assets linked to this order.</td>
                                         </tr>
                                     ) : (
                                         orderAssets.map(asset => (
@@ -598,6 +658,23 @@ const AttributionOrdersPage = () => {
                                                 <td>{asset.asset_inventory_number || '-'}</td>
                                                 <td>{asset.asset_serial_number || '-'}</td>
                                                 <td><span className={`status-badge status-${asset.asset_status?.replace(/\s+/g, '-').toLowerCase()}`}>{asset.asset_status}</span></td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        style={{ padding: '6px 10px', width: 'auto' }}
+                                                        title="Accessories"
+                                                        aria-label="Accessories"
+                                                        onClick={() => {
+                                                            if (!selectedOrder?.attribution_order_id) return;
+                                                            navigate(`/dashboard/attribution-orders/${selectedOrder.attribution_order_id}/assets/${asset.asset_id}/accessories`);
+                                                        }}
+                                                    >
+                                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.19 9.19a2 2 0 1 1-2.83-2.83l8.48-8.48" />
+                                                        </svg>
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))
                                     )}
@@ -904,6 +981,17 @@ const AttributionOrdersPage = () => {
                                                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                                                         <path d="M12 2v6m0 0v14m0-14c-2 0-6 1-6 5s4 5 6 5 6-1 6-5-4-5-6-5z"/>
                                                         <path d="M6 12c0 4 2.5 8 6 10 3.5-2 6-6 6-10" fill="none"/>
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => configureAccessoriesForRow(asset)}
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '6px', marginRight: '8px' }}
+                                                    title="Accessories"
+                                                >
+                                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.19 9.19a2 2 0 1 1-2.83-2.83l8.48-8.48" />
                                                     </svg>
                                                 </button>
                                                 <button

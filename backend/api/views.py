@@ -72,6 +72,8 @@ from .models import (
     ConsumableIsCompatibleWithAsset,
     AssetIsComposedOfStockItemHistory,
     AssetIsComposedOfConsumableHistory,
+    AttributionOrderAssetStockItemAccessory,
+    AttributionOrderAssetConsumableAccessory,
     ConsumableIsUsedInStockItemHistory,
     StockItemMovement,
     ConsumableMovement,
@@ -499,6 +501,7 @@ from .serializers import (
     OrganizationalStructureRelationSerializer,
     OrganizationalStructureSerializer,
     PersonSerializer,
+    PersonReportsProblemOnAssetSerializer,
     PositionSerializer,
     RoomSerializer,
     RoomTypeSerializer,
@@ -514,6 +517,8 @@ from .serializers import (
     UserProfileSerializer,
     WarehouseSerializer,
     AttributionOrderSerializer,
+    AttributionOrderAssetStockItemAccessorySerializer,
+    AttributionOrderAssetConsumableAccessorySerializer,
     ReceiptReportSerializer,
     AdministrativeCertificateSerializer,
     CompanyAssetRequestSerializer,
@@ -959,6 +964,38 @@ class ChangePasswordView(APIView):
         user.save(update_fields=["password_hash", "password_last_changed_datetime"])
 
         return Response({"message": "Password changed successfully"})
+
+
+class AdminResetUserPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not user_account.is_superuser():
+            return Response({"error": "Only superuser can reset passwords"}, status=status.HTTP_403_FORBIDDEN)
+
+        username = request.data.get("username")
+        new_password = request.data.get("new_password")
+        if not username or not new_password:
+            return Response(
+                {"error": "Both username and new_password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            target = UserAccount.objects.get(username=username)
+        except UserAccount.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        target.password_hash = hash_password(new_password)
+        target.password_last_changed_datetime = timezone.now()
+        target.failed_login_attempts = 0
+        target.save(update_fields=["password_hash", "password_last_changed_datetime", "failed_login_attempts"])
+
+        return Response({"message": "Password reset successfully", "username": username}, status=status.HTTP_200_OK)
 
 
 class MaintenanceStepViewSet(viewsets.ModelViewSet):
@@ -2740,6 +2777,130 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
         payload = ExternalMaintenanceSerializer(em).data
         return Response(payload, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="mark-failed")
+    def mark_failed(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+
+        target_type = request.data.get("target_type") or "asset"
+        target_id = request.data.get("target_id")
+        include_composed = bool(request.data.get("include_composed"))
+
+        if target_type not in {"asset", "stock_item", "consumable"}:
+            return Response({"error": "Invalid target_type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if target_type == "asset":
+            if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes):
+                return Response(
+                    {"error": "Only asset responsible can mark asset as failed"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        else:
+            if (not user_account.is_superuser()) and ("stock_consumable_responsible" not in role_codes):
+                return Response(
+                    {"error": "Only stock items and consumables responsible can mark items as failed"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        try:
+            em = ExternalMaintenance.objects.select_related("maintenance", "maintenance__asset").get(
+                external_maintenance_id=int(pk)
+            )
+        except (ExternalMaintenance.DoesNotExist, ValueError, TypeError):
+            return Response({"error": "External maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        asset_id = getattr(em.maintenance, "asset_id", None) if getattr(em, "maintenance", None) else None
+        if not asset_id:
+            return Response({"error": "External maintenance has no associated asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if target_type == "asset":
+            em_status = getattr(em, "external_maintenance_status", None)
+            received_by_provider = (
+                em_status == "RECEIVED_BY_PROVIDER" or getattr(em, "item_received_by_maintenance_provider_datetime", None) is not None
+            )
+            if not received_by_provider:
+                return Response(
+                    {"error": "Asset cannot be marked as failed until it has been received by maintenance provider"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        try:
+            if target_type != "asset":
+                try:
+                    target_id_int = int(target_id)
+                except (ValueError, TypeError):
+                    return Response({"error": "target_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+                if target_type == "stock_item":
+                    is_composed = AssetIsComposedOfStockItemHistory.objects.filter(
+                        asset_id=asset_id,
+                        stock_item_id=target_id_int,
+                        end_datetime__isnull=True,
+                    ).exists()
+                    if not is_composed:
+                        return Response(
+                            {"error": "Stock item is not currently composed in this asset"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                    StockItem.objects.filter(stock_item_id=target_id_int).update(stock_item_status="failed")
+
+                elif target_type == "consumable":
+                    is_composed = AssetIsComposedOfConsumableHistory.objects.filter(
+                        asset_id=asset_id,
+                        consumable_id=target_id_int,
+                        end_datetime__isnull=True,
+                    ).exists()
+                    if not is_composed:
+                        return Response(
+                            {"error": "Consumable is not currently composed in this asset"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                    Consumable.objects.filter(consumable_id=target_id_int).update(consumable_status="failed")
+
+                payload = ExternalMaintenanceSerializer(em).data
+                payload["updated"] = {"target_type": target_type, "target_id": target_id_int, "status": "failed"}
+                return Response(payload, status=status.HTTP_200_OK)
+
+            Asset.objects.filter(asset_id=asset_id).update(asset_status="failed")
+
+            updated = {"asset_id": asset_id, "asset_status": "failed"}
+
+            if include_composed:
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list(
+                        "stock_item_id", flat=True
+                    )
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list(
+                        "consumable_id", flat=True
+                    )
+                )
+
+                if stock_item_ids:
+                    StockItem.objects.filter(stock_item_id__in=stock_item_ids).update(stock_item_status="failed")
+                if consumable_ids:
+                    Consumable.objects.filter(consumable_id__in=consumable_ids).update(consumable_status="failed")
+
+                updated["stock_item_ids"] = stock_item_ids
+                updated["consumable_ids"] = consumable_ids
+
+            payload = ExternalMaintenanceSerializer(em).data
+            payload["updated"] = updated
+            return Response(payload, status=status.HTTP_200_OK)
+        except IntegrityError:
+            return Response(
+                {"error": "Failed to mark as failed due to database constraints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
 
 class ExternalMaintenanceStepViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ExternalMaintenanceStep.objects.select_related(
@@ -2832,6 +2993,96 @@ class MyItemsView(APIView):
 class ProblemReportViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
+    @action(detail=False, methods=["get"], url_path="eligible-items")
+    def eligible_items(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        asset_id = request.query_params.get("asset_id")
+        if not asset_id:
+            return Response({"error": "asset_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            asset_id_int = int(asset_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid asset_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        asset = Asset.objects.filter(asset_id=asset_id_int).first()
+        if not asset:
+            return Response({"error": "Asset not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        now_dt = timezone.now()
+
+        owner_assignment = (
+            AssetIsAssignedToPerson.objects.filter(asset_id=asset_id_int, is_active=True)
+            .select_related("person")
+            .first()
+        )
+        if not owner_assignment or not owner_assignment.person:
+            return Response({"error": "Asset owner not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        owner = owner_assignment.person
+
+        active_stock_item_ids = set(
+            AssetIsComposedOfStockItemHistory.objects.filter(
+                asset_id=asset_id_int,
+                start_datetime__lte=now_dt,
+            )
+            .filter(Q(end_datetime__isnull=True) | Q(end_datetime__gt=now_dt))
+            .values_list("stock_item_id", flat=True)
+        )
+        active_consumable_ids = set(
+            AssetIsComposedOfConsumableHistory.objects.filter(
+                asset_id=asset_id_int,
+                start_datetime__lte=now_dt,
+            )
+            .filter(Q(end_datetime__isnull=True) | Q(end_datetime__gt=now_dt))
+            .values_list("consumable_id", flat=True)
+        )
+
+        eligible_stock_items = list(
+            StockItem.objects.filter(
+                stockitemisassignedtoperson__person=owner,
+                stockitemisassignedtoperson__is_active=True,
+            )
+            .exclude(stock_item_id__in=active_stock_item_ids)
+            .distinct()
+            .order_by("stock_item_id")
+        )
+        eligible_consumables = list(
+            Consumable.objects.filter(
+                consumableisassignedtoperson__person=owner,
+                consumableisassignedtoperson__is_active=True,
+            )
+            .exclude(consumable_id__in=active_consumable_ids)
+            .distinct()
+            .order_by("consumable_id")
+        )
+
+        return Response(
+            {
+                "owner_person_id": owner.person_id,
+                "asset_id": asset.asset_id,
+                "stock_items": [
+                    {
+                        "stock_item_id": s.stock_item_id,
+                        "stock_item_inventory_number": s.stock_item_inventory_number,
+                        "stock_item_name": s.stock_item_name,
+                    }
+                    for s in eligible_stock_items
+                ],
+                "consumables": [
+                    {
+                        "consumable_id": c.consumable_id,
+                        "consumable_inventory_number": c.consumable_inventory_number,
+                        "consumable_name": c.consumable_name,
+                    }
+                    for c in eligible_consumables
+                ],
+            },
+            status=status.HTTP_200_OK,
+        )
+
     def list(self, request):
         asset_reports = PersonReportsProblemOnAsset.objects.all().order_by("-report_datetime")
         stock_reports = PersonReportsProblemOnStockItem.objects.all().order_by("-report_datetime")
@@ -2873,14 +3124,147 @@ class ProblemReportViewSet(viewsets.ViewSet):
         person = user_account.person
 
         if item_type == "asset":
+            included_stock_item_ids = request.data.get("included_stock_item_ids") or []
+            included_consumable_ids = request.data.get("included_consumable_ids") or []
+            destination_room_id = request.data.get("destination_room_id")
+
+            try:
+                included_stock_item_ids = [int(x) for x in (included_stock_item_ids or [])]
+                included_consumable_ids = [int(x) for x in (included_consumable_ids or [])]
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid included item ids"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if (included_stock_item_ids or included_consumable_ids) and not destination_room_id:
+                return Response({"error": "destination_room_id is required when including items"}, status=status.HTTP_400_BAD_REQUEST)
+
+            destination_room = None
+            if destination_room_id:
+                try:
+                    destination_room_id_int = int(destination_room_id)
+                except (TypeError, ValueError):
+                    return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                destination_room = Room.objects.filter(room_id=destination_room_id_int).select_related("room_type").first()
+                if not destination_room:
+                    return Response({"error": "Destination room not found"}, status=status.HTTP_400_BAD_REQUEST)
+                if not destination_room.room_type_id or int(destination_room.room_type_id) != 2:
+                    return Response({"error": "Destination room must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
+
             last = PersonReportsProblemOnAsset.objects.order_by("-report_id").first()
             next_id = (last.report_id + 1) if last else 1
-            report = PersonReportsProblemOnAsset.objects.create(
-                report_id=next_id,
-                asset_id=item_id,
-                person=person,
-                owner_observation=owner_observation,
-            )
+            now_dt = timezone.now()
+
+            with transaction.atomic():
+                report = PersonReportsProblemOnAsset.objects.create(
+                    report_id=next_id,
+                    asset_id=item_id,
+                    person=person,
+                    report_datetime=now_dt,
+                    owner_observation=owner_observation,
+                )
+
+                if included_stock_item_ids or included_consumable_ids:
+                    asset_id_int = int(item_id)
+                    owner_assignment = (
+                        AssetIsAssignedToPerson.objects.filter(asset_id=asset_id_int, is_active=True)
+                        .select_related("person")
+                        .first()
+                    )
+                    if not owner_assignment or not owner_assignment.person:
+                        raise ValidationError({"error": "Asset owner not found"})
+                    owner = owner_assignment.person
+
+                    active_stock_item_ids = set(
+                        AssetIsComposedOfStockItemHistory.objects.filter(
+                            asset_id=asset_id_int,
+                            start_datetime__lte=now_dt,
+                        )
+                        .filter(Q(end_datetime__isnull=True) | Q(end_datetime__gt=now_dt))
+                        .values_list("stock_item_id", flat=True)
+                    )
+                    active_consumable_ids = set(
+                        AssetIsComposedOfConsumableHistory.objects.filter(
+                            asset_id=asset_id_int,
+                            start_datetime__lte=now_dt,
+                        )
+                        .filter(Q(end_datetime__isnull=True) | Q(end_datetime__gt=now_dt))
+                        .values_list("consumable_id", flat=True)
+                    )
+
+                    eligible_stock_item_ids = set(
+                        StockItem.objects.filter(
+                            stockitemisassignedtoperson__person=owner,
+                            stockitemisassignedtoperson__is_active=True,
+                        )
+                        .exclude(stock_item_id__in=active_stock_item_ids)
+                        .values_list("stock_item_id", flat=True)
+                    )
+                    eligible_consumable_ids = set(
+                        Consumable.objects.filter(
+                            consumableisassignedtoperson__person=owner,
+                            consumableisassignedtoperson__is_active=True,
+                        )
+                        .exclude(consumable_id__in=active_consumable_ids)
+                        .values_list("consumable_id", flat=True)
+                    )
+
+                    invalid_stock = [sid for sid in included_stock_item_ids if sid not in eligible_stock_item_ids]
+                    if invalid_stock:
+                        raise ValidationError({"error": f"Invalid stock items selected: {invalid_stock}"})
+                    invalid_consumables = [cid for cid in included_consumable_ids if cid not in eligible_consumable_ids]
+                    if invalid_consumables:
+                        raise ValidationError({"error": f"Invalid consumables selected: {invalid_consumables}"})
+
+                    if not destination_room:
+                        raise ValidationError({"error": "Destination room not found"})
+
+                    # Create movements with status defaulting to 'pending'
+                    last_move_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+                    next_stock_move_id = (last_move_global.stock_item_movement_id + 1) if last_move_global else 1
+                    for stock_item_id_int in included_stock_item_ids:
+                        last_move = (
+                            StockItemMovement.objects.filter(stock_item_id=stock_item_id_int)
+                            .order_by("-stock_item_movement_id")
+                            .first()
+                        )
+                        if not last_move:
+                            raise ValidationError({"error": f"Cannot infer stock item current room (no movement history) for stock_item_id={stock_item_id_int}"})
+                        source_room = last_move.destination_room
+                        StockItemMovement.objects.create(
+                            stock_item_movement_id=next_stock_move_id,
+                            stock_item_id=stock_item_id_int,
+                            source_room=source_room,
+                            destination_room=destination_room,
+                            maintenance_step=None,
+                            external_maintenance_step_id=None,
+                            movement_reason="problem_report_include",
+                            movement_datetime=now_dt,
+                        )
+                        next_stock_move_id += 1
+
+                    last_move_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+                    next_consumable_move_id = (last_move_global.consumable_movement_id + 1) if last_move_global else 1
+                    for consumable_id_int in included_consumable_ids:
+                        last_move = (
+                            ConsumableMovement.objects.filter(consumable_id=consumable_id_int)
+                            .order_by("-consumable_movement_id")
+                            .first()
+                        )
+                        if not last_move:
+                            raise ValidationError({"error": f"Cannot infer consumable current room (no movement history) for consumable_id={consumable_id_int}"})
+                        source_room = last_move.destination_room
+                        ConsumableMovement.objects.create(
+                            consumable_movement_id=next_consumable_move_id,
+                            consumable_id=consumable_id_int,
+                            source_room=source_room,
+                            destination_room=destination_room,
+                            maintenance_step=None,
+                            external_maintenance_step_id=None,
+                            movement_reason="problem_report_include",
+                            movement_datetime=now_dt,
+                        )
+                        next_consumable_move_id += 1
+
             return Response(PersonReportsProblemOnAssetSerializer(report).data, status=status.HTTP_201_CREATED)
 
         if item_type == "stock_item":
@@ -5125,7 +5509,12 @@ class AttributionOrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"], url_path="included-items")
     def included_items(self, request, pk=None):
-        """Get all stock items and consumables included with assets in this attribution order"""
+        """Get stock items and consumables related to assets in this attribution order.
+
+        Note: This endpoint returns both:
+        - composition items (items that compose assets, from asset_is_composed_of_*_history)
+        - accessories (items that come with assets but do not compose them)
+        """
         order = self.get_object()
         
         # Get stock items included in this attribution order
@@ -5163,11 +5552,192 @@ class AttributionOrderViewSet(viewsets.ModelViewSet):
             }
             for h in consumable_history
         ]
+
+        accessory_stock_qs = AttributionOrderAssetStockItemAccessory.objects.filter(
+            attribution_order=order
+        ).select_related('stock_item', 'stock_item__stock_item_model', 'asset')
+
+        accessory_stock_items = [
+            {
+                'id': a.stock_item.stock_item_id,
+                'name': a.stock_item.stock_item_name,
+                'model': str(a.stock_item.stock_item_model),
+                'status': a.stock_item.stock_item_status,
+                'asset_id': a.asset.asset_id,
+                'asset_name': a.asset.asset_name,
+            }
+            for a in accessory_stock_qs
+        ]
+
+        accessory_consumable_qs = AttributionOrderAssetConsumableAccessory.objects.filter(
+            attribution_order=order
+        ).select_related('consumable', 'consumable__consumable_model', 'asset')
+
+        accessory_consumables = [
+            {
+                'id': a.consumable.consumable_id,
+                'name': a.consumable.consumable_name,
+                'model': str(a.consumable.consumable_model),
+                'status': a.consumable.consumable_status,
+                'asset_id': a.asset.asset_id,
+                'asset_name': a.asset.asset_name,
+            }
+            for a in accessory_consumable_qs
+        ]
         
         return Response({
             'stock_items': stock_items,
             'consumables': consumables,
+            'accessory_stock_items': accessory_stock_items,
+            'accessory_consumables': accessory_consumables,
         })
+
+
+class AttributionOrderAssetStockItemAccessoryViewSet(viewsets.ModelViewSet):
+    queryset = AttributionOrderAssetStockItemAccessory.objects.all().order_by('-id')
+    serializer_class = AttributionOrderAssetStockItemAccessorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = self.queryset
+        attribution_order_id = self.request.query_params.get('attribution_order')
+        asset_id = self.request.query_params.get('asset')
+        stock_item_id = self.request.query_params.get('stock_item')
+
+        if attribution_order_id is not None:
+            try:
+                qs = qs.filter(attribution_order_id=int(attribution_order_id))
+            except (TypeError, ValueError):
+                pass
+
+        if asset_id is not None:
+            try:
+                qs = qs.filter(asset_id=int(asset_id))
+            except (TypeError, ValueError):
+                pass
+
+        if stock_item_id is not None:
+            try:
+                qs = qs.filter(stock_item_id=int(stock_item_id))
+            except (TypeError, ValueError):
+                pass
+
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        print('[AttributionOrderAssetStockItemAccessoryViewSet.create] request.data:', request.data)
+        data = request.data.copy()
+        stock_item_data = data.pop('stock_item_data', None)
+
+        with transaction.atomic():
+            if stock_item_data is not None and not data.get('stock_item'):
+                if not isinstance(stock_item_data, dict):
+                    raise ValidationError({'stock_item_data': 'Must be an object'})
+
+                stock_item_model_id = stock_item_data.get('stock_item_model')
+                if not stock_item_model_id:
+                    raise ValidationError({'stock_item_model': 'This field is required'})
+
+                serializer_item = StockItemSerializer(data={
+                    'stock_item_model': stock_item_model_id,
+                    'stock_item_inventory_number': stock_item_data.get('stock_item_inventory_number'),
+                    'stock_item_name': stock_item_data.get('stock_item_name'),
+                    'stock_item_status': stock_item_data.get('stock_item_status'),
+                })
+                serializer_item.is_valid(raise_exception=True)
+
+                last_item = StockItem.objects.order_by('-stock_item_id').first()
+                next_id = (last_item.stock_item_id + 1) if last_item else 1
+                item = StockItem.objects.create(stock_item_id=next_id, **serializer_item.validated_data)
+                _sync_stock_item_attribute_values(item)
+                data['stock_item'] = item.stock_item_id
+
+            serializer = self.get_serializer(data=data)
+            if not serializer.is_valid():
+                print('[AttributionOrderAssetStockItemAccessoryViewSet.create] serializer.errors:', serializer.errors)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                self.perform_create(serializer)
+            except IntegrityError:
+                return Response({'error': 'Accessory already exists for this order and asset'}, status=status.HTTP_400_BAD_REQUEST)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class AttributionOrderAssetConsumableAccessoryViewSet(viewsets.ModelViewSet):
+    queryset = AttributionOrderAssetConsumableAccessory.objects.all().order_by('-id')
+    serializer_class = AttributionOrderAssetConsumableAccessorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = self.queryset
+        attribution_order_id = self.request.query_params.get('attribution_order')
+        asset_id = self.request.query_params.get('asset')
+        consumable_id = self.request.query_params.get('consumable')
+
+        if attribution_order_id is not None:
+            try:
+                qs = qs.filter(attribution_order_id=int(attribution_order_id))
+            except (TypeError, ValueError):
+                pass
+
+        if asset_id is not None:
+            try:
+                qs = qs.filter(asset_id=int(asset_id))
+            except (TypeError, ValueError):
+                pass
+
+        if consumable_id is not None:
+            try:
+                qs = qs.filter(consumable_id=int(consumable_id))
+            except (TypeError, ValueError):
+                pass
+
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        print('[AttributionOrderAssetConsumableAccessoryViewSet.create] request.data:', request.data)
+        data = request.data.copy()
+        consumable_data = data.pop('consumable_data', None)
+
+        with transaction.atomic():
+            if consumable_data is not None and not data.get('consumable'):
+                if not isinstance(consumable_data, dict):
+                    raise ValidationError({'consumable_data': 'Must be an object'})
+
+                consumable_model_id = consumable_data.get('consumable_model')
+                if not consumable_model_id:
+                    raise ValidationError({'consumable_model': 'This field is required'})
+
+                serializer_item = ConsumableSerializer(data={
+                    'consumable_model': consumable_model_id,
+                    'consumable_serial_number': consumable_data.get('consumable_serial_number'),
+                    'consumable_inventory_number': consumable_data.get('consumable_inventory_number'),
+                    'consumable_name': consumable_data.get('consumable_name'),
+                    'consumable_status': consumable_data.get('consumable_status'),
+                })
+                serializer_item.is_valid(raise_exception=True)
+
+                last_item = Consumable.objects.order_by('-consumable_id').first()
+                next_id = (last_item.consumable_id + 1) if last_item else 1
+                item = Consumable.objects.create(consumable_id=next_id, **serializer_item.validated_data)
+                _sync_consumable_attribute_values(item)
+                data['consumable'] = item.consumable_id
+
+            serializer = self.get_serializer(data=data)
+            if not serializer.is_valid():
+                print('[AttributionOrderAssetConsumableAccessoryViewSet.create] serializer.errors:', serializer.errors)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                self.perform_create(serializer)
+            except IntegrityError:
+                return Response({'error': 'Accessory already exists for this order and asset'}, status=status.HTTP_400_BAD_REQUEST)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ReceiptReportViewSet(viewsets.ModelViewSet):

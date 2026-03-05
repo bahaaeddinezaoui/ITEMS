@@ -32,6 +32,8 @@ import OptionsPage from './pages/OptionsPage';
 import ReportsPage from './pages/ReportsPage';
 import AttributionOrdersPage from './pages/AttributionOrdersPage';
 import AttributionOrderAssetIncludedItemsPage from './pages/AttributionOrderAssetIncludedItemsPage';
+import AttributionOrderAssetAccessoriesPage from './pages/AttributionOrderAssetAccessoriesPage';
+import AttributionOrderAssetAccessoriesDraftPage from './pages/AttributionOrderAssetAccessoriesDraftPage';
 import CompanyAssetRequestsPage from './pages/CompanyAssetRequestsPage';
 import AdministrativeCertificatesPage from './pages/AdministrativeCertificatesPage';
 import ItemRequestsInboxPage from './pages/ItemRequestsInboxPage';
@@ -376,6 +378,22 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['asset_responsible']}>
                                     <AttributionOrderAssetIncludedItemsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="attribution-orders/assets/:rowId/accessories"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <AttributionOrderAssetAccessoriesDraftPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="attribution-orders/:orderId/assets/:assetId/accessories"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <AttributionOrderAssetAccessoriesPage />
                                 </RoleProtectedRoute>
                             }
                         />

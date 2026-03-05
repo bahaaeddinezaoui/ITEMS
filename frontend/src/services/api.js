@@ -179,6 +179,11 @@ export const externalMaintenanceService = {
         });
         return response.data;
     },
+
+    markFailed: async (external_maintenance_id, payload) => {
+        const response = await api.post(`external-maintenances/${external_maintenance_id}/mark-failed/`, payload || {});
+        return response.data;
+    },
 };
 
 export const externalMaintenanceStepService = {
@@ -244,6 +249,10 @@ export const problemReportService = {
     },
     create: async (data) => {
         const response = await api.post('problem-reports/', data);
+        return response.data;
+    },
+    getEligibleItems: async (assetId) => {
+        const response = await api.get(`problem-reports/eligible-items/?asset_id=${assetId}`);
         return response.data;
     },
     createMaintenance: async (data) => {
@@ -1418,6 +1427,34 @@ export const attributionOrderService = {
     getIncludedItems: async (id) => {
         const response = await api.get(`attribution-orders/${id}/included-items/`);
         return response.data;
+    },
+};
+
+export const attributionOrderAssetStockItemAccessoryService = {
+    getAll: async (params) => {
+        const response = await api.get('attribution-order-asset-stock-item-accessories/', { params });
+        return response.data;
+    },
+    create: async (data) => {
+        const response = await api.post('attribution-order-asset-stock-item-accessories/', data);
+        return response.data;
+    },
+    delete: async (id) => {
+        await api.delete(`attribution-order-asset-stock-item-accessories/${id}/`);
+    },
+};
+
+export const attributionOrderAssetConsumableAccessoryService = {
+    getAll: async (params) => {
+        const response = await api.get('attribution-order-asset-consumable-accessories/', { params });
+        return response.data;
+    },
+    create: async (data) => {
+        const response = await api.post('attribution-order-asset-consumable-accessories/', data);
+        return response.data;
+    },
+    delete: async (id) => {
+        await api.delete(`attribution-order-asset-consumable-accessories/${id}/`);
     },
 };
 

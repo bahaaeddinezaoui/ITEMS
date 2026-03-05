@@ -928,6 +928,62 @@ class AssetIsComposedOfConsumableHistory(models.Model):
         db_table = 'asset_is_composed_of_consumable_history'
 
 
+class AttributionOrderAssetStockItemAccessory(models.Model):
+    """Maps to attribution_order_asset_stock_item_accessory table"""
+
+    id = models.AutoField(primary_key=True, db_column='id')
+    attribution_order = models.ForeignKey(
+        'AttributionOrder',
+        on_delete=models.CASCADE,
+        db_column='attribution_order_id',
+        related_name='stock_item_accessories',
+    )
+    asset = models.ForeignKey(
+        Asset,
+        on_delete=models.CASCADE,
+        db_column='asset_id',
+        related_name='stock_item_accessories',
+    )
+    stock_item = models.ForeignKey(
+        StockItem,
+        on_delete=models.CASCADE,
+        db_column='stock_item_id',
+        related_name='attribution_order_accessories',
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'attribution_order_asset_stock_item_accessory'
+
+
+class AttributionOrderAssetConsumableAccessory(models.Model):
+    """Maps to attribution_order_asset_consumable_accessory table"""
+
+    id = models.AutoField(primary_key=True, db_column='id')
+    attribution_order = models.ForeignKey(
+        'AttributionOrder',
+        on_delete=models.CASCADE,
+        db_column='attribution_order_id',
+        related_name='consumable_accessories',
+    )
+    asset = models.ForeignKey(
+        Asset,
+        on_delete=models.CASCADE,
+        db_column='asset_id',
+        related_name='consumable_accessories',
+    )
+    consumable = models.ForeignKey(
+        Consumable,
+        on_delete=models.CASCADE,
+        db_column='consumable_id',
+        related_name='attribution_order_accessories',
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'attribution_order_asset_consumable_accessory'
+
+
 class ConsumableIsUsedInStockItemHistory(models.Model):
     """Maps to consumable_is_used_in_stock_item_history table"""
     id = models.AutoField(primary_key=True, db_column='id')
@@ -960,6 +1016,7 @@ class AssetMovement(models.Model):
     external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
     movement_reason = models.CharField(max_length=128, db_column='movement_reason')
     movement_datetime = models.DateTimeField(db_column='movement_datetime')
+    status = models.CharField(max_length=24, db_column='status', default='pending')
 
     class Meta:
         managed = False
@@ -976,6 +1033,7 @@ class StockItemMovement(models.Model):
     external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
     movement_reason = models.CharField(max_length=128, db_column='movement_reason')
     movement_datetime = models.DateTimeField(db_column='movement_datetime')
+    status = models.CharField(max_length=24, db_column='status', default='pending')
 
     class Meta:
         managed = False
@@ -992,6 +1050,7 @@ class ConsumableMovement(models.Model):
     consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
     movement_reason = models.CharField(max_length=128, db_column='movement_reason')
     movement_datetime = models.DateTimeField(db_column='movement_datetime')
+    status = models.CharField(max_length=24, db_column='status', default='pending')
 
     class Meta:
         managed = False

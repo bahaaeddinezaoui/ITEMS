@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { myItemsService, problemReportService } from '../services/api';
+import { myItemsService, problemReportService, roomService } from '../services/api';
 
 const MyItemsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -16,6 +16,13 @@ const MyItemsPage = () => {
     const [reportTarget, setReportTarget] = useState(null);
     const [reportObservation, setReportObservation] = useState('');
     const [reportSubmitting, setReportSubmitting] = useState(false);
+    const [eligibleItems, setEligibleItems] = useState({ stock_items: [], consumables: [] });
+    const [selectedStockItems, setSelectedStockItems] = useState([]);
+    const [selectedConsumables, setSelectedConsumables] = useState([]);
+    const [loadingEligible, setLoadingEligible] = useState(false);
+    const [maintenanceRooms, setMaintenanceRooms] = useState([]);
+    const [destinationRoomId, setDestinationRoomId] = useState('');
+    const [loadingRooms, setLoadingRooms] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
     const isChief = useMemo(() => {
@@ -72,18 +79,65 @@ const MyItemsPage = () => {
         );
     };
 
-    const openReportModal = (target) => {
+    const openReportModal = async (target) => {
         setSuccessMessage('');
         setError('');
         setReportTarget(target);
         setReportObservation('');
+        setSelectedStockItems([]);
+        setSelectedConsumables([]);
+        setDestinationRoomId('');
         setShowReportModal(true);
+
+        if (target.item_type === 'asset') {
+            try {
+                setLoadingEligible(true);
+                const data = await problemReportService.getEligibleItems(target.item_id);
+                setEligibleItems(data);
+            } catch (err) {
+                console.error('Failed to load eligible items:', err);
+            } finally {
+                setLoadingEligible(false);
+            }
+
+            try {
+                setLoadingRooms(true);
+                const rooms = await roomService.getByRoomType(2);
+                setMaintenanceRooms(Array.isArray(rooms) ? rooms : []);
+            } catch (err) {
+                console.error('Failed to load maintenance rooms:', err);
+                setMaintenanceRooms([]);
+            } finally {
+                setLoadingRooms(false);
+            }
+        } else {
+            setEligibleItems({ stock_items: [], consumables: [] });
+            setMaintenanceRooms([]);
+        }
+    };
+
+    const toggleItemSelection = (id, type) => {
+        if (type === 'stock_item') {
+            setSelectedStockItems(prev => 
+                prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+            );
+        } else {
+            setSelectedConsumables(prev => 
+                prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+            );
+        }
     };
 
     const submitReport = async () => {
         if (!reportTarget) return;
         if (!reportObservation.trim()) {
             setError('Please enter an observation');
+            return;
+        }
+
+        const hasIncludedItems = selectedStockItems.length > 0 || selectedConsumables.length > 0;
+        if (reportTarget.item_type === 'asset' && hasIncludedItems && !destinationRoomId) {
+            setError('Please select a destination maintenance room for the included items');
             return;
         }
 
@@ -95,6 +149,9 @@ const MyItemsPage = () => {
                 item_type: reportTarget.item_type,
                 item_id: reportTarget.item_id,
                 owner_observation: reportObservation.trim(),
+                included_stock_item_ids: selectedStockItems,
+                included_consumable_ids: selectedConsumables,
+                destination_room_id: destinationRoomId || null,
             });
             setShowReportModal(false);
             setReportTarget(null);
@@ -390,8 +447,132 @@ const MyItemsPage = () => {
                                     fontFamily: 'inherit',
                                     fontSize: 'var(--font-size-sm)',
                                     boxSizing: 'border-box',
+                                    marginBottom: 'var(--space-4)',
                                 }}
                             />
+
+                            {reportTarget?.item_type === 'asset' && (
+                                <div style={{ marginBottom: 'var(--space-4)' }}>
+                                    <h3 style={{ fontSize: 'var(--font-size-md)', marginBottom: 'var(--space-2)' }}>Include other items you own</h3>
+                                    <div style={{ marginBottom: 'var(--space-3)' }}>
+                                        <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>
+                                            Destination maintenance room
+                                        </label>
+                                        <select
+                                            value={destinationRoomId}
+                                            onChange={(e) => setDestinationRoomId(e.target.value)}
+                                            disabled={loadingRooms}
+                                            style={{
+                                                width: '100%',
+                                                padding: 'var(--space-2)',
+                                                border: '1px solid var(--color-border)',
+                                                borderRadius: 'var(--radius-sm)',
+                                                background: 'var(--color-surface)',
+                                                color: 'var(--color-text)',
+                                            }}
+                                        >
+                                            <option value="">{loadingRooms ? 'Loading rooms...' : 'Select a maintenance room'}</option>
+                                            {maintenanceRooms.map((r) => (
+                                                <option key={r.room_id} value={String(r.room_id)}>
+                                                    {r.room_name} (#{r.room_id})
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div style={{ marginTop: 'var(--space-1)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                            Only maintenance rooms are shown.
+                                        </div>
+                                    </div>
+
+                                    {loadingEligible ? (
+                                        <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>Loading eligible items...</div>
+                                    ) : (
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+                                                    <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Stock Items</h4>
+                                                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-secondary"
+                                                            style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                                            onClick={() => setSelectedStockItems(eligibleItems.stock_items.map((s) => s.stock_item_id))}
+                                                            disabled={eligibleItems.stock_items.length === 0}
+                                                        >
+                                                            Select all
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-secondary"
+                                                            style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                                            onClick={() => setSelectedStockItems([])}
+                                                            disabled={selectedStockItems.length === 0}
+                                                        >
+                                                            Clear
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {eligibleItems.stock_items.length === 0 ? (
+                                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>None available</div>
+                                                ) : (
+                                                    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                                        {eligibleItems.stock_items.map(s => (
+                                                            <label key={s.stock_item_id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)', cursor: 'pointer' }}>
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={selectedStockItems.includes(s.stock_item_id)}
+                                                                    onChange={() => toggleItemSelection(s.stock_item_id, 'stock_item')}
+                                                                />
+                                                                <span>{s.stock_item_name} ({s.stock_item_inventory_number})</span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+                                                    <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Consumables</h4>
+                                                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-secondary"
+                                                            style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                                            onClick={() => setSelectedConsumables(eligibleItems.consumables.map((c) => c.consumable_id))}
+                                                            disabled={eligibleItems.consumables.length === 0}
+                                                        >
+                                                            Select all
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-secondary"
+                                                            style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                                            onClick={() => setSelectedConsumables([])}
+                                                            disabled={selectedConsumables.length === 0}
+                                                        >
+                                                            Clear
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {eligibleItems.consumables.length === 0 ? (
+                                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>None available</div>
+                                                ) : (
+                                                    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                                        {eligibleItems.consumables.map(c => (
+                                                            <label key={c.consumable_id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)', cursor: 'pointer' }}>
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={selectedConsumables.includes(c.consumable_id)}
+                                                                    onChange={() => toggleItemSelection(c.consumable_id, 'consumable')}
+                                                                />
+                                                                <span>{c.consumable_name} ({c.consumable_inventory_number})</span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <div style={{ marginTop: 'var(--space-4)', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                                 <button

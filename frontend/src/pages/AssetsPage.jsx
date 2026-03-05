@@ -1324,6 +1324,7 @@ const AssetsPage = () => {
                                                         <option value="active">Active</option>
                                                         <option value="inactive">Inactive</option>
                                                         <option value="maintenance">Maintenance</option>
+                                                        <option value="failed">Failed</option>
                                                         <option value="retired">Retired</option>
                                                     </select>
                                                 </div>
