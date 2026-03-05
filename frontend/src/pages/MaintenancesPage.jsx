@@ -25,7 +25,7 @@ const MaintenancesPage = () => {
     const [selectedMaintenanceRoom, setSelectedMaintenanceRoom] = useState('');
     const [loadingAssetRoom, setLoadingAssetRoom] = useState(false);
 
-    const [sortKey, setSortKey] = useState('start_datetime');
+    const [sortKey, setSortKey] = useState('maintenance_id');
     const [sortDirection, setSortDirection] = useState('desc');
 
 

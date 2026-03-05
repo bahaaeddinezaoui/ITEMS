@@ -735,6 +735,56 @@ class PersonReportsProblemOnAsset(models.Model):
         return f'Problem report on asset {self.asset_id} by {self.person}'
 
 
+class PersonReportsProblemOnAssetIncludedContext(models.Model):
+    """Maps to person_reports_problem_on_asset_included_context table"""
+    report = models.OneToOneField(
+        PersonReportsProblemOnAsset,
+        on_delete=models.CASCADE,
+        db_column='report_id',
+        primary_key=True,
+        related_name='included_context',
+    )
+    destination_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='destination_room_id', related_name='+')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_asset_included_context'
+
+
+class PersonReportsProblemOnAssetIncludedStockItem(models.Model):
+    """Maps to person_reports_problem_on_asset_included_stock_item table"""
+    id = models.AutoField(primary_key=True, db_column='id')
+    report = models.ForeignKey(
+        PersonReportsProblemOnAsset,
+        on_delete=models.CASCADE,
+        db_column='report_id',
+        related_name='included_stock_items',
+    )
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id', related_name='+')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_asset_included_stock_item'
+        unique_together = (('report', 'stock_item'),)
+
+
+class PersonReportsProblemOnAssetIncludedConsumable(models.Model):
+    """Maps to person_reports_problem_on_asset_included_consumable table"""
+    id = models.AutoField(primary_key=True, db_column='id')
+    report = models.ForeignKey(
+        PersonReportsProblemOnAsset,
+        on_delete=models.CASCADE,
+        db_column='report_id',
+        related_name='included_consumables',
+    )
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
+
+    class Meta:
+        managed = False
+        db_table = 'person_reports_problem_on_asset_included_consumable'
+        unique_together = (('report', 'consumable'),)
+
+
 class PersonReportsProblemOnStockItem(models.Model):
     """Maps to person_reports_problem_on_stock_item table"""
     report_id = models.IntegerField(primary_key=True, db_column='report_id')

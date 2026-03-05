@@ -47,6 +47,9 @@ from .models import (
     OrganizationalStructureRelation,
     Person,
     PersonReportsProblemOnAsset,
+    PersonReportsProblemOnAssetIncludedConsumable,
+    PersonReportsProblemOnAssetIncludedContext,
+    PersonReportsProblemOnAssetIncludedStockItem,
     PersonReportsProblemOnConsumable,
     PersonReportsProblemOnStockItem,
     PersonRoleMapping,
@@ -542,26 +545,62 @@ class SuperuserWriteMixin:
     permission_classes = [IsAuthenticated]
 
     def _get_user_account(self, request):
+        # If authentication already resolved our custom UserAccount, use it.
+        # Do not rely on is_authenticated always being present/true.
+        if hasattr(request, "user") and request.user and isinstance(request.user, UserAccount):
+            return request.user
+
         # For tests using force_authenticate, request.user is set directly
         if hasattr(request, "user") and request.user and getattr(request.user, "is_authenticated", False):
-            if isinstance(request.user, UserAccount):
-                return request.user
 
-        try:
-            if hasattr(request, "auth") and request.auth is not None:
-                user_id = request.auth.get("user_id")
-                if user_id:
-                    return UserAccount.objects.get(user_id=user_id)
-        except (UserAccount.DoesNotExist, AttributeError, KeyError):
-            pass
-
-        try:
-            if hasattr(request, "auth") and request.auth is not None:
-                username = request.auth.get("username")
+            # Fallback: DRF may set request.user to a different user type.
+            # Try to resolve our UserAccount via username / id.
+            try:
+                username = getattr(request.user, "username", None)
                 if username:
                     return UserAccount.objects.get(username=username)
-        except (UserAccount.DoesNotExist, AttributeError, KeyError):
-            pass
+            except UserAccount.DoesNotExist:
+                pass
+            except Exception:
+                pass
+
+            try:
+                user_id = getattr(request.user, "user_id", None) or getattr(request.user, "id", None)
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+            except UserAccount.DoesNotExist:
+                pass
+            except Exception:
+                pass
+
+        # Primary: resolve via JWT claims in request.auth (varies by authentication backend).
+        token_payload = None
+        try:
+            if hasattr(request, "auth") and request.auth is not None:
+                if isinstance(request.auth, dict):
+                    token_payload = request.auth
+                elif hasattr(request.auth, "payload") and isinstance(getattr(request.auth, "payload"), dict):
+                    token_payload = request.auth.payload
+                elif hasattr(request.auth, "get"):
+                    # Some token types implement dict-like .get
+                    token_payload = request.auth
+        except Exception:
+            token_payload = None
+
+        if token_payload is not None:
+            try:
+                user_id = token_payload.get("user_id")
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+            except (UserAccount.DoesNotExist, AttributeError, KeyError, TypeError):
+                pass
+
+            try:
+                username = token_payload.get("username")
+                if username:
+                    return UserAccount.objects.get(username=username)
+            except (UserAccount.DoesNotExist, AttributeError, KeyError, TypeError):
+                pass
 
         return None
 
@@ -628,6 +667,37 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         )
         if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes:
             return qs
+
+        if "asset_responsible" in role_codes:
+            # Asset responsible should be able to see maintenances that are awaiting their approval
+            # via a pending maintenance-create asset movement request.
+            pending_moves = list(
+                AssetMovement.objects.filter(Q(status="pending") | Q(status__isnull=True))
+                .filter(
+                    Q(movement_reason="maintenance_create")
+                    | Q(movement_reason__startswith="maintenance_create_")
+                    | Q(movement_reason="Maintenance")
+                )
+                .values("movement_reason", "asset_id")
+            )
+
+            maintenance_ids = []
+            asset_ids = []
+            for row in pending_moves:
+                try:
+                    s = str(row.get("movement_reason"))
+                    if s.startswith("maintenance_create_"):
+                        maintenance_ids.append(int(s.split("maintenance_create_", 1)[1]))
+                    else:
+                        asset_ids.append(int(row.get("asset_id")))
+                except Exception:
+                    continue
+
+            if maintenance_ids:
+                return qs.filter(maintenance_id__in=maintenance_ids)
+            if asset_ids:
+                return qs.filter(asset_id__in=asset_ids, start_datetime__isnull=True, end_datetime__isnull=True)
+            return Maintenance.objects.none()
 
         if "maintenance_technician" in role_codes:
             return qs.filter(performed_by_person=person)
@@ -1576,6 +1646,48 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         maintenance = serializer.validated_data.get("maintenance")
         if maintenance and getattr(maintenance, "end_datetime", None) is not None:
             return Response({"error": "Maintenance is ended"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Block starting a maintenance until all required movements (asset + included items) have been decided.
+        # We only block when creating the first step.
+        if maintenance and getattr(maintenance, "start_datetime", None) is None:
+            try:
+                pending_asset_move = AssetMovement.objects.filter(
+                    status="pending",
+                    movement_reason=f"maintenance_create_{maintenance.maintenance_id}",
+                ).exists()
+                pending_stock_moves = StockItemMovement.objects.filter(
+                    status="pending",
+                    movement_reason=f"problem_report_include_{maintenance.maintenance_id}",
+                ).exists()
+                pending_consumable_moves = ConsumableMovement.objects.filter(
+                    status="pending",
+                    movement_reason=f"problem_report_include_{maintenance.maintenance_id}",
+                ).exists()
+
+                if pending_asset_move or pending_stock_moves or pending_consumable_moves:
+                    pending_parts = []
+                    if pending_asset_move:
+                        pending_parts.append("asset movement request")
+                    if pending_stock_moves:
+                        pending_parts.append("included stock items movements")
+                    if pending_consumable_moves:
+                        pending_parts.append("included consumables movements")
+
+                    return Response(
+                        {
+                            "error": "Maintenance cannot start until the following approvals are decided (accepted/rejected): "
+                            + ", ".join(pending_parts)
+                            + ".",
+                            "pending_approvals": {
+                                "asset_movement": bool(pending_asset_move),
+                                "included_stock_items": bool(pending_stock_moves),
+                                "included_consumables": bool(pending_consumable_moves),
+                            },
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except Exception:
+                pass
 
         # Validate assignment permission
         person_data = serializer.validated_data.get("person")
@@ -2570,6 +2682,47 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
         except Maintenance.DoesNotExist:
             return Response({"error": "Maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        # Block starting a maintenance externally until all required movements have been decided.
+        if getattr(maintenance, "start_datetime", None) is None:
+            try:
+                pending_asset_move = AssetMovement.objects.filter(
+                    status="pending",
+                    movement_reason=f"maintenance_create_{maintenance.maintenance_id}",
+                ).exists()
+                pending_stock_moves = StockItemMovement.objects.filter(
+                    status="pending",
+                    movement_reason=f"problem_report_include_{maintenance.maintenance_id}",
+                ).exists()
+                pending_consumable_moves = ConsumableMovement.objects.filter(
+                    status="pending",
+                    movement_reason=f"problem_report_include_{maintenance.maintenance_id}",
+                ).exists()
+
+                if pending_asset_move or pending_stock_moves or pending_consumable_moves:
+                    pending_parts = []
+                    if pending_asset_move:
+                        pending_parts.append("asset movement request")
+                    if pending_stock_moves:
+                        pending_parts.append("included stock items movements")
+                    if pending_consumable_moves:
+                        pending_parts.append("included consumables movements")
+
+                    return Response(
+                        {
+                            "error": "Maintenance cannot start until the following approvals are decided (accepted/rejected): "
+                            + ", ".join(pending_parts)
+                            + ".",
+                            "pending_approvals": {
+                                "asset_movement": bool(pending_asset_move),
+                                "included_stock_items": bool(pending_stock_moves),
+                                "included_consumables": bool(pending_consumable_moves),
+                            },
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            except Exception:
+                pass
+
         asset_id = getattr(maintenance, "asset_id", None)
         if asset_id and ExternalMaintenance.objects.filter(
             maintenance__asset_id=asset_id,
@@ -3381,11 +3534,11 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 try:
                     destination_room_id_int = int(destination_room_id)
                 except (TypeError, ValueError):
-                    return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
-
-                destination_room = Room.objects.filter(room_id=destination_room_id_int).select_related("room_type").first()
+                    destination_room = None
+            if (included_stock_item_ids or included_consumable_ids) and destination_room_id:
+                destination_room = Room.objects.select_related("room_type").filter(room_id=destination_room_id).first()
                 if not destination_room:
-                    return Response({"error": "Destination room not found"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
                 if not destination_room.room_type_id or int(destination_room.room_type_id) != 2:
                     return Response({"error": "Destination room must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -3457,74 +3610,25 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     if not destination_room:
                         raise ValidationError({"error": "Destination room not found"})
 
-                    # Create movements with status defaulting to 'pending'
-                    last_move_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
-                    next_stock_move_id = (last_move_global.stock_item_movement_id + 1) if last_move_global else 1
-                    for stock_item_id_int in included_stock_item_ids:
-                        last_accepted_move = (
-                            StockItemMovement.objects.filter(stock_item_id=stock_item_id_int, status="accepted")
-                            .order_by("-stock_item_movement_id")
-                            .first()
-                        )
-                        last_move_any = (
-                            StockItemMovement.objects.filter(stock_item_id=stock_item_id_int)
-                            .order_by("-stock_item_movement_id")
-                            .first()
-                        )
-                        if last_accepted_move:
-                            source_room = last_accepted_move.destination_room
-                        elif last_move_any and getattr(last_move_any, "status", None) == "pending":
-                            source_room = last_move_any.source_room
-                        elif last_move_any:
-                            source_room = last_move_any.destination_room
-                        else:
-                            raise ValidationError({"error": f"Cannot infer stock item current room (no movement history) for stock_item_id={stock_item_id_int}"})
-                        StockItemMovement.objects.create(
-                            stock_item_movement_id=next_stock_move_id,
-                            stock_item_id=stock_item_id_int,
-                            source_room=source_room,
-                            destination_room=destination_room,
-                            maintenance_step=None,
-                            external_maintenance_step_id=None,
-                            movement_reason="problem_report_include",
-                            movement_datetime=now_dt,
-                            status="pending",
-                        )
-                        next_stock_move_id += 1
+                    if not destination_room:
+                        raise ValidationError({"error": "destination_room_id is required when including items"})
 
-                    last_move_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
-                    next_consumable_move_id = (last_move_global.consumable_movement_id + 1) if last_move_global else 1
+                    PersonReportsProblemOnAssetIncludedContext.objects.update_or_create(
+                        report_id=report.report_id,
+                        defaults={"destination_room_id": destination_room.room_id},
+                    )
+
+                    for stock_item_id_int in included_stock_item_ids:
+                        PersonReportsProblemOnAssetIncludedStockItem.objects.get_or_create(
+                            report_id=report.report_id,
+                            stock_item_id=stock_item_id_int,
+                        )
+
                     for consumable_id_int in included_consumable_ids:
-                        last_accepted_move = (
-                            ConsumableMovement.objects.filter(consumable_id=consumable_id_int, status="accepted")
-                            .order_by("-consumable_movement_id")
-                            .first()
-                        )
-                        last_move_any = (
-                            ConsumableMovement.objects.filter(consumable_id=consumable_id_int)
-                            .order_by("-consumable_movement_id")
-                            .first()
-                        )
-                        if last_accepted_move:
-                            source_room = last_accepted_move.destination_room
-                        elif last_move_any and getattr(last_move_any, "status", None) == "pending":
-                            source_room = last_move_any.source_room
-                        elif last_move_any:
-                            source_room = last_move_any.destination_room
-                        else:
-                            raise ValidationError({"error": f"Cannot infer consumable current room (no movement history) for consumable_id={consumable_id_int}"})
-                        ConsumableMovement.objects.create(
-                            consumable_movement_id=next_consumable_move_id,
+                        PersonReportsProblemOnAssetIncludedConsumable.objects.get_or_create(
+                            report_id=report.report_id,
                             consumable_id=consumable_id_int,
-                            source_room=source_room,
-                            destination_room=destination_room,
-                            maintenance_step=None,
-                            external_maintenance_step_id=None,
-                            movement_reason="problem_report_include",
-                            movement_datetime=now_dt,
-                            status="pending",
                         )
-                        next_consumable_move_id += 1
 
             return Response(PersonReportsProblemOnAssetSerializer(report).data, status=status.HTTP_201_CREATED)
 
@@ -3588,6 +3692,123 @@ class ProblemReportViewSet(viewsets.ViewSet):
         if not report:
             return Response({"error": "Report not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        last_item = Maintenance.objects.order_by("-maintenance_id").first()
+        next_maintenance_id = (last_item.maintenance_id + 1) if last_item else 1
+
+        # Create included-item movements ONLY now (at maintenance creation time), using persisted selections.
+        included_ctx = PersonReportsProblemOnAssetIncludedContext.objects.filter(report_id=report.report_id).first()
+        included_destination_room_id = getattr(included_ctx, "destination_room_id", None) if included_ctx else None
+
+        stock_item_ids_to_include = list(
+            PersonReportsProblemOnAssetIncludedStockItem.objects.filter(report_id=report.report_id).values_list(
+                "stock_item_id", flat=True
+            )
+        )
+        consumable_ids_to_include = list(
+            PersonReportsProblemOnAssetIncludedConsumable.objects.filter(report_id=report.report_id).values_list(
+                "consumable_id", flat=True
+            )
+        )
+
+        if (stock_item_ids_to_include or consumable_ids_to_include) and not included_destination_room_id:
+            return Response(
+                {"error": "Included items exist for this report but destination maintenance room is missing"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if stock_item_ids_to_include or consumable_ids_to_include:
+            destination_room = Room.objects.filter(room_id=included_destination_room_id).first()
+            if not destination_room:
+                return Response({"error": "Destination room not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+            now_dt = timezone.now()
+
+            last_stock_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+            next_stock_move_id = (last_stock_move.stock_item_movement_id + 1) if last_stock_move else 1
+
+            for stock_item_id_int in stock_item_ids_to_include:
+                last_accepted_move = (
+                    StockItemMovement.objects.filter(stock_item_id=stock_item_id_int, status="accepted")
+                    .order_by("-stock_item_movement_id")
+                    .first()
+                )
+                last_move_any = (
+                    StockItemMovement.objects.filter(stock_item_id=stock_item_id_int)
+                    .order_by("-stock_item_movement_id")
+                    .first()
+                )
+                if last_accepted_move:
+                    source_room = last_accepted_move.destination_room
+                elif last_move_any and getattr(last_move_any, "status", None) == "pending":
+                    source_room = last_move_any.source_room
+                elif last_move_any:
+                    source_room = last_move_any.destination_room
+                else:
+                    return Response(
+                        {"error": f"Cannot infer stock item current room (no movement history) for stock_item_id={stock_item_id_int}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                StockItemMovement.objects.create(
+                    stock_item_movement_id=next_stock_move_id,
+                    stock_item_id=stock_item_id_int,
+                    source_room=source_room,
+                    destination_room=destination_room,
+                    maintenance_step=None,
+                    external_maintenance_step_id=None,
+                    movement_reason=f"problem_report_include_{next_maintenance_id}",
+                    movement_datetime=now_dt,
+                    status="pending",
+                )
+                next_stock_move_id += 1
+
+            last_cons_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+            next_consumable_move_id = (last_cons_move.consumable_movement_id + 1) if last_cons_move else 1
+
+            for consumable_id_int in consumable_ids_to_include:
+                last_accepted_move = (
+                    ConsumableMovement.objects.filter(consumable_id=consumable_id_int, status="accepted")
+                    .order_by("-consumable_movement_id")
+                    .first()
+                )
+                last_move_any = (
+                    ConsumableMovement.objects.filter(consumable_id=consumable_id_int)
+                    .order_by("-consumable_movement_id")
+                    .first()
+                )
+                if last_accepted_move:
+                    source_room = last_accepted_move.destination_room
+                elif last_move_any and getattr(last_move_any, "status", None) == "pending":
+                    source_room = last_move_any.source_room
+                elif last_move_any:
+                    source_room = last_move_any.destination_room
+                else:
+                    return Response(
+                        {"error": f"Cannot infer consumable current room (no movement history) for consumable_id={consumable_id_int}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                ConsumableMovement.objects.create(
+                    consumable_movement_id=next_consumable_move_id,
+                    consumable_id=consumable_id_int,
+                    source_room=source_room,
+                    destination_room=destination_room,
+                    maintenance_step=None,
+                    external_maintenance_step_id=None,
+                    movement_reason=f"problem_report_include_{next_maintenance_id}",
+                    movement_datetime=now_dt,
+                    status="pending",
+                )
+                next_consumable_move_id += 1
+
+            # Clear persisted selections to prevent duplicates on repeated create-maintenance calls.
+            try:
+                PersonReportsProblemOnAssetIncludedStockItem.objects.filter(report_id=report.report_id).delete()
+                PersonReportsProblemOnAssetIncludedConsumable.objects.filter(report_id=report.report_id).delete()
+                PersonReportsProblemOnAssetIncludedContext.objects.filter(report_id=report.report_id).delete()
+            except Exception:
+                pass
+
         # If the asset is not currently in a maintenance room, creating a maintenance should initiate
         # an asset movement request (pending) to be approved by the asset responsible.
         asset_id = getattr(report, "asset_id", None)
@@ -3609,50 +3830,59 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     return True
                 return "maintenance" in label
 
-            if not _is_maintenance_room(current_room):
-                if not destination_room_id:
-                    return Response(
-                        {
-                            "error": "Asset is not in a maintenance room. destination_room_id is required to request moving the asset to a maintenance room.",
-                            "current_room": RoomSerializer(current_room).data if current_room else None,
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+            # Always require an asset-responsible decision for maintenance creation.
+            # If the asset is already in a maintenance room, we create a no-op movement (source=destination=current)
+            # purely to represent the approval requirement.
+            movement_reason = f"maintenance_create_{next_maintenance_id}"
+            already_exists = AssetMovement.objects.filter(asset_id=asset_id, movement_reason=movement_reason).exists()
 
-                try:
-                    destination_room_id_int = int(destination_room_id)
-                except (TypeError, ValueError):
-                    return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
-
-                destination_room = Room.objects.select_related("room_type").filter(room_id=destination_room_id_int).first()
-                if not destination_room:
-                    return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
-                if not _is_maintenance_room(destination_room):
-                    return Response({"error": "destination_room_id must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
-
+            if not already_exists:
                 if not current_room:
                     return Response(
                         {"error": "Cannot infer asset current room (no movement history)"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-                if current_room.room_id != destination_room.room_id:
-                    last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
-                    next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
-                    AssetMovement.objects.create(
-                        asset_movement_id=next_asset_move_id,
-                        asset_id=asset_id,
-                        source_room_id=current_room.room_id,
-                        destination_room_id=destination_room.room_id,
-                        maintenance_step_id=None,
-                        external_maintenance_step_id=None,
-                        movement_reason="maintenance_create",
-                        movement_datetime=timezone.now(),
-                        status="pending",
-                    )
+                if not _is_maintenance_room(current_room):
+                    if not destination_room_id:
+                        return Response(
+                            {
+                                "error": "Asset is not in a maintenance room. destination_room_id is required to request moving the asset to a maintenance room.",
+                                "current_room": RoomSerializer(current_room).data if current_room else None,
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
 
-        last_item = Maintenance.objects.order_by("-maintenance_id").first()
-        next_id = (last_item.maintenance_id + 1) if last_item else 1
+                    try:
+                        destination_room_id_int = int(destination_room_id)
+                    except (TypeError, ValueError):
+                        return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    destination_room = Room.objects.select_related("room_type").filter(room_id=destination_room_id_int).first()
+                    if not destination_room:
+                        return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+                    if not _is_maintenance_room(destination_room):
+                        return Response({"error": "destination_room_id must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    dest_room_id = destination_room.room_id
+                else:
+                    dest_room_id = current_room.room_id
+
+                last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+                next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+                AssetMovement.objects.create(
+                    asset_movement_id=next_asset_move_id,
+                    asset_id=asset_id,
+                    source_room_id=current_room.room_id,
+                    destination_room_id=dest_room_id,
+                    maintenance_step_id=None,
+                    external_maintenance_step_id=None,
+                    movement_reason=movement_reason,
+                    movement_datetime=timezone.now(),
+                    status="pending",
+                )
+
+        next_id = next_maintenance_id
         try:
             maintenance = Maintenance.objects.create(
                 maintenance_id=next_id,
@@ -5831,7 +6061,12 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
             return denial
 
         qs = (
-            StockItemMovement.objects.filter(status="pending", movement_reason__in=["problem_report_include", "return_to_owner"])
+            StockItemMovement.objects.filter(status="pending")
+            .filter(
+                Q(movement_reason="return_to_owner")
+                | Q(movement_reason="problem_report_include")
+                | Q(movement_reason__startswith="problem_report_include_")
+            )
             .order_by("-movement_datetime", "-stock_item_movement_id")
         )
 
@@ -5868,7 +6103,10 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
         if not movement:
             return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if movement.movement_reason not in {"problem_report_include", "return_to_owner"}:
+        if not (
+            movement.movement_reason in {"problem_report_include", "return_to_owner"}
+            or str(movement.movement_reason).startswith("problem_report_include_")
+        ):
             return Response({"error": "Only problem_report_include or return_to_owner movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
 
         if movement.status != "pending":
@@ -5913,7 +6151,12 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
             return denial
 
         qs = (
-            ConsumableMovement.objects.filter(status="pending", movement_reason__in=["problem_report_include", "return_to_owner"])
+            ConsumableMovement.objects.filter(status="pending")
+            .filter(
+                Q(movement_reason="return_to_owner")
+                | Q(movement_reason="problem_report_include")
+                | Q(movement_reason__startswith="problem_report_include_")
+            )
             .order_by("-movement_datetime", "-consumable_movement_id")
         )
 
@@ -5950,8 +6193,14 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
         if not movement:
             return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if movement.movement_reason not in {"problem_report_include", "return_to_owner"}:
-            return Response({"error": "Only problem_report_include or return_to_owner movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+        if not (
+            movement.movement_reason in {"problem_report_include", "return_to_owner"}
+            or str(movement.movement_reason).startswith("problem_report_include_")
+        ):
+            return Response(
+                {"error": "Only problem_report_include or return_to_owner movements can be decided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if movement.status != "pending":
             return Response({"error": "Only pending movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -5995,7 +6244,13 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
             return denial
 
         qs = (
-            AssetMovement.objects.filter(status="pending", movement_reason__in=["return_to_owner", "maintenance_create"])
+            AssetMovement.objects.filter(Q(status="pending") | Q(status__isnull=True))
+            .filter(
+                Q(movement_reason="return_to_owner")
+                | Q(movement_reason="maintenance_create")
+                | Q(movement_reason__startswith="maintenance_create_")
+                | Q(movement_reason="Maintenance")
+            )
             .order_by("-movement_datetime", "-asset_movement_id")
         )
 
@@ -6032,7 +6287,10 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
         if not movement:
             return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if movement.movement_reason not in {"return_to_owner", "maintenance_create"}:
+        if not (
+            movement.movement_reason in {"return_to_owner", "maintenance_create", "Maintenance"}
+            or str(movement.movement_reason).startswith("maintenance_create_")
+        ):
             return Response(
                 {"error": "Only return_to_owner or maintenance_create movements can be decided"},
                 status=status.HTTP_400_BAD_REQUEST,
