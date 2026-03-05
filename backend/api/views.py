@@ -3393,6 +3393,29 @@ class ProblemReportViewSet(viewsets.ViewSet):
         if not asset:
             return Response({"error": "Asset not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        if Maintenance.objects.filter(asset_id=asset_id_int, end_datetime__isnull=True).exists():
+            return Response(
+                {"error": "You cannot report a problem on an asset that is already under maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        open_external_maintenance_q = (
+            Q(
+                external_maintenance_status__isnull=True,
+                item_sent_to_external_maintenance_datetime__isnull=False,
+                item_received_by_company_datetime__isnull=True,
+            )
+            | (
+                Q(external_maintenance_status__isnull=False)
+                & ~Q(external_maintenance_status__in=["DRAFT", "RECEIVED_BY_COMPANY"])
+            )
+        )
+        if ExternalMaintenance.objects.filter(maintenance__asset_id=asset_id_int).filter(open_external_maintenance_q).exists():
+            return Response(
+                {"error": "You cannot report a problem on an asset that is already under external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         now_dt = timezone.now()
 
         owner_assignment = (
@@ -3510,6 +3533,34 @@ class ProblemReportViewSet(viewsets.ViewSet):
             included_consumable_ids = request.data.get("included_consumable_ids") or []
             destination_room_id = request.data.get("destination_room_id")
 
+            try:
+                asset_id_int = int(item_id)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid item_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if Maintenance.objects.filter(asset_id=asset_id_int, end_datetime__isnull=True).exists():
+                return Response(
+                    {"error": "You cannot report a problem on an asset that is already under maintenance."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            open_external_maintenance_q = (
+                Q(
+                    external_maintenance_status__isnull=True,
+                    item_sent_to_external_maintenance_datetime__isnull=False,
+                    item_received_by_company_datetime__isnull=True,
+                )
+                | (
+                    Q(external_maintenance_status__isnull=False)
+                    & ~Q(external_maintenance_status__in=["DRAFT", "RECEIVED_BY_COMPANY"])
+                )
+            )
+            if ExternalMaintenance.objects.filter(maintenance__asset_id=asset_id_int).filter(open_external_maintenance_q).exists():
+                return Response(
+                    {"error": "You cannot report a problem on an asset that is already under external maintenance."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             # Asset owners can report a problem, but they must not be able to request moving the asset.
             # Asset movement requests are only initiated when a maintenance chief creates maintenance.
             if destination_room_id and not (included_stock_item_ids or included_consumable_ids):
@@ -3556,7 +3607,6 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 )
 
                 if included_stock_item_ids or included_consumable_ids:
-                    asset_id_int = int(item_id)
                     owner_assignment = (
                         AssetIsAssignedToPerson.objects.filter(asset_id=asset_id_int, is_active=True)
                         .select_related("person")

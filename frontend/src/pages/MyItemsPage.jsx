@@ -16,6 +16,7 @@ const MyItemsPage = () => {
     const [reportTarget, setReportTarget] = useState(null);
     const [reportObservation, setReportObservation] = useState('');
     const [reportSubmitting, setReportSubmitting] = useState(false);
+    const [reportModalError, setReportModalError] = useState('');
     const [eligibleItems, setEligibleItems] = useState({ stock_items: [], consumables: [] });
     const [selectedStockItems, setSelectedStockItems] = useState([]);
     const [selectedConsumables, setSelectedConsumables] = useState([]);
@@ -82,6 +83,7 @@ const MyItemsPage = () => {
     const openReportModal = async (target) => {
         setSuccessMessage('');
         setError('');
+        setReportModalError('');
         setReportTarget(target);
         setReportObservation('');
         setSelectedStockItems([]);
@@ -95,7 +97,9 @@ const MyItemsPage = () => {
                 const data = await problemReportService.getEligibleItems(target.item_id);
                 setEligibleItems(data);
             } catch (err) {
-                console.error('Failed to load eligible items:', err);
+                const msg = err?.response?.data?.error || err?.message || 'Failed to load eligible items';
+                setReportModalError(typeof msg === 'string' ? msg : 'Failed to load eligible items');
+                setEligibleItems({ stock_items: [], consumables: [] });
             } finally {
                 setLoadingEligible(false);
             }
@@ -131,19 +135,20 @@ const MyItemsPage = () => {
     const submitReport = async () => {
         if (!reportTarget) return;
         if (!reportObservation.trim()) {
-            setError('Please enter an observation');
+            setReportModalError('Please enter an observation');
             return;
         }
 
         const hasIncludedItems = selectedStockItems.length > 0 || selectedConsumables.length > 0;
         if (reportTarget.item_type === 'asset' && hasIncludedItems && !destinationRoomId) {
-            setError('Please select a destination maintenance room for the included items');
+            setReportModalError('Please select a destination maintenance room for the included items');
             return;
         }
 
         try {
             setReportSubmitting(true);
             setError('');
+            setReportModalError('');
             setSuccessMessage('');
             await problemReportService.create({
                 item_type: reportTarget.item_type,
@@ -164,7 +169,7 @@ const MyItemsPage = () => {
             }
         } catch (e) {
             const msg = e?.response?.data?.error || e?.message || 'Failed to submit report';
-            setError(typeof msg === 'string' ? msg : 'Failed to submit report');
+            setReportModalError(typeof msg === 'string' ? msg : 'Failed to submit report');
         } finally {
             setReportSubmitting(false);
         }
@@ -430,6 +435,22 @@ const MyItemsPage = () => {
                             <div style={{ marginBottom: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>
                                 {reportTarget ? `${reportTarget.item_label} (${reportTarget.item_type} #${reportTarget.item_id})` : ''}
                             </div>
+
+                            {reportModalError ? (
+                                <div
+                                    style={{
+                                        marginBottom: 'var(--space-3)',
+                                        padding: 'var(--space-3)',
+                                        border: '1px solid var(--color-danger)',
+                                        borderRadius: 'var(--radius-sm)',
+                                        color: 'var(--color-danger)',
+                                        background: 'rgba(220, 38, 38, 0.08)',
+                                        fontSize: 'var(--font-size-sm)',
+                                    }}
+                                >
+                                    {reportModalError}
+                                </div>
+                            ) : null}
 
                             <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: 500 }}>
                                 Observation
