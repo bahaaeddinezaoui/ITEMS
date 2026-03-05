@@ -278,6 +278,14 @@ export const movementApprovalService = {
         const response = await api.post(`consumable-movements-approval/${movementId}/decide/`, { decision });
         return response.data;
     },
+    getPendingAssetMovements: async () => {
+        const response = await api.get('asset-movements-approval/pending/');
+        return response.data;
+    },
+    decideAssetMovement: async (movementId, decision) => {
+        const response = await api.post(`asset-movements-approval/${movementId}/decide/`, { decision });
+        return response.data;
+    },
 };
 
 // Asset Type service
@@ -1225,6 +1233,21 @@ export const maintenanceService = {
         return response.data;
     },
 
+    requestReturnToOwner: async (id, data) => {
+        const response = await api.post(`maintenances/${id}/request-return-to-owner/`, data || {});
+        return response.data;
+    },
+
+    pendingReturnToOwnerExists: async (id) => {
+        const response = await api.get(`maintenances/${id}/pending-return-to-owner-exists/`);
+        return response.data;
+    },
+
+    returnToOwnerDefaultRoom: async (id) => {
+        const response = await api.get(`maintenances/${id}/return-to-owner-default-room/`);
+        return response.data;
+    },
+
     update: async (id, maintenanceData) => {
         const response = await api.put(`maintenances/${id}/`, maintenanceData);
         return response.data;
@@ -1269,6 +1292,11 @@ export const maintenanceStepService = {
 
     requestConsumable: async (id, data) => {
         const response = await api.post(`maintenance-steps/${id}/request-consumable/`, data);
+        return response.data;
+    },
+
+    returnToOwner: async (id, data) => {
+        const response = await api.post(`maintenance-steps/${id}/return-to-owner/`, data);
         return response.data;
     },
 

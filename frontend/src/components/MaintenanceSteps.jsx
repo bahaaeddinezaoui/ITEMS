@@ -4,6 +4,7 @@ import SearchableSelect from './SearchableSelect';
 import {
     maintenanceStepService,
     maintenanceTypicalStepService,
+    maintenanceService,
     personService,
     externalMaintenanceService,
     externalMaintenanceStepService,
@@ -33,6 +34,8 @@ const MaintenanceSteps = ({
     canShowEndMaintenanceButton,
     endMaintenanceDisabled,
     onEndMaintenance,
+    triggerReturnModalAfterEnd,
+    onTriggerReturnModalAfterEndHandled,
 }) => {
     const { user } = useAuth();
     const [steps, setSteps] = useState([]);
@@ -80,6 +83,13 @@ const MaintenanceSteps = ({
     const [removeLoading, setRemoveLoading] = useState(false);
     const [removeSubmitting, setRemoveSubmitting] = useState(false);
 
+    const [returnMaintenanceOpen, setReturnMaintenanceOpen] = useState(false);
+    const [returnMaintenancePendingExists, setReturnMaintenancePendingExists] = useState(false);
+    const [returnMaintenanceDestinationRoomId, setReturnMaintenanceDestinationRoomId] = useState('');
+    const [returnMaintenanceRooms, setReturnMaintenanceRooms] = useState([]);
+    const [returnMaintenanceLoading, setReturnMaintenanceLoading] = useState(false);
+    const [returnMaintenanceSubmitting, setReturnMaintenanceSubmitting] = useState(false);
+
     const [assetConditionEditorOpen, setAssetConditionEditorOpen] = useState(false);
     const [assetConditionEditorStep, setAssetConditionEditorStep] = useState(null);
     const [physicalConditions, setPhysicalConditions] = useState([]);
@@ -109,6 +119,14 @@ const MaintenanceSteps = ({
     const [attributeMessage, setAttributeMessage] = useState(null);
     const [attributeCurrentValue, setAttributeCurrentValue] = useState(null);
     const [attributeCurrentValueLoading, setAttributeCurrentValueLoading] = useState(false);
+
+    const [returnEditorOpen, setReturnEditorOpen] = useState(false);
+    const [returnEditorStep, setReturnEditorStep] = useState(null);
+    const [returnComponents, setReturnComponents] = useState({ stock_items: [], consumables: [] });
+    const [returnSelectedType, setReturnSelectedType] = useState('');
+    const [returnSelectedId, setReturnSelectedId] = useState('');
+    const [returnLoading, setReturnLoading] = useState(false);
+    const [returnSubmitting, setReturnSubmitting] = useState(false);
 
     // New Step Form State
     const [newStepTypicalId, setNewStepTypicalId] = useState('');
@@ -264,6 +282,65 @@ const MaintenanceSteps = ({
         setExternalStepTypicalStepId('');
     };
 
+    const closeReturnEditor = () => {
+        setReturnEditorOpen(false);
+        setReturnEditorStep(null);
+        setReturnComponents({ stock_items: [], consumables: [] });
+        setReturnSelectedType('');
+        setReturnSelectedId('');
+        setReturnLoading(false);
+        setReturnSubmitting(false);
+    };
+
+    const openReturnEditor = async (step) => {
+        if (maintenanceEnded) {
+            setError('Maintenance is ended');
+            return;
+        }
+        setReturnEditorOpen(true);
+        setReturnEditorStep(step);
+        setReturnComponents({ stock_items: [], consumables: [] });
+        setReturnSelectedType('');
+        setReturnSelectedId('');
+
+        try {
+            setReturnLoading(true);
+            const data = await maintenanceStepService.getComponents(step.maintenance_step_id);
+            setReturnComponents({
+                stock_items: Array.isArray(data?.stock_items) ? data.stock_items : [],
+                consumables: Array.isArray(data?.consumables) ? data.consumables : [],
+            });
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to load components');
+            closeReturnEditor();
+        } finally {
+            setReturnLoading(false);
+        }
+    };
+
+    const submitReturnEditor = async () => {
+        if (!returnEditorStep) return;
+        if (!returnSelectedType || !returnSelectedId) {
+            setError('Please select a component to return');
+            return;
+        }
+        try {
+            setReturnSubmitting(true);
+            await maintenanceStepService.returnToOwner(returnEditorStep.maintenance_step_id, {
+                component_type: returnSelectedType,
+                component_id: Number(returnSelectedId),
+            });
+            await loadData();
+            closeReturnEditor();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to return component to owner');
+        } finally {
+            setReturnSubmitting(false);
+        }
+    };
+
     useEffect(() => {
         closeExternalMaintenanceModal();
         closeExternalStepModal();
@@ -279,7 +356,17 @@ const MaintenanceSteps = ({
         closeRemoveEditor();
         closeAssetConditionEditor();
         closeAttributeEditor();
+        closeReturnEditor();
     }, [maintenanceEnded]);
+
+    useEffect(() => {
+        if (!triggerReturnModalAfterEnd) return;
+        openReturnMaintenance({ ignoreMaintenanceEnded: true });
+        if (typeof onTriggerReturnModalAfterEndHandled === 'function') {
+            onTriggerReturnModalAfterEndHandled();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [triggerReturnModalAfterEnd]);
 
     const openAttributeEditor = async (step) => {
         if (maintenanceEnded) {
@@ -534,7 +621,7 @@ const MaintenanceSteps = ({
         try {
             setLoading(true);
             // Fetch both technicians and chiefs so chiefs can assign themselves
-            const [stepsData, externalStepsData, typicalStepsData, techniciansData, chiefsData, externalMaintenancesData, externalTypicalStepsData] = await Promise.all([
+            const [stepsData, externalStepsData, typicalStepsData, techniciansData, chiefsData, externalMaintenancesData, externalTypicalStepsData, pendingReturn] = await Promise.all([
                 maintenanceStepService.getAll({ maintenance: maintenanceId }),
                 externalMaintenanceStepService.getAll({ maintenance: maintenanceId }),
                 maintenanceTypicalStepService.getAll(),
@@ -542,6 +629,7 @@ const MaintenanceSteps = ({
                 isChief ? personService.getAll({ role: 'maintenance_chief' }) : Promise.resolve([]),
                 externalMaintenanceService.getAll({ maintenance: maintenanceId }),
                 externalMaintenanceTypicalStepService.getAll(),
+                isMainTechnician ? maintenanceService.pendingReturnToOwnerExists(Number(maintenanceId)).catch(() => ({ exists: false })) : Promise.resolve({ exists: false }),
             ]);
             setSteps(stepsData);
             if (typeof onStepsChange === 'function') {
@@ -561,6 +649,7 @@ const MaintenanceSteps = ({
             setTechnicians(combinedPeople);
             setExternalMaintenances(Array.isArray(externalMaintenancesData) ? externalMaintenancesData : []);
             setExternalMaintenanceTypicalSteps(Array.isArray(externalTypicalStepsData) ? externalTypicalStepsData : []);
+            setReturnMaintenancePendingExists(Boolean(pendingReturn?.exists));
 
             try {
                 const conds = await physicalConditionService.getAll();
@@ -669,6 +758,65 @@ const MaintenanceSteps = ({
         setRemoveDestinationRoomId('');
         setRemoveLoading(false);
         setRemoveSubmitting(false);
+    };
+
+    const closeReturnMaintenance = () => {
+        setReturnMaintenanceOpen(false);
+        setReturnMaintenanceDestinationRoomId('');
+        setReturnMaintenanceRooms([]);
+        setReturnMaintenanceLoading(false);
+        setReturnMaintenanceSubmitting(false);
+    };
+
+    const openReturnMaintenance = async (opts = {}) => {
+        const ignoreEnded = Boolean(opts.ignoreMaintenanceEnded);
+        if (maintenanceEnded && !ignoreEnded) {
+            setError('Maintenance is ended');
+            return;
+        }
+        setReturnMaintenanceOpen(true);
+        setReturnMaintenanceDestinationRoomId('');
+        setReturnMaintenanceRooms([]);
+        try {
+            setReturnMaintenanceLoading(true);
+            const [rooms, defaultRoom] = await Promise.all([
+                roomService.getAll(),
+                maintenanceService.returnToOwnerDefaultRoom(Number(maintenanceId)).catch(() => ({ destination_room_id: null })),
+            ]);
+            setReturnMaintenanceRooms(Array.isArray(rooms) ? rooms : []);
+            const suggestedId = defaultRoom?.destination_room_id;
+            if (suggestedId != null && suggestedId !== '') {
+                setReturnMaintenanceDestinationRoomId(String(suggestedId));
+            }
+        } catch (err) {
+            console.error(err);
+            setError('Failed to load rooms');
+            closeReturnMaintenance();
+        } finally {
+            setReturnMaintenanceLoading(false);
+        }
+    };
+
+    const submitReturnMaintenance = async () => {
+        if (!maintenanceId) return;
+        if (!returnMaintenanceDestinationRoomId) {
+            setError('Please select destination room');
+            return;
+        }
+        try {
+            setReturnMaintenanceSubmitting(true);
+            setError('');
+            await maintenanceService.requestReturnToOwner(Number(maintenanceId), {
+                destination_room_id: Number(returnMaintenanceDestinationRoomId),
+            });
+            await loadData();
+            closeReturnMaintenance();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || 'Failed to request return');
+        } finally {
+            setReturnMaintenanceSubmitting(false);
+        }
     };
 
     const closeAssetConditionEditor = () => {
@@ -1467,6 +1615,18 @@ const MaintenanceSteps = ({
                                                                         <path d="M12 2a7 7 0 0 0-4 12.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26A7 7 0 0 0 12 2z" />
                                                                     </svg>
                                                                 </button>
+                                                                <button
+                                                                    className="btn btn-xs btn-warning"
+                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                                                    onClick={() => openReturnEditor(step)}
+                                                                    title="Return component to owner"
+                                                                    aria-label="Return component to owner"
+                                                                >
+                                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                        <path d="M9 15L3 9l6-6" />
+                                                                        <path d="M3 9h12a6 6 0 0 1 0 12h-3" />
+                                                                    </svg>
+                                                                </button>
                                                             </>
                                                         )}
                                                         {step.maintenance_step_status !== 'done' && step.maintenance_typical_step?.operation_type === 'remove' && (
@@ -1671,6 +1831,182 @@ const MaintenanceSteps = ({
                     </div>,
                     document.body,
                 )
+            )}
+
+            {returnEditorOpen && returnEditorStep && (
+                <div
+                    className="card"
+                    style={{
+                        position: 'fixed',
+                        right: 20,
+                        bottom: 20,
+                        zIndex: 50,
+                        width: 520,
+                        padding: 'var(--space-4)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-bg-tertiary)',
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ fontWeight: 700 }}>Return component to owner</div>
+                        <button
+                            className="btn btn-xs btn-secondary"
+                            style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                            onClick={closeReturnEditor}
+                            disabled={returnSubmitting}
+                        >
+                            Close
+                        </button>
+                    </div>
+
+                    <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                        Step: <b>{returnEditorStep.maintenance_step_id}</b>
+                    </div>
+
+                    {returnLoading ? (
+                        <div style={{ fontSize: 13, opacity: 0.85 }}>Loading components...</div>
+                    ) : (
+                        <>
+                            <div className="form-group" style={{ marginBottom: 10 }}>
+                                <label className="form-label">Component</label>
+                                <select
+                                    className="form-input"
+                                    value={returnSelectedType && returnSelectedId ? `${returnSelectedType}:${returnSelectedId}` : ''}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (!value) {
+                                            setReturnSelectedType('');
+                                            setReturnSelectedId('');
+                                            return;
+                                        }
+                                        const [t, id] = value.split(':');
+                                        setReturnSelectedType(t);
+                                        setReturnSelectedId(id);
+                                    }}
+                                >
+                                    <option value="">Select component...</option>
+
+                                    {returnComponents.stock_items?.length > 0 && (
+                                        <optgroup label="Stock items">
+                                            {returnComponents.stock_items.map((it) => (
+                                                <option key={`stock_item:${it.stock_item_id}`} value={`stock_item:${it.stock_item_id}`}>
+                                                    {it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}{it.stock_item_name || `Stock item ${it.stock_item_id}`}
+                                                </option>
+                                            ))}
+                                        </optgroup>
+                                    )}
+
+                                    {returnComponents.consumables?.length > 0 && (
+                                        <optgroup label="Consumables">
+                                            {returnComponents.consumables.map((it) => (
+                                                <option key={`consumable:${it.consumable_id}`} value={`consumable:${it.consumable_id}`}>
+                                                    {it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}{it.consumable_name || `Consumable ${it.consumable_id}`}
+                                                </option>
+                                            ))}
+                                        </optgroup>
+                                    )}
+                                </select>
+                            </div>
+
+                            <div className="alert alert-info" style={{ fontSize: 12, marginBottom: 10 }}>
+                                This will send the component back to the asset owner's office. This action requires approval from the stock/consumable responsible.
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', marginTop: 'var(--space-3)' }}>
+                                <button
+                                    className="btn btn-xs btn-secondary"
+                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                    onClick={closeReturnEditor}
+                                    disabled={returnSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="btn btn-xs btn-primary"
+                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                    onClick={submitReturnEditor}
+                                    disabled={returnSubmitting || !returnSelectedType || !returnSelectedId}
+                                >
+                                    {returnSubmitting ? 'Submitting...' : 'Request Return'}
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+
+            {returnMaintenanceOpen && (
+                <div
+                    className="card"
+                    style={{
+                        position: 'fixed',
+                        right: 20,
+                        bottom: 20,
+                        zIndex: 50,
+                        width: 520,
+                        padding: 'var(--space-4)',
+                        border: '1px solid var(--color-border)',
+                        background: 'var(--color-bg-tertiary)',
+                    }}
+                >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                        <div style={{ fontWeight: 700 }}>Return maintenance to owner</div>
+                        <button
+                            className="btn btn-xs btn-secondary"
+                            style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                            onClick={closeReturnMaintenance}
+                            disabled={returnMaintenanceSubmitting}
+                        >
+                            Close
+                        </button>
+                    </div>
+
+                    {returnMaintenanceLoading ? (
+                        <div style={{ fontSize: 13, opacity: 0.85 }}>Loading rooms...</div>
+                    ) : (
+                        <>
+                            <div className="form-group" style={{ marginBottom: 10 }}>
+                                <label className="form-label">Destination room (asset owner)</label>
+                                <select
+                                    className="form-input"
+                                    value={returnMaintenanceDestinationRoomId}
+                                    onChange={(e) => setReturnMaintenanceDestinationRoomId(e.target.value)}
+                                    disabled={returnMaintenanceSubmitting}
+                                >
+                                    <option value="">Select room...</option>
+                                    {returnMaintenanceRooms.map((r) => (
+                                        <option key={r.room_id} value={r.room_id}>
+                                            {r.room_name}{r.room_type_label ? ` (${r.room_type_label})` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="alert alert-info" style={{ fontSize: 12, marginBottom: 10 }}>
+                                This will create pending return movements for the asset and included items. The asset return must be approved by the asset responsible, and included items by the stock/consumable responsible.
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', marginTop: 'var(--space-3)' }}>
+                                <button
+                                    className="btn btn-xs btn-secondary"
+                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                    onClick={closeReturnMaintenance}
+                                    disabled={returnMaintenanceSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="btn btn-xs btn-primary"
+                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
+                                    onClick={submitReturnMaintenance}
+                                    disabled={returnMaintenanceSubmitting || !returnMaintenanceDestinationRoomId}
+                                >
+                                    {returnMaintenanceSubmitting ? 'Submitting...' : 'Request Return'}
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
             )}
 
             {removeEditorOpen && removeEditorStep && (

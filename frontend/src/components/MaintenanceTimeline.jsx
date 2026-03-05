@@ -27,8 +27,16 @@ const MaintenanceTimeline = ({ maintenances, steps }) => {
 
         // Sort maintenances by start_datetime (most recent first)
         const sortedMaintenances = [...maintenances].sort((a, b) => {
-            const aTime = a.start_datetime ? new Date(a.start_datetime).getTime() : 0;
-            const bTime = b.start_datetime ? new Date(b.start_datetime).getTime() : 0;
+            const aTime = a.start_datetime ? new Date(a.start_datetime).getTime() : null;
+            const bTime = b.start_datetime ? new Date(b.start_datetime).getTime() : null;
+
+            const aValid = Number.isFinite(aTime);
+            const bValid = Number.isFinite(bTime);
+
+            if (!aValid && !bValid) return 0;
+            if (!aValid) return 1;
+            if (!bValid) return -1;
+
             return bTime - aTime;
         });
 

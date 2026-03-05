@@ -643,7 +643,9 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_item.maintenance_id + 1) if last_item else 1
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        maintenance = Maintenance.objects.create(maintenance_id=next_id, **serializer.validated_data)
+        data = dict(serializer.validated_data)
+        data["start_datetime"] = None
+        maintenance = Maintenance.objects.create(maintenance_id=next_id, **data)
         return Response(self.get_serializer(maintenance).data, status=status.HTTP_201_CREATED)
 
 
@@ -747,6 +749,155 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         maintenance.refresh_from_db()
         return Response(self.get_serializer(maintenance).data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="request-return-to-owner")
+    def request_return_to_owner(self, request, pk=None):
+        maintenance = self.get_object()
+
+        user_account = self._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = user_account.person
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+        is_technician = ("maintenance_technician" in role_codes) or user_account.is_superuser()
+        if not is_technician:
+            return Response({"error": "Only maintenance technicians can request return"}, status=status.HTTP_403_FORBIDDEN)
+
+        if (not user_account.is_superuser()) and (maintenance.performed_by_person_id != person.person_id):
+            return Response({"error": "Only the assigned technician can request return"}, status=status.HTTP_403_FORBIDDEN)
+
+        asset = getattr(maintenance, "asset", None)
+        if not asset:
+            return Response({"error": "Maintenance asset not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        destination_room_id = request.data.get("destination_room_id")
+        if not destination_room_id:
+            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            destination_room_id_int = int(destination_room_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
+        if not destination_room:
+            return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        last_move = (
+            AssetMovement.objects.select_related("destination_room")
+            .filter(asset_id=asset.asset_id)
+            .order_by("-asset_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.destination_room_id:
+            return Response({"error": "Cannot infer asset current room (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+
+        source_room = last_move.destination_room
+        if source_room.room_id == destination_room.room_id:
+            return Response({"error": "Asset is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+        next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+
+        now_dt = timezone.now()
+        AssetMovement.objects.create(
+            asset_movement_id=next_asset_move_id,
+            asset=asset,
+            source_room=source_room,
+            destination_room=destination_room,
+            maintenance_step=None,
+            external_maintenance_step_id=None,
+            movement_reason="return_to_owner",
+            movement_datetime=now_dt,
+            status="pending",
+        )
+
+        _cascade_move_composed_items(
+            asset_id=asset.asset_id,
+            source_room_id=source_room.room_id,
+            destination_room_id=destination_room.room_id,
+            movement_reason="return_to_owner",
+            movement_datetime=now_dt,
+            maintenance_step_id=None,
+            external_maintenance_step_id=None,
+        )
+
+        return Response(
+            {
+                "asset_movement_id": next_asset_move_id,
+                "asset_id": asset.asset_id,
+                "source_room_id": source_room.room_id,
+                "destination_room_id": destination_room.room_id,
+                "status": "pending",
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=["get"], url_path="pending-return-to-owner-exists")
+    def pending_return_to_owner_exists(self, request, pk=None):
+        maintenance = self.get_object()
+
+        user_account = self._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = user_account.person
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+        is_technician = ("maintenance_technician" in role_codes) or user_account.is_superuser()
+        if not is_technician:
+            return Response({"error": "Only maintenance technicians can access this"}, status=status.HTTP_403_FORBIDDEN)
+
+        if (not user_account.is_superuser()) and (maintenance.performed_by_person_id != person.person_id):
+            return Response({"error": "Only the assigned technician can access this"}, status=status.HTTP_403_FORBIDDEN)
+
+        asset_id = getattr(maintenance, "asset_id", None)
+        if not asset_id:
+            return Response({"exists": False}, status=status.HTTP_200_OK)
+
+        exists = AssetMovement.objects.filter(
+            asset_id=asset_id,
+            status="pending",
+            movement_reason="return_to_owner",
+        ).exists()
+
+        return Response({"exists": bool(exists)}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="return-to-owner-default-room")
+    def return_to_owner_default_room(self, request, pk=None):
+        maintenance = self.get_object()
+
+        user_account = self._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = user_account.person
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+        is_technician = ("maintenance_technician" in role_codes) or user_account.is_superuser()
+        if not is_technician:
+            return Response({"error": "Only maintenance technicians can access this"}, status=status.HTTP_403_FORBIDDEN)
+
+        if (not user_account.is_superuser()) and (maintenance.performed_by_person_id != person.person_id):
+            return Response({"error": "Only the assigned technician can access this"}, status=status.HTTP_403_FORBIDDEN)
+
+        asset_id = getattr(maintenance, "asset_id", None)
+        if not asset_id:
+            return Response({"destination_room_id": None}, status=status.HTTP_200_OK)
+
+        last_move = (
+            AssetMovement.objects.filter(asset_id=asset_id)
+            .order_by("-asset_movement_id")
+            .first()
+        )
+        if not last_move or not last_move.source_room_id:
+            return Response({"destination_room_id": None}, status=status.HTTP_200_OK)
+
+        return Response({"destination_room_id": int(last_move.source_room_id)}, status=status.HTTP_200_OK)
+
 
     @action(detail=False, methods=["post"], url_path="create-direct")
     def create_direct(self, request):
@@ -846,7 +997,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 approved_by_maintenance_chief=user_account.person,
                 maintenance_status="pending",
                 description=description,
-                start_datetime=timezone.now(),
+                start_datetime=None,
                 end_datetime=None,
             )
         except IntegrityError:
@@ -1013,10 +1164,6 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         try:
             maintenance = getattr(step, "maintenance", None)
             if not maintenance or getattr(maintenance, "start_datetime", None) is not None:
-                return
-
-            status_value = (new_status if new_status is not None else getattr(step, "maintenance_step_status", None))
-            if status_value != "started":
                 return
 
             step_id = getattr(step, "maintenance_step_id", None)
@@ -1797,6 +1944,81 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         step.save(update_fields=["maintenance_step_status"])
         return Response(self.get_serializer(step).data, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="return-to-owner")
+    def return_to_owner(self, request, pk=None):
+        step = self.get_object()
+        user_account, denial = self._require_can_manage_step(request, step)
+        if denial:
+            return denial
+
+        component_type = request.data.get("component_type")
+        component_id = request.data.get("component_id")
+
+        if not component_type or not component_id:
+            return Response({"error": "component_type and component_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            component_id_int = int(component_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid component_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        destination_room_id = request.data.get("destination_room_id")
+        if not destination_room_id:
+            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            destination_room_id_int = int(destination_room_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
+        if not destination_room:
+            return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        now_dt = timezone.now()
+
+        if component_type == "stock_item":
+            last_move = StockItemMovement.objects.filter(stock_item_id=component_id_int).order_by("-stock_item_movement_id").first()
+            if not last_move:
+                return Response({"error": "No movement history for stock item"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            source_room = last_move.destination_room
+            last_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+            next_id = (last_global.stock_item_movement_id + 1) if last_global else 1
+
+            StockItemMovement.objects.create(
+                stock_item_movement_id=next_id,
+                stock_item_id=component_id_int,
+                source_room=source_room,
+                destination_room=destination_room,
+                maintenance_step=step,
+                movement_reason="return_to_owner",
+                movement_datetime=now_dt,
+                status="pending",
+            )
+        elif component_type == "consumable":
+            last_move = ConsumableMovement.objects.filter(consumable_id=component_id_int).order_by("-consumable_movement_id").first()
+            if not last_move:
+                return Response({"error": "No movement history for consumable"}, status=status.HTTP_400_BAD_REQUEST)
+
+            source_room = last_move.destination_room
+            last_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+            next_id = (last_global.consumable_movement_id + 1) if last_global else 1
+
+            ConsumableMovement.objects.create(
+                consumable_movement_id=next_id,
+                consumable_id=component_id_int,
+                source_room=source_room,
+                destination_room=destination_room,
+                maintenance_step=step,
+                movement_reason="return_to_owner",
+                movement_datetime=now_dt,
+                status="pending",
+            )
+        else:
+            return Response({"error": "Invalid component_type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"message": "Return to owner requested and pending approval"}, status=status.HTTP_201_CREATED)
+
     @action(detail=True, methods=["post"], url_path="request-stock-item")
     def request_stock_item(self, request, pk=None):
         step = self.get_object()
@@ -2376,6 +2598,13 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                 {"error": "Failed to create external maintenance due to database constraints."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        try:
+            Maintenance.objects.filter(maintenance_id=maintenance_id_int, start_datetime__isnull=True).update(
+                start_datetime=timezone.now()
+            )
+        except Exception:
+            pass
 
         payload = ExternalMaintenanceSerializer(em).data
         return Response(payload, status=status.HTTP_201_CREATED)
@@ -3128,6 +3357,16 @@ class ProblemReportViewSet(viewsets.ViewSet):
             included_consumable_ids = request.data.get("included_consumable_ids") or []
             destination_room_id = request.data.get("destination_room_id")
 
+            # Asset owners can report a problem, but they must not be able to request moving the asset.
+            # Asset movement requests are only initiated when a maintenance chief creates maintenance.
+            if destination_room_id and not (included_stock_item_ids or included_consumable_ids):
+                return Response(
+                    {
+                        "error": "You cannot request moving the asset from a problem report. The maintenance chief must create a maintenance for this asset to initiate an asset movement request.",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
             try:
                 included_stock_item_ids = [int(x) for x in (included_stock_item_ids or [])]
                 included_consumable_ids = [int(x) for x in (included_consumable_ids or [])]
@@ -3326,6 +3565,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
         report_id = request.data.get("report_id")
         technician_person_id = request.data.get("technician_person_id")
         description = request.data.get("description")
+        destination_room_id = request.data.get("destination_room_id")
 
         if item_type not in {"asset", "stock_item", "consumable"}:
             return Response({"error": "Invalid item_type"}, status=status.HTTP_400_BAD_REQUEST)
@@ -3348,6 +3588,69 @@ class ProblemReportViewSet(viewsets.ViewSet):
         if not report:
             return Response({"error": "Report not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        # If the asset is not currently in a maintenance room, creating a maintenance should initiate
+        # an asset movement request (pending) to be approved by the asset responsible.
+        asset_id = getattr(report, "asset_id", None)
+        if asset_id:
+            last_move = (
+                AssetMovement.objects.select_related("destination_room", "destination_room__room_type")
+                .filter(asset_id=asset_id)
+                .order_by("-asset_movement_id")
+                .first()
+            )
+            current_room = last_move.destination_room if last_move else None
+
+            def _is_maintenance_room(room: Room | None) -> bool:
+                if not room or not getattr(room, "room_type", None):
+                    return False
+                code = getattr(room.room_type, "room_type_code", None)
+                label = (getattr(room.room_type, "room_type_label", None) or "").lower()
+                if code and str(code).upper() in {"MR", "MAINTENANCE", "MAINT"}:
+                    return True
+                return "maintenance" in label
+
+            if not _is_maintenance_room(current_room):
+                if not destination_room_id:
+                    return Response(
+                        {
+                            "error": "Asset is not in a maintenance room. destination_room_id is required to request moving the asset to a maintenance room.",
+                            "current_room": RoomSerializer(current_room).data if current_room else None,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                try:
+                    destination_room_id_int = int(destination_room_id)
+                except (TypeError, ValueError):
+                    return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                destination_room = Room.objects.select_related("room_type").filter(room_id=destination_room_id_int).first()
+                if not destination_room:
+                    return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+                if not _is_maintenance_room(destination_room):
+                    return Response({"error": "destination_room_id must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
+
+                if not current_room:
+                    return Response(
+                        {"error": "Cannot infer asset current room (no movement history)"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                if current_room.room_id != destination_room.room_id:
+                    last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+                    next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+                    AssetMovement.objects.create(
+                        asset_movement_id=next_asset_move_id,
+                        asset_id=asset_id,
+                        source_room_id=current_room.room_id,
+                        destination_room_id=destination_room.room_id,
+                        maintenance_step_id=None,
+                        external_maintenance_step_id=None,
+                        movement_reason="maintenance_create",
+                        movement_datetime=timezone.now(),
+                        status="pending",
+                    )
+
         last_item = Maintenance.objects.order_by("-maintenance_id").first()
         next_id = (last_item.maintenance_id + 1) if last_item else 1
         try:
@@ -3357,14 +3660,16 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 approved_by_maintenance_chief=user_account.person,
                 maintenance_status="pending",
                 description=description or report.owner_observation,
-                start_datetime=timezone.now(),
-                end_datetime=timezone.now(),
-                asset=report.asset,
+                start_datetime=None,
+                end_datetime=None,
+                asset_id=report.asset_id,
+                is_approved_by_maintenance_chief=True,
             )
         except IntegrityError:
             return Response(
                 {
                     "error": "Failed to create maintenance due to database constraints.",
+                    "details": "Check required fields and uniqueness constraints.",
                     "details": "Check required fields in Maintenance model (approved_by_maintenance_chief, end_datetime, etc.)",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -5526,7 +5831,7 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
             return denial
 
         qs = (
-            StockItemMovement.objects.filter(status="pending", movement_reason="problem_report_include")
+            StockItemMovement.objects.filter(status="pending", movement_reason__in=["problem_report_include", "return_to_owner"])
             .order_by("-movement_datetime", "-stock_item_movement_id")
         )
 
@@ -5563,8 +5868,8 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
         if not movement:
             return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if movement.movement_reason != "problem_report_include":
-            return Response({"error": "Only problem_report_include movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+        if movement.movement_reason not in {"problem_report_include", "return_to_owner"}:
+            return Response({"error": "Only problem_report_include or return_to_owner movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
 
         if movement.status != "pending":
             return Response({"error": "Only pending movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -5608,7 +5913,7 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
             return denial
 
         qs = (
-            ConsumableMovement.objects.filter(status="pending", movement_reason="problem_report_include")
+            ConsumableMovement.objects.filter(status="pending", movement_reason__in=["problem_report_include", "return_to_owner"])
             .order_by("-movement_datetime", "-consumable_movement_id")
         )
 
@@ -5645,8 +5950,8 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
         if not movement:
             return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if movement.movement_reason != "problem_report_include":
-            return Response({"error": "Only problem_report_include movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+        if movement.movement_reason not in {"problem_report_include", "return_to_owner"}:
+            return Response({"error": "Only problem_report_include or return_to_owner movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
 
         if movement.status != "pending":
             return Response({"error": "Only pending movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -5657,6 +5962,91 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
             {
                 "consumable_movement_id": movement.consumable_movement_id,
                 "consumable_id": movement.consumable_id,
+                "source_room_id": movement.source_room_id,
+                "destination_room_id": movement.destination_room_id,
+                "movement_reason": movement.movement_reason,
+                "movement_datetime": movement.movement_datetime,
+                "status": movement.status,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AssetMovementApprovalViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def _require_asset_responsible(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return None, Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if user_account.is_superuser() or ("asset_responsible" in role_codes):
+            return user_account, None
+
+        return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=False, methods=["get"], url_path="pending")
+    def pending(self, request):
+        _, denial = self._require_asset_responsible(request)
+        if denial:
+            return denial
+
+        qs = (
+            AssetMovement.objects.filter(status="pending", movement_reason__in=["return_to_owner", "maintenance_create"])
+            .order_by("-movement_datetime", "-asset_movement_id")
+        )
+
+        data = [
+            {
+                "asset_movement_id": m.asset_movement_id,
+                "asset_id": m.asset_id,
+                "source_room_id": m.source_room_id,
+                "destination_room_id": m.destination_room_id,
+                "movement_reason": m.movement_reason,
+                "movement_datetime": m.movement_datetime,
+                "status": m.status,
+            }
+            for m in qs
+        ]
+        return Response(data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="decide")
+    def decide(self, request, pk=None):
+        _, denial = self._require_asset_responsible(request)
+        if denial:
+            return denial
+
+        decision = request.data.get("decision")
+        if decision not in {"accepted", "rejected"}:
+            return Response({"error": "decision must be 'accepted' or 'rejected'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            movement_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid movement id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        movement = AssetMovement.objects.filter(asset_movement_id=movement_id).first()
+        if not movement:
+            return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if movement.movement_reason not in {"return_to_owner", "maintenance_create"}:
+            return Response(
+                {"error": "Only return_to_owner or maintenance_create movements can be decided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if movement.status != "pending":
+            return Response({"error": "Only pending movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        AssetMovement.objects.filter(asset_movement_id=movement.asset_movement_id).update(status=decision)
+        movement.refresh_from_db()
+        return Response(
+            {
+                "asset_movement_id": movement.asset_movement_id,
+                "asset_id": movement.asset_id,
                 "source_room_id": movement.source_room_id,
                 "destination_room_id": movement.destination_room_id,
                 "movement_reason": movement.movement_reason,

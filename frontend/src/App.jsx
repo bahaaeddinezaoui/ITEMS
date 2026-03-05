@@ -41,6 +41,7 @@ import MaintenanceStepsPage from './pages/MaintenanceStepsPage';
 import ExternalMaintenancesPage from './pages/ExternalMaintenancesPage';
 import AssetMaintenanceTimelinePage from './pages/AssetMaintenanceTimelinePage';
 import IncludedItemMovementsApprovalPage from './pages/IncludedItemMovementsApprovalPage';
+import AssetMovementsApprovalPage from './pages/AssetMovementsApprovalPage';
 import './index.css';
 
 // Protected route wrapper
@@ -428,6 +429,15 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
                                     <IncludedItemMovementsApprovalPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="asset-movements-approval"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                    <AssetMovementsApprovalPage />
                                 </RoleProtectedRoute>
                             }
                         />

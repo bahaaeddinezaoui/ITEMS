@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { assetService, personService, problemReportService } from '../services/api';
+import { assetService, personService, problemReportService, roomService } from '../services/api';
 
 const ReportsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -14,6 +14,10 @@ const ReportsPage = () => {
     const [selectedTechnician, setSelectedTechnician] = useState('');
     const [maintenanceDescription, setMaintenanceDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    const [maintenanceRooms, setMaintenanceRooms] = useState([]);
+    const [selectedMaintenanceRoomId, setSelectedMaintenanceRoomId] = useState('');
+    const [loadingMaintenanceRooms, setLoadingMaintenanceRooms] = useState(false);
 
     const [showAssetModal, setShowAssetModal] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState(null);
@@ -66,8 +70,28 @@ const ReportsPage = () => {
         setSelectedReport(report);
         setSelectedTechnician('');
         setMaintenanceDescription(report?.owner_observation || '');
+        setSelectedMaintenanceRoomId('');
         setShowCreateMaintenanceModal(true);
     };
+
+    useEffect(() => {
+        const loadMaintenanceRooms = async () => {
+            try {
+                setLoadingMaintenanceRooms(true);
+                const rooms = await roomService.getByRoomType(2);
+                setMaintenanceRooms(Array.isArray(rooms) ? rooms : []);
+            } catch {
+                setMaintenanceRooms([]);
+            } finally {
+                setLoadingMaintenanceRooms(false);
+            }
+        };
+
+        if (!showCreateMaintenanceModal) return;
+        if (selectedReport?.item_type !== 'asset') return;
+
+        loadMaintenanceRooms();
+    }, [showCreateMaintenanceModal, selectedReport]);
 
     const openAssetDetails = async (report) => {
         if (report.item_type !== 'asset') return;
@@ -92,6 +116,11 @@ const ReportsPage = () => {
             return;
         }
 
+        if (selectedReport?.item_type === 'asset' && !selectedMaintenanceRoomId) {
+            setError('Please select the maintenance room to send the asset to');
+            return;
+        }
+
         try {
             setSubmitting(true);
             setError('');
@@ -100,11 +129,13 @@ const ReportsPage = () => {
                 report_id: selectedReport.report_id,
                 technician_person_id: selectedTechnician,
                 description: maintenanceDescription,
+                destination_room_id: selectedMaintenanceRoomId ? Number(selectedMaintenanceRoomId) : null,
             });
             setShowCreateMaintenanceModal(false);
             setSelectedReport(null);
             setSelectedTechnician('');
             setMaintenanceDescription('');
+            setSelectedMaintenanceRoomId('');
         } catch (err) {
             const msg = err?.response?.data?.error || err?.message || 'Failed to create maintenance';
             setError(typeof msg === 'string' ? msg : 'Failed to create maintenance');
@@ -231,6 +262,26 @@ const ReportsPage = () => {
                                         #{selectedReport?.report_id} ({selectedReport?.item_type} #{selectedReport?.item_id})
                                     </div>
                                 </div>
+
+                                {selectedReport?.item_type === 'asset' && (
+                                    <div className="form-group">
+                                        <label htmlFor="maintenance-room" className="form-label">Destination maintenance room</label>
+                                        <select
+                                            id="maintenance-room"
+                                            className="form-input"
+                                            value={selectedMaintenanceRoomId}
+                                            onChange={(e) => setSelectedMaintenanceRoomId(e.target.value)}
+                                            disabled={loadingMaintenanceRooms}
+                                        >
+                                            <option value="">{loadingMaintenanceRooms ? '-- Loading Maintenance Rooms --' : '-- Select Maintenance Room --'}</option>
+                                            {maintenanceRooms.map((r) => (
+                                                <option key={r.room_id} value={String(r.room_id)}>
+                                                    {r.room_name} (#{r.room_id})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
 
                                 <div className="form-group">
                                     <label htmlFor="technician" className="form-label">Technician</label>

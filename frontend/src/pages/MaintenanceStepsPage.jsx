@@ -18,6 +18,8 @@ const MaintenanceStepsPage = () => {
 
     const [endModalOpen, setEndModalOpen] = useState(false);
 
+    const [triggerReturnModalAfterEnd, setTriggerReturnModalAfterEnd] = useState(false);
+
     const isChief = useMemo(() => {
         if (isSuperuser) return true;
         return user?.roles?.some(r => r.role_code === 'maintenance_chief' || r.role_code === 'exploitation_chief') || false;
@@ -80,6 +82,7 @@ const MaintenanceStepsPage = () => {
             const updated = await maintenanceService.end(id, { is_successful: isSuccessfulValue });
             setMaintenance(updated);
             setEndModalOpen(false);
+            setTriggerReturnModalAfterEnd(true);
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.error || 'Failed to end maintenance');
@@ -136,6 +139,8 @@ const MaintenanceStepsPage = () => {
                     canEndMaintenance={canEndMaintenance}
                     endMaintenanceDisabled={loading || ending || !!maintenance?.end_datetime || !canEndMaintenance}
                     onEndMaintenance={() => setEndModalOpen(true)}
+                    triggerReturnModalAfterEnd={triggerReturnModalAfterEnd}
+                    onTriggerReturnModalAfterEndHandled={() => setTriggerReturnModalAfterEnd(false)}
                 />
             )}
 
