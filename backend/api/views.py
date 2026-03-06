@@ -4963,8 +4963,29 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 pass
         return queryset
 
+    def _require_responsible_or_superuser(self, request, action_desc):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            return None
+
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+        if "stock_consumable_responsible" in role_codes:
+            return None
+
+        return Response(
+            {"error": f"Only Stock/Consumable Responsible or superusers can {action_desc}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     def create(self, request, *args, **kwargs):
-        denial = self._require_superuser(request, "create stock items")
+        denial = self._require_responsible_or_superuser(request, "create stock items")
         if denial:
             return denial
 
@@ -5424,8 +5445,29 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 pass
         return queryset
 
+    def _require_responsible_or_superuser(self, request, action_desc):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            return None
+
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+        if "stock_consumable_responsible" in role_codes:
+            return None
+
+        return Response(
+            {"error": f"Only Stock/Consumable Responsible or superusers can {action_desc}"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     def create(self, request, *args, **kwargs):
-        denial = self._require_superuser(request, "create consumables")
+        denial = self._require_responsible_or_superuser(request, "create consumables")
         if denial:
             return denial
 
@@ -6389,6 +6431,924 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class PurchaseOrderViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def _require_responsible(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not getattr(user_account, "person", None):
+            return None, Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+            return user_account, None
+
+        return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
+    def list(self, request):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT po.purchase_order_id,
+                       po.supplier_id,
+                       s.supplier_name,
+                       po.is_signed_by_finance,
+                       po.purchase_order_code,
+                       (
+                           EXISTS (
+                               SELECT 1
+                               FROM public.stock_item_model_is_found_in_purchase_order l
+                               WHERE l.purchase_order_id = po.purchase_order_id
+                                 AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                           )
+                           OR EXISTS (
+                               SELECT 1
+                               FROM public.consumable_model_is_found_in_purchase_order l
+                               WHERE l.purchase_order_id = po.purchase_order_id
+                                 AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                           )
+                       ) AS has_remaining
+                FROM public.purchase_order po
+                LEFT JOIN public.supplier s ON s.supplier_id = po.supplier_id
+                ORDER BY po.purchase_order_id DESC
+                """
+            )
+            rows = cursor.fetchall()
+
+        return Response(
+            [
+                {
+                    "purchase_order_id": r[0],
+                    "supplier_id": r[1],
+                    "supplier_name": r[2],
+                    "is_signed_by_finance": r[3],
+                    "purchase_order_code": r[4],
+                    "has_remaining": bool(r[5]),
+                }
+                for r in rows
+            ],
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["get"], url_path="suppliers")
+    def suppliers(self, request):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT s.supplier_id,
+                       s.supplier_name
+                FROM public.supplier s
+                ORDER BY s.supplier_name, s.supplier_id
+                """
+            )
+            rows = cursor.fetchall()
+
+        return Response(
+            [
+                {
+                    "supplier_id": r[0],
+                    "supplier_name": r[1],
+                }
+                for r in rows
+            ],
+            status=status.HTTP_200_OK,
+        )
+
+    def create(self, request):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        supplier_id = request.data.get("supplier_id")
+        purchase_order_code = request.data.get("purchase_order_code")
+        is_signed_by_finance = request.data.get("is_signed_by_finance")
+        stock_item_models = request.data.get("stock_item_models")
+        consumable_models = request.data.get("consumable_models")
+
+        if supplier_id in (None, ""):
+            return Response({"error": "supplier_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            supplier_id_int = int(supplier_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid supplier_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if is_signed_by_finance in (None, ""):
+            is_signed_bool = False
+        elif isinstance(is_signed_by_finance, bool):
+            is_signed_bool = is_signed_by_finance
+        elif isinstance(is_signed_by_finance, (int, float)):
+            is_signed_bool = bool(is_signed_by_finance)
+        elif isinstance(is_signed_by_finance, str):
+            is_signed_bool = is_signed_by_finance.strip().lower() in {"1", "true", "t", "yes", "y"}
+        else:
+            is_signed_bool = False
+
+        if stock_item_models is None:
+            stock_item_models = []
+        if consumable_models is None:
+            consumable_models = []
+        if not isinstance(stock_item_models, list) or not isinstance(consumable_models, list):
+            return Response(
+                {"error": "stock_item_models and consumable_models must be lists"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT 1 FROM public.supplier WHERE supplier_id = %s",
+                    [supplier_id_int],
+                )
+                if cursor.fetchone() is None:
+                    return Response({"error": "Supplier not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+                cursor.execute("SELECT COALESCE(MAX(purchase_order_id), 0) + 1 FROM public.purchase_order")
+                next_id = cursor.fetchone()[0]
+
+                cursor.execute(
+                    """
+                    INSERT INTO public.purchase_order
+                        (purchase_order_id, supplier_id, digital_copy, is_signed_by_finance, purchase_order_code)
+                    VALUES (%s, %s, NULL, %s, %s)
+                    """,
+                    [next_id, supplier_id_int, is_signed_bool, purchase_order_code],
+                )
+
+                for raw in stock_item_models:
+                    if not isinstance(raw, dict):
+                        return Response(
+                            {"error": "Each stock_item_models entry must be an object"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    stock_item_model_id = raw.get("stock_item_model_id")
+                    if stock_item_model_id in (None, ""):
+                        return Response(
+                            {"error": "stock_item_model_id is required for stock item model line"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    try:
+                        stock_item_model_id_int = int(stock_item_model_id)
+                    except (TypeError, ValueError):
+                        return Response({"error": "Invalid stock_item_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    def _to_int(v):
+                        if v in (None, ""):
+                            return None
+                        return int(v)
+
+                    quantity_ordered = _to_int(raw.get("quantity_ordered"))
+                    quantity_received = _to_int(raw.get("quantity_received"))
+                    if quantity_received is None:
+                        quantity_received = 0
+                    unit_price = raw.get("unit_price")
+                    if unit_price in (None, ""):
+                        unit_price_dec = None
+                    else:
+                        unit_price_dec = Decimal(str(unit_price))
+
+                    cursor.execute(
+                        """
+                        INSERT INTO public.stock_item_model_is_found_in_purchase_order
+                            (stock_item_model_id, purchase_order_id, quantity_ordered, quantity_received, unit_price)
+                        VALUES (%s, %s, %s, %s, %s)
+                        """,
+                        [
+                            stock_item_model_id_int,
+                            next_id,
+                            quantity_ordered,
+                            quantity_received,
+                            unit_price_dec,
+                        ],
+                    )
+
+                for raw in consumable_models:
+                    if not isinstance(raw, dict):
+                        return Response(
+                            {"error": "Each consumable_models entry must be an object"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    consumable_model_id = raw.get("consumable_model_id")
+                    if consumable_model_id in (None, ""):
+                        return Response(
+                            {"error": "consumable_model_id is required for consumable model line"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    try:
+                        consumable_model_id_int = int(consumable_model_id)
+                    except (TypeError, ValueError):
+                        return Response({"error": "Invalid consumable_model_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    def _to_int(v):
+                        if v in (None, ""):
+                            return None
+                        return int(v)
+
+                    quantity_ordered = _to_int(raw.get("quantity_ordered"))
+                    quantity_received = _to_int(raw.get("quantity_received"))
+                    if quantity_received is None:
+                        quantity_received = 0
+                    unit_price = raw.get("unit_price")
+                    if unit_price in (None, ""):
+                        unit_price_dec = None
+                    else:
+                        unit_price_dec = Decimal(str(unit_price))
+
+                    cursor.execute(
+                        """
+                        INSERT INTO public.consumable_model_is_found_in_purchase_order
+                            (consumable_model_id, purchase_order_id, quantity_ordered, quantity_received, unit_price)
+                        VALUES (%s, %s, %s, %s, %s)
+                        """,
+                        [
+                            consumable_model_id_int,
+                            next_id,
+                            quantity_ordered,
+                            quantity_received,
+                            unit_price_dec,
+                        ],
+                    )
+
+        return Response({"purchase_order_id": next_id}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="receive")
+    def receive(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        stock_item_models = request.data.get("stock_item_models")
+        consumable_models = request.data.get("consumable_models")
+
+        if stock_item_models is None:
+            stock_item_models = []
+        if consumable_models is None:
+            consumable_models = []
+        if not isinstance(stock_item_models, list) or not isinstance(consumable_models, list):
+            return Response({"error": "stock_item_models and consumable_models must be lists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        def _as_int(v):
+            if v in (None, ""):
+                return None
+            return int(v)
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT 1 FROM public.purchase_order WHERE purchase_order_id = %s",
+                    [purchase_order_id],
+                )
+                if cursor.fetchone() is None:
+                    return Response({"error": "Purchase order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+                for raw in stock_item_models:
+                    if not isinstance(raw, dict):
+                        return Response({"error": "Each stock_item_models entry must be an object"}, status=status.HTTP_400_BAD_REQUEST)
+                    stock_item_model_id = _as_int(raw.get("stock_item_model_id"))
+                    newly_received = _as_int(raw.get("quantity_received"))
+                    if stock_item_model_id is None or newly_received is None:
+                        return Response(
+                            {"error": "stock_item_model_id and quantity_received are required for stock_item_models"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    if newly_received < 0:
+                        return Response({"error": "quantity_received cannot be negative"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    cursor.execute(
+                        """
+                        SELECT COALESCE(quantity_ordered, 0), COALESCE(quantity_received, 0)
+                        FROM public.stock_item_model_is_found_in_purchase_order
+                        WHERE purchase_order_id = %s AND stock_item_model_id = %s
+                        """,
+                        [purchase_order_id, stock_item_model_id],
+                    )
+                    row = cursor.fetchone()
+                    if row is None:
+                        return Response(
+                            {"error": f"Stock item model line not found (stock_item_model_id={stock_item_model_id})"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    qty_ordered, qty_received_current = row
+                    qty_received_new = int(qty_received_current) + int(newly_received)
+                    if qty_received_new > int(qty_ordered):
+                        return Response(
+                            {
+                                "error": (
+                                    f"Received quantity exceeds ordered for stock_item_model_id={stock_item_model_id} "
+                                    f"(ordered={qty_ordered}, current_received={qty_received_current}, newly_received={newly_received})"
+                                )
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                    cursor.execute(
+                        """
+                        UPDATE public.stock_item_model_is_found_in_purchase_order
+                        SET quantity_received = %s
+                        WHERE purchase_order_id = %s AND stock_item_model_id = %s
+                        """,
+                        [qty_received_new, purchase_order_id, stock_item_model_id],
+                    )
+
+                for raw in consumable_models:
+                    if not isinstance(raw, dict):
+                        return Response({"error": "Each consumable_models entry must be an object"}, status=status.HTTP_400_BAD_REQUEST)
+                    consumable_model_id = _as_int(raw.get("consumable_model_id"))
+                    newly_received = _as_int(raw.get("quantity_received"))
+                    if consumable_model_id is None or newly_received is None:
+                        return Response(
+                            {"error": "consumable_model_id and quantity_received are required for consumable_models"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    if newly_received < 0:
+                        return Response({"error": "quantity_received cannot be negative"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    cursor.execute(
+                        """
+                        SELECT COALESCE(quantity_ordered, 0), COALESCE(quantity_received, 0)
+                        FROM public.consumable_model_is_found_in_purchase_order
+                        WHERE purchase_order_id = %s AND consumable_model_id = %s
+                        """,
+                        [purchase_order_id, consumable_model_id],
+                    )
+                    row = cursor.fetchone()
+                    if row is None:
+                        return Response(
+                            {"error": f"Consumable model line not found (consumable_model_id={consumable_model_id})"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+                    qty_ordered, qty_received_current = row
+                    qty_received_new = int(qty_received_current) + int(newly_received)
+                    if qty_received_new > int(qty_ordered):
+                        return Response(
+                            {
+                                "error": (
+                                    f"Received quantity exceeds ordered for consumable_model_id={consumable_model_id} "
+                                    f"(ordered={qty_ordered}, current_received={qty_received_current}, newly_received={newly_received})"
+                                )
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                    cursor.execute(
+                        """
+                        UPDATE public.consumable_model_is_found_in_purchase_order
+                        SET quantity_received = %s
+                        WHERE purchase_order_id = %s AND consumable_model_id = %s
+                        """,
+                        [qty_received_new, purchase_order_id, consumable_model_id],
+                    )
+
+                cursor.execute(
+                    """
+                    SELECT
+                        EXISTS (
+                            SELECT 1
+                            FROM public.stock_item_model_is_found_in_purchase_order l
+                            WHERE l.purchase_order_id = %s
+                              AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        )
+                        OR EXISTS (
+                            SELECT 1
+                            FROM public.consumable_model_is_found_in_purchase_order l
+                            WHERE l.purchase_order_id = %s
+                              AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        )
+                    """,
+                    [purchase_order_id, purchase_order_id],
+                )
+                has_remaining = cursor.fetchone()[0]
+
+                backorder_report_id = None
+                if has_remaining:
+                    cursor.execute("SELECT COALESCE(MAX(backorder_report_id), 0) + 1 FROM public.backorder_report")
+                    next_id = cursor.fetchone()[0]
+                    cursor.execute(
+                        """
+                        INSERT INTO public.backorder_report
+                            (backorder_report_id, purchase_order_id, backorder_report_date, digital_copy)
+                        VALUES (%s, %s, %s, NULL)
+                        """,
+                        [next_id, purchase_order_id, datetime.date.today()],
+                    )
+                    backorder_report_id = next_id
+
+                    cursor.execute(
+                        """
+                        INSERT INTO public.backorder_report_stock_item_model_line
+                            (backorder_report_id, stock_item_model_id, quantity_ordered, quantity_received, quantity_remaining)
+                        SELECT %s,
+                               l.stock_item_model_id,
+                               COALESCE(l.quantity_ordered, 0),
+                               COALESCE(l.quantity_received, 0),
+                               (COALESCE(l.quantity_ordered, 0) - COALESCE(l.quantity_received, 0))
+                        FROM public.stock_item_model_is_found_in_purchase_order l
+                        WHERE l.purchase_order_id = %s
+                          AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        """,
+                        [backorder_report_id, purchase_order_id],
+                    )
+
+                    cursor.execute(
+                        """
+                        INSERT INTO public.backorder_report_consumable_model_line
+                            (backorder_report_id, consumable_model_id, quantity_ordered, quantity_received, quantity_remaining)
+                        SELECT %s,
+                               l.consumable_model_id,
+                               COALESCE(l.quantity_ordered, 0),
+                               COALESCE(l.quantity_received, 0),
+                               (COALESCE(l.quantity_ordered, 0) - COALESCE(l.quantity_received, 0))
+                        FROM public.consumable_model_is_found_in_purchase_order l
+                        WHERE l.purchase_order_id = %s
+                          AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        """,
+                        [backorder_report_id, purchase_order_id],
+                    )
+
+        return Response(
+            {
+                "purchase_order_id": purchase_order_id,
+                "backorder_report_id": backorder_report_id,
+                "has_remaining": bool(has_remaining),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def retrieve(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT po.purchase_order_id,
+                       po.supplier_id,
+                       s.supplier_name,
+                       po.is_signed_by_finance,
+                       po.purchase_order_code
+                FROM public.purchase_order po
+                LEFT JOIN public.supplier s ON s.supplier_id = po.supplier_id
+                WHERE po.purchase_order_id = %s
+                """,
+                [purchase_order_id],
+            )
+            header = cursor.fetchone()
+
+            if not header:
+                return Response({"error": "Purchase order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            cursor.execute(
+                """
+                SELECT l.stock_item_model_id,
+                       m.model_name,
+                       l.quantity_ordered,
+                       l.quantity_received,
+                       l.unit_price
+                FROM public.stock_item_model_is_found_in_purchase_order l
+                LEFT JOIN public.stock_item_model m ON m.stock_item_model_id = l.stock_item_model_id
+                WHERE l.purchase_order_id = %s
+                ORDER BY l.stock_item_model_id
+                """,
+                [purchase_order_id],
+            )
+            stock_rows = cursor.fetchall()
+
+            cursor.execute(
+                """
+                SELECT l.consumable_model_id,
+                       m.model_name,
+                       l.quantity_ordered,
+                       l.quantity_received,
+                       l.unit_price
+                FROM public.consumable_model_is_found_in_purchase_order l
+                LEFT JOIN public.consumable_model m ON m.consumable_model_id = l.consumable_model_id
+                WHERE l.purchase_order_id = %s
+                ORDER BY l.consumable_model_id
+                """,
+                [purchase_order_id],
+            )
+            consumable_rows = cursor.fetchall()
+
+        return Response(
+            {
+                "purchase_order_id": header[0],
+                "supplier_id": header[1],
+                "supplier_name": header[2],
+                "is_signed_by_finance": header[3],
+                "purchase_order_code": header[4],
+                "stock_item_models": [
+                    {
+                        "stock_item_model_id": r[0],
+                        "model_name": r[1],
+                        "quantity_ordered": r[2],
+                        "quantity_received": r[3],
+                        "unit_price": r[4],
+                    }
+                    for r in stock_rows
+                ],
+                "consumable_models": [
+                    {
+                        "consumable_model_id": r[0],
+                        "model_name": r[1],
+                        "quantity_ordered": r[2],
+                        "quantity_received": r[3],
+                        "unit_price": r[4],
+                    }
+                    for r in consumable_rows
+                ],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class BackorderReportViewSet(viewsets.ViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def _require_responsible(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not getattr(user_account, "person", None):
+            return None, Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+            return user_account, None
+
+        return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
+    def list(self, request):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        purchase_order_id = request.query_params.get("purchase_order_id")
+        purchase_order_id_int = None
+        if purchase_order_id not in (None, ""):
+            try:
+                purchase_order_id_int = int(purchase_order_id)
+            except (TypeError, ValueError):
+                return Response({"error": "Invalid purchase_order_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            if purchase_order_id_int is None:
+                cursor.execute(
+                    """
+                    SELECT br.backorder_report_id,
+                           br.purchase_order_id,
+                           br.backorder_report_date,
+                           po.purchase_order_code,
+                           s.supplier_id,
+                           s.supplier_name
+                    FROM public.backorder_report br
+                    LEFT JOIN public.purchase_order po ON po.purchase_order_id = br.purchase_order_id
+                    LEFT JOIN public.supplier s ON s.supplier_id = po.supplier_id
+                    ORDER BY br.backorder_report_id DESC
+                    """
+                )
+            else:
+                cursor.execute(
+                    """
+                    SELECT br.backorder_report_id,
+                           br.purchase_order_id,
+                           br.backorder_report_date,
+                           po.purchase_order_code,
+                           s.supplier_id,
+                           s.supplier_name
+                    FROM public.backorder_report br
+                    LEFT JOIN public.purchase_order po ON po.purchase_order_id = br.purchase_order_id
+                    LEFT JOIN public.supplier s ON s.supplier_id = po.supplier_id
+                    WHERE br.purchase_order_id = %s
+                    ORDER BY br.backorder_report_id DESC
+                    """,
+                    [purchase_order_id_int],
+                )
+            rows = cursor.fetchall()
+
+        return Response(
+            [
+                {
+                    "backorder_report_id": r[0],
+                    "purchase_order_id": r[1],
+                    "backorder_report_date": r[2],
+                    "purchase_order_code": r[3],
+                    "supplier_id": r[4],
+                    "supplier_name": r[5],
+                }
+                for r in rows
+            ],
+            status=status.HTTP_200_OK,
+        )
+
+    def create(self, request):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        purchase_order_id = request.data.get("purchase_order_id")
+        backorder_report_date = request.data.get("backorder_report_date")
+
+        if purchase_order_id in (None, ""):
+            return Response({"error": "purchase_order_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            purchase_order_id_int = int(purchase_order_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase_order_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if backorder_report_date in (None, ""):
+            date_val = datetime.date.today()
+        else:
+            try:
+                date_val = datetime.date.fromisoformat(str(backorder_report_date))
+            except ValueError:
+                return Response(
+                    {"error": "Invalid backorder_report_date (expected YYYY-MM-DD)"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT 1 FROM public.purchase_order WHERE purchase_order_id = %s",
+                    [purchase_order_id_int],
+                )
+                if cursor.fetchone() is None:
+                    return Response({"error": "Purchase order not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+                cursor.execute(
+                    """
+                    SELECT
+                        EXISTS (
+                            SELECT 1
+                            FROM public.stock_item_model_is_found_in_purchase_order l
+                            WHERE l.purchase_order_id = %s
+                              AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        )
+                        OR EXISTS (
+                            SELECT 1
+                            FROM public.consumable_model_is_found_in_purchase_order l
+                            WHERE l.purchase_order_id = %s
+                              AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        )
+                    """,
+                    [purchase_order_id_int, purchase_order_id_int],
+                )
+                has_remaining = cursor.fetchone()[0]
+                if not has_remaining:
+                    return Response(
+                        {"error": "No remaining items for this purchase order"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                cursor.execute("SELECT COALESCE(MAX(backorder_report_id), 0) + 1 FROM public.backorder_report")
+                next_id = cursor.fetchone()[0]
+
+                cursor.execute(
+                    """
+                    INSERT INTO public.backorder_report
+                        (backorder_report_id, purchase_order_id, backorder_report_date, digital_copy)
+                    VALUES (%s, %s, %s, NULL)
+                    """,
+                    [next_id, purchase_order_id_int, date_val],
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO public.backorder_report_stock_item_model_line
+                        (backorder_report_id, stock_item_model_id, quantity_ordered, quantity_received, quantity_remaining)
+                    SELECT %s,
+                           l.stock_item_model_id,
+                           COALESCE(l.quantity_ordered, 0),
+                           COALESCE(l.quantity_received, 0),
+                           (COALESCE(l.quantity_ordered, 0) - COALESCE(l.quantity_received, 0))
+                    FROM public.stock_item_model_is_found_in_purchase_order l
+                    WHERE l.purchase_order_id = %s
+                      AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                    """,
+                    [next_id, purchase_order_id_int],
+                )
+
+                cursor.execute(
+                    """
+                    INSERT INTO public.backorder_report_consumable_model_line
+                        (backorder_report_id, consumable_model_id, quantity_ordered, quantity_received, quantity_remaining)
+                    SELECT %s,
+                           l.consumable_model_id,
+                           COALESCE(l.quantity_ordered, 0),
+                           COALESCE(l.quantity_received, 0),
+                           (COALESCE(l.quantity_ordered, 0) - COALESCE(l.quantity_received, 0))
+                    FROM public.consumable_model_is_found_in_purchase_order l
+                    WHERE l.purchase_order_id = %s
+                      AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                    """,
+                    [next_id, purchase_order_id_int],
+                )
+
+        return Response({"backorder_report_id": next_id}, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            backorder_report_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid backorder_report_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT br.backorder_report_id,
+                       br.purchase_order_id,
+                       br.backorder_report_date,
+                       po.purchase_order_code,
+                       s.supplier_id,
+                       s.supplier_name
+                FROM public.backorder_report br
+                LEFT JOIN public.purchase_order po ON po.purchase_order_id = br.purchase_order_id
+                LEFT JOIN public.supplier s ON s.supplier_id = po.supplier_id
+                WHERE br.backorder_report_id = %s
+                """,
+                [backorder_report_id],
+            )
+            row = cursor.fetchone()
+
+            cursor.execute(
+                """
+                SELECT l.stock_item_model_id,
+                       m.model_name,
+                       l.quantity_ordered,
+                       l.quantity_received,
+                       l.quantity_remaining
+                FROM public.backorder_report_stock_item_model_line l
+                LEFT JOIN public.stock_item_model m ON m.stock_item_model_id = l.stock_item_model_id
+                WHERE l.backorder_report_id = %s
+                ORDER BY l.stock_item_model_id
+                """,
+                [backorder_report_id],
+            )
+            stock_lines = cursor.fetchall()
+
+            cursor.execute(
+                """
+                SELECT l.consumable_model_id,
+                       m.model_name,
+                       l.quantity_ordered,
+                       l.quantity_received,
+                       l.quantity_remaining
+                FROM public.backorder_report_consumable_model_line l
+                LEFT JOIN public.consumable_model m ON m.consumable_model_id = l.consumable_model_id
+                WHERE l.backorder_report_id = %s
+                ORDER BY l.consumable_model_id
+                """,
+                [backorder_report_id],
+            )
+            consumable_lines = cursor.fetchall()
+
+        if not row:
+            return Response({"error": "Backorder report not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(
+            {
+                "backorder_report_id": row[0],
+                "purchase_order_id": row[1],
+                "backorder_report_date": row[2],
+                "purchase_order_code": row[3],
+                "supplier_id": row[4],
+                "supplier_name": row[5],
+                "stock_item_models": [
+                    {
+                        "stock_item_model_id": r[0],
+                        "model_name": r[1],
+                        "quantity_ordered": r[2],
+                        "quantity_received": r[3],
+                        "quantity_remaining": r[4],
+                    }
+                    for r in stock_lines
+                ],
+                "consumable_models": [
+                    {
+                        "consumable_model_id": r[0],
+                        "model_name": r[1],
+                        "quantity_ordered": r[2],
+                        "quantity_received": r[3],
+                        "quantity_remaining": r[4],
+                    }
+                    for r in consumable_lines
+                ],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["get"], url_path="remaining")
+    def remaining(self, request):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        purchase_order_id = request.query_params.get("purchase_order_id")
+        if purchase_order_id in (None, ""):
+            return Response({"error": "purchase_order_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            purchase_order_id_int = int(purchase_order_id)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase_order_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM public.purchase_order WHERE purchase_order_id = %s",
+                [purchase_order_id_int],
+            )
+            if cursor.fetchone() is None:
+                return Response({"error": "Purchase order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            cursor.execute(
+                """
+                SELECT l.stock_item_model_id,
+                       m.model_name,
+                       COALESCE(l.quantity_ordered, 0) AS quantity_ordered,
+                       COALESCE(l.quantity_received, 0) AS quantity_received,
+                       (COALESCE(l.quantity_ordered, 0) - COALESCE(l.quantity_received, 0)) AS quantity_remaining
+                FROM public.stock_item_model_is_found_in_purchase_order l
+                LEFT JOIN public.stock_item_model m ON m.stock_item_model_id = l.stock_item_model_id
+                WHERE l.purchase_order_id = %s
+                ORDER BY l.stock_item_model_id
+                """,
+                [purchase_order_id_int],
+            )
+            stock_rows = cursor.fetchall()
+
+            cursor.execute(
+                """
+                SELECT l.consumable_model_id,
+                       m.model_name,
+                       COALESCE(l.quantity_ordered, 0) AS quantity_ordered,
+                       COALESCE(l.quantity_received, 0) AS quantity_received,
+                       (COALESCE(l.quantity_ordered, 0) - COALESCE(l.quantity_received, 0)) AS quantity_remaining
+                FROM public.consumable_model_is_found_in_purchase_order l
+                LEFT JOIN public.consumable_model m ON m.consumable_model_id = l.consumable_model_id
+                WHERE l.purchase_order_id = %s
+                ORDER BY l.consumable_model_id
+                """,
+                [purchase_order_id_int],
+            )
+            consumable_rows = cursor.fetchall()
+
+        return Response(
+            {
+                "purchase_order_id": purchase_order_id_int,
+                "stock_item_models": [
+                    {
+                        "stock_item_model_id": r[0],
+                        "model_name": r[1],
+                        "quantity_ordered": r[2],
+                        "quantity_received": r[3],
+                        "quantity_remaining": r[4],
+                    }
+                    for r in stock_rows
+                    if (r[4] or 0) > 0
+                ],
+                "consumable_models": [
+                    {
+                        "consumable_model_id": r[0],
+                        "model_name": r[1],
+                        "quantity_ordered": r[2],
+                        "quantity_received": r[3],
+                        "quantity_remaining": r[4],
+                    }
+                    for r in consumable_rows
+                    if (r[4] or 0) > 0
+                ],
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class WarehouseViewSet(viewsets.ModelViewSet):
     queryset = Warehouse.objects.all().order_by("warehouse_id")

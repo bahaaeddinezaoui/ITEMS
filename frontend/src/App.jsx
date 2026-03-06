@@ -18,12 +18,14 @@ import StockItemsTypeAttributesPage from './pages/StockItemsTypeAttributesPage';
 import StockItemsModelsPage from './pages/StockItemsModelsPage';
 import StockItemModelCompatibilityPage from './pages/StockItemModelCompatibilityPage';
 import StockItemsAttributeDefinitionsPage from './pages/StockItemsAttributeDefinitionsPage';
+import StockItemInstanceCreatePage from './pages/StockItemInstanceCreatePage';
 import ConsumablesPage from './pages/ConsumablesPage';
 import ConsumablesTypesPage from './pages/ConsumablesTypesPage';
 import ConsumablesTypeAttributesPage from './pages/ConsumablesTypeAttributesPage';
 import ConsumablesModelsPage from './pages/ConsumablesModelsPage';
 import ConsumableModelCompatibilityPage from './pages/ConsumableModelCompatibilityPage';
 import ConsumablesAttributeDefinitionsPage from './pages/ConsumablesAttributeDefinitionsPage';
+import ConsumableInstanceCreatePage from './pages/ConsumableInstanceCreatePage';
 import RoomsPage from './pages/RoomsPage';
 import PositionsPage from './pages/PositionsPage';
 import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
@@ -42,6 +44,11 @@ import ExternalMaintenancesPage from './pages/ExternalMaintenancesPage';
 import AssetMaintenanceTimelinePage from './pages/AssetMaintenanceTimelinePage';
 import IncludedItemMovementsApprovalPage from './pages/IncludedItemMovementsApprovalPage';
 import AssetMovementsApprovalPage from './pages/AssetMovementsApprovalPage';
+import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
+import PurchaseOrderCreatePage from './pages/PurchaseOrderCreatePage';
+import PurchaseOrderDetailsPage from './pages/PurchaseOrderDetailsPage';
+import PurchaseOrderReceivePage from './pages/PurchaseOrderReceivePage';
+import PurchaseOrderBackorderReportsPage from './pages/PurchaseOrderBackorderReportsPage';
 import './index.css';
 
 // Protected route wrapper
@@ -257,6 +264,14 @@ function App() {
                             }
                         />
                         <Route
+                            path="stock-items/instances/create"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <StockItemInstanceCreatePage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
                             path="stock-items/attribute-definitions"
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
@@ -310,6 +325,14 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
                                     <ConsumablesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="consumables/instances/create"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                    <ConsumableInstanceCreatePage />
                                 </RoleProtectedRoute>
                             }
                         />
@@ -429,6 +452,51 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
                                     <IncludedItemMovementsApprovalPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="purchase-orders"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <PurchaseOrdersPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="purchase-orders/:orderId"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <PurchaseOrderDetailsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="purchase-orders/:orderId/receive"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <PurchaseOrderReceivePage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="purchase-orders/:orderId/backorder-reports"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <PurchaseOrderBackorderReportsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="purchase-orders/create"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <PurchaseOrderCreatePage />
                                 </RoleProtectedRoute>
                             }
                         />

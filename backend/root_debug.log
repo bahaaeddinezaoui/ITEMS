@@ -47937,3 +47937,1589 @@ s/
 [2026-03-05 23:14:40.576190] END   GET /api/my-items/ -> 200
 [2026-03-05 23:14:40.579280] START GET /api/my-items/
 [2026-03-05 23:14:40.628969] END   GET /api/my-items/ -> 200
+[2026-03-05 23:20:52.665008] START POST /api/auth/login/
+[2026-03-05 23:20:52.847965] END   POST /api/auth/login/ -> 200
+[2026-03-05 23:20:53.789946] START GET /api/maintenances/
+[2026-03-05 23:20:53.864680] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:20:53.871340] START GET /api/maintenances/
+[2026-03-05 23:20:53.990373] END   GET /api/maintenances/ -> 200
+[2026-03-05 23:20:54.462759] START GET /api/maintenances/32/
+[2026-03-05 23:20:54.463722] START GET /api/maintenance-steps/
+[2026-03-05 23:20:54.510669] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:20:54.517326] START GET /api/maintenance-steps/
+[2026-03-05 23:20:54.519746] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:20:54.524179] START GET /api/maintenances/32/
+[2026-03-05 23:20:54.539660] START GET /api/external-maintenance-steps/
+[2026-03-05 23:20:54.539005] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:20:54.539316] START GET /api/persons/
+[2026-03-05 23:20:54.540521] START GET /api/external-maintenances/
+[2026-03-05 23:20:54.562057] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:20:54.566753] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:20:54.569597] END   GET /api/maintenances/32/ -> 200
+[2026-03-05 23:20:54.574142] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:20:54.577791] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:20:54.583727] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:20:54.583996] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:20:54.583623] START GET /api/maintenance-steps/
+[2026-03-05 23:20:54.589076] END   GET /api/persons/ -> 200
+[2026-03-05 23:20:54.589605] START GET /api/external-maintenance-steps/
+[2026-03-05 23:20:54.590418] START GET /api/external-maintenances/
+[2026-03-05 23:20:54.595244] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:20:54.601289] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:20:54.606005] START GET /api/persons/
+[2026-03-05 23:20:54.619153] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:20:54.622489] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:20:54.623043] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:20:54.628111] START GET /api/maintenances/32/pending-return-to-owner-exists/
+[2026-03-05 23:20:54.632180] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:20:54.634614] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-05 23:20:54.635086] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:20:54.640176] START GET /api/maintenance-steps/
+[2026-03-05 23:20:54.640883] START GET /api/physical-conditions/
+[2026-03-05 23:20:54.645079] END   GET /api/persons/ -> 200
+[2026-03-05 23:20:54.658874] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:20:54.676474] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:20:54.676834] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:20:54.682220] START GET /api/stock-item-types/
+[2026-03-05 23:20:54.682932] START GET /api/consumable-types/
+[2026-03-05 23:20:54.718184] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:20:54.718494] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:20:54.788204] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:20:54.794309] START GET /api/physical-conditions/
+[2026-03-05 23:20:54.831597] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:20:54.836691] START GET /api/stock-item-types/
+[2026-03-05 23:20:54.837109] START GET /api/consumable-types/
+[2026-03-05 23:20:54.873920] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:20:54.875885] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:24:46.612351] START GET /api/asset-attribute-definitions/
+[2026-03-05 23:24:46.613501] START GET /api/maintenance-steps/31/components/
+[2026-03-05 23:24:46.616656] START GET /api/stock-item-attribute-definitions/
+[2026-03-05 23:24:46.651302] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:24:46.750533] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-05 23:24:46.750725] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-05 23:24:46.751341] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:24:46.770597] END   GET /api/maintenance-steps/31/components/ -> 200
+[2026-03-05 23:24:58.391748] START GET /api/consumable-models/
+[2026-03-05 23:24:58.551068] END   GET /api/consumable-models/ -> 200
+[2026-03-05 23:25:01.766082] START POST /api/maintenance-steps/31/request-consumable/
+[2026-03-05 23:25:01.885408] END   POST /api/maintenance-steps/31/request-consumable/ -> 201
+[2026-03-05 23:25:01.900200] START GET /api/maintenance-steps/
+[2026-03-05 23:25:01.904379] START GET /api/external-maintenance-steps/
+[2026-03-05 23:25:01.908992] START GET /api/persons/
+[2026-03-05 23:25:01.910539] START GET /api/maintenance-typical-steps/
+[2026-03-05 23:25:01.912344] START GET /api/external-maintenances/
+[2026-03-05 23:25:01.916661] START GET /api/external-maintenance-typical-steps/
+[2026-03-05 23:25:01.942102] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-05 23:25:01.949698] END   GET /api/maintenance-typical-steps/ -> 200
+wner-exists/
+[2026-03-05 23:25:01.956071] END   GET /api/persons/ -> 200
+[2026-03-05 23:25:01.956577] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-05 23:25:01.958875] END   GET /api/external-maintenances/ -> 200
+[2026-03-05 23:25:01.992421] END   GET /api/maintenances/32/pending-return-to-owner-exists/ -> 200
+[2026-03-05 23:25:02.053373] END   GET /api/maintenance-steps/ -> 200
+[2026-03-05 23:25:02.067246] START GET /api/physical-conditions/
+[2026-03-05 23:25:02.117354] END   GET /api/physical-conditions/ -> 200
+[2026-03-05 23:25:02.122681] START GET /api/stock-item-types/
+[2026-03-05 23:25:02.123130] START GET /api/consumable-types/
+[2026-03-05 23:25:02.159037] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:25:02.159412] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:25:07.353423] START POST /api/auth/login/
+[2026-03-05 23:25:07.429161] END   POST /api/auth/login/ -> 200
+[2026-03-05 23:25:08.258080] START GET /api/consumable-types/
+[2026-03-05 23:25:08.259192] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:25:08.289933] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:25:08.293655] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:25:08.324203] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:25:08.401791] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:25:08.408435] START GET /api/consumable-types/
+[2026-03-05 23:25:08.439173] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:25:09.101828] START GET /api/stock-item-types/
+[2026-03-05 23:25:09.102647] START GET /api/stock-item-attribute-definitions/
+[2026-03-05 23:25:09.142438] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:25:09.142916] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-05 23:25:09.146640] START GET /api/stock-item-types/
+[2026-03-05 23:25:09.147305] START GET /api/stock-item-attribute-definitions/
+[2026-03-05 23:25:09.187877] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:25:09.188405] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-05 23:25:09.897423] START GET /api/stock-item-movements-approval/pending/
+[2026-03-05 23:25:09.898507] START GET /api/consumable-movements-approval/pending/
+[2026-03-05 23:25:09.940955] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-05 23:25:09.945639] START GET /api/consumable-movements-approval/pending/
+[2026-03-05 23:25:09.983446] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-05 23:25:10.047587] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-05 23:25:10.053060] START GET /api/stock-item-movements-approval/pending/
+[2026-03-05 23:25:10.108459] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-05 23:25:16.540596] START GET /api/maintenance-step-item-requests/
+[2026-03-05 23:25:16.541692] START GET /api/rooms/
+[2026-03-05 23:25:16.588627] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-05 23:25:16.595984] START GET /api/maintenance-step-item-requests/
+[2026-03-05 23:25:16.605207] END   GET /api/rooms/ -> 200
+[2026-03-05 23:25:16.610648] START GET /api/rooms/
+[2026-03-05 23:25:16.639592] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-05 23:25:16.657079] END   GET /api/rooms/ -> 200
+[2026-03-05 23:25:20.718736] START GET /api/maintenance-step-item-requests/13/eligible-items/
+[2026-03-05 23:25:20.793756] END   GET /api/maintenance-step-item-requests/13/eligible-items/ -> 200
+[2026-03-05 23:26:21.952001] START GET /api/maintenance-step-item-requests/13/select-random/
+[2026-03-05 23:26:22.027678] END   GET /api/maintenance-step-item-requests/13/select-random/ -> 200
+[2026-03-05 23:26:22.471914] START GET /api/maintenance-step-item-requests/13/select-random/
+[2026-03-05 23:26:22.532623] END   GET /api/maintenance-step-item-requests/13/select-random/ -> 200
+[2026-03-05 23:26:22.900389] START GET /api/maintenance-step-item-requests/13/select-random/
+[2026-03-05 23:26:22.955687] END   GET /api/maintenance-step-item-requests/13/select-random/ -> 200
+[2026-03-05 23:26:23.133540] START GET /api/maintenance-step-item-requests/13/select-random/
+[2026-03-05 23:26:23.183837] END   GET /api/maintenance-step-item-requests/13/select-random/ -> 200
+[2026-03-05 23:26:23.285705] START GET /api/maintenance-step-item-requests/13/select-random/
+[2026-03-05 23:26:23.333283] END   GET /api/maintenance-step-item-requests/13/select-random/ -> 200
+[2026-03-05 23:26:23.467652] START GET /api/maintenance-step-item-requests/13/select-random/
+[2026-03-05 23:26:23.517411] END   GET /api/maintenance-step-item-requests/13/select-random/ -> 200
+[2026-03-05 23:26:23.628745] START GET /api/maintenance-step-item-requests/13/select-random/
+[2026-03-05 23:26:23.787583] END   GET /api/maintenance-step-item-requests/13/select-random/ -> 200
+[2026-03-05 23:26:24.456151] START GET /api/maintenance-step-item-requests/13/eligible-items/
+[2026-03-05 23:26:24.502694] END   GET /api/maintenance-step-item-requests/13/eligible-items/ -> 200
+[2026-03-05 23:26:30.987637] START POST /api/maintenance-step-item-requests/13/reject/
+[2026-03-05 23:26:31.175789] END   POST /api/maintenance-step-item-requests/13/reject/ -> 200
+[2026-03-05 23:26:31.182578] START GET /api/maintenance-step-item-requests/
+[2026-03-05 23:26:31.184410] START GET /api/rooms/
+[2026-03-05 23:26:31.234905] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-05 23:26:31.249882] END   GET /api/rooms/ -> 200
+[2026-03-05 23:55:39.123438] START POST /api/auth/login/
+[2026-03-05 23:55:39.242593] END   POST /api/auth/login/ -> 200
+[2026-03-05 23:55:40.119083] START GET /api/consumable-types/
+[2026-03-05 23:55:40.140764] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:55:40.178484] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:55:40.183987] START GET /api/consumable-types/
+[2026-03-05 23:55:40.285198] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:55:40.319340] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:55:40.330419] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:55:40.355903] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:55:40.602876] START GET /api/stock-item-movements-approval/pending/
+[2026-03-05 23:55:40.603791] START GET /api/consumable-movements-approval/pending/
+[2026-03-05 23:55:40.657925] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-05 23:55:40.659269] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-05 23:55:40.662641] START GET /api/consumable-movements-approval/pending/
+[2026-03-05 23:55:40.666431] START GET /api/stock-item-movements-approval/pending/
+[2026-03-05 23:55:40.704103] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-05 23:55:40.705432] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-05 23:55:41.795965] START GET /api/stock-item-types/
+[2026-03-05 23:55:41.796827] START GET /api/stock-item-attribute-definitions/
+[2026-03-05 23:55:41.835897] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-05 23:55:41.836311] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:55:41.840208] START GET /api/stock-item-attribute-definitions/
+[2026-03-05 23:55:41.841017] START GET /api/stock-item-types/
+[2026-03-05 23:55:41.872595] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-05 23:55:41.880134] END   GET /api/stock-item-types/ -> 200
+[2026-03-05 23:55:43.504638] START GET /api/maintenance-step-item-requests/
+[2026-03-05 23:55:43.505192] START GET /api/rooms/
+[2026-03-05 23:55:43.557693] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-05 23:55:43.569066] START GET /api/maintenance-step-item-requests/
+[2026-03-05 23:55:43.573996] END   GET /api/rooms/ -> 200
+[2026-03-05 23:55:43.578081] START GET /api/rooms/
+[2026-03-05 23:55:43.617033] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-05 23:55:43.628446] END   GET /api/rooms/ -> 200
+[2026-03-05 23:55:44.509663] START GET /api/stock-item-movements-approval/pending/
+[2026-03-05 23:55:44.510657] START GET /api/consumable-movements-approval/pending/
+[2026-03-05 23:55:44.553624] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-05 23:55:44.558954] START GET /api/consumable-movements-approval/pending/
+[2026-03-05 23:55:44.592081] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-05 23:55:44.653484] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-05 23:55:44.672534] START GET /api/stock-item-movements-approval/pending/
+[2026-03-05 23:55:44.730156] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-05 23:55:44.952035] START GET /api/consumable-types/
+[2026-03-05 23:55:44.955806] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:55:44.985673] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:55:44.989603] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-05 23:55:44.990181] START GET /api/consumable-types/
+[2026-03-05 23:55:44.993247] START GET /api/consumable-attribute-definitions/
+[2026-03-05 23:55:45.020458] END   GET /api/consumable-types/ -> 200
+[2026-03-05 23:55:45.027610] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-06 00:12:51.574375] START GET /api/consumable-attribute-definitions/
+[2026-03-06 00:12:51.573566] START GET /api/consumable-types/
+[2026-03-06 00:12:51.868503] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-06 00:12:51.874029] START GET /api/consumable-attribute-definitions/
+[2026-03-06 00:12:51.887912] END   GET /api/consumable-types/ -> 200
+[2026-03-06 00:12:51.894757] START GET /api/consumable-types/
+[2026-03-06 00:12:51.912124] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-06 00:12:51.926716] END   GET /api/consumable-types/ -> 200
+[2026-03-06 00:12:54.367596] START GET /api/purchase-orders/
+[2026-03-06 00:12:54.427097] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:12:54.432320] START GET /api/purchase-orders/
+[2026-03-06 00:12:54.592011] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:14:20.920447] START GET /api/purchase-orders/
+[2026-03-06 00:14:20.970993] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:14:20.974370] START GET /api/purchase-orders/
+[2026-03-06 00:14:21.004728] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:15:26.914534] START GET /api/purchase-orders/
+[2026-03-06 00:15:26.970656] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:20:04.926210] START GET /api/purchase-orders/
+[2026-03-06 00:20:04.985463] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:29:43.523519] START GET /api/purchase-orders/
+[2026-03-06 00:29:43.565028] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:29:43.577859] START GET /api/purchase-orders/
+[2026-03-06 00:29:43.651920] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:31:27.933741] START GET /api/purchase-orders/suppliers/
+[2026-03-06 00:31:28.055050] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 00:34:56.513773] START GET /api/purchase-orders/suppliers/
+[2026-03-06 00:34:56.558180] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 00:34:56.562463] START GET /api/purchase-orders/suppliers/
+[2026-03-06 00:34:56.600838] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 00:35:44.909297] START GET /api/purchase-orders/suppliers/
+[2026-03-06 00:35:44.911587] START GET /api/stock-item-types/
+[2026-03-06 00:35:44.946294] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 00:35:44.947896] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 00:35:44.953377] START GET /api/consumable-types/
+[2026-03-06 00:35:44.988319] END   GET /api/consumable-types/ -> 200
+[2026-03-06 00:37:48.920796] START GET /api/stock-item-models/
+[2026-03-06 00:37:48.973291] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 00:37:51.342961] START GET /api/stock-item-models/
+[2026-03-06 00:37:51.381099] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 00:37:55.390278] START GET /api/stock-item-models/
+[2026-03-06 00:37:55.427983] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 00:37:56.622338] START GET /api/stock-item-models/
+[2026-03-06 00:37:56.779036] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 00:38:13.217064] START POST /api/purchase-orders/
+[2026-03-06 00:38:13.375272] END   POST /api/purchase-orders/ -> 400
+Response Body: {"error":"supplier_id is required"}
+[2026-03-06 00:38:21.487955] START POST /api/purchase-orders/
+[2026-03-06 00:38:21.576074] END   POST /api/purchase-orders/ -> 201
+[2026-03-06 00:38:21.617420] START GET /api/purchase-orders/
+[2026-03-06 00:38:21.618092] START GET /api/purchase-orders/1/
+[2026-03-06 00:38:21.657754] END   GET /api/purchase-orders/1/ -> 200
+[2026-03-06 00:38:21.659368] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 00:38:21.662972] START GET /api/purchase-orders/
+[2026-03-06 00:38:21.700889] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 20:32:46.029989] START GET /api/maintenance-step-item-requests/
+[2026-03-06 20:32:46.031397] START GET /api/rooms/
+[2026-03-06 20:32:46.069251] END   GET /api/maintenance-step-item-requests/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-03-06 20:32:46.069465] END   GET /api/rooms/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-03-06 20:32:46.076654] START GET /api/maintenance-step-item-requests/
+[2026-03-06 20:32:46.077623] START GET /api/rooms/
+[2026-03-06 20:32:46.079925] END   GET /api/maintenance-step-item-requests/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-03-06 20:32:46.081341] END   GET /api/rooms/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-03-06 20:32:51.095140] START POST /api/auth/login/
+[2026-03-06 20:32:51.333285] END   POST /api/auth/login/ -> 200
+[2026-03-06 20:32:52.552760] START GET /api/maintenance-step-item-requests/
+[2026-03-06 20:32:52.556847] START GET /api/rooms/
+[2026-03-06 20:32:52.602834] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-06 20:32:52.608868] START GET /api/maintenance-step-item-requests/
+[2026-03-06 20:32:52.617692] END   GET /api/rooms/ -> 200
+[2026-03-06 20:32:52.623022] START GET /api/rooms/
+[2026-03-06 20:32:52.653637] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-06 20:32:52.670588] END   GET /api/rooms/ -> 200
+[2026-03-06 20:32:53.075696] START GET /api/stock-item-movements-approval/pending/
+[2026-03-06 20:32:53.083020] START GET /api/consumable-movements-approval/pending/
+[2026-03-06 20:32:53.125769] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-06 20:32:53.126146] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-06 20:32:53.131469] START GET /api/consumable-movements-approval/pending/
+[2026-03-06 20:32:53.132167] START GET /api/stock-item-movements-approval/pending/
+[2026-03-06 20:32:53.174804] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-06 20:32:53.175389] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-06 20:32:54.940715] START GET /api/purchase-orders/
+[2026-03-06 20:32:55.276861] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 20:32:55.281255] START GET /api/purchase-orders/
+[2026-03-06 20:32:55.316695] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 20:32:57.597779] START GET /api/purchase-orders/1/
+[2026-03-06 20:32:57.648337] END   GET /api/purchase-orders/1/ -> 200
+[2026-03-06 20:33:08.265512] START GET /api/purchase-orders/suppliers/
+[2026-03-06 20:33:08.510085] START GET /api/stock-item-types/
+[2026-03-06 20:33:09.020722] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 20:33:09.024625] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 20:33:09.025359] START GET /api/stock-item-types/
+[2026-03-06 20:33:09.029296] START GET /api/consumable-types/
+[2026-03-06 20:33:09.030461] START GET /api/purchase-orders/suppliers/
+[2026-03-06 20:33:09.059791] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 20:33:09.067852] END   GET /api/consumable-types/ -> 200
+[2026-03-06 20:33:09.070691] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 20:33:09.072840] START GET /api/consumable-types/
+[2026-03-06 20:33:09.114231] END   GET /api/consumable-types/ -> 200
+[2026-03-06 20:33:10.665440] START GET /api/purchase-orders/
+[2026-03-06 20:33:10.701214] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 20:33:10.712833] START GET /api/purchase-orders/
+[2026-03-06 20:33:10.747156] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:20:55.051634] START GET /api/purchase-orders/
+[2026-03-06 21:20:55.134404] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:20:55.142597] START GET /api/purchase-orders/
+[2026-03-06 21:20:55.187158] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:21:28.160462] START GET /api/purchase-orders/
+[2026-03-06 21:21:28.197526] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:24:46.094769] START GET /api/purchase-orders/suppliers/
+[2026-03-06 21:24:46.095971] START GET /api/stock-item-types/
+[2026-03-06 21:24:46.167649] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 21:24:46.172861] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 21:24:46.178168] START GET /api/stock-item-types/
+[2026-03-06 21:24:46.181052] START GET /api/purchase-orders/suppliers/
+[2026-03-06 21:24:46.222098] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 21:24:46.238450] START GET /api/consumable-types/
+[2026-03-06 21:24:46.274788] END   GET /api/consumable-types/ -> 200
+[2026-03-06 21:24:46.321536] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 21:24:46.328619] START GET /api/consumable-types/
+[2026-03-06 21:24:46.361302] END   GET /api/consumable-types/ -> 200
+[2026-03-06 21:24:54.403734] START GET /api/stock-item-models/
+[2026-03-06 21:24:54.445749] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 21:24:55.546790] START GET /api/stock-item-models/
+[2026-03-06 21:24:55.592127] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 21:24:56.862779] START GET /api/stock-item-models/
+[2026-03-06 21:24:56.894261] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 21:24:58.087703] START GET /api/stock-item-models/
+[2026-03-06 21:24:58.127048] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 21:30:32.189220] START POST /api/purchase-orders/
+[2026-03-06 21:30:32.254400] END   POST /api/purchase-orders/ -> 201
+[2026-03-06 21:30:32.291260] START GET /api/purchase-orders/
+[2026-03-06 21:30:32.307384] START GET /api/purchase-orders/2/
+[2026-03-06 21:30:32.307861] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:30:32.312386] START GET /api/backorder-reports/
+[2026-03-06 21:30:32.333815] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:30:32.337835] START GET /api/purchase-orders/
+[2026-03-06 21:30:32.350207] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:30:32.350534] END   GET /api/purchase-orders/2/ -> 200
+[2026-03-06 21:30:32.352045] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:30:32.376890] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:37:08.993862] START GET /api/purchase-orders/
+[2026-03-06 21:37:09.058843] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:37:09.062382] START GET /api/purchase-orders/
+[2026-03-06 21:37:09.092656] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:39:17.954214] START GET /api/purchase-orders/
+[2026-03-06 21:39:17.991004] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:40:06.919987] START GET /api/purchase-orders/2/
+[2026-03-06 21:40:06.920926] START GET /api/backorder-reports/
+[2026-03-06 21:40:06.923758] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:40:06.963675] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:40:06.965393] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:40:06.965588] END   GET /api/purchase-orders/2/ -> 200
+[2026-03-06 21:40:13.876260] START GET /api/stock-item-types/
+[2026-03-06 21:40:13.877089] START GET /api/purchase-orders/suppliers/
+[2026-03-06 21:40:13.909501] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 21:40:13.914091] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 21:40:13.913995] START GET /api/stock-item-types/
+[2026-03-06 21:40:13.917222] START GET /api/consumable-types/
+[2026-03-06 21:40:13.917995] START GET /api/purchase-orders/suppliers/
+[2026-03-06 21:40:13.956152] END   GET /api/consumable-types/ -> 200
+[2026-03-06 21:40:13.956569] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 21:40:13.959605] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 21:40:14.002433] START GET /api/consumable-types/
+[2026-03-06 21:40:14.029889] END   GET /api/consumable-types/ -> 200
+[2026-03-06 21:40:17.399960] START GET /api/stock-item-models/
+[2026-03-06 21:40:17.440461] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 21:40:29.186932] START POST /api/purchase-orders/
+[2026-03-06 21:40:29.441106] END   POST /api/purchase-orders/ -> 500
+Response Body: DataError at /api/purchase-orders/
+value too long for type character varying(10)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/purchase-orders/
+Django Version: 6.0.2
+Python Executable: C:\Users\Bvhvddin\Desktop\Others\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['C:\\Users\\Bvhvddin\\Desktop\\Others\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Use
+[2026-03-06 21:40:48.113937] START POST /api/purchase-orders/
+[2026-03-06 21:40:48.279632] END   POST /api/purchase-orders/ -> 201
+[2026-03-06 21:40:48.315778] START GET /api/purchase-orders/
+[2026-03-06 21:40:48.320383] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:40:48.320803] START GET /api/purchase-orders/3/
+[2026-03-06 21:40:48.321699] START GET /api/backorder-reports/
+[2026-03-06 21:40:48.353403] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:40:48.359406] START GET /api/purchase-orders/
+[2026-03-06 21:40:48.365280] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:40:48.365763] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:40:48.367531] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:40:48.405602] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:40:57.962563] START POST /api/purchase-orders/3/receive/
+[2026-03-06 21:40:58.023790] END   POST /api/purchase-orders/3/receive/ -> 200
+[2026-03-06 21:40:58.033744] START GET /api/purchase-orders/3/
+[2026-03-06 21:40:58.075383] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:40:58.080474] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:40:58.130250] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:40:58.139354] START GET /api/backorder-reports/
+[2026-03-06 21:40:58.177684] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:45:47.974472] START GET /api/purchase-orders/
+[2026-03-06 21:45:48.112372] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:46:29.869111] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:29.905512] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:29.909678] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:29.949123] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:32.463737] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:32.467839] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:46:32.473335] START GET /api/backorder-reports/
+[2026-03-06 21:46:32.504222] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:32.507498] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:46:32.510054] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:32.512483] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:46:32.512997] START GET /api/backorder-reports/
+[2026-03-06 21:46:32.517456] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:46:32.551991] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:32.552639] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:46:32.558252] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:46:35.124847] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:35.279908] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:35.283853] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:35.322402] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:35.676363] START GET /api/purchase-orders/
+[2026-03-06 21:46:35.715638] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:46:35.720106] START GET /api/purchase-orders/
+[2026-03-06 21:46:35.759164] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:46:38.222871] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:38.258205] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:38.262122] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:38.427614] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:41.773336] START POST /api/purchase-orders/3/receive/
+[2026-03-06 21:46:41.822404] END   POST /api/purchase-orders/3/receive/ -> 200
+[2026-03-06 21:46:41.841111] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:41.846832] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:46:41.850552] START GET /api/backorder-reports/
+[2026-03-06 21:46:41.880949] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:41.885467] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:41.888339] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:46:41.893636] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:46:41.894446] START GET /api/backorder-reports/
+[2026-03-06 21:46:41.900404] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:46:41.927037] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:41.931132] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:46:42.061915] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:46:49.279727] START POST /api/backorder-reports/
+[2026-03-06 21:46:49.338347] END   POST /api/backorder-reports/ -> 201
+[2026-03-06 21:46:49.345564] START GET /api/backorder-reports/
+[2026-03-06 21:46:49.393743] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:46:49.400838] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:46:49.438460] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:46:54.602440] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:54.646119] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:54.650888] START GET /api/purchase-orders/3/
+[2026-03-06 21:46:54.693118] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:46:57.540721] START GET /api/purchase-orders/
+[2026-03-06 21:46:57.584650] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:46:57.589727] START GET /api/purchase-orders/
+[2026-03-06 21:46:57.632436] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:47:05.931430] START GET /api/purchase-orders/3/
+[2026-03-06 21:47:05.976704] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:47:05.981277] START GET /api/purchase-orders/3/
+[2026-03-06 21:47:06.025585] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:47:10.840565] START GET /api/purchase-orders/
+[2026-03-06 21:47:10.875113] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:47:10.879119] START GET /api/purchase-orders/
+[2026-03-06 21:47:10.911796] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 21:47:15.254915] START GET /api/purchase-orders/3/
+[2026-03-06 21:47:15.294967] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:47:15.299979] START GET /api/purchase-orders/3/
+[2026-03-06 21:47:15.337890] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:47:45.302731] START GET /api/purchase-orders/3/
+[2026-03-06 21:47:45.342014] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:47:45.345887] START GET /api/purchase-orders/3/
+[2026-03-06 21:47:45.384131] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:47:58.357652] START POST /api/purchase-orders/3/receive/
+[2026-03-06 21:47:58.402089] END   POST /api/purchase-orders/3/receive/ -> 200
+[2026-03-06 21:47:58.422942] START GET /api/purchase-orders/3/
+[2026-03-06 21:47:58.423799] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:47:58.423496] START GET /api/backorder-reports/
+[2026-03-06 21:47:58.461964] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:47:58.463003] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:47:58.467239] START GET /api/backorder-reports/
+[2026-03-06 21:47:58.467944] START GET /api/purchase-orders/3/
+[2026-03-06 21:47:58.504558] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:47:58.574897] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:47:58.584379] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:47:58.628215] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:47:58.641266] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:48:05.621742] START POST /api/backorder-reports/
+[2026-03-06 21:48:05.665707] END   POST /api/backorder-reports/ -> 201
+[2026-03-06 21:48:05.672099] START GET /api/backorder-reports/
+[2026-03-06 21:48:05.711688] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:48:05.717560] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:48:05.862057] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:48:08.196819] START GET /api/purchase-orders/3/
+[2026-03-06 21:48:08.237776] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:48:08.242444] START GET /api/purchase-orders/3/
+[2026-03-06 21:48:08.282573] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:48:14.774556] START POST /api/purchase-orders/3/receive/
+[2026-03-06 21:48:14.826827] END   POST /api/purchase-orders/3/receive/ -> 200
+[2026-03-06 21:48:14.847185] START GET /api/purchase-orders/3/
+[2026-03-06 21:48:14.851807] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:48:14.853929] START GET /api/backorder-reports/
+[2026-03-06 21:48:14.888072] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:48:14.888273] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:48:14.892635] START GET /api/backorder-reports/
+[2026-03-06 21:48:14.893247] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:48:14.928542] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:48:14.929423] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:48:15.000720] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:48:15.007471] START GET /api/purchase-orders/3/
+[2026-03-06 21:48:15.062568] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:48:24.335777] START POST /api/backorder-reports/
+[2026-03-06 21:48:24.385264] END   POST /api/backorder-reports/ -> 201
+[2026-03-06 21:48:24.394964] START GET /api/backorder-reports/
+[2026-03-06 21:48:24.436072] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:48:24.442389] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:48:24.597604] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:48:27.427778] START GET /api/purchase-orders/3/
+[2026-03-06 21:48:27.469188] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:48:27.475527] START GET /api/purchase-orders/3/
+[2026-03-06 21:48:27.513891] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:48:36.760778] START GET /api/purchase-orders/3/
+[2026-03-06 21:48:36.765094] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:48:36.768055] START GET /api/backorder-reports/
+[2026-03-06 21:48:36.799720] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:48:36.800527] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:48:36.804184] START GET /api/purchase-orders/3/
+[2026-03-06 21:48:36.806699] START GET /api/backorder-reports/
+[2026-03-06 21:48:36.808482] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:48:36.812989] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:48:36.845995] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:48:36.853492] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:48:36.971151] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:49:05.655190] START GET /api/purchase-orders/3/
+[2026-03-06 21:49:05.694597] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:49:05.707270] START GET /api/purchase-orders/3/
+[2026-03-06 21:49:05.764174] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:52:10.935078] START POST /api/purchase-orders/3/receive/
+[2026-03-06 21:52:11.036678] END   POST /api/purchase-orders/3/receive/ -> 200
+[2026-03-06 21:52:11.060144] START GET /api/purchase-orders/3/
+[2026-03-06 21:52:11.066744] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:52:11.067798] START GET /api/backorder-reports/
+[2026-03-06 21:52:11.104732] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:52:11.104981] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:52:11.109137] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:52:11.109840] START GET /api/backorder-reports/
+[2026-03-06 21:52:11.144435] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:52:11.145549] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:52:11.200430] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:52:11.203821] START GET /api/purchase-orders/3/
+[2026-03-06 21:52:11.250790] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:52:17.512362] START GET /api/purchase-orders/3/
+[2026-03-06 21:52:17.558797] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:52:17.564114] START GET /api/purchase-orders/3/
+[2026-03-06 21:52:17.626007] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:52:22.525023] START POST /api/purchase-orders/3/receive/
+[2026-03-06 21:52:22.569935] END   POST /api/purchase-orders/3/receive/ -> 200
+[2026-03-06 21:52:22.589751] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:52:22.588915] START GET /api/purchase-orders/3/
+[2026-03-06 21:52:22.593505] START GET /api/backorder-reports/
+[2026-03-06 21:52:22.630024] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:52:22.631251] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:52:22.631906] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:52:22.635742] START GET /api/backorder-reports/
+[2026-03-06 21:52:22.638010] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:52:22.638706] START GET /api/purchase-orders/3/
+[2026-03-06 21:52:22.675944] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:52:22.677441] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:52:22.678135] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:52:39.444660] START GET /api/purchase-orders/3/
+[2026-03-06 21:52:39.483912] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:52:39.488133] START GET /api/purchase-orders/3/
+[2026-03-06 21:52:39.526070] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:55:29.996907] START POST /api/purchase-orders/3/receive/
+[2026-03-06 21:55:30.049754] END   POST /api/purchase-orders/3/receive/ -> 200
+[2026-03-06 21:55:30.070276] START GET /api/purchase-orders/3/
+[2026-03-06 21:55:30.074462] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:55:30.075086] START GET /api/backorder-reports/
+[2026-03-06 21:55:30.117134] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:55:30.117891] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:55:30.119105] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 21:55:30.123638] START GET /api/backorder-reports/
+[2026-03-06 21:55:30.123186] START GET /api/purchase-orders/3/
+[2026-03-06 21:55:30.124366] START GET /api/backorder-reports/remaining/
+[2026-03-06 21:55:30.169014] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 21:55:30.170551] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 21:55:30.171805] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:08:59.475860] START GET /api/purchase-orders/3/
+[2026-03-06 22:08:59.480026] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:08:59.480472] START GET /api/backorder-reports/
+[2026-03-06 22:08:59.718804] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:08:59.720692] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:08:59.725046] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:08:59.732137] START GET /api/backorder-reports/
+[2026-03-06 22:08:59.733125] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:08:59.737710] START GET /api/purchase-orders/3/
+[2026-03-06 22:08:59.780078] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:08:59.780425] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:00.037407] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:09:23.221361] START GET /api/purchase-orders/3/
+[2026-03-06 22:09:23.266066] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:23.270856] START GET /api/purchase-orders/3/
+[2026-03-06 22:09:23.319200] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:26.886827] START GET /api/purchase-orders/3/
+[2026-03-06 22:09:27.027564] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:27.037438] START GET /api/purchase-orders/3/
+[2026-03-06 22:09:27.084050] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:31.680302] START GET /api/purchase-orders/3/
+[2026-03-06 22:09:31.731619] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:31.735960] START GET /api/purchase-orders/3/
+[2026-03-06 22:09:31.776272] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:32.716233] START GET /api/purchase-orders/3/
+[2026-03-06 22:09:32.719315] START GET /api/backorder-reports/
+[2026-03-06 22:09:32.720008] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:09:32.754809] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:32.756115] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:09:32.757326] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:09:32.760099] START GET /api/purchase-orders/3/
+[2026-03-06 22:09:32.762780] START GET /api/backorder-reports/
+[2026-03-06 22:09:32.763419] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:09:32.801531] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:09:32.802170] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:09:32.806351] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:26:19.975745] START GET /api/purchase-orders/3/
+[2026-03-06 22:26:19.979434] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:26:19.991406] START GET /api/backorder-reports/
+[2026-03-06 22:26:20.044827] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:26:20.049488] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:26:20.050971] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:26:20.057035] START GET /api/backorder-reports/10/
+[2026-03-06 22:26:20.097013] END   GET /api/backorder-reports/10/ -> 200
+[2026-03-06 22:27:17.497425] START GET /api/backorder-reports/9/
+[2026-03-06 22:27:17.538506] END   GET /api/backorder-reports/9/ -> 200
+[2026-03-06 22:27:18.518441] START GET /api/backorder-reports/8/
+[2026-03-06 22:27:18.555356] END   GET /api/backorder-reports/8/ -> 200
+[2026-03-06 22:27:18.879952] START GET /api/backorder-reports/7/
+[2026-03-06 22:27:18.920921] END   GET /api/backorder-reports/7/ -> 200
+[2026-03-06 22:27:19.178609] START GET /api/backorder-reports/5/
+[2026-03-06 22:27:19.221303] END   GET /api/backorder-reports/5/ -> 200
+[2026-03-06 22:27:19.467424] START GET /api/backorder-reports/2/
+[2026-03-06 22:27:19.509486] END   GET /api/backorder-reports/2/ -> 200
+[2026-03-06 22:27:19.979141] START GET /api/backorder-reports/1/
+[2026-03-06 22:27:20.025569] END   GET /api/backorder-reports/1/ -> 200
+[2026-03-06 22:27:22.896266] START GET /api/purchase-orders/3/
+[2026-03-06 22:27:22.933776] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:27:22.937258] START GET /api/purchase-orders/3/
+[2026-03-06 22:27:22.977754] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:27:27.592100] START POST /api/purchase-orders/3/receive/
+[2026-03-06 22:27:27.678432] END   POST /api/purchase-orders/3/receive/ -> 200
+[2026-03-06 22:27:27.720499] START GET /api/purchase-orders/3/
+[2026-03-06 22:27:27.719790] START GET /api/backorder-reports/
+[2026-03-06 22:27:27.718406] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:27:27.766648] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:27:27.768368] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:27:27.768430] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:27:27.775383] START GET /api/backorder-reports/
+[2026-03-06 22:27:27.776600] START GET /api/backorder-reports/10/
+[2026-03-06 22:27:27.778338] START GET /api/purchase-orders/3/
+[2026-03-06 22:27:27.780363] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:27:27.813788] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:27:27.822159] END   GET /api/backorder-reports/10/ -> 200
+[2026-03-06 22:27:27.823488] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:27:27.823680] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:27:30.167105] START GET /api/purchase-orders/3/
+[2026-03-06 22:27:30.205509] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:27:30.209556] START GET /api/purchase-orders/3/
+[2026-03-06 22:27:30.245178] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:27:33.861780] START POST /api/purchase-orders/3/receive/
+[2026-03-06 22:27:33.904880] END   POST /api/purchase-orders/3/receive/ -> 400
+Response Body: {"error":"Received quantity exceeds ordered for stock_item_model_id=1 (ordered=10, current_received=10, newly_received=2)"}
+[2026-03-06 22:27:41.433105] START GET /api/purchase-orders/3/
+[2026-03-06 22:27:41.475614] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:27:41.480365] START GET /api/purchase-orders/3/
+[2026-03-06 22:27:41.646876] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:29:50.215113] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:29:50.215638] START GET /api/backorder-reports/
+[2026-03-06 22:29:50.216529] START GET /api/purchase-orders/3/
+[2026-03-06 22:29:50.257523] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:29:50.261743] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:29:50.262427] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:29:50.262241] START GET /api/backorder-reports/
+[2026-03-06 22:29:50.265971] START GET /api/backorder-reports/10/
+[2026-03-06 22:29:50.267234] START GET /api/purchase-orders/3/
+[2026-03-06 22:29:50.269880] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:29:50.307605] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:29:50.311077] END   GET /api/backorder-reports/10/ -> 200
+[2026-03-06 22:29:50.313816] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:29:50.314115] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:29:52.436789] START GET /api/backorder-reports/9/
+[2026-03-06 22:29:52.590184] END   GET /api/backorder-reports/9/ -> 200
+[2026-03-06 22:29:53.055387] START GET /api/backorder-reports/8/
+[2026-03-06 22:29:53.099607] END   GET /api/backorder-reports/8/ -> 200
+[2026-03-06 22:29:53.414882] START GET /api/backorder-reports/10/
+[2026-03-06 22:29:53.453552] END   GET /api/backorder-reports/10/ -> 200
+[2026-03-06 22:29:54.174683] START GET /api/backorder-reports/9/
+[2026-03-06 22:29:54.214551] END   GET /api/backorder-reports/9/ -> 200
+[2026-03-06 22:29:55.214519] START GET /api/backorder-reports/1/
+[2026-03-06 22:29:55.259812] END   GET /api/backorder-reports/1/ -> 200
+[2026-03-06 22:29:57.745141] START GET /api/purchase-orders/3/
+[2026-03-06 22:29:57.790019] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:29:57.793853] START GET /api/purchase-orders/3/
+[2026-03-06 22:29:57.852367] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:30:05.266169] START GET /api/purchase-orders/
+[2026-03-06 22:30:05.424806] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:30:05.428931] START GET /api/purchase-orders/
+[2026-03-06 22:30:05.468318] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:30:08.970301] START GET /api/purchase-orders/3/
+[2026-03-06 22:30:09.007920] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:30:09.013569] START GET /api/purchase-orders/3/
+[2026-03-06 22:30:09.049261] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:30:12.897928] START GET /api/purchase-orders/3/
+[2026-03-06 22:30:12.960340] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:30:12.966586] START GET /api/purchase-orders/3/
+[2026-03-06 22:30:13.005531] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:30:14.652029] START GET /api/purchase-orders/
+[2026-03-06 22:30:14.688496] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:30:14.691934] START GET /api/purchase-orders/
+[2026-03-06 22:30:14.748097] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:32:58.178879] START GET /api/purchase-orders/3/
+[2026-03-06 22:32:58.245892] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:32:58.250056] START GET /api/purchase-orders/3/
+[2026-03-06 22:32:58.293279] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:00.753735] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:00.795576] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:00.800023] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:00.837339] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:03.280457] START GET /api/purchase-orders/
+[2026-03-06 22:33:03.447123] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:33:03.460568] START GET /api/purchase-orders/
+[2026-03-06 22:33:03.499913] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:33:07.375523] START GET /api/purchase-orders/
+[2026-03-06 22:33:07.374628] START GET /api/purchase-orders/
+[2026-03-06 22:33:07.418026] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:33:07.418506] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:33:15.592062] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:15.593236] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:33:15.597038] START GET /api/backorder-reports/
+[2026-03-06 22:33:15.631069] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:33:15.632280] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:15.632387] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:33:15.636858] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:33:15.637546] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:15.639511] START GET /api/backorder-reports/
+[2026-03-06 22:33:15.646382] START GET /api/backorder-reports/10/
+[2026-03-06 22:33:15.681753] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:33:15.681819] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:33:15.682192] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:15.688647] END   GET /api/backorder-reports/10/ -> 200
+[2026-03-06 22:33:17.829624] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:17.869127] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:17.873472] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:17.915934] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:21.904449] START GET /api/purchase-orders/
+[2026-03-06 22:33:21.966480] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:33:21.973352] START GET /api/purchase-orders/
+[2026-03-06 22:33:22.077699] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:33:23.159896] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:23.164300] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:33:23.167722] START GET /api/backorder-reports/
+[2026-03-06 22:33:23.199986] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:23.202339] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:33:23.203654] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:33:23.207504] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:23.208332] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:33:23.210616] START GET /api/backorder-reports/
+[2026-03-06 22:33:23.214296] START GET /api/backorder-reports/10/
+[2026-03-06 22:33:23.248060] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:23.252399] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:33:23.258045] END   GET /api/backorder-reports/10/ -> 200
+[2026-03-06 22:33:23.380457] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:33:43.825094] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:43.865136] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:43.869250] START GET /api/purchase-orders/3/
+[2026-03-06 22:33:43.934303] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:33:45.991948] START GET /api/purchase-orders/
+[2026-03-06 22:33:46.131665] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:33:46.137012] START GET /api/purchase-orders/
+[2026-03-06 22:33:46.178501] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:36.379181] START GET /api/purchase-orders/3/
+[2026-03-06 22:34:36.379768] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:34:36.380174] START GET /api/backorder-reports/
+[2026-03-06 22:34:36.420589] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:34:36.421059] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:34:36.422329] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:34:36.426402] START GET /api/purchase-orders/3/
+[2026-03-06 22:34:36.426868] START GET /api/backorder-reports/
+[2026-03-06 22:34:36.429176] START GET /api/backorder-reports/remaining/
+[2026-03-06 22:34:36.431528] START GET /api/backorder-reports/10/
+[2026-03-06 22:34:36.470851] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 22:34:36.472114] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:34:36.475422] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 22:34:36.477390] END   GET /api/backorder-reports/10/ -> 200
+[2026-03-06 22:34:37.397439] START GET /api/purchase-orders/
+[2026-03-06 22:34:37.433936] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:37.437398] START GET /api/purchase-orders/
+[2026-03-06 22:34:37.470226] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:40.129967] START GET /api/maintenance-step-item-requests/
+[2026-03-06 22:34:40.132888] START GET /api/rooms/
+[2026-03-06 22:34:40.191769] END   GET /api/rooms/ -> 200
+[2026-03-06 22:34:40.197610] START GET /api/rooms/
+[2026-03-06 22:34:40.211221] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-06 22:34:40.215132] START GET /api/maintenance-step-item-requests/
+[2026-03-06 22:34:40.247405] END   GET /api/rooms/ -> 200
+[2026-03-06 22:34:40.254333] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-06 22:34:41.138179] START GET /api/stock-item-movements-approval/pending/
+[2026-03-06 22:34:41.138762] START GET /api/consumable-movements-approval/pending/
+[2026-03-06 22:34:41.185981] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-06 22:34:41.190876] START GET /api/consumable-movements-approval/pending/
+[2026-03-06 22:34:41.248603] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-06 22:34:41.282813] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-06 22:34:41.289562] START GET /api/stock-item-movements-approval/pending/
+[2026-03-06 22:34:41.325280] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-06 22:34:43.412375] START GET /api/purchase-orders/
+[2026-03-06 22:34:43.464871] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:43.470300] START GET /api/purchase-orders/
+[2026-03-06 22:34:43.512881] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:45.000282] START GET /api/stock-item-types/
+[2026-03-06 22:34:45.001248] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:34:45.035730] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:34:45.037668] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:34:45.040783] START GET /api/stock-item-types/
+[2026-03-06 22:34:45.043157] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:34:45.074588] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:34:45.080200] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:34:45.958610] START GET /api/consumable-types/
+[2026-03-06 22:34:45.977892] START GET /api/consumable-attribute-definitions/
+[2026-03-06 22:34:45.992649] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:34:45.997971] START GET /api/consumable-types/
+[2026-03-06 22:34:46.009839] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-06 22:34:46.013479] START GET /api/consumable-attribute-definitions/
+[2026-03-06 22:34:46.028724] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:34:46.045450] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-06 22:34:46.460543] START GET /api/stock-item-types/
+[2026-03-06 22:34:46.461225] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:34:46.504099] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:34:46.504495] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:34:46.509368] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:34:46.510026] START GET /api/stock-item-types/
+[2026-03-06 22:34:46.542655] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:34:46.548555] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:34:48.459429] START GET /api/consumable-types/
+[2026-03-06 22:34:48.466317] START GET /api/consumable-attribute-definitions/
+[2026-03-06 22:34:48.498922] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:34:48.502647] START GET /api/consumable-types/
+[2026-03-06 22:34:48.505650] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-06 22:34:48.510168] START GET /api/consumable-attribute-definitions/
+[2026-03-06 22:34:48.534068] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:34:48.541029] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-06 22:34:50.314045] START GET /api/purchase-orders/
+[2026-03-06 22:34:50.352581] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:50.356738] START GET /api/purchase-orders/
+[2026-03-06 22:34:50.556904] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:51.037863] START GET /api/stock-item-movements-approval/pending/
+[2026-03-06 22:34:51.041643] START GET /api/consumable-movements-approval/pending/
+[2026-03-06 22:34:51.075656] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-06 22:34:51.077334] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-06 22:34:51.079544] START GET /api/stock-item-movements-approval/pending/
+[2026-03-06 22:34:51.081659] START GET /api/consumable-movements-approval/pending/
+[2026-03-06 22:34:51.118106] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-06 22:34:51.119001] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-06 22:34:52.073337] START GET /api/maintenance-step-item-requests/
+[2026-03-06 22:34:52.073799] START GET /api/rooms/
+[2026-03-06 22:34:52.117166] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-06 22:34:52.122647] START GET /api/maintenance-step-item-requests/
+[2026-03-06 22:34:52.128506] END   GET /api/rooms/ -> 200
+[2026-03-06 22:34:52.133322] START GET /api/rooms/
+[2026-03-06 22:34:52.183039] END   GET /api/rooms/ -> 200
+[2026-03-06 22:34:52.278298] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-06 22:34:53.103085] START GET /api/purchase-orders/
+[2026-03-06 22:34:53.134753] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:53.137361] START GET /api/purchase-orders/
+[2026-03-06 22:34:53.197230] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:34:54.676344] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:34:54.677593] START GET /api/stock-item-types/
+[2026-03-06 22:34:54.714562] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:34:54.715854] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:34:54.719945] START GET /api/stock-item-types/
+[2026-03-06 22:34:54.720326] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:34:54.721021] START GET /api/consumable-types/
+[2026-03-06 22:34:54.758800] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:34:54.758935] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:34:54.762711] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:34:54.764710] START GET /api/consumable-types/
+[2026-03-06 22:34:54.934294] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:39:53.482835] START GET /api/purchase-orders/
+[2026-03-06 22:39:53.525218] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:39:53.532651] START GET /api/purchase-orders/
+[2026-03-06 22:39:53.585748] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:39:59.550321] START GET /api/purchase-orders/3/
+[2026-03-06 22:39:59.590862] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:39:59.595029] START GET /api/purchase-orders/3/
+[2026-03-06 22:39:59.634891] END   GET /api/purchase-orders/3/ -> 200
+[2026-03-06 22:40:04.895314] START GET /api/purchase-orders/
+[2026-03-06 22:40:04.928744] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:40:04.937638] START GET /api/purchase-orders/
+[2026-03-06 22:40:04.991755] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:40:05.662760] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:40:05.664099] START GET /api/stock-item-types/
+[2026-03-06 22:40:05.702718] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:40:05.704267] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:40:05.707621] START GET /api/stock-item-types/
+[2026-03-06 22:40:05.708878] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:40:05.711716] START GET /api/consumable-types/
+[2026-03-06 22:40:05.745588] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:40:05.746574] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:40:05.750570] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:40:05.752791] START GET /api/consumable-types/
+[2026-03-06 22:40:05.783914] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:40:09.295930] START GET /api/stock-item-models/
+[2026-03-06 22:40:09.447559] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 22:47:13.506540] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:47:13.507238] START GET /api/stock-item-types/
+[2026-03-06 22:47:13.538031] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:47:13.541795] START GET /api/stock-item-types/
+[2026-03-06 22:47:13.546051] START GET /api/consumable-types/
+[2026-03-06 22:47:13.551258] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:47:13.555422] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:47:13.575486] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:47:13.578554] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:47:13.583142] START GET /api/consumable-types/
+[2026-03-06 22:47:13.591794] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:47:13.611784] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:48:01.970429] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:48:02.000836] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:49:22.289892] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:49:22.354646] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:49:22.361086] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:49:22.397143] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:49:32.953903] START GET /api/stock-item-types/
+[2026-03-06 22:49:32.988376] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:49:32.992359] START GET /api/stock-item-types/
+[2026-03-06 22:49:33.029669] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:49:36.054805] START GET /api/stock-item-models/
+[2026-03-06 22:49:36.093974] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 22:49:46.729224] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:49:46.763056] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:49:46.767209] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:49:46.805134] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:49:50.006504] START GET /api/stock-item-types/
+[2026-03-06 22:49:50.153340] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:49:50.157736] START GET /api/stock-item-types/
+[2026-03-06 22:49:50.196452] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:49:51.981577] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:49:52.017821] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:49:52.021762] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:49:52.061496] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:50:16.987978] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:50:16.988656] START GET /api/stock-item-types/
+[2026-03-06 22:50:17.022340] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:50:17.023350] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:50:17.029090] START GET /api/consumable-types/
+[2026-03-06 22:50:17.058793] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:51:46.982759] START GET /api/stock-item-models/
+[2026-03-06 22:51:47.133804] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 22:51:52.439689] START GET /api/stock-item-types/
+[2026-03-06 22:51:52.440790] START GET /api/stock-item-brands/
+[2026-03-06 22:51:52.448316] START GET /api/stock-item-assignments/
+[2026-03-06 22:51:52.449079] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:51:52.449488] START GET /api/rooms/
+[2026-03-06 22:51:52.453761] START GET /api/persons/
+[2026-03-06 22:51:52.483009] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 22:51:52.501439] END   GET /api/persons/ -> 200
+[2026-03-06 22:51:52.497992] START GET /api/stock-item-brands/
+[2026-03-06 22:51:52.506302] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:51:52.510248] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-06 22:51:52.514069] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:51:52.515667] START GET /api/persons/
+[2026-03-06 22:51:52.522831] START GET /api/stock-item-assignments/
+[2026-03-06 22:51:52.520307] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:51:52.526450] START GET /api/stock-item-types/
+[2026-03-06 22:51:52.539949] END   GET /api/rooms/ -> 200
+[2026-03-06 22:51:52.546422] START GET /api/rooms/
+[2026-03-06 22:51:52.550945] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 22:51:52.555610] START GET /api/stock-item-models/
+[2026-03-06 22:51:52.563803] END   GET /api/persons/ -> 200
+[2026-03-06 22:51:52.569147] START GET /api/stock-item-type-attributes/
+[2026-03-06 22:51:52.575873] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:51:52.576308] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:51:52.594645] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 22:51:52.604147] END   GET /api/rooms/ -> 200
+[2026-03-06 22:51:52.605403] START GET /api/stock-items/
+[2026-03-06 22:51:52.610384] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-06 22:51:52.644267] END   GET /api/stock-items/ -> 200
+[2026-03-06 22:51:52.673560] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-06 22:54:16.973499] START GET /api/stock-item-types/
+[2026-03-06 22:54:16.973984] START GET /api/stock-item-brands/
+[2026-03-06 22:54:16.975535] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:54:16.976965] START GET /api/rooms/
+[2026-03-06 22:54:16.978132] START GET /api/persons/
+[2026-03-06 22:54:16.979286] START GET /api/stock-item-assignments/
+[2026-03-06 22:54:17.004984] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:54:17.012598] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:54:17.013291] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 22:54:17.019698] END   GET /api/persons/ -> 200
+[2026-03-06 22:54:17.019595] START GET /api/stock-item-models/
+[2026-03-06 22:54:17.020981] START GET /api/stock-item-type-attributes/
+[2026-03-06 22:54:17.023578] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-06 22:54:17.032963] END   GET /api/rooms/ -> 200
+[2026-03-06 22:54:17.058163] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 22:54:17.061329] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-06 22:54:17.071842] START GET /api/stock-items/
+[2026-03-06 22:54:17.103840] END   GET /api/stock-items/ -> 200
+[2026-03-06 22:54:46.594899] START GET /api/stock-item-types/
+[2026-03-06 22:54:46.593865] START GET /api/stock-item-brands/
+[2026-03-06 22:54:46.594618] START GET /api/rooms/
+[2026-03-06 22:54:46.594203] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:54:46.602705] START GET /api/persons/
+[2026-03-06 22:54:46.604163] START GET /api/stock-item-assignments/
+[2026-03-06 22:54:46.639316] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 22:54:46.643935] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:54:46.647644] END   GET /api/persons/ -> 200
+[2026-03-06 22:54:46.646708] START GET /api/stock-item-brands/
+[2026-03-06 22:54:46.657468] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:54:46.662226] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-06 22:54:46.661331] START GET /api/persons/
+[2026-03-06 22:54:46.673290] START GET /api/stock-item-assignments/
+[2026-03-06 22:54:46.678878] END   GET /api/rooms/ -> 200
+[2026-03-06 22:54:46.683939] START GET /api/rooms/
+[2026-03-06 22:54:46.690792] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 22:54:46.701616] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:54:46.703619] END   GET /api/persons/ -> 200
+[2026-03-06 22:54:46.713758] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-06 22:54:46.736122] END   GET /api/rooms/ -> 200
+[2026-03-06 22:54:46.741158] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:54:46.745279] START GET /api/stock-item-types/
+[2026-03-06 22:54:46.777980] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:54:46.948967] START GET /api/stock-item-type-attributes/
+[2026-03-06 22:54:46.948288] START GET /api/stock-item-models/
+[2026-03-06 22:54:46.983812] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 22:54:46.984182] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-06 22:54:47.003791] START GET /api/stock-items/
+[2026-03-06 22:54:47.045264] END   GET /api/stock-items/ -> 200
+[2026-03-06 22:59:52.391032] START GET /api/stock-item-types/
+[2026-03-06 22:59:52.392396] START GET /api/stock-item-models/
+[2026-03-06 22:59:52.393330] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:59:52.398120] START GET /api/stock-item-brands/
+[2026-03-06 22:59:52.433943] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 22:59:52.434389] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:59:52.440620] START GET /api/stock-item-types/
+[2026-03-06 22:59:52.441297] START GET /api/stock-item-brands/
+[2026-03-06 22:59:52.444185] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 22:59:52.444095] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:59:52.453789] START GET /api/stock-item-models/
+[2026-03-06 22:59:52.476052] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:59:52.479955] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:59:52.491257] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 22:59:52.649598] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 22:59:53.860016] START GET /api/stock-item-types/
+[2026-03-06 22:59:53.861529] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:59:53.898352] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:59:53.898722] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:59:53.902759] START GET /api/stock-item-types/
+[2026-03-06 22:59:53.903404] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 22:59:53.935679] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:59:53.937057] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 22:59:55.049698] START GET /api/purchase-orders/
+[2026-03-06 22:59:55.104321] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:59:55.109442] START GET /api/purchase-orders/
+[2026-03-06 22:59:55.152163] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 22:59:56.654584] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:59:56.655230] START GET /api/stock-item-types/
+[2026-03-06 22:59:56.688724] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:59:56.691992] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:59:56.692570] START GET /api/stock-item-types/
+[2026-03-06 22:59:56.703406] START GET /api/purchase-orders/suppliers/
+[2026-03-06 22:59:56.710364] START GET /api/consumable-types/
+[2026-03-06 22:59:56.725091] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 22:59:56.741942] END   GET /api/consumable-types/ -> 200
+[2026-03-06 22:59:56.745757] START GET /api/consumable-types/
+[2026-03-06 22:59:56.853901] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 22:59:56.880384] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:00:03.207588] START GET /api/stock-item-models/
+[2026-03-06 23:00:03.250307] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:00:10.441168] START GET /api/stock-item-models/1/
+[2026-03-06 23:00:10.585384] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:00:10.592708] START GET /api/stock-item-models/1/
+[2026-03-06 23:00:10.732495] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:00:29.023430] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:00:29.024163] START GET /api/stock-item-types/
+[2026-03-06 23:00:29.059689] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:00:29.061361] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:00:29.064537] START GET /api/stock-item-types/
+[2026-03-06 23:00:29.067366] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:00:29.068067] START GET /api/consumable-types/
+[2026-03-06 23:00:29.096597] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:00:29.106871] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:00:29.224888] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:00:29.237232] START GET /api/consumable-types/
+[2026-03-06 23:00:29.283592] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:00:44.802802] START GET /api/consumable-models/
+[2026-03-06 23:00:44.859645] END   GET /api/consumable-models/ -> 200
+[2026-03-06 23:00:51.077814] START GET /api/consumable-models/1/
+[2026-03-06 23:00:51.110801] END   GET /api/consumable-models/1/ -> 200
+[2026-03-06 23:00:51.114575] START GET /api/consumable-models/1/
+[2026-03-06 23:00:51.149361] END   GET /api/consumable-models/1/ -> 200
+[2026-03-06 23:01:08.377126] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:01:08.378462] START GET /api/stock-item-types/
+[2026-03-06 23:01:08.410246] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:01:08.413834] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:01:08.414534] START GET /api/stock-item-types/
+[2026-03-06 23:01:08.418239] START GET /api/consumable-types/
+[2026-03-06 23:01:08.421573] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:01:08.491822] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:01:08.492169] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:01:08.499563] START GET /api/consumable-types/
+[2026-03-06 23:01:08.523930] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:01:08.534896] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:02:33.494277] START GET /api/stock-item-types/
+[2026-03-06 23:02:33.495320] START GET /api/stock-item-models/
+[2026-03-06 23:02:33.496246] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 23:02:33.500865] START GET /api/stock-item-brands/
+[2026-03-06 23:02:33.535120] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:02:33.538777] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:02:33.540136] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 23:02:33.541693] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 23:02:33.541135] START GET /api/stock-item-types/
+[2026-03-06 23:02:33.545791] START GET /api/stock-item-models/
+[2026-03-06 23:02:33.549360] START GET /api/stock-item-attribute-definitions/
+[2026-03-06 23:02:33.550302] START GET /api/stock-item-brands/
+[2026-03-06 23:02:33.574942] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:02:33.584860] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-06 23:02:33.586898] END   GET /api/stock-item-brands/ -> 200
+[2026-03-06 23:02:33.680945] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:02:35.472265] START GET /api/purchase-orders/
+[2026-03-06 23:02:35.511205] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:02:35.515139] START GET /api/purchase-orders/
+[2026-03-06 23:02:35.554097] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:02:38.435859] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:02:38.437294] START GET /api/stock-item-types/
+[2026-03-06 23:02:38.476988] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:02:38.481192] START GET /api/stock-item-types/
+[2026-03-06 23:02:38.483815] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:02:38.483695] START GET /api/consumable-types/
+[2026-03-06 23:02:38.488497] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:02:38.523214] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:02:38.530664] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:02:38.617188] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:02:38.623967] START GET /api/consumable-types/
+[2026-03-06 23:02:38.658033] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:07:23.882825] START GET /api/stock-item-models/
+[2026-03-06 23:07:24.036300] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:07:29.661352] START GET /api/stock-item-models/1/
+[2026-03-06 23:07:29.709691] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:07:29.719235] START GET /api/stock-item-models/1/
+[2026-03-06 23:07:29.868074] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:11:24.971091] START GET /api/stock-item-types/
+[2026-03-06 23:11:24.970058] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:11:25.024583] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:11:25.131989] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:11:25.137446] START GET /api/consumable-types/
+[2026-03-06 23:11:25.179023] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:11:52.903894] START GET /api/purchase-orders/
+[2026-03-06 23:11:52.947950] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:11:52.952369] START GET /api/purchase-orders/
+[2026-03-06 23:11:52.991580] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:11:54.280806] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:11:54.282342] START GET /api/stock-item-types/
+[2026-03-06 23:11:54.326435] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:11:54.330338] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:11:54.331425] START GET /api/stock-item-types/
+[2026-03-06 23:11:54.334318] START GET /api/consumable-types/
+[2026-03-06 23:11:54.335620] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:11:54.366082] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:11:54.372359] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:11:54.378616] START GET /api/consumable-types/
+[2026-03-06 23:11:54.385404] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:11:54.415869] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:12:02.979431] START GET /api/stock-item-models/
+[2026-03-06 23:12:03.025114] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:12:03.030264] START GET /api/stock-item-models/
+[2026-03-06 23:12:03.070376] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:13:12.990859] START GET /api/stock-item-models/1/
+[2026-03-06 23:13:13.151262] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:13:13.156055] START GET /api/stock-item-models/1/
+[2026-03-06 23:13:13.204179] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:13:19.950135] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:13:19.952047] START GET /api/stock-item-types/
+[2026-03-06 23:13:19.995457] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:13:20.000185] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:13:20.076052] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:13:20.115796] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:13:20.124516] START GET /api/stock-item-types/
+[2026-03-06 23:13:20.126537] START GET /api/consumable-types/
+[2026-03-06 23:13:20.170622] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:13:20.171060] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:13:20.177249] START GET /api/consumable-types/
+[2026-03-06 23:13:20.219523] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:13:40.824996] START GET /api/stock-item-models/
+[2026-03-06 23:13:40.867356] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:13:40.872086] START GET /api/stock-item-models/
+[2026-03-06 23:13:40.920959] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:13:45.251706] START GET /api/stock-item-models/1/
+[2026-03-06 23:13:45.298929] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:13:45.308731] START GET /api/stock-item-models/1/
+[2026-03-06 23:13:45.352407] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:14:09.321227] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:14:09.322401] START GET /api/stock-item-types/
+[2026-03-06 23:14:09.364554] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:14:09.367185] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:14:09.370598] START GET /api/stock-item-types/
+[2026-03-06 23:14:09.373760] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:14:09.374589] START GET /api/consumable-types/
+[2026-03-06 23:14:09.406582] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:14:09.425170] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:14:09.510907] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:14:09.517881] START GET /api/consumable-types/
+[2026-03-06 23:14:09.548390] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:14:50.965569] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:14:50.970443] START GET /api/stock-item-types/
+[2026-03-06 23:14:50.998556] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:14:51.001268] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:14:51.004495] START GET /api/consumable-types/
+[2026-03-06 23:14:51.033338] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:15:34.369789] START GET /api/stock-item-models/
+[2026-03-06 23:15:34.408003] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:15:34.412521] START GET /api/stock-item-models/
+[2026-03-06 23:15:34.459947] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:15:40.525255] START GET /api/stock-item-models/1/
+[2026-03-06 23:15:40.574241] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:15:40.578901] START GET /api/stock-item-models/1/
+[2026-03-06 23:15:40.614688] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:15:45.314417] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:15:45.316805] START GET /api/stock-item-types/
+[2026-03-06 23:15:45.327339] START GET /api/stock-item-models/
+[2026-03-06 23:15:45.355795] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:15:45.359063] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:15:45.362002] START GET /api/stock-item-types/
+[2026-03-06 23:15:45.365624] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:15:45.366409] START GET /api/consumable-types/
+[2026-03-06 23:15:45.372375] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:15:45.403834] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:15:45.408322] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:15:45.410341] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:15:45.414928] START GET /api/consumable-types/
+[2026-03-06 23:15:45.451659] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:20:56.679519] START GET /api/stock-item-models/1/
+[2026-03-06 23:20:56.745372] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:20:56.751835] START GET /api/stock-item-models/1/
+[2026-03-06 23:20:56.791184] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:23:17.228887] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:23:17.231130] START GET /api/stock-item-types/
+[2026-03-06 23:23:17.239685] START GET /api/stock-item-models/
+[2026-03-06 23:23:17.272923] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:23:17.277663] START GET /api/stock-item-types/
+[2026-03-06 23:23:17.278498] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:23:17.286651] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:23:17.283006] START GET /api/consumable-types/
+[2026-03-06 23:23:17.288090] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:23:17.318708] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:23:17.329690] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:23:17.335952] START GET /api/consumable-types/
+[2026-03-06 23:23:17.336708] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:23:17.376357] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:25:06.660565] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:25:06.662062] START GET /api/stock-item-types/
+[2026-03-06 23:25:06.667208] START GET /api/stock-item-models/
+[2026-03-06 23:25:06.703769] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:25:06.705094] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:25:06.708438] START GET /api/stock-item-types/
+[2026-03-06 23:25:06.712087] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:25:06.712917] START GET /api/consumable-types/
+[2026-03-06 23:25:06.747566] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:25:06.754794] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:25:06.760781] START GET /api/consumable-types/
+[2026-03-06 23:25:06.799391] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:25:06.827218] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:25:06.859462] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:27:58.488062] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:27:58.489014] START GET /api/stock-item-types/
+[2026-03-06 23:27:58.506920] START GET /api/stock-item-models/
+[2026-03-06 23:27:58.537677] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:27:58.542413] START GET /api/stock-item-types/
+[2026-03-06 23:27:58.545589] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:27:58.547974] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:27:58.547638] START GET /api/consumable-types/
+[2026-03-06 23:27:58.555178] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:27:58.591318] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:27:58.596007] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:27:58.611574] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:27:58.654273] START GET /api/consumable-types/
+[2026-03-06 23:27:58.698739] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:28:07.190361] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:28:07.190839] START GET /api/stock-item-types/
+[2026-03-06 23:28:07.210056] START GET /api/stock-item-models/
+[2026-03-06 23:28:07.235543] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:28:07.240385] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:28:07.240291] START GET /api/stock-item-types/
+[2026-03-06 23:28:07.243708] START GET /api/consumable-types/
+[2026-03-06 23:28:07.249861] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:28:07.257590] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:28:07.285038] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:28:07.287159] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:28:07.296457] START GET /api/consumable-types/
+[2026-03-06 23:28:07.304520] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:28:07.343638] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:28:39.203559] START GET /api/stock-item-models/1/
+[2026-03-06 23:28:39.249653] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:28:39.253554] START GET /api/stock-item-models/1/
+[2026-03-06 23:28:39.293334] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:29:15.415461] START POST /api/stock-items/
+[2026-03-06 23:29:15.467657] END   POST /api/stock-items/ -> 403
+Response Body: {"error":"Only superusers can create stock items"}
+[2026-03-06 23:32:04.414053] START POST /api/stock-items/
+[2026-03-06 23:32:04.648848] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:32:04.654065] START POST /api/stock-items/
+[2026-03-06 23:32:04.707811] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:32:04.712549] START POST /api/stock-items/
+[2026-03-06 23:32:04.882180] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:32:35.624901] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:32:35.641075] START GET /api/stock-item-types/
+[2026-03-06 23:32:35.642186] START GET /api/stock-item-models/
+[2026-03-06 23:32:35.681469] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:32:35.681859] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:32:35.685250] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:32:35.688325] START GET /api/stock-item-types/
+[2026-03-06 23:32:35.692563] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:32:35.693518] START GET /api/consumable-types/
+[2026-03-06 23:32:35.732292] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:32:35.737353] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:32:35.738729] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:32:35.741529] START GET /api/consumable-types/
+[2026-03-06 23:32:35.786518] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:35:22.698857] START GET /api/stock-item-models/
+[2026-03-06 23:35:22.741336] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:35:22.748681] START GET /api/stock-item-models/
+[2026-03-06 23:35:22.798622] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:35:24.172271] START GET /api/stock-item-models/
+[2026-03-06 23:35:24.214859] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:35:24.219268] START GET /api/stock-item-models/
+[2026-03-06 23:35:24.252197] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:35:42.449315] START GET /api/stock-item-models/1/
+[2026-03-06 23:35:42.596469] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:35:42.602511] START GET /api/stock-item-models/1/
+[2026-03-06 23:35:42.642541] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:36:51.463399] START POST /api/stock-items/
+[2026-03-06 23:36:51.552352] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:36:51.563973] START POST /api/stock-items/
+[2026-03-06 23:36:51.745494] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:36:51.774093] START POST /api/stock-items/
+[2026-03-06 23:36:51.850925] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:36:51.856996] START POST /api/stock-items/
+[2026-03-06 23:36:51.897385] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:36:51.906555] START POST /api/stock-items/
+[2026-03-06 23:36:52.006580] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:36:53.571774] START GET /api/stock-item-types/
+[2026-03-06 23:36:53.570714] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:36:53.583198] START GET /api/stock-item-models/
+[2026-03-06 23:36:53.615364] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:36:53.618609] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:36:53.618947] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:36:53.620648] START GET /api/stock-item-types/
+[2026-03-06 23:36:53.623330] START GET /api/consumable-types/
+[2026-03-06 23:36:53.623986] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:36:53.657235] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:36:53.658529] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:36:53.662985] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:36:53.664308] START GET /api/consumable-types/
+[2026-03-06 23:36:53.702879] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:38:56.302361] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:38:56.303035] START GET /api/stock-item-types/
+[2026-03-06 23:38:56.340841] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:38:56.342965] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:38:56.347293] START GET /api/stock-item-types/
+[2026-03-06 23:38:56.350455] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:38:56.351084] START GET /api/consumable-types/
+[2026-03-06 23:38:56.383986] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:38:56.392411] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:38:56.394267] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:38:56.397143] START GET /api/consumable-types/
+[2026-03-06 23:38:56.435971] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:38:58.984767] START GET /api/stock-item-models/
+[2026-03-06 23:38:59.021492] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:38:59.025368] START GET /api/stock-item-models/
+[2026-03-06 23:38:59.061179] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:39:05.359587] START GET /api/stock-item-models/1/
+[2026-03-06 23:39:05.397229] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:39:05.401762] START GET /api/stock-item-models/1/
+[2026-03-06 23:39:05.552953] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:39:21.208165] START POST /api/stock-items/
+[2026-03-06 23:39:21.261526] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:39:22.811321] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:39:22.819457] START GET /api/stock-item-types/
+[2026-03-06 23:39:22.828269] START GET /api/stock-item-models/
+[2026-03-06 23:39:22.855954] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:39:22.858994] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:39:22.862000] START GET /api/stock-item-types/
+[2026-03-06 23:39:22.862674] START GET /api/consumable-types/
+[2026-03-06 23:39:22.866925] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:39:22.865661] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:39:22.895638] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:39:22.907817] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:39:23.010245] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:39:23.014966] START GET /api/consumable-types/
+[2026-03-06 23:39:23.051844] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:39:37.037724] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:39:37.038243] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:39:37.038645] START GET /api/stock-item-types/
+[2026-03-06 23:39:37.042862] START GET /api/stock-item-types/
+[2026-03-06 23:39:37.078407] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:39:37.079157] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:39:37.080638] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:39:37.081049] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:39:37.084507] START GET /api/consumable-types/
+[2026-03-06 23:39:37.087034] START GET /api/consumable-types/
+[2026-03-06 23:39:37.116787] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:39:37.232683] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:39:42.208096] START GET /api/stock-item-models/
+[2026-03-06 23:39:42.247000] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:39:42.252093] START GET /api/stock-item-models/
+[2026-03-06 23:39:42.293474] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:39:47.384928] START GET /api/stock-item-models/1/
+[2026-03-06 23:39:47.433456] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:39:47.439317] START GET /api/stock-item-models/1/
+[2026-03-06 23:39:47.475539] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:39:56.408066] START POST /api/stock-items/
+[2026-03-06 23:39:56.471679] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:39:58.017630] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:39:58.019025] START GET /api/stock-item-types/
+[2026-03-06 23:39:58.033201] START GET /api/stock-item-models/
+[2026-03-06 23:39:58.057121] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:39:58.060949] START GET /api/stock-item-types/
+[2026-03-06 23:39:58.063442] START GET /api/consumable-types/
+[2026-03-06 23:39:58.069522] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:39:58.093412] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:39:58.095542] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:39:58.100787] START GET /api/consumable-types/
+[2026-03-06 23:39:58.163688] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:39:58.171178] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:39:58.223863] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:39:58.238564] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:40:51.914145] START GET /api/stock-item-models/1/
+[2026-03-06 23:40:51.954600] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:40:51.959535] START GET /api/stock-item-models/1/
+[2026-03-06 23:40:52.004860] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:41:03.872227] START POST /api/stock-items/
+[2026-03-06 23:41:03.924205] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:41:05.472406] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:41:05.475909] START GET /api/stock-item-types/
+[2026-03-06 23:41:05.483496] START GET /api/stock-item-models/
+[2026-03-06 23:41:05.508833] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:41:05.513770] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:41:05.522400] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:41:05.564664] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:41:05.613981] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:41:05.622375] START GET /api/stock-item-types/
+[2026-03-06 23:41:05.624194] START GET /api/consumable-types/
+[2026-03-06 23:41:05.665575] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:41:05.773769] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:41:05.780126] START GET /api/consumable-types/
+[2026-03-06 23:41:05.810013] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:43:11.425572] START GET /api/stock-item-models/1/
+[2026-03-06 23:43:11.460920] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:43:11.464944] START GET /api/stock-item-models/1/
+[2026-03-06 23:43:11.503103] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:43:17.510324] START POST /api/stock-items/
+[2026-03-06 23:43:17.565476] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:43:19.119452] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:43:19.120122] START GET /api/stock-item-types/
+[2026-03-06 23:43:19.129103] START GET /api/stock-item-models/
+[2026-03-06 23:43:19.161484] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:43:19.166041] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:43:19.166597] START GET /api/stock-item-types/
+[2026-03-06 23:43:19.167511] START GET /api/consumable-types/
+[2026-03-06 23:43:19.170228] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:43:19.173150] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:43:19.202372] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:43:19.204836] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:43:19.210950] START GET /api/consumable-types/
+[2026-03-06 23:43:19.213334] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:43:19.250688] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:44:07.736782] START GET /api/stock-item-types/
+pliers/
+[2026-03-06 23:44:07.737759] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:44:07.741783] START GET /api/stock-item-types/
+[2026-03-06 23:44:07.745093] START GET /api/stock-item-models/
+[2026-03-06 23:44:07.778572] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:44:07.782809] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:44:07.785732] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:44:07.785623] START GET /api/consumable-types/
+[2026-03-06 23:44:07.789118] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:44:07.793869] START GET /api/consumable-types/
+[2026-03-06 23:44:07.824914] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:44:07.829039] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:44:07.905353] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:44:14.016268] START GET /api/stock-item-models/1/
+[2026-03-06 23:44:14.058004] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:44:14.062711] START GET /api/stock-item-models/1/
+[2026-03-06 23:44:14.100351] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:44:19.048188] START POST /api/stock-items/
+[2026-03-06 23:44:19.105856] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:44:20.656745] START GET /api/stock-item-types/
+[2026-03-06 23:44:20.661091] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:44:20.662504] START GET /api/stock-item-models/
+[2026-03-06 23:44:20.694070] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:44:20.699237] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:44:20.700002] START GET /api/stock-item-types/
+[2026-03-06 23:44:20.700873] START GET /api/consumable-types/
+[2026-03-06 23:44:20.705382] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:44:20.714965] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:44:20.736819] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:44:20.743689] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:44:20.845882] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:44:20.852248] START GET /api/consumable-types/
+[2026-03-06 23:44:20.900879] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:45:15.202169] START GET /api/stock-item-types/
+[2026-03-06 23:45:15.203008] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:45:15.243075] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:45:15.247284] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:45:15.247931] START GET /api/stock-item-types/
+[2026-03-06 23:45:15.251123] START GET /api/consumable-types/
+[2026-03-06 23:45:15.251997] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:45:15.284353] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:45:15.290863] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:45:15.295484] START GET /api/consumable-types/
+[2026-03-06 23:45:15.298020] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:45:15.428269] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:45:24.105115] START GET /api/stock-item-models/
+[2026-03-06 23:45:24.139227] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:45:24.152967] START GET /api/stock-item-models/
+[2026-03-06 23:45:24.213564] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:45:27.526857] START GET /api/stock-item-models/1/
+[2026-03-06 23:45:27.569246] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:45:27.573962] START GET /api/stock-item-models/1/
+[2026-03-06 23:45:27.615885] END   GET /api/stock-item-models/1/ -> 200
+[2026-03-06 23:45:32.272600] START POST /api/stock-items/
+[2026-03-06 23:45:32.325240] END   POST /api/stock-items/ -> 201
+[2026-03-06 23:45:33.867905] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:45:33.875335] START GET /api/stock-item-types/
+[2026-03-06 23:45:33.876158] START GET /api/stock-item-models/
+[2026-03-06 23:45:33.914477] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:45:33.916204] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:45:33.916467] END   GET /api/stock-item-models/ -> 200
+[2026-03-06 23:45:33.920996] START GET /api/stock-item-types/
+[2026-03-06 23:45:33.921350] START GET /api/purchase-orders/suppliers/
+[2026-03-06 23:45:33.921965] START GET /api/consumable-types/
+[2026-03-06 23:45:33.957302] END   GET /api/stock-item-types/ -> 200
+[2026-03-06 23:45:33.963814] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-06 23:45:34.073313] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:45:34.081227] START GET /api/consumable-types/
+[2026-03-06 23:45:34.263219] END   GET /api/consumable-types/ -> 200
+[2026-03-06 23:46:01.172725] START POST /api/purchase-orders/
+[2026-03-06 23:46:01.230326] END   POST /api/purchase-orders/ -> 201
+[2026-03-06 23:46:01.267422] START GET /api/purchase-orders/4/
+[2026-03-06 23:46:01.314211] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-06 23:46:01.320057] START GET /api/purchase-orders/4/
+[2026-03-06 23:46:01.377562] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-06 23:46:09.017251] START GET /api/purchase-orders/4/
+[2026-03-06 23:46:09.060217] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-06 23:46:09.064626] START GET /api/purchase-orders/4/
+[2026-03-06 23:46:09.106819] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-06 23:46:14.232249] START POST /api/purchase-orders/4/receive/
+[2026-03-06 23:46:14.281230] END   POST /api/purchase-orders/4/receive/ -> 200
+[2026-03-06 23:46:14.301406] START GET /api/backorder-reports/remaining/
+[2026-03-06 23:46:14.302981] START GET /api/backorder-reports/
+[2026-03-06 23:46:14.307036] START GET /api/purchase-orders/4/
+[2026-03-06 23:46:14.347348] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-06 23:46:14.351134] START GET /api/purchase-orders/4/
+[2026-03-06 23:46:14.358727] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 23:46:14.359855] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 23:46:14.364986] START GET /api/backorder-reports/
+[2026-03-06 23:46:14.365619] START GET /api/backorder-reports/remaining/
+[2026-03-06 23:46:14.404336] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 23:46:14.405447] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 23:46:14.502880] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-06 23:46:22.800167] START GET /api/purchase-orders/
+[2026-03-06 23:46:22.848025] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:46:22.852855] START GET /api/purchase-orders/
+[2026-03-06 23:46:22.894563] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:46:25.762297] START GET /api/purchase-orders/4/
+[2026-03-06 23:46:25.766389] START GET /api/backorder-reports/remaining/
+[2026-03-06 23:46:25.769296] START GET /api/backorder-reports/
+[2026-03-06 23:46:25.802198] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 23:46:25.802898] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-06 23:46:25.803010] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 23:46:25.807749] START GET /api/backorder-reports/
+[2026-03-06 23:46:25.808138] START GET /api/purchase-orders/4/
+[2026-03-06 23:46:25.808873] START GET /api/backorder-reports/remaining/
+[2026-03-06 23:46:25.854742] END   GET /api/backorder-reports/ -> 200
+[2026-03-06 23:46:25.857512] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-06 23:46:25.863230] END   GET /api/backorder-reports/remaining/ -> 200
+[2026-03-06 23:46:26.869286] START GET /api/purchase-orders/
+[2026-03-06 23:46:27.054120] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:46:27.064120] START GET /api/purchase-orders/
+[2026-03-06 23:46:27.106390] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:46:30.273175] START GET /api/purchase-orders/
+[2026-03-06 23:46:30.314939] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:46:30.319043] START GET /api/purchase-orders/
+[2026-03-06 23:46:30.355065] END   GET /api/purchase-orders/ -> 200

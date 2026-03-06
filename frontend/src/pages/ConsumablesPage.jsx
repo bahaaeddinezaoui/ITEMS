@@ -21,6 +21,7 @@ const ConsumablesPage = () => {
     const [searchParams] = useSearchParams();
     const typeIdParam = searchParams.get('typeId');
     const modelIdParam = searchParams.get('modelId');
+    const createParam = searchParams.get('create');
     const isInstancesMode = location.pathname.endsWith('/instances');
 
     const formatModelLabel = (model) => {
@@ -136,6 +137,31 @@ const ConsumablesPage = () => {
             navigate('/dashboard/consumables/types', { replace: true });
         }
     }, [isInstancesMode, typeIdParam, modelIdParam, navigate]);
+
+    useEffect(() => {
+        if (!isInstancesMode) return;
+        if (String(createParam || '') !== '1') return;
+        if (!selectedConsumableModel) return;
+        if (showConsumableForm) return;
+
+        setEditingConsumable(null);
+        setConsumableFormData({
+            consumable_name: '',
+            consumable_inventory_number: '',
+            consumable_status: 'active',
+            consumable_warranty_expiry_in_months: '',
+            consumable_name_in_administrative_certificate: '',
+            destruction_certificate_id: 0,
+            maintenance_step_id: null
+        });
+        setShowConsumableForm(true);
+
+        const sp = new URLSearchParams(searchParams);
+        sp.delete('create');
+        const qs = sp.toString();
+        navigate(qs ? `${location.pathname}?${qs}` : location.pathname, { replace: true });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isInstancesMode, createParam, selectedConsumableModel, showConsumableForm]);
 
     const fetchRooms = async () => {
         try {

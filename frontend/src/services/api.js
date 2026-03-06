@@ -288,6 +288,50 @@ export const movementApprovalService = {
     },
 };
 
+export const purchaseOrderService = {
+    getAll: async () => {
+        const response = await api.get('purchase-orders/');
+        return response.data;
+    },
+    getById: async (id) => {
+        const response = await api.get(`purchase-orders/${id}/`);
+        return response.data;
+    },
+    create: async (data) => {
+        const response = await api.post('purchase-orders/', data);
+        return response.data;
+    },
+    receive: async (id, data) => {
+        const response = await api.post(`purchase-orders/${id}/receive/`, data);
+        return response.data;
+    },
+    getSuppliers: async () => {
+        const response = await api.get('purchase-orders/suppliers/');
+        return response.data;
+    },
+};
+
+export const backorderReportService = {
+    getAll: async (params) => {
+        const response = await api.get('backorder-reports/', { params });
+        return response.data;
+    },
+    getById: async (id) => {
+        const response = await api.get(`backorder-reports/${id}/`);
+        return response.data;
+    },
+    create: async (data) => {
+        const response = await api.post('backorder-reports/', data);
+        return response.data;
+    },
+    getRemaining: async (purchase_order_id) => {
+        const response = await api.get('backorder-reports/remaining/', {
+            params: { purchase_order_id },
+        });
+        return response.data;
+    },
+};
+
 // Asset Type service
 export const assetTypeService = {
     getAll: async () => {

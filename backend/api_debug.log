@@ -935,3 +935,11 @@ Password mismatch for user: stock_cons_resp
 [2026-03-05 22:05:31.111250+00:00] Login attempt for: asset_resp
 
 [2026-03-05 22:05:59.070340+00:00] Login attempt for: technician2
+
+[2026-03-05 22:20:52.691590+00:00] Login attempt for: technician2
+
+[2026-03-05 22:25:07.355994+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-05 22:55:39.132550+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-06 19:32:51.096819+00:00] Login attempt for: stock_cons_resp
