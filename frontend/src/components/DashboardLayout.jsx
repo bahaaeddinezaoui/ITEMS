@@ -208,17 +208,26 @@ const DashboardLayout = () => {
                             )}
 
                             {(isExploitationChief || isItBureauChief || isStockConsumableResponsible) && (
-                                <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <circle cx="9" cy="21" r="1" />
-                                        <circle cx="20" cy="21" r="1" />
-                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                                    </svg>
-                                    Stock Items
-                                </NavLink>
+                                <>
+                                    <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <circle cx="9" cy="21" r="1" />
+                                            <circle cx="20" cy="21" r="1" />
+                                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                        </svg>
+                                        Stock Items
+                                    </NavLink>
+
+                                    <NavLink to="/dashboard/consumables" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                                        </svg>
+                                        Consumables
+                                    </NavLink>
+                                </>
                             )}
 
-                            {isAssetResponsible && (
+                            {(isAssetResponsible || isItBureauChief) && (
                                 <NavLink to="/dashboard/attribution-orders" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -231,7 +240,7 @@ const DashboardLayout = () => {
                                 </NavLink>
                             )}
 
-                            {isAssetResponsible && (
+                            {(isAssetResponsible || isItBureauChief) && (
                                 <NavLink to="/dashboard/company-asset-requests" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M9 12h6" />
@@ -244,7 +253,7 @@ const DashboardLayout = () => {
                                 </NavLink>
                             )}
 
-                            {isAssetResponsible && (
+                            {(isAssetResponsible || isItBureauChief) && (
                                 <NavLink to="/dashboard/administrative-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -269,7 +278,7 @@ const DashboardLayout = () => {
                                 </NavLink>
                             )}
 
-                            {isAssetResponsible && (
+                            {(isAssetResponsible || isItBureauChief) && (
                                 <NavLink to="/dashboard/external-maintenances" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
@@ -278,7 +287,7 @@ const DashboardLayout = () => {
                                 </NavLink>
                             )}
 
-                            {isAssetResponsible && (
+                            {(isAssetResponsible || isItBureauChief) && (
                                 <NavLink to="/dashboard/asset-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M9 12h6" />

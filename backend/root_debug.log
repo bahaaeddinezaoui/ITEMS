@@ -50315,3 +50315,245 @@ Response Body: {"error":"Invalid credentials"}
 [2026-03-07 22:08:14.722282] START GET /api/stock-item-attribute-definitions/
 [2026-03-07 22:08:14.756846] END   GET /api/stock-item-attribute-definitions/ -> 200
 [2026-03-07 22:08:14.757192] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 22:10:44.011614] START POST /api/auth/login/
+[2026-03-07 22:10:44.079696] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 22:10:52.759276] START POST /api/auth/login/
+[2026-03-07 22:10:52.814173] END   POST /api/auth/login/ -> 200
+[2026-03-07 22:10:58.294496] START GET /api/administrative-certificates/
+[2026-03-07 22:10:58.295084] START GET /api/attribution-orders/
+[2026-03-07 22:10:58.296202] START GET /api/warehouses/
+[2026-03-07 22:10:58.349523] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:10:58.351475] END   GET /api/administrative-certificates/ -> 200
+[2026-03-07 22:10:58.356749] START GET /api/administrative-certificates/
+[2026-03-07 22:10:58.359194] START GET /api/warehouses/
+[2026-03-07 22:10:58.370337] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:10:58.375633] START GET /api/attribution-orders/
+[2026-03-07 22:10:58.378214] START GET /api/receipt-reports/1/
+[2026-03-07 22:10:58.378897] START GET /api/receipt-reports/2/
+[2026-03-07 22:10:58.392255] END   GET /api/administrative-certificates/ -> 200
+[2026-03-07 22:10:58.396309] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:10:58.411293] END   GET /api/receipt-reports/1/ -> 200
+[2026-03-07 22:10:58.421582] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:10:58.426642] START GET /api/receipt-reports/1/
+[2026-03-07 22:10:58.463266] END   GET /api/receipt-reports/1/ -> 200
+[2026-03-07 22:10:58.586987] END   GET /api/receipt-reports/2/ -> 200
+[2026-03-07 22:10:58.604513] START GET /api/receipt-reports/2/
+[2026-03-07 22:10:58.646060] END   GET /api/receipt-reports/2/ -> 200
+[2026-03-07 22:11:00.214924] START GET /api/asset-attribute-definitions/
+[2026-03-07 22:11:00.214454] START GET /api/asset-types/
+[2026-03-07 22:11:00.255868] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:11:00.256181] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-07 22:11:00.260245] START GET /api/asset-attribute-definitions/
+[2026-03-07 22:11:00.260905] START GET /api/asset-types/
+[2026-03-07 22:11:00.291274] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-07 22:11:00.297986] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:13:18.448007] START GET /api/asset-types/
+[2026-03-07 22:13:18.451097] START GET /api/asset-attribute-definitions/
+[2026-03-07 22:13:18.487438] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:13:18.487755] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-07 22:13:18.495307] START GET /api/asset-types/
+[2026-03-07 22:13:18.496047] START GET /api/asset-attribute-definitions/
+[2026-03-07 22:13:18.536139] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:13:18.537000] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-07 22:13:19.147407] START GET /api/stock-item-types/
+[2026-03-07 22:13:19.167825] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 22:13:19.187349] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 22:13:19.191235] START GET /api/stock-item-types/
+[2026-03-07 22:13:19.225920] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 22:13:19.315664] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 22:13:19.327656] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 22:13:19.400670] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 22:13:19.838484] START GET /api/stock-item-types/
+[2026-03-07 22:13:19.842869] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 22:13:19.873942] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 22:13:19.874353] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 22:13:19.877936] START GET /api/stock-item-types/
+[2026-03-07 22:13:19.878631] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 22:13:19.912685] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 22:13:19.914204] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 22:13:20.224797] START GET /api/warehouses/
+[2026-03-07 22:13:20.225683] START GET /api/asset-types/
+[2026-03-07 22:13:20.226684] START GET /api/attribution-orders/
+[2026-03-07 22:13:20.265453] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:13:20.265750] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:13:20.271443] START GET /api/warehouses/
+[2026-03-07 22:13:20.274039] START GET /api/asset-types/
+[2026-03-07 22:13:20.283802] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:13:20.288708] START GET /api/attribution-orders/
+[2026-03-07 22:13:20.308445] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:13:20.337089] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:13:20.427469] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:13:28.415341] START GET /api/warehouses/
+[2026-03-07 22:13:28.416127] START GET /api/asset-types/
+[2026-03-07 22:13:28.418231] START GET /api/attribution-orders/
+[2026-03-07 22:13:28.450246] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:13:28.453483] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:13:28.458267] START GET /api/asset-types/
+[2026-03-07 22:13:28.459254] START GET /api/warehouses/
+[2026-03-07 22:13:28.471548] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:13:28.477121] START GET /api/attribution-orders/
+[2026-03-07 22:13:28.498579] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:13:28.498985] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:13:28.526304] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:14:15.529893] START GET /api/assets/
+[2026-03-07 22:14:15.531150] START GET /api/stock-items/
+[2026-03-07 22:14:15.535841] START GET /api/destruction-certificates/
+[2026-03-07 22:14:15.536414] START GET /api/consumables/
+[2026-03-07 22:14:15.574229] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 22:14:15.594740] END   GET /api/assets/ -> 200
+[2026-03-07 22:14:15.595038] END   GET /api/consumables/ -> 200
+[2026-03-07 22:14:15.600241] END   GET /api/stock-items/ -> 200
+[2026-03-07 22:14:15.615626] START GET /api/assets/
+[2026-03-07 22:14:15.618836] START GET /api/destruction-certificates/
+[2026-03-07 22:14:15.622625] START GET /api/consumables/
+[2026-03-07 22:14:15.625175] START GET /api/stock-items/
+[2026-03-07 22:14:15.653098] END   GET /api/assets/ -> 200
+[2026-03-07 22:14:15.657946] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 22:14:15.658654] END   GET /api/consumables/ -> 200
+[2026-03-07 22:14:15.660223] END   GET /api/stock-items/ -> 200
+[2026-03-07 22:14:17.037066] START GET /api/external-maintenances/
+[2026-03-07 22:14:17.200222] END   GET /api/external-maintenances/ -> 200
+[2026-03-07 22:14:17.212790] START GET /api/external-maintenances/
+[2026-03-07 22:14:17.264364] END   GET /api/external-maintenances/ -> 200
+[2026-03-07 22:14:54.994565] START GET /api/persons/
+[2026-03-07 22:14:54.993717] START GET /api/maintenances/
+[2026-03-07 22:14:54.995575] START GET /api/assets/
+[2026-03-07 22:14:55.049848] END   GET /api/assets/ -> 200
+[2026-03-07 22:14:55.051471] END   GET /api/persons/ -> 200
+[2026-03-07 22:14:55.058937] START GET /api/assets/
+[2026-03-07 22:14:55.060410] START GET /api/persons/
+[2026-03-07 22:14:55.096734] END   GET /api/maintenances/ -> 200
+[2026-03-07 22:14:55.097823] END   GET /api/persons/ -> 200
+[2026-03-07 22:14:55.101266] START GET /api/maintenances/
+[2026-03-07 22:14:55.198320] END   GET /api/assets/ -> 200
+[2026-03-07 22:14:55.269285] END   GET /api/maintenances/ -> 200
+[2026-03-07 22:18:00.328911] START GET /api/stock-item-types/
+[2026-03-07 22:18:00.329555] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 22:18:00.403891] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 22:18:00.404437] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 22:18:00.409582] START GET /api/stock-item-types/
+[2026-03-07 22:18:00.412121] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 22:18:00.446741] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 22:18:00.446884] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 22:18:00.728762] START GET /api/asset-types/
+[2026-03-07 22:18:00.729489] START GET /api/attribution-orders/
+[2026-03-07 22:18:00.739397] START GET /api/warehouses/
+[2026-03-07 22:18:00.761616] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:18:00.765817] START GET /api/asset-types/
+[2026-03-07 22:18:00.770857] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:18:00.777040] START GET /api/warehouses/
+[2026-03-07 22:18:00.790711] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:18:00.796606] START GET /api/attribution-orders/
+[2026-03-07 22:18:00.799302] END   GET /api/asset-types/ -> 200
+[2026-03-07 22:18:00.822705] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:18:00.846353] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:18:01.136916] START GET /api/company-asset-requests/
+[2026-03-07 22:18:01.137936] START GET /api/attribution-orders/
+[2026-03-07 22:18:01.192042] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:18:01.197600] END   GET /api/company-asset-requests/ -> 200
+[2026-03-07 22:18:01.197529] START GET /api/attribution-orders/
+[2026-03-07 22:18:01.206472] START GET /api/company-asset-requests/
+[2026-03-07 22:18:01.237475] END   GET /api/company-asset-requests/ -> 200
+[2026-03-07 22:18:01.246814] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:18:01.609621] START GET /api/warehouses/
+[2026-03-07 22:18:01.609004] START GET /api/attribution-orders/
+[2026-03-07 22:18:01.610546] START GET /api/administrative-certificates/
+[2026-03-07 22:18:01.662833] END   GET /api/administrative-certificates/ -> 200
+[2026-03-07 22:18:01.672936] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:18:01.677922] START GET /api/administrative-certificates/
+[2026-03-07 22:18:01.683137] START GET /api/warehouses/
+[2026-03-07 22:18:01.688764] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:18:01.693352] START GET /api/attribution-orders/
+[2026-03-07 22:18:01.712255] START GET /api/receipt-reports/2/
+[2026-03-07 22:18:01.713054] START GET /api/receipt-reports/1/
+[2026-03-07 22:18:01.723639] END   GET /api/warehouses/ -> 200
+[2026-03-07 22:18:01.741479] END   GET /api/attribution-orders/ -> 200
+[2026-03-07 22:18:01.763207] END   GET /api/receipt-reports/2/ -> 200
+[2026-03-07 22:18:01.763642] END   GET /api/receipt-reports/1/ -> 200
+[2026-03-07 22:18:01.830894] END   GET /api/administrative-certificates/ -> 200
+[2026-03-07 22:18:01.840432] START GET /api/receipt-reports/1/
+[2026-03-07 22:18:01.843678] START GET /api/receipt-reports/2/
+[2026-03-07 22:18:01.883822] END   GET /api/receipt-reports/2/ -> 200
+[2026-03-07 22:18:01.884793] END   GET /api/receipt-reports/1/ -> 200
+[2026-03-07 22:18:02.157948] START GET /api/assets/
+[2026-03-07 22:18:02.157531] START GET /api/destruction-certificates/
+[2026-03-07 22:18:02.158679] START GET /api/stock-items/
+[2026-03-07 22:18:02.161109] START GET /api/consumables/
+[2026-03-07 22:18:02.203154] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 22:18:02.205740] END   GET /api/assets/ -> 200
+[2026-03-07 22:18:02.209617] START GET /api/destruction-certificates/
+[2026-03-07 22:18:02.210335] START GET /api/assets/
+[2026-03-07 22:18:02.219384] END   GET /api/stock-items/ -> 200
+[2026-03-07 22:18:02.219474] END   GET /api/consumables/ -> 200
+[2026-03-07 22:18:02.226525] START GET /api/stock-items/
+[2026-03-07 22:18:02.226947] START GET /api/consumables/
+[2026-03-07 22:18:02.265746] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 22:18:02.265809] END   GET /api/assets/ -> 200
+[2026-03-07 22:18:02.268059] END   GET /api/stock-items/ -> 200
+[2026-03-07 22:18:02.276508] END   GET /api/consumables/ -> 200
+[2026-03-07 22:18:02.652512] START GET /api/external-maintenances/
+[2026-03-07 22:18:02.692685] END   GET /api/external-maintenances/ -> 200
+[2026-03-07 22:18:02.703796] START GET /api/external-maintenances/
+[2026-03-07 22:18:02.779865] END   GET /api/external-maintenances/ -> 200
+[2026-03-07 22:18:05.491850] START GET /api/external-maintenance-providers/
+[2026-03-07 22:18:05.493005] START GET /api/rooms/
+[2026-03-07 22:18:05.551802] END   GET /api/external-maintenance-providers/ -> 200
+[2026-03-07 22:18:05.576302] END   GET /api/rooms/ -> 200
+[2026-03-07 22:18:08.318749] START GET /api/asset-movements-approval/pending/
+[2026-03-07 22:18:08.377044] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-03-07 22:18:08.382217] START GET /api/asset-movements-approval/pending/
+[2026-03-07 22:18:08.421336] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-03-07 22:18:24.722005] START POST /api/auth/login/
+[2026-03-07 22:18:24.791012] END   POST /api/auth/login/ -> 200
+[2026-03-07 22:18:27.538167] START GET /api/problem-reports/
+[2026-03-07 22:18:27.539125] START GET /api/persons/
+[2026-03-07 22:18:27.590453] END   GET /api/persons/ -> 200
+[2026-03-07 22:18:27.597002] START GET /api/persons/
+[2026-03-07 22:18:27.610322] END   GET /api/problem-reports/ -> 200
+[2026-03-07 22:18:27.614895] START GET /api/problem-reports/
+[2026-03-07 22:18:27.631512] END   GET /api/persons/ -> 200
+[2026-03-07 22:18:27.671482] END   GET /api/problem-reports/ -> 200
+[2026-03-07 22:18:29.031430] START GET /api/maintenances/
+[2026-03-07 22:18:29.032488] START GET /api/persons/
+[2026-03-07 22:18:29.036291] START GET /api/assets/
+[2026-03-07 22:18:29.074721] END   GET /api/persons/ -> 200
+[2026-03-07 22:18:29.080334] END   GET /api/assets/ -> 200
+[2026-03-07 22:18:29.089136] START GET /api/persons/
+[2026-03-07 22:18:29.089876] START GET /api/assets/
+[2026-03-07 22:18:29.125554] END   GET /api/maintenances/ -> 200
+[2026-03-07 22:18:29.131982] END   GET /api/assets/ -> 200
+[2026-03-07 22:18:29.131173] START GET /api/maintenances/
+[2026-03-07 22:18:29.132700] END   GET /api/persons/ -> 200
+[2026-03-07 22:18:29.215016] END   GET /api/maintenances/ -> 200
+[2026-03-07 22:18:30.856832] START GET /api/problem-reports/
+[2026-03-07 22:18:30.859982] START GET /api/persons/
+[2026-03-07 22:18:31.004230] END   GET /api/persons/ -> 200
+[2026-03-07 22:18:31.019024] START GET /api/persons/
+[2026-03-07 22:18:31.028858] END   GET /api/problem-reports/ -> 200
+[2026-03-07 22:18:31.040592] START GET /api/problem-reports/
+[2026-03-07 22:18:31.072856] END   GET /api/persons/ -> 200
+[2026-03-07 22:18:31.098967] END   GET /api/problem-reports/ -> 200
+[2026-03-07 22:18:33.545364] START GET /api/problem-reports/
+[2026-03-07 22:18:33.546261] START GET /api/persons/
+[2026-03-07 22:18:33.589124] END   GET /api/persons/ -> 200
+[2026-03-07 22:18:33.595077] START GET /api/persons/
+[2026-03-07 22:18:33.611312] END   GET /api/problem-reports/ -> 200
+[2026-03-07 22:18:33.626287] START GET /api/problem-reports/
+[2026-03-07 22:18:33.629235] END   GET /api/persons/ -> 200
+[2026-03-07 22:18:33.873044] END   GET /api/problem-reports/ -> 200
+[2026-03-07 22:18:36.252763] START GET /api/rooms/
+[2026-03-07 22:18:36.286273] END   GET /api/rooms/ -> 200
+[2026-03-07 22:18:53.093581] START POST /api/auth/login/
+[2026-03-07 22:18:53.245062] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 22:18:59.375428] START POST /api/auth/login/
+[2026-03-07 22:18:59.424727] END   POST /api/auth/login/ -> 200
+[2026-03-07 22:21:41.195617] START GET /api/consumable-types/
+[2026-03-07 22:21:41.196756] START GET /api/consumable-attribute-definitions/
+[2026-03-07 22:21:41.271415] END   GET /api/consumable-types/ -> 200
+[2026-03-07 22:21:41.275970] START GET /api/consumable-types/
+[2026-03-07 22:21:41.306624] END   GET /api/consumable-types/ -> 200
+[2026-03-07 22:21:41.366795] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 22:21:41.370682] START GET /api/consumable-attribute-definitions/
+[2026-03-07 22:21:41.405670] END   GET /api/consumable-attribute-definitions/ -> 200

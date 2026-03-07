@@ -268,7 +268,7 @@ function App() {
                         <Route
                             path="stock-items/instances/create"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <StockItemInstanceCreatePage />
                                 </RoleProtectedRoute>
                             }
@@ -285,7 +285,7 @@ function App() {
                         <Route
                             path="consumables"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <Navigate to="/dashboard/consumables/types" replace />
                                 </RoleProtectedRoute>
                             }
@@ -293,7 +293,7 @@ function App() {
                         <Route
                             path="consumables/types"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ConsumablesTypesPage />
                                 </RoleProtectedRoute>
                             }
@@ -301,7 +301,7 @@ function App() {
                         <Route
                             path="consumables/types/attributes"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ConsumablesTypeAttributesPage />
                                 </RoleProtectedRoute>
                             }
@@ -309,7 +309,7 @@ function App() {
                         <Route
                             path="consumables/models"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ConsumablesModelsPage />
                                 </RoleProtectedRoute>
                             }
@@ -317,7 +317,7 @@ function App() {
                         <Route
                             path="consumables/models/:modelId/compatibility"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ConsumableModelCompatibilityPage />
                                 </RoleProtectedRoute>
                             }
@@ -325,7 +325,7 @@ function App() {
                         <Route
                             path="consumables/instances"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ConsumablesPage />
                                 </RoleProtectedRoute>
                             }
@@ -333,7 +333,7 @@ function App() {
                         <Route
                             path="consumables/instances/create"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ConsumableInstanceCreatePage />
                                 </RoleProtectedRoute>
                             }
@@ -341,7 +341,7 @@ function App() {
                         <Route
                             path="consumables/attribute-definitions"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ConsumablesAttributeDefinitionsPage />
                                 </RoleProtectedRoute>
                             }
@@ -387,7 +387,7 @@ function App() {
                         <Route
                             path="attribution-orders"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <AttributionOrdersPage />
                                 </RoleProtectedRoute>
                             }
@@ -395,7 +395,7 @@ function App() {
                         <Route
                             path="attribution-orders/assets/:rowId/included-items"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <AttributionOrderAssetIncludedItemsPage />
                                 </RoleProtectedRoute>
                             }
@@ -403,7 +403,7 @@ function App() {
                         <Route
                             path="attribution-orders/assets/:rowId/included-items/:itemKind"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <AttributionOrderAssetIncludedItemsPage />
                                 </RoleProtectedRoute>
                             }
@@ -411,7 +411,7 @@ function App() {
                         <Route
                             path="attribution-orders/assets/:rowId/accessories"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <AttributionOrderAssetAccessoriesDraftPage />
                                 </RoleProtectedRoute>
                             }
@@ -419,7 +419,7 @@ function App() {
                         <Route
                             path="attribution-orders/:orderId/assets/:assetId/accessories"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <AttributionOrderAssetAccessoriesPage />
                                 </RoleProtectedRoute>
                             }
@@ -427,7 +427,7 @@ function App() {
                         <Route
                             path="company-asset-requests"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <CompanyAssetRequestsPage />
                                 </RoleProtectedRoute>
                             }
@@ -435,8 +435,24 @@ function App() {
                         <Route
                             path="administrative-certificates"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <AdministrativeCertificatesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="external-maintenances"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
+                                    <ExternalMaintenancesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="asset-movements-approval"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
+                                    <AssetMovementsApprovalPage />
                                 </RoleProtectedRoute>
                             }
                         />

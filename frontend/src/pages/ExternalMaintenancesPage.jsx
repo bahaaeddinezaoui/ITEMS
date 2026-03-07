@@ -47,7 +47,7 @@ const ExternalMaintenancesPage = () => {
 
     const isAssetResponsible = useMemo(() => {
         if (isSuperuser) return true;
-        return user?.roles?.some(r => r.role_code === 'asset_responsible') || false;
+        return user?.roles?.some(r => r.role_code === 'asset_responsible' || r.role_code === 'it_bureau_chief') || false;
     }, [isSuperuser, user]);
 
     const load = async () => {

@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 const AdministrativeCertificatesPage = () => {
     const { user } = useAuth();
 
-    const isAssetResponsible = user?.roles?.some((role) => role.role_code === 'asset_responsible');
+    const isAssetResponsible = user?.roles?.some((role) => role.role_code === 'asset_responsible' || role.role_code === 'it_bureau_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
