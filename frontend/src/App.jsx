@@ -49,6 +49,7 @@ import PurchaseOrderCreatePage from './pages/PurchaseOrderCreatePage';
 import PurchaseOrderDetailsPage from './pages/PurchaseOrderDetailsPage';
 import PurchaseOrderReceivePage from './pages/PurchaseOrderReceivePage';
 import PurchaseOrderBackorderReportsPage from './pages/PurchaseOrderBackorderReportsPage';
+import DeliveryNoteConsultPage from './pages/DeliveryNoteConsultPage';
 import './index.css';
 
 // Protected route wrapper
@@ -488,6 +489,15 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
                                     <PurchaseOrderBackorderReportsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="purchase-orders/:orderId/delivery-note"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <DeliveryNoteConsultPage />
                                 </RoleProtectedRoute>
                             }
                         />

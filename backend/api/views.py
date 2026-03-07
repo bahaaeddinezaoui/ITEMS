@@ -13,6 +13,8 @@ from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.http import FileResponse
+from django.conf import settings
 from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -6885,11 +6887,613 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
         return Response(
             {
                 "purchase_order_id": purchase_order_id,
-                "backorder_report_id": backorder_report_id,
                 "has_remaining": bool(has_remaining),
+                "backorder_report_id": backorder_report_id,
             },
             status=status.HTTP_200_OK,
         )
+
+    @action(detail=True, methods=["get", "post"], url_path="delivery-note")
+    def delivery_note(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM public.purchase_order WHERE purchase_order_id = %s",
+                [purchase_order_id],
+            )
+            if cursor.fetchone() is None:
+                return Response({"error": "Purchase order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            cursor.execute(
+                """
+                SELECT data_type
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = 'delivery_note'
+                  AND column_name = 'digital_copy'
+                """
+            )
+            digital_copy_type = (cursor.fetchone() or [None])[0]
+
+            cursor.execute(
+                """
+                SELECT delivery_note_id, delivery_note_date, delivery_note_code,
+                       CASE WHEN digital_copy IS NULL OR digital_copy = '' THEN 0 ELSE 1 END AS has_digital_copy,
+                       digital_copy
+                FROM public.delivery_note
+                WHERE purchase_order_id = %s
+                """,
+                [purchase_order_id],
+            )
+            existing = cursor.fetchone()
+
+        if request.method == "GET":
+            if existing is None:
+                return Response({"exists": False}, status=status.HTTP_200_OK)
+
+            if digital_copy_type == 'bytea':
+                # Legacy schema: file stored in DB as binary
+                has_file = existing[4] is not None
+            else:
+                rel_path = existing[4]
+                abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path) if rel_path else None
+                has_file = bool(rel_path) and abs_path is not None and os.path.isfile(abs_path)
+            return Response(
+                {
+                    "exists": True,
+                    "delivery_note_id": existing[0],
+                    "purchase_order_id": purchase_order_id,
+                    "delivery_note_date": existing[1],
+                    "delivery_note_code": existing[2],
+                    "has_digital_copy": has_file,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        if existing is not None:
+            return Response(
+                {"error": "Delivery note already exists for this purchase order", "delivery_note_id": existing[0]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if digital_copy_type == 'bytea':
+            return Response(
+                {
+                    "error": "Database schema is outdated (delivery_note.digital_copy is bytea). Run backend migrations to switch it to a file path (text).",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        delivery_note_code = request.data.get("delivery_note_code")
+        digital_copy_file = request.FILES.get("digital_copy")
+        if not delivery_note_code:
+            return Response({"error": "delivery_note_code is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not digital_copy_file:
+            return Response({"error": "digital_copy file is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        content_type = getattr(digital_copy_file, "content_type", None)
+        filename = getattr(digital_copy_file, "name", "") or ""
+        if content_type != "application/pdf" and not filename.lower().endswith(".pdf"):
+            return Response({"error": "digital_copy must be a PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        digital_copy_bytes = digital_copy_file.read()
+        if not digital_copy_bytes.startswith(b"%PDF"):
+            return Response({"error": "digital_copy must be a valid PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        safe_code = "".join([c for c in str(delivery_note_code) if c.isalnum() or c in {"-", "_"}])
+        if not safe_code:
+            return Response({"error": "delivery_note_code is invalid"}, status=status.HTTP_400_BAD_REQUEST)
+
+        rel_dir = os.path.join("delivery_notes", f"purchase_order_{purchase_order_id}")
+        base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+        os.makedirs(base_dir, exist_ok=True)
+
+        rel_path = os.path.join(rel_dir, f"delivery_note_{safe_code}.pdf")
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+        with open(abs_path, "wb") as f:
+            f.write(digital_copy_bytes)
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT (
+                        EXISTS (
+                            SELECT 1
+                            FROM public.stock_item_model_is_found_in_purchase_order l
+                            WHERE l.purchase_order_id = %s
+                              AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        )
+                        OR EXISTS (
+                            SELECT 1
+                            FROM public.consumable_model_is_found_in_purchase_order l
+                            WHERE l.purchase_order_id = %s
+                              AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        )
+                    ) AS has_remaining
+                    """,
+                    [purchase_order_id, purchase_order_id],
+                )
+                has_remaining = bool(cursor.fetchone()[0])
+                if has_remaining:
+                    return Response(
+                        {"error": "Cannot create delivery note: there are still items to receive"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                cursor.execute(
+                    "SELECT delivery_note_id FROM public.delivery_note WHERE purchase_order_id = %s",
+                    [purchase_order_id],
+                )
+                row = cursor.fetchone()
+                if row is not None:
+                    return Response(
+                        {"error": "Delivery note already exists for this purchase order", "delivery_note_id": row[0]},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                cursor.execute("SELECT COALESCE(MAX(delivery_note_id), 0) + 1 FROM public.delivery_note")
+                next_id = cursor.fetchone()[0]
+                cursor.execute(
+                    """
+                    INSERT INTO public.delivery_note
+                        (delivery_note_id, purchase_order_id, delivery_note_date, digital_copy, delivery_note_code)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    [next_id, purchase_order_id, timezone.now().date(), rel_path, str(delivery_note_code)],
+                )
+
+        return Response(
+            {
+                "delivery_note_id": next_id,
+                "purchase_order_id": purchase_order_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=["get"], url_path="delivery-note/download")
+    def download_delivery_note(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT delivery_note_id, digital_copy, delivery_note_code
+                FROM public.delivery_note
+                WHERE purchase_order_id = %s
+                """,
+                [purchase_order_id],
+            )
+            row = cursor.fetchone()
+
+        if row is None:
+            return Response({"error": "Delivery note not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        delivery_note_id, rel_path, delivery_note_code = row[0], row[1], row[2]
+        if not rel_path:
+            return Response({"error": "No digital copy stored"}, status=status.HTTP_404_NOT_FOUND)
+
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+        if not os.path.isfile(abs_path):
+            return Response({"error": "Digital copy file missing on server"}, status=status.HTTP_404_NOT_FOUND)
+
+        code = delivery_note_code or str(delivery_note_id)
+        resp = FileResponse(open(abs_path, "rb"), content_type="application/pdf")
+        resp["Content-Disposition"] = f'attachment; filename="delivery_note_{code}.pdf"'
+        return resp
+
+    @action(detail=True, methods=["get", "post"], url_path="invoice")
+    def invoice(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM public.purchase_order WHERE purchase_order_id = %s",
+                [purchase_order_id],
+            )
+            if cursor.fetchone() is None:
+                return Response({"error": "Purchase order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            cursor.execute(
+                "SELECT delivery_note_id FROM public.delivery_note WHERE purchase_order_id = %s",
+                [purchase_order_id],
+            )
+            dn_row = cursor.fetchone()
+            if dn_row is None:
+                return Response({"error": "Delivery note must be created before invoice"}, status=status.HTTP_400_BAD_REQUEST)
+            delivery_note_id = dn_row[0]
+
+            cursor.execute(
+                """
+                SELECT invoice_id,
+                       CASE WHEN digital_copy IS NULL OR digital_copy = '' THEN 0 ELSE 1 END AS has_digital_copy,
+                       digital_copy
+                FROM public.invoice
+                WHERE delivery_note_id = %s
+                """,
+                [delivery_note_id],
+            )
+            existing = cursor.fetchone()
+
+            cursor.execute(
+                """
+                SELECT data_type
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = 'invoice'
+                  AND column_name = 'digital_copy'
+                """
+            )
+            digital_copy_type = (cursor.fetchone() or [None])[0]
+
+        if request.method == "GET":
+            if existing is None:
+                return Response({"exists": False}, status=status.HTTP_200_OK)
+
+            if digital_copy_type == 'bytea':
+                has_file = existing[2] is not None
+            else:
+                rel_path = existing[2]
+                abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path) if rel_path else None
+                has_file = bool(rel_path) and abs_path is not None and os.path.isfile(abs_path)
+
+            return Response(
+                {
+                    "exists": True,
+                    "invoice_id": existing[0],
+                    "purchase_order_id": purchase_order_id,
+                    "delivery_note_id": delivery_note_id,
+                    "has_digital_copy": has_file,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        if existing is not None:
+            return Response(
+                {"error": "Invoice already exists for this delivery note", "invoice_id": existing[0]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if digital_copy_type == 'bytea':
+            return Response(
+                {
+                    "error": "Database schema is outdated (invoice.digital_copy is bytea). Run backend migrations to switch it to a file path (text).",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        digital_copy_file = request.FILES.get("digital_copy")
+        if not digital_copy_file:
+            return Response({"error": "digital_copy file is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        content_type = getattr(digital_copy_file, "content_type", None)
+        filename = getattr(digital_copy_file, "name", "") or ""
+        if content_type != "application/pdf" and not filename.lower().endswith(".pdf"):
+            return Response({"error": "digital_copy must be a PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        digital_copy_bytes = digital_copy_file.read()
+        if not digital_copy_bytes.startswith(b"%PDF"):
+            return Response({"error": "digital_copy must be a valid PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        rel_dir = os.path.join("invoices", f"delivery_note_{delivery_note_id}")
+        base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+        os.makedirs(base_dir, exist_ok=True)
+
+        rel_path = os.path.join(rel_dir, f"invoice_{delivery_note_id}.pdf")
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+        with open(abs_path, "wb") as f:
+            f.write(digital_copy_bytes)
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT invoice_id FROM public.invoice WHERE delivery_note_id = %s",
+                    [delivery_note_id],
+                )
+                row = cursor.fetchone()
+                if row is not None:
+                    return Response(
+                        {"error": "Invoice already exists for this delivery note", "invoice_id": row[0]},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                cursor.execute("SELECT COALESCE(MAX(invoice_id), 0) + 1 FROM public.invoice")
+                next_id = cursor.fetchone()[0]
+                cursor.execute(
+                    """
+                    INSERT INTO public.invoice (invoice_id, delivery_note_id, digital_copy)
+                    VALUES (%s, %s, %s)
+                    """,
+                    [next_id, delivery_note_id, rel_path],
+                )
+
+        return Response(
+            {
+                "invoice_id": next_id,
+                "purchase_order_id": purchase_order_id,
+                "delivery_note_id": delivery_note_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=["get"], url_path="invoice/download")
+    def download_invoice(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT delivery_note_id FROM public.delivery_note WHERE purchase_order_id = %s",
+                [purchase_order_id],
+            )
+            dn_row = cursor.fetchone()
+            if dn_row is None:
+                return Response({"error": "Delivery note not found"}, status=status.HTTP_404_NOT_FOUND)
+            delivery_note_id = dn_row[0]
+
+            cursor.execute(
+                "SELECT invoice_id, digital_copy FROM public.invoice WHERE delivery_note_id = %s",
+                [delivery_note_id],
+            )
+            row = cursor.fetchone()
+
+            cursor.execute(
+                """
+                SELECT data_type
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name = 'invoice'
+                  AND column_name = 'digital_copy'
+                """
+            )
+            digital_copy_type = (cursor.fetchone() or [None])[0]
+
+        if row is None:
+            return Response({"error": "Invoice not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        invoice_id, digital_copy = row[0], row[1]
+        if digital_copy is None:
+            return Response({"error": "No digital copy stored"}, status=status.HTTP_404_NOT_FOUND)
+
+        if digital_copy_type == 'bytea':
+            return Response(
+                {"error": "Invoice digital copy is stored in DB as bytea; migrate to path-based storage to consult PDF"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        rel_path = digital_copy
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+        if not os.path.isfile(abs_path):
+            return Response({"error": "Digital copy file missing on server"}, status=status.HTTP_404_NOT_FOUND)
+
+        resp = FileResponse(open(abs_path, "rb"), content_type="application/pdf")
+        resp["Content-Disposition"] = f'inline; filename="invoice_{invoice_id}.pdf"'
+        return resp
+
+    @action(detail=True, methods=["get", "post"], url_path="acceptance-report")
+    def acceptance_report(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM public.purchase_order WHERE purchase_order_id = %s",
+                [purchase_order_id],
+            )
+            if cursor.fetchone() is None:
+                return Response({"error": "Purchase order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            cursor.execute(
+                "SELECT delivery_note_id FROM public.delivery_note WHERE purchase_order_id = %s",
+                [purchase_order_id],
+            )
+            dn_row = cursor.fetchone()
+            if dn_row is None:
+                return Response({"error": "Delivery note must be created before acceptance report"}, status=status.HTTP_400_BAD_REQUEST)
+            delivery_note_id = dn_row[0]
+
+            cursor.execute(
+                """
+                SELECT acceptance_report_id,
+                       delivery_note_id,
+                       acceptance_report_datetime,
+                       is_signed_by_director_of_administration_and_support,
+                       is_signed_by_protection_and_security_bureau_chief,
+                       is_signed_by_information_technilogy_bureau_chief,
+                       acceptance_report_is_stock_item_and_consumable_responsible,
+                       is_signed_by_school_headquarter,
+                       digital_copy
+                FROM public.acceptance_report
+                WHERE delivery_note_id = %s
+                """,
+                [delivery_note_id],
+            )
+            existing = cursor.fetchone()
+
+        if request.method == "GET":
+            if existing is None:
+                return Response({"exists": False}, status=status.HTTP_200_OK)
+
+            rel_path = existing[8]
+            abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path) if rel_path else None
+            has_file = bool(rel_path) and abs_path is not None and os.path.isfile(abs_path)
+
+            return Response(
+                {
+                    "exists": True,
+                    "acceptance_report_id": existing[0],
+                    "purchase_order_id": purchase_order_id,
+                    "delivery_note_id": existing[1],
+                    "acceptance_report_datetime": existing[2],
+                    "is_signed_by_director_of_administration_and_support": existing[3],
+                    "is_signed_by_protection_and_security_bureau_chief": existing[4],
+                    "is_signed_by_information_technilogy_bureau_chief": existing[5],
+                    "acceptance_report_is_stock_item_and_consumable_responsible": existing[6],
+                    "is_signed_by_school_headquarter": existing[7],
+                    "has_digital_copy": has_file,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        if existing is not None:
+            return Response(
+                {
+                    "error": "Acceptance report already exists for this delivery note",
+                    "acceptance_report_id": existing[0],
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        digital_copy_file = request.FILES.get("digital_copy")
+        if not digital_copy_file:
+            return Response({"error": "digital_copy file is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        content_type = getattr(digital_copy_file, "content_type", None)
+        filename = getattr(digital_copy_file, "name", "") or ""
+        if content_type != "application/pdf" and not filename.lower().endswith(".pdf"):
+            return Response({"error": "digital_copy must be a PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        digital_copy_bytes = digital_copy_file.read()
+        if not digital_copy_bytes.startswith(b"%PDF"):
+            return Response({"error": "digital_copy must be a valid PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        rel_dir = os.path.join("acceptance_reports", f"delivery_note_{delivery_note_id}")
+        base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+        os.makedirs(base_dir, exist_ok=True)
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT acceptance_report_id FROM public.acceptance_report WHERE delivery_note_id = %s",
+                    [delivery_note_id],
+                )
+                row = cursor.fetchone()
+                if row is not None:
+                    return Response(
+                        {"error": "Acceptance report already exists for this delivery note", "acceptance_report_id": row[0]},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                cursor.execute("SELECT COALESCE(MAX(acceptance_report_id), 0) + 1 FROM public.acceptance_report")
+                next_id = cursor.fetchone()[0]
+
+                rel_path = os.path.join(rel_dir, f"acceptance_report_{next_id}.pdf")
+                abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+                with open(abs_path, "wb") as f:
+                    f.write(digital_copy_bytes)
+
+                cursor.execute(
+                    """
+                    INSERT INTO public.acceptance_report (
+                        acceptance_report_id,
+                        delivery_note_id,
+                        acceptance_report_datetime,
+                        is_signed_by_director_of_administration_and_support,
+                        is_signed_by_protection_and_security_bureau_chief,
+                        is_signed_by_information_technilogy_bureau_chief,
+                        acceptance_report_is_stock_item_and_consumable_responsible,
+                        is_signed_by_school_headquarter,
+                        digital_copy
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    [
+                        next_id,
+                        delivery_note_id,
+                        timezone.now(),
+                        False,
+                        False,
+                        False,
+                        False,
+                        False,
+                        rel_path,
+                    ],
+                )
+
+        return Response(
+            {
+                "acceptance_report_id": next_id,
+                "purchase_order_id": purchase_order_id,
+                "delivery_note_id": delivery_note_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=["get"], url_path="acceptance-report/download")
+    def download_acceptance_report(self, request, pk=None):
+        _, denial = self._require_responsible(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT delivery_note_id FROM public.delivery_note WHERE purchase_order_id = %s",
+                [purchase_order_id],
+            )
+            dn_row = cursor.fetchone()
+            if dn_row is None:
+                return Response({"error": "Delivery note not found"}, status=status.HTTP_404_NOT_FOUND)
+            delivery_note_id = dn_row[0]
+
+            cursor.execute(
+                "SELECT acceptance_report_id, digital_copy FROM public.acceptance_report WHERE delivery_note_id = %s",
+                [delivery_note_id],
+            )
+            row = cursor.fetchone()
+
+        if row is None:
+            return Response({"error": "Acceptance report not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        acceptance_report_id, digital_copy = row[0], row[1]
+        if not digital_copy:
+            return Response({"error": "No digital copy stored"}, status=status.HTTP_404_NOT_FOUND)
+
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), digital_copy)
+        if not os.path.isfile(abs_path):
+            return Response({"error": "Digital copy file missing on server"}, status=status.HTTP_404_NOT_FOUND)
+
+        resp = FileResponse(open(abs_path, "rb"), content_type="application/pdf")
+        resp["Content-Disposition"] = f'inline; filename="acceptance_report_{acceptance_report_id}.pdf"'
+        return resp
 
     def retrieve(self, request, pk=None):
         _, denial = self._require_responsible(request)

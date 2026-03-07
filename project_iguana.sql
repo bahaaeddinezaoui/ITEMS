@@ -1389,17 +1389,36 @@ COMMENT ON COLUMN public.external_maintenance_typical_step.maintenance_type IS '
 
 --
 -- TOC entry 287 (class 1259 OID 25155)
--- Name: facture; Type: TABLE; Schema: public; Owner: postgres
+-- Name: invoice; Type: TABLE; Schema: public; Owner: postgres
 --
 
-CREATE TABLE public.facture (
-    facture_id integer NOT NULL,
+CREATE TABLE public.invoice (
+    invoice_id integer NOT NULL,
     delivery_note_id integer NOT NULL,
     digital_copy bytea
 );
 
 
-ALTER TABLE public.facture OWNER TO postgres;
+ALTER TABLE public.invoice OWNER TO postgres;
+
+
+CREATE TABLE public.acceptance_report (
+    acceptance_report_id integer NOT NULL,
+    delivery_note_id integer NOT NULL,
+    acceptance_report_datetime timestamp without time zone,
+    is_signed_by_director_of_administration_and_support boolean,
+    is_signed_by_protection_and_security_bureau_chief boolean,
+    is_signed_by_information_technilogy_bureau_chief boolean,
+    acceptance_report_is_stock_item_and_consumable_responsible boolean,
+    is_signed_by_school_headquarter boolean,
+    digital_copy text,
+    CONSTRAINT acceptance_report_pkey PRIMARY KEY (acceptance_report_id),
+    CONSTRAINT acceptance_report_delivery_note_id_key UNIQUE (delivery_note_id),
+    CONSTRAINT fk_acceptance_report_delivery_note FOREIGN KEY (delivery_note_id) REFERENCES public.delivery_note(delivery_note_id) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
+
+ALTER TABLE public.acceptance_report OWNER TO postgres;
 
 --
 -- TOC entry 288 (class 1259 OID 25162)
@@ -3702,10 +3721,10 @@ COPY public.external_maintenance_typical_step (external_maintenance_typical_step
 --
 -- TOC entry 5911 (class 0 OID 25155)
 -- Dependencies: 287
--- Data for Name: facture; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: invoice; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.facture (facture_id, delivery_note_id, digital_copy) FROM stdin;
+COPY public.invoice (invoice_id, delivery_note_id, digital_copy) FROM stdin;
 \.
 
 
@@ -5127,11 +5146,11 @@ ALTER TABLE ONLY public.external_maintenance_typical_step
 
 --
 -- TOC entry 5427 (class 2606 OID 25537)
--- Name: facture facture_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: invoice invoice_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.facture
-    ADD CONSTRAINT facture_pkey PRIMARY KEY (facture_id);
+ALTER TABLE ONLY public.invoice
+    ADD CONSTRAINT invoice_pkey PRIMARY KEY (invoice_id);
 
 
 --
@@ -6588,11 +6607,11 @@ ALTER TABLE ONLY public.external_maintenance
 
 --
 -- TOC entry 5617 (class 2606 OID 26066)
--- Name: facture fk_facture_bon_de_li_bon_de_l; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: invoice fk_invoice_delivery_note; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.facture
-    ADD CONSTRAINT fk_facture_bon_de_li_bon_de_l FOREIGN KEY (delivery_note_id) REFERENCES public.delivery_note(delivery_note_id) ON UPDATE RESTRICT ON DELETE RESTRICT;
+ALTER TABLE ONLY public.invoice
+    ADD CONSTRAINT fk_invoice_delivery_note FOREIGN KEY (delivery_note_id) REFERENCES public.delivery_note(delivery_note_id) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --

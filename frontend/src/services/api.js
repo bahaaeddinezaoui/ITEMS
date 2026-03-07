@@ -305,6 +305,54 @@ export const purchaseOrderService = {
         const response = await api.post(`purchase-orders/${id}/receive/`, data);
         return response.data;
     },
+    getDeliveryNote: async (id) => {
+        const response = await api.get(`purchase-orders/${id}/delivery-note/`);
+        return response.data;
+    },
+    createDeliveryNote: async (id, formData) => {
+        const response = await api.post(`purchase-orders/${id}/delivery-note/`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data;
+    },
+    downloadDeliveryNote: async (id) => {
+        const response = await api.get(`purchase-orders/${id}/delivery-note/download/`, {
+            responseType: 'blob',
+        });
+        return response;
+    },
+    getInvoice: async (id) => {
+        const response = await api.get(`purchase-orders/${id}/invoice/`);
+        return response.data;
+    },
+    createInvoice: async (id, formData) => {
+        const response = await api.post(`purchase-orders/${id}/invoice/`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data;
+    },
+    downloadInvoice: async (id) => {
+        const response = await api.get(`purchase-orders/${id}/invoice/download/`, {
+            responseType: 'blob',
+        });
+        return response;
+    },
+    getAcceptanceReport: async (id) => {
+        const response = await api.get(`purchase-orders/${id}/acceptance-report/`);
+        return response.data;
+    },
+    createAcceptanceReport: async (id, formData) => {
+        const response = await api.post(`purchase-orders/${id}/acceptance-report/`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return response.data;
+    },
+    downloadAcceptanceReport: async (id) => {
+        const response = await api.get(`purchase-orders/${id}/acceptance-report/download/`, {
+            responseType: 'blob',
+        });
+        return response;
+    },
     getSuppliers: async () => {
         const response = await api.get('purchase-orders/suppliers/');
         return response.data;

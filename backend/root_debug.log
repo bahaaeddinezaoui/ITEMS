@@ -49523,3 +49523,180 @@ pliers/
 [2026-03-06 23:46:30.314939] END   GET /api/purchase-orders/ -> 200
 [2026-03-06 23:46:30.319043] START GET /api/purchase-orders/
 [2026-03-06 23:46:30.355065] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:57:19.007164] START GET /api/purchase-orders/
+[2026-03-06 23:57:19.103970] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:57:19.109148] START GET /api/purchase-orders/
+[2026-03-06 23:57:19.145218] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:57:53.160585] START POST /api/purchase-orders/4/delivery-note/
+[2026-03-06 23:57:53.233059] END   POST /api/purchase-orders/4/delivery-note/ -> 201
+[2026-03-06 23:57:53.247797] START GET /api/purchase-orders/
+[2026-03-06 23:57:53.314480] END   GET /api/purchase-orders/ -> 200
+[2026-03-06 23:57:55.126164] START POST /api/purchase-orders/4/delivery-note/
+[2026-03-06 23:57:55.188355] END   POST /api/purchase-orders/4/delivery-note/ -> 400
+Response Body: {"error":"Delivery note already exists for this purchase order","delivery_note_id":1}
+[2026-03-06 23:57:56.238746] START POST /api/purchase-orders/4/delivery-note/
+[2026-03-06 23:57:56.381529] END   POST /api/purchase-orders/4/delivery-note/ -> 400
+Response Body: {"error":"Delivery note already exists for this purchase order","delivery_note_id":1}
+[2026-03-07 00:01:20.998880] START GET /api/purchase-orders/
+[2026-03-07 00:01:21.073896] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:01:21.077568] START GET /api/purchase-orders/
+[2026-03-07 00:01:21.107902] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:02:05.969455] START GET /api/purchase-orders/
+[2026-03-07 00:02:06.005743] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:05:18.181653] START GET /api/purchase-orders/
+[2026-03-07 00:05:18.219052] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:05:18.223108] START GET /api/purchase-orders/
+[2026-03-07 00:05:18.378593] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:05:20.048444] START GET /api/purchase-orders/4/delivery-note/
+[2026-03-07 00:05:20.089156] END   GET /api/purchase-orders/4/delivery-note/ -> 200
+[2026-03-07 00:07:01.771812] START GET /api/purchase-orders/suppliers/
+[2026-03-07 00:07:01.773592] START GET /api/stock-item-types/
+[2026-03-07 00:07:01.849636] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 00:07:01.851554] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-07 00:07:01.853860] START GET /api/stock-item-types/
+[2026-03-07 00:07:01.856556] START GET /api/purchase-orders/suppliers/
+[2026-03-07 00:07:01.857307] START GET /api/consumable-types/
+[2026-03-07 00:07:01.885250] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 00:07:01.893608] END   GET /api/consumable-types/ -> 200
+[2026-03-07 00:07:01.893913] END   GET /api/purchase-orders/suppliers/ -> 200
+[2026-03-07 00:07:01.898250] START GET /api/consumable-types/
+[2026-03-07 00:07:01.930451] END   GET /api/consumable-types/ -> 200
+[2026-03-07 00:07:03.462627] START GET /api/purchase-orders/
+[2026-03-07 00:07:03.504185] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:07:03.510964] START GET /api/purchase-orders/
+[2026-03-07 00:07:03.696789] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:07:04.580368] START GET /api/purchase-orders/4/delivery-note/
+[2026-03-07 00:07:04.623810] END   GET /api/purchase-orders/4/delivery-note/ -> 200
+[2026-03-07 00:07:13.968083] START GET /api/purchase-orders/2/delivery-note/
+[2026-03-07 00:07:14.053270] END   GET /api/purchase-orders/2/delivery-note/ -> 200
+[2026-03-07 00:08:25.765065] START POST /api/purchase-orders/2/delivery-note/
+[2026-03-07 00:08:26.018604] END   POST /api/purchase-orders/2/delivery-note/ -> 500
+Response Body: DataError at /api/purchase-orders/2/delivery-note/
+invalid input syntax for type bytea
+LINE 4: ...                VALUES (2, 2, '2026-03-06'::date, 'delivery_...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/purchase-orders/2/delivery-note/
+Django Version: 6.0.2
+Python Executable: C:\Users\Bvhvddin\Desktop\Others\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['C:\\User
+[2026-03-07 00:13:10.537825] START POST /api/purchase-orders/2/delivery-note/
+[2026-03-07 00:13:10.688695] END   POST /api/purchase-orders/2/delivery-note/ -> 201
+[2026-03-07 00:13:10.703455] START GET /api/purchase-orders/2/delivery-note/
+[2026-03-07 00:13:10.755112] END   GET /api/purchase-orders/2/delivery-note/ -> 200
+[2026-03-07 00:13:10.766971] START GET /api/purchase-orders/
+[2026-03-07 00:13:10.830520] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:13:12.578991] START GET /api/purchase-orders/2/delivery-note/download/
+[2026-03-07 00:13:12.629384] END   GET /api/purchase-orders/2/delivery-note/download/ -> 200
+[2026-03-07 00:14:32.964835] START GET /api/purchase-orders/
+[2026-03-07 00:14:33.013430] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:14:51.232183] START GET /api/purchase-orders/4/delivery-note/
+[2026-03-07 00:14:51.289694] END   GET /api/purchase-orders/4/delivery-note/ -> 200
+[2026-03-07 00:14:54.057216] START GET /api/purchase-orders/3/delivery-note/
+[2026-03-07 00:14:54.218412] END   GET /api/purchase-orders/3/delivery-note/ -> 200
+[2026-03-07 00:14:56.187611] START GET /api/purchase-orders/2/delivery-note/
+[2026-03-07 00:14:56.239318] END   GET /api/purchase-orders/2/delivery-note/ -> 200
+[2026-03-07 00:14:57.010976] START GET /api/purchase-orders/2/delivery-note/download/
+[2026-03-07 00:14:57.053288] END   GET /api/purchase-orders/2/delivery-note/download/ -> 200
+[2026-03-07 00:16:43.993542] START GET /api/purchase-orders/
+[2026-03-07 00:16:44.052370] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:16:59.806370] START GET /api/purchase-orders/2/delivery-note/
+[2026-03-07 00:16:59.855044] END   GET /api/purchase-orders/2/delivery-note/ -> 200
+[2026-03-07 00:17:00.655271] START GET /api/purchase-orders/2/delivery-note/
+[2026-03-07 00:17:00.698073] END   GET /api/purchase-orders/2/delivery-note/ -> 200
+[2026-03-07 00:17:00.701799] START GET /api/purchase-orders/2/delivery-note/
+[2026-03-07 00:17:00.745615] END   GET /api/purchase-orders/2/delivery-note/ -> 200
+[2026-03-07 00:17:00.763399] START GET /api/purchase-orders/2/delivery-note/download/
+[2026-03-07 00:17:00.798499] END   GET /api/purchase-orders/2/delivery-note/download/ -> 200
+[2026-03-07 00:17:00.803807] START GET /api/purchase-orders/2/delivery-note/download/
+[2026-03-07 00:17:00.847122] END   GET /api/purchase-orders/2/delivery-note/download/ -> 200
+[2026-03-07 00:17:03.909159] START GET /api/purchase-orders/
+[2026-03-07 00:17:03.947226] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:17:03.951012] START GET /api/purchase-orders/
+[2026-03-07 00:17:03.985102] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:27:53.650430] START GET /api/purchase-orders/
+[2026-03-07 00:27:53.749993] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:27:53.761553] START GET /api/purchase-orders/
+[2026-03-07 00:27:53.900763] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:33:30.033482] START GET /api/purchase-orders/
+[2026-03-07 00:33:30.278836] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:33:30.284820] START GET /api/purchase-orders/
+[2026-03-07 00:33:30.321771] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:33:54.983137] START GET /api/purchase-orders/
+[2026-03-07 00:33:55.018336] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:35:25.750883] START GET /api/purchase-orders/4/invoice/
+[2026-03-07 00:35:25.841027] END   GET /api/purchase-orders/4/invoice/ -> 200
+[2026-03-07 00:35:32.328347] START POST /api/purchase-orders/4/invoice/
+[2026-03-07 00:35:32.396502] END   POST /api/purchase-orders/4/invoice/ -> 500
+Response Body: {"error":"Database schema is outdated (invoice.digital_copy is bytea). Run backend migrations to switch it to a file path (text)."}
+[2026-03-07 00:37:22.776899] START GET /api/purchase-orders/4/invoice/
+[2026-03-07 00:37:22.952875] END   GET /api/purchase-orders/4/invoice/ -> 200
+[2026-03-07 00:37:26.225806] START POST /api/purchase-orders/4/invoice/
+[2026-03-07 00:37:26.293991] END   POST /api/purchase-orders/4/invoice/ -> 201
+[2026-03-07 00:37:26.305848] START GET /api/purchase-orders/4/invoice/
+[2026-03-07 00:37:26.520304] END   GET /api/purchase-orders/4/invoice/ -> 200
+[2026-03-07 00:37:26.524998] START GET /api/purchase-orders/
+[2026-03-07 00:37:26.575628] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:37:29.244949] START GET /api/purchase-orders/4/invoice/download/
+[2026-03-07 00:37:29.299000] END   GET /api/purchase-orders/4/invoice/download/ -> 200
+[2026-03-07 00:40:44.559758] START GET /api/purchase-orders/4/
+[2026-03-07 00:40:44.730830] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-07 00:40:44.739324] START GET /api/purchase-orders/4/
+[2026-03-07 00:40:44.781429] END   GET /api/purchase-orders/4/ -> 200
+[2026-03-07 00:40:46.287646] START GET /api/purchase-orders/
+[2026-03-07 00:40:46.330042] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:40:46.335748] START GET /api/purchase-orders/
+[2026-03-07 00:40:46.374483] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:40:50.172126] START GET /api/purchase-orders/1/
+[2026-03-07 00:40:50.208998] END   GET /api/purchase-orders/1/ -> 200
+[2026-03-07 00:40:50.211713] START GET /api/purchase-orders/1/
+[2026-03-07 00:40:50.277366] END   GET /api/purchase-orders/1/ -> 200
+[2026-03-07 00:40:52.580395] START GET /api/purchase-orders/
+[2026-03-07 00:40:52.625148] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:40:52.629607] START GET /api/purchase-orders/
+[2026-03-07 00:40:52.663770] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:55:38.206794] START GET /api/purchase-orders/
+[2026-03-07 00:55:38.283973] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 00:55:38.288329] START GET /api/purchase-orders/
+[2026-03-07 00:55:38.328702] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 01:00:11.103018] START GET /api/purchase-orders/
+[2026-03-07 01:00:11.201719] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 01:00:11.206824] START GET /api/purchase-orders/
+[2026-03-07 01:00:11.249236] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 01:01:04.970844] START GET /api/purchase-orders/
+[2026-03-07 01:01:05.029874] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 01:03:25.238065] START GET /api/purchase-orders/4/acceptance-report/
+[2026-03-07 01:03:25.342212] END   GET /api/purchase-orders/4/acceptance-report/ -> 200
+[2026-03-07 01:03:30.131252] START POST /api/purchase-orders/4/acceptance-report/
+[2026-03-07 01:03:30.210870] END   POST /api/purchase-orders/4/acceptance-report/ -> 201
+[2026-03-07 01:03:30.218571] START GET /api/purchase-orders/4/acceptance-report/
+[2026-03-07 01:03:30.272703] END   GET /api/purchase-orders/4/acceptance-report/ -> 200
+[2026-03-07 01:03:30.279899] START GET /api/purchase-orders/
+[2026-03-07 01:03:30.317728] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 01:03:37.003576] START GET /api/purchase-orders/4/acceptance-report/download/
+[2026-03-07 01:03:37.054678] END   GET /api/purchase-orders/4/acceptance-report/download/ -> 200
+[2026-03-07 01:03:52.844009] START GET /api/purchase-orders/4/acceptance-report/
+[2026-03-07 01:03:52.899698] END   GET /api/purchase-orders/4/acceptance-report/ -> 200
+[2026-03-07 01:04:42.128483] START GET /api/stock-item-types/
+[2026-03-07 01:04:42.130071] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 01:04:42.183118] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 01:04:42.184465] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 01:04:42.189909] START GET /api/stock-item-types/
+[2026-03-07 01:04:42.190602] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 01:04:42.227487] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 01:04:42.231503] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 01:04:43.417331] START GET /api/stock-item-movements-approval/pending/
+[2026-03-07 01:04:43.418472] START GET /api/consumable-movements-approval/pending/
+[2026-03-07 01:04:43.467445] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-07 01:04:43.468457] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-07 01:04:43.473926] START GET /api/consumable-movements-approval/pending/
+[2026-03-07 01:04:43.474645] START GET /api/stock-item-movements-approval/pending/
+[2026-03-07 01:04:43.518662] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-07 01:04:43.520417] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-07 01:04:57.412495] START GET /api/purchase-orders/
+[2026-03-07 01:04:57.455713] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 01:04:57.460163] START GET /api/purchase-orders/
+[2026-03-07 01:04:57.507237] END   GET /api/purchase-orders/ -> 200
