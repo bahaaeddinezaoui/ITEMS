@@ -397,6 +397,10 @@ export const purchaseOrderService = {
         });
         return response;
     },
+    signAcceptanceReport: async (id, payload) => {
+        const response = await api.post(`purchase-orders/${id}/acceptance-report/sign/`, payload || {});
+        return response.data;
+    },
     getSuppliers: async () => {
         const response = await api.get('purchase-orders/suppliers/');
         return response.data;

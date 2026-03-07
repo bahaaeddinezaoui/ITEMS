@@ -66,6 +66,10 @@ const DashboardLayout = () => {
     const isStockConsumableResponsible = user?.roles?.some(role => role.role_code === 'stock_consumable_responsible');
     const isAssetResponsible = user?.roles?.some(role => role.role_code === 'asset_responsible');
     const isItBureauChief = user?.roles?.some(role => role.role_code === 'it_bureau_chief');
+    const isDirectorAdminSupport = user?.roles?.some(role => role.role_code === 'director_admin_support');
+    const isProtectionSecurityBureauChief = user?.roles?.some(role => role.role_code === 'protection_and_security_bureau_chief');
+    const isSchoolHeadquarter = user?.roles?.some(role => role.role_code === 'school_headquarter');
+    const canViewPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter;
     const canViewReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
 
     return (
@@ -193,7 +197,7 @@ const DashboardLayout = () => {
                         </div>
                     )}
 
-                    {(isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible) && (
+                    {(isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible || canViewPurchaseOrders) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Inventory</span>
 
@@ -204,6 +208,19 @@ const DashboardLayout = () => {
                                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                                     </svg>
                                     Assets
+                                </NavLink>
+                            )}
+
+                            {canViewPurchaseOrders && (
+                                <NavLink to="/dashboard/purchase-orders" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M9 12h6" />
+                                        <path d="M9 16h6" />
+                                        <path d="M9 8h6" />
+                                        <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
+                                        <path d="M15 2v4h4" />
+                                    </svg>
+                                    Purchase Orders
                                 </NavLink>
                             )}
 
@@ -325,19 +342,6 @@ const DashboardLayout = () => {
                                                 <path d="M15 2v4h4" />
                                             </svg>
                                             Included Items Approvals
-                                        </NavLink>
-                                    )}
-
-                                    {isStockConsumableResponsible && (
-                                        <NavLink to="/dashboard/purchase-orders" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M9 12h6" />
-                                                <path d="M9 16h6" />
-                                                <path d="M9 8h6" />
-                                                <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
-                                                <path d="M15 2v4h4" />
-                                            </svg>
-                                            Purchase Orders
                                         </NavLink>
                                     )}
 

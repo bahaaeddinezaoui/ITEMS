@@ -7,6 +7,11 @@ const PurchaseOrdersPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible');
+    const isDirectorAdminSupport = user?.roles?.some((role) => role.role_code === 'director_admin_support');
+    const isProtectionSecurityBureauChief = user?.roles?.some((role) => role.role_code === 'protection_and_security_bureau_chief');
+    const isSchoolHeadquarter = user?.roles?.some((role) => role.role_code === 'school_headquarter');
+    const canConsultPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter;
+    const canSignAcceptanceReport = isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter;
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -38,6 +43,14 @@ const PurchaseOrdersPage = () => {
     const [acceptanceReportPo, setAcceptanceReportPo] = useState(null);
     const [acceptanceReportInfo, setAcceptanceReportInfo] = useState(null);
     const [acceptanceReportFile, setAcceptanceReportFile] = useState(null);
+
+    const canCurrentUserSignAcceptanceReport =
+        !!acceptanceReportInfo?.exists
+        && (
+            (isDirectorAdminSupport && !acceptanceReportInfo?.is_signed_by_director_of_administration_and_support)
+            || (isProtectionSecurityBureauChief && !acceptanceReportInfo?.is_signed_by_protection_and_security_bureau_chief)
+            || (isSchoolHeadquarter && !acceptanceReportInfo?.is_signed_by_school_headquarter)
+        );
 
     const closeDeliveryNoteModal = () => {
         setShowDeliveryNoteModal(false);
@@ -89,6 +102,28 @@ const PurchaseOrdersPage = () => {
             setDeliveryNoteError(e?.response?.data?.error || 'Failed to load delivery note');
         } finally {
             setDeliveryNoteLoading(false);
+        }
+    };
+
+    const submitSignAcceptanceReport = async () => {
+        if (!acceptanceReportPo) return;
+        setAcceptanceReportError('');
+        setSuccess('');
+        setError('');
+
+        try {
+            let signAs = null;
+            if (isDirectorAdminSupport) signAs = 'director_admin_support';
+            if (isProtectionSecurityBureauChief) signAs = 'protection_and_security_bureau_chief';
+            if (isSchoolHeadquarter) signAs = 'school_headquarter';
+
+            const payload = signAs ? { sign_as: signAs, is_signed: true } : { is_signed: true };
+            await purchaseOrderService.signAcceptanceReport(acceptanceReportPo.purchase_order_id, payload);
+            const info = await purchaseOrderService.getAcceptanceReport(acceptanceReportPo.purchase_order_id);
+            setAcceptanceReportInfo(info);
+            setSuccess('Acceptance report signed');
+        } catch (e) {
+            setAcceptanceReportError(e?.response?.data?.error || 'Failed to sign acceptance report');
         }
     };
 
@@ -273,12 +308,12 @@ const PurchaseOrdersPage = () => {
     };
 
     useEffect(() => {
-        if (!isStockConsumableResponsible) return;
+        if (!canConsultPurchaseOrders) return;
         loadOrders();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isStockConsumableResponsible]);
+    }, [canConsultPurchaseOrders]);
 
-    if (!isStockConsumableResponsible) {
+    if (!canConsultPurchaseOrders) {
         return <Navigate to="/dashboard" replace />;
     }
 
@@ -290,9 +325,11 @@ const PurchaseOrdersPage = () => {
                     <p className="page-subtitle">Create purchase orders, receive items, and track backorders.</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                    <button type="button" className="btn btn-primary" onClick={() => navigate('/dashboard/purchase-orders/create')}>
-                        New
-                    </button>
+                    {isStockConsumableResponsible && (
+                        <button type="button" className="btn btn-primary" onClick={() => navigate('/dashboard/purchase-orders/create')}>
+                            New
+                        </button>
+                    )}
                     <button type="button" className="btn btn-secondary" onClick={loadOrders} disabled={loading}>
                         Refresh
                     </button>
@@ -326,45 +363,51 @@ const PurchaseOrdersPage = () => {
                                             <td>{o.supplier_name ? o.supplier_name : (o.supplier_id ? `Supplier #${o.supplier_id}` : '')}</td>
                                             <td style={{ whiteSpace: 'nowrap' }}>
                                                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                                    <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}`)}>
-                                                        View
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/receive`)}
-                                                        disabled={o.has_remaining === false}
-                                                        title={o.has_remaining === false ? 'All items have been received' : undefined}
-                                                    >
-                                                        Receive
-                                                    </button>
-                                                    <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/backorder-reports`)}>
-                                                        Backorders
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        onClick={() => openDeliveryNoteModal(o)}
-                                                        disabled={o.has_remaining !== false}
-                                                        title={o.has_remaining !== false ? 'Receive all items before creating delivery note' : undefined}
-                                                    >
-                                                        Delivery note
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        onClick={() => openInvoiceModal(o)}
-                                                        disabled={o.has_remaining !== false}
-                                                        title={o.has_remaining !== false ? 'Receive all items before creating invoice' : undefined}
-                                                    >
-                                                        Invoice
-                                                    </button>
+                                                    {isStockConsumableResponsible && (
+                                                        <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}`)}>
+                                                            View
+                                                        </button>
+                                                    )}
+                                                    {isStockConsumableResponsible && (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-secondary"
+                                                                onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/receive`)}
+                                                                disabled={o.has_remaining === false}
+                                                                title={o.has_remaining === false ? 'All items have been received' : undefined}
+                                                            >
+                                                                Receive
+                                                            </button>
+                                                            <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/backorder-reports`)}>
+                                                                Backorders
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-secondary"
+                                                                onClick={() => openDeliveryNoteModal(o)}
+                                                                disabled={o.has_remaining !== false}
+                                                                title={o.has_remaining !== false ? 'Receive all items before creating delivery note' : undefined}
+                                                            >
+                                                                Delivery note
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-secondary"
+                                                                onClick={() => openInvoiceModal(o)}
+                                                                disabled={o.has_remaining !== false}
+                                                                title={o.has_remaining !== false ? 'Receive all items before creating invoice' : undefined}
+                                                            >
+                                                                Invoice
+                                                            </button>
+                                                        </>
+                                                    )}
                                                     <button
                                                         type="button"
                                                         className="btn btn-secondary"
                                                         onClick={() => openAcceptanceReportModal(o)}
-                                                        disabled={o.has_remaining !== false}
-                                                        title={o.has_remaining !== false ? 'Receive all items before creating acceptance report' : undefined}
+                                                        disabled={isStockConsumableResponsible ? (o.has_remaining !== false) : false}
+                                                        title={isStockConsumableResponsible && o.has_remaining !== false ? 'Receive all items before creating acceptance report' : undefined}
                                                     >
                                                         Acceptance report
                                                     </button>
@@ -653,6 +696,11 @@ const PurchaseOrdersPage = () => {
                                 </div>
 
                                 <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                                    {canSignAcceptanceReport && canCurrentUserSignAcceptanceReport && (
+                                        <button type="button" className="btn btn-primary" onClick={submitSignAcceptanceReport}>
+                                            Sign
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
                                         className="btn btn-secondary"
@@ -664,7 +712,7 @@ const PurchaseOrdersPage = () => {
                                     </button>
                                 </div>
                             </div>
-                        ) : (
+                        ) : isStockConsumableResponsible ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                                 <div style={{ color: 'var(--color-text-secondary)' }}>No acceptance report exists for this purchase order. Create it now:</div>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
@@ -685,6 +733,8 @@ const PurchaseOrdersPage = () => {
                                     </button>
                                 </div>
                             </div>
+                        ) : (
+                            <div style={{ color: 'var(--color-text-secondary)' }}>No acceptance report exists for this purchase order.</div>
                         )}
                     </div>
                 </div>

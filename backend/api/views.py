@@ -6727,6 +6727,25 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
 class PurchaseOrderViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
+    def _require_purchase_order_consult(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not getattr(user_account, "person", None):
+            return None, set(), Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        allowed = {
+            "stock_consumable_responsible",
+            "director_admin_support",
+            "protection_and_security_bureau_chief",
+            "school_headquarter",
+        }
+        if user_account.is_superuser() or (role_codes & allowed):
+            return user_account, role_codes, None
+
+        return None, set(), Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
     def _require_responsible(self, request):
         user_account = SuperuserWriteMixin()._get_user_account(request)
         if not user_account or not getattr(user_account, "person", None):
@@ -6740,8 +6759,27 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
 
         return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
 
+    def _require_acceptance_report_consult(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not getattr(user_account, "person", None):
+            return None, set(), Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        allowed = {
+            "stock_consumable_responsible",
+            "director_admin_support",
+            "protection_and_security_bureau_chief",
+            "school_headquarter",
+        }
+        if user_account.is_superuser() or (role_codes & allowed):
+            return user_account, role_codes, None
+
+        return None, set(), Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
     def list(self, request):
-        _, denial = self._require_responsible(request)
+        _, _, denial = self._require_purchase_order_consult(request)
         if denial:
             return denial
 
@@ -7589,9 +7627,14 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=["get", "post"], url_path="acceptance-report")
     def acceptance_report(self, request, pk=None):
-        _, denial = self._require_responsible(request)
-        if denial:
-            return denial
+        if request.method == "GET":
+            _, _, denial = self._require_acceptance_report_consult(request)
+            if denial:
+                return denial
+        else:
+            _, denial = self._require_responsible(request)
+            if denial:
+                return denial
 
         try:
             purchase_order_id = int(pk)
@@ -7742,9 +7785,105 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @action(detail=True, methods=["post"], url_path="acceptance-report/sign")
+    def sign_acceptance_report(self, request, pk=None):
+        user_account, role_codes, denial = self._require_acceptance_report_consult(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        sign_as = request.data.get("sign_as")
+        is_signed = request.data.get("is_signed")
+
+        if is_signed in (None, ""):
+            is_signed_bool = True
+        elif isinstance(is_signed, bool):
+            is_signed_bool = is_signed
+        elif isinstance(is_signed, (int, float)):
+            is_signed_bool = bool(is_signed)
+        elif isinstance(is_signed, str):
+            is_signed_bool = is_signed.strip().lower() in {"1", "true", "t", "yes", "y"}
+        else:
+            is_signed_bool = True
+
+        role_to_field = {
+            "director_admin_support": "is_signed_by_director_of_administration_and_support",
+            "protection_and_security_bureau_chief": "is_signed_by_protection_and_security_bureau_chief",
+            "school_headquarter": "is_signed_by_school_headquarter",
+        }
+
+        eligible_roles = [r for r in role_to_field.keys() if (r in role_codes) or user_account.is_superuser()]
+        if not eligible_roles:
+            return Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+
+        if sign_as not in (None, ""):
+            if sign_as not in role_to_field:
+                return Response({"error": "Invalid sign_as"}, status=status.HTTP_400_BAD_REQUEST)
+            if (not user_account.is_superuser()) and (sign_as not in role_codes):
+                return Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
+            role_to_use = sign_as
+        else:
+            if len(eligible_roles) != 1:
+                return Response({"error": "sign_as is required"}, status=status.HTTP_400_BAD_REQUEST)
+            role_to_use = eligible_roles[0]
+
+        field_name = role_to_field[role_to_use]
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT delivery_note_id FROM public.delivery_note WHERE purchase_order_id = %s",
+                    [purchase_order_id],
+                )
+                dn_row = cursor.fetchone()
+                if dn_row is None:
+                    return Response({"error": "Delivery note not found"}, status=status.HTTP_404_NOT_FOUND)
+                delivery_note_id = dn_row[0]
+
+                cursor.execute(
+                    "SELECT acceptance_report_id FROM public.acceptance_report WHERE delivery_note_id = %s",
+                    [delivery_note_id],
+                )
+                ar_row = cursor.fetchone()
+                if ar_row is None:
+                    return Response({"error": "Acceptance report not found"}, status=status.HTTP_404_NOT_FOUND)
+                acceptance_report_id = ar_row[0]
+
+                cursor.execute(
+                    f"UPDATE public.acceptance_report SET {field_name} = %s WHERE acceptance_report_id = %s",
+                    [is_signed_bool, acceptance_report_id],
+                )
+
+                cursor.execute(
+                    """
+                    SELECT is_signed_by_director_of_administration_and_support,
+                           is_signed_by_protection_and_security_bureau_chief,
+                           is_signed_by_school_headquarter
+                    FROM public.acceptance_report
+                    WHERE acceptance_report_id = %s
+                    """,
+                    [acceptance_report_id],
+                )
+                flags = cursor.fetchone()
+
+        return Response(
+            {
+                "acceptance_report_id": acceptance_report_id,
+                "purchase_order_id": purchase_order_id,
+                "is_signed_by_director_of_administration_and_support": flags[0],
+                "is_signed_by_protection_and_security_bureau_chief": flags[1],
+                "is_signed_by_school_headquarter": flags[2],
+            },
+            status=status.HTTP_200_OK,
+        )
+
     @action(detail=True, methods=["get"], url_path="acceptance-report/download")
     def download_acceptance_report(self, request, pk=None):
-        _, denial = self._require_responsible(request)
+        _, _, denial = self._require_acceptance_report_consult(request)
         if denial:
             return denial
 
@@ -7785,7 +7924,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
         return resp
 
     def retrieve(self, request, pk=None):
-        _, denial = self._require_responsible(request)
+        _, _, denial = self._require_purchase_order_consult(request)
         if denial:
             return denial
 
