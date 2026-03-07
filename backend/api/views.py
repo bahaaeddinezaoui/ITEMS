@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import os
 import datetime
+import json
 from decimal import Decimal
 
 from django.utils import timezone
@@ -72,6 +73,7 @@ from .models import (
     AttributionOrder,
     ReceiptReport,
     AdministrativeCertificate,
+    DestructionCertificate,
     CompanyAssetRequest,
     StockItemIsCompatibleWithAsset,
     ConsumableIsCompatibleWithAsset,
@@ -93,6 +95,8 @@ from .models import (
     ExternalMaintenanceDocument,
     MaintenanceStepAttributeChange,
 )
+
+from .serializers import DestructionCertificateSerializer
 
 
 def _parse_default_value(data_type: str | None, default_value: str | None):
@@ -667,7 +671,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes:
+        if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes or "it_bureau_chief" in role_codes:
             return qs
 
         if "asset_responsible" in role_codes:
@@ -736,7 +740,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            if "maintenance_chief" in role_codes:
+            if "maintenance_chief" in role_codes or "it_bureau_chief" in role_codes:
                 is_allowed = True
             elif maintenance.performed_by_person_id == person.person_id:
                 is_allowed = True
@@ -770,7 +774,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes:
+            if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes or "it_bureau_chief" in role_codes:
                 is_allowed = True
             elif getattr(maintenance, "performed_by_person_id", None) == getattr(person, "person_id", None):
                 is_allowed = True
@@ -980,7 +984,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes):
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
             return Response({"error": "Only maintenance chiefs can create maintenance"}, status=status.HTTP_403_FORBIDDEN)
 
         asset_id = request.data.get("asset_id")
@@ -1797,7 +1801,7 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         )
 
         # Superusers and maintenance_chiefs can assign to anyone
-        if "superuser" in user_role_codes or "maintenance_chief" in user_role_codes:
+        if "superuser" in user_role_codes or "maintenance_chief" in user_role_codes or "it_bureau_chief" in user_role_codes:
             return True, None
 
         # Check if target person is a maintenance_chief
@@ -1806,7 +1810,12 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             role__role_code="maintenance_chief"
         ).exists()
 
-        if target_is_chief:
+        target_is_itbc = PersonRoleMapping.objects.filter(
+            person_id=target_person_id,
+            role__role_code="it_bureau_chief",
+        ).exists()
+
+        if target_is_chief or target_is_itbc:
             return False, Response(
                 {"error": "Only maintenance chiefs can assign steps to other maintenance chiefs"},
                 status=status.HTTP_403_FORBIDDEN
@@ -1823,7 +1832,7 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
 
-        if (step.person_id == person.person_id) or ("maintenance_chief" in role_codes) or ("superuser" in role_codes):
+        if (step.person_id == person.person_id) or ("maintenance_chief" in role_codes) or ("it_bureau_chief" in role_codes) or ("superuser" in role_codes):
             return person, None
 
         return None, Response({"error": "Not allowed to request items for this step"}, status=status.HTTP_403_FORBIDDEN)
@@ -4317,11 +4326,29 @@ class AssetViewSet(viewsets.ModelViewSet):
     serializer_class = AssetSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status_param = self.request.query_params.get("asset_status")
+        if status_param is not None:
+            queryset = queryset.filter(asset_status=status_param)
+        destruction_certificate_id = self.request.query_params.get("destruction_certificate_id")
+        if destruction_certificate_id is not None:
+            try:
+                queryset = queryset.filter(destruction_certificate_id=int(destruction_certificate_id))
+            except (ValueError, TypeError):
+                pass
+        return queryset
+
     def update(self, request, *args, **kwargs):
         asset_status = request.data.get("asset_status")
         if isinstance(asset_status, str) and asset_status.strip().lower() == "failed":
             return Response(
                 {"error": "Asset status can only be set to failed during external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if isinstance(asset_status, str) and asset_status.strip().lower() == "destroyed":
+            return Response(
+                {"error": "Asset status can only be set to destroyed by validating a destruction certificate."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return super().update(request, *args, **kwargs)
@@ -4331,6 +4358,11 @@ class AssetViewSet(viewsets.ModelViewSet):
         if isinstance(asset_status, str) and asset_status.strip().lower() == "failed":
             return Response(
                 {"error": "Asset status can only be set to failed during external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if isinstance(asset_status, str) and asset_status.strip().lower() == "destroyed":
+            return Response(
+                {"error": "Asset status can only be set to destroyed by validating a destruction certificate."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return super().partial_update(request, *args, **kwargs)
@@ -4535,7 +4567,7 @@ class AssetViewSet(viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            allowed = ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes)
+            allowed = ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
 
         if not allowed:
             return Response(
@@ -4963,7 +4995,34 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 queryset = queryset.filter(stock_item_model_id=int(stock_item_model_id))
             except (ValueError, TypeError):
                 pass
+        status_param = self.request.query_params.get("stock_item_status")
+        if status_param is not None:
+            queryset = queryset.filter(stock_item_status=status_param)
+        destruction_certificate_id = self.request.query_params.get("destruction_certificate_id")
+        if destruction_certificate_id is not None:
+            try:
+                queryset = queryset.filter(destruction_certificate_id=int(destruction_certificate_id))
+            except (ValueError, TypeError):
+                pass
         return queryset
+
+    def update(self, request, *args, **kwargs):
+        stock_item_status = request.data.get("stock_item_status")
+        if isinstance(stock_item_status, str) and stock_item_status.strip().lower() == "destroyed":
+            return Response(
+                {"error": "Stock item status can only be set to destroyed by validating a destruction certificate."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        stock_item_status = request.data.get("stock_item_status")
+        if isinstance(stock_item_status, str) and stock_item_status.strip().lower() == "destroyed":
+            return Response(
+                {"error": "Stock item status can only be set to destroyed by validating a destruction certificate."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().partial_update(request, *args, **kwargs)
 
     def _require_responsible_or_superuser(self, request, action_desc):
         user_account = SuperuserWriteMixin()._get_user_account(request)
@@ -5445,7 +5504,37 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 queryset = queryset.filter(consumable_model_id=int(consumable_model_id))
             except (ValueError, TypeError):
                 pass
+        status_param = self.request.query_params.get("consumable_status")
+        if status_param is not None:
+            queryset = queryset.filter(consumable_status=status_param)
+        destruction_certificate_id = self.request.query_params.get("destruction_certificate_id")
+        if destruction_certificate_id is not None:
+            try:
+                queryset = queryset.filter(destruction_certificate_id=int(destruction_certificate_id))
+            except (ValueError, TypeError):
+                pass
         return queryset
+
+    def update(self, request, *args, **kwargs):
+        consumable_status = request.data.get("consumable_status")
+        if isinstance(consumable_status, str) and consumable_status.strip().lower() == "destroyed":
+            return Response(
+                {"error": "Consumable status can only be set to destroyed by validating a destruction certificate."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        consumable_status = request.data.get("consumable_status")
+        if isinstance(consumable_status, str) and consumable_status.strip().lower() == "destroyed":
+            return Response(
+                {"error": "Consumable status can only be set to destroyed by validating a destruction certificate."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        response = super().partial_update(request, *args, **kwargs)
+        instance = self.get_object()
+        _sync_consumable_attribute_values(instance)
+        return response
 
     def _require_responsible_or_superuser(self, request, action_desc):
         user_account = SuperuserWriteMixin()._get_user_account(request)
@@ -5482,6 +5571,13 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         return Response(ConsumableSerializer(item).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
+        consumable_status = request.data.get("consumable_status")
+        if isinstance(consumable_status, str) and consumable_status.strip().lower() == "destroyed":
+            return Response(
+                {"error": "Consumable status can only be set to destroyed by validating a destruction certificate."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         response = super().update(request, *args, **kwargs)
         instance = self.get_object()
         _sync_consumable_attribute_values(instance)
@@ -5576,6 +5672,197 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+
+class DestructionCertificateViewSet(viewsets.ModelViewSet):
+    queryset = DestructionCertificate.objects.all().order_by("-destruction_certificate_id")
+    serializer_class = DestructionCertificateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _role_codes(self, user_account: UserAccount | None):
+        if not user_account or not getattr(user_account, "is_authenticated", False):
+            return set()
+        if getattr(user_account, "is_superuser", False):
+            return {"superuser"}
+        person = getattr(user_account, "person", None)
+        if not person:
+            return set()
+        return set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+
+    def create(self, request, *args, **kwargs):
+        user_account = getattr(request, "user", None)
+        role_codes = self._role_codes(user_account)
+
+        is_super = getattr(user_account, "is_superuser", False) or "superuser" in role_codes
+        is_exploitation = "exploitation_chief" in role_codes
+        is_itbc = "it_bureau_chief" in role_codes
+
+        if not (is_super or is_exploitation or is_itbc):
+            return Response(
+                {"error": "Only exploitation chief, IT bureau chief, or superusers can create destruction certificates"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        def _parse_id_list(value, field_name: str):
+            if value is None or value == "":
+                return []
+            if isinstance(value, list):
+                return value
+            if isinstance(value, str):
+                try:
+                    parsed = json.loads(value)
+                except json.JSONDecodeError:
+                    raise ValidationError({field_name: "Must be a JSON array or a list"})
+                if not isinstance(parsed, list):
+                    raise ValidationError({field_name: "Must be a JSON array or a list"})
+                return parsed
+            raise ValidationError({field_name: "Must be a list"})
+
+        asset_ids = _parse_id_list(request.data.get("asset_ids"), "asset_ids")
+        stock_item_ids = _parse_id_list(request.data.get("stock_item_ids"), "stock_item_ids")
+        consumable_ids = _parse_id_list(request.data.get("consumable_ids"), "consumable_ids")
+
+        # These roles can include any item type as long as it is failed.
+
+        try:
+            asset_ids_int = [int(x) for x in asset_ids]
+            stock_item_ids_int = [int(x) for x in stock_item_ids]
+            consumable_ids_int = [int(x) for x in consumable_ids]
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid item id(s)"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not asset_ids_int and not stock_item_ids_int and not consumable_ids_int:
+            return Response({"error": "At least one item must be included"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            last_item = DestructionCertificate.objects.order_by("-destruction_certificate_id").first()
+            next_id = (last_item.destruction_certificate_id + 1) if last_item else 1
+
+            cert = DestructionCertificate.objects.create(destruction_certificate_id=next_id, destruction_datetime=None)
+
+            if asset_ids_int:
+                invalid_assets = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(
+                    asset_status="failed",
+                )
+                if invalid_assets.exists():
+                    raise ValidationError({"asset_ids": "All assets must have status 'failed'"})
+                already_linked = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(destruction_certificate_id__isnull=True)
+                if already_linked.exists():
+                    raise ValidationError({"asset_ids": "Some assets are already linked to a destruction certificate"})
+                Asset.objects.filter(asset_id__in=asset_ids_int).update(destruction_certificate_id=cert.destruction_certificate_id)
+
+            if stock_item_ids_int:
+                invalid = StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).exclude(stock_item_status="failed")
+                if invalid.exists():
+                    raise ValidationError({"stock_item_ids": "All stock items must have status 'failed'"})
+                already_linked = StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).exclude(destruction_certificate_id__isnull=True)
+                if already_linked.exists():
+                    raise ValidationError({"stock_item_ids": "Some stock items are already linked to a destruction certificate"})
+                StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).update(
+                    destruction_certificate_id=cert.destruction_certificate_id
+                )
+
+            if consumable_ids_int:
+                invalid = Consumable.objects.filter(consumable_id__in=consumable_ids_int).exclude(consumable_status="failed")
+                if invalid.exists():
+                    raise ValidationError({"consumable_ids": "All consumables must have status 'failed'"})
+                already_linked = Consumable.objects.filter(consumable_id__in=consumable_ids_int).exclude(destruction_certificate_id__isnull=True)
+                if already_linked.exists():
+                    raise ValidationError({"consumable_ids": "Some consumables are already linked to a destruction certificate"})
+                Consumable.objects.filter(consumable_id__in=consumable_ids_int).update(
+                    destruction_certificate_id=cert.destruction_certificate_id
+                )
+
+        return Response(self.get_serializer(cert).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="validate")
+    def validate_certificate(self, request, pk=None):
+        user_account = getattr(request, "user", None)
+        role_codes = self._role_codes(user_account)
+        is_super = getattr(user_account, "is_superuser", False) or "superuser" in role_codes
+        allowed = is_super or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
+        if not allowed:
+            return Response(
+                {"error": "Only exploitation chief, IT bureau chief, or superusers can validate destruction certificates"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cert = self.get_object()
+        if getattr(cert, "destruction_datetime", None) is not None:
+            return Response({"error": "Destruction certificate is already validated"}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = timezone.now()
+        with transaction.atomic():
+            DestructionCertificate.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(
+                destruction_datetime=now,
+            )
+            Asset.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(asset_status="destroyed")
+            StockItem.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(stock_item_status="destroyed")
+            Consumable.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(consumable_status="destroyed")
+
+        cert.refresh_from_db()
+        return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="digital-copy-exists")
+    def digital_copy_exists(self, request, pk=None):
+        cert = self.get_object()
+        rel_path = getattr(cert, "digital_copy", None)
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path) if rel_path else None
+        has_file = bool(rel_path) and abs_path is not None and os.path.isfile(abs_path)
+        return Response({"exists": has_file}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="digital-copy")
+    def digital_copy(self, request, pk=None):
+        cert = self.get_object()
+        rel_path = getattr(cert, "digital_copy", None)
+        if not rel_path:
+            return Response({"error": "No digital copy stored"}, status=status.HTTP_404_NOT_FOUND)
+
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+        if not os.path.isfile(abs_path):
+            return Response({"error": "Digital copy file missing on server"}, status=status.HTTP_404_NOT_FOUND)
+
+        resp = FileResponse(open(abs_path, "rb"), content_type="application/pdf")
+        resp["Content-Disposition"] = f'inline; filename="destruction_certificate_{cert.destruction_certificate_id}.pdf"'
+        return resp
+
+    @action(detail=True, methods=["post"], url_path="upload-digital-copy")
+    def upload_digital_copy(self, request, pk=None):
+        user_account = getattr(request, "user", None)
+        role_codes = self._role_codes(user_account)
+        is_super = getattr(user_account, "is_superuser", False) or "superuser" in role_codes
+        allowed = is_super or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
+        if not allowed:
+            return Response(
+                {"error": "Only exploitation chief, IT bureau chief, or superusers can upload destruction certificate digital copy"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cert = self.get_object()
+        if getattr(cert, "destruction_datetime", None) is None:
+            return Response({"error": "Certificate must be validated before uploading the PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        digital_copy = request.FILES.get("digital_copy")
+        if not digital_copy:
+            return Response({"error": "digital_copy file is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        content_type = getattr(digital_copy, "content_type", "") or ""
+        if "pdf" not in content_type.lower():
+            return Response({"error": "digital_copy must be a valid PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        rel_dir = os.path.join("destruction_certificates")
+        base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+        os.makedirs(base_dir, exist_ok=True)
+
+        rel_path = os.path.join(rel_dir, f"destruction_certificate_{cert.destruction_certificate_id}.pdf")
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+        with open(abs_path, "wb") as f:
+            f.write(digital_copy.read())
+
+        DestructionCertificate.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(
+            digital_copy=rel_path
+        )
+        cert.refresh_from_db()
+        return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
 
 class ConsumableAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = ConsumableAttributeDefinition.objects.all().order_by("consumable_attribute_definition_id")
@@ -5843,8 +6130,9 @@ class AssetIsAssignedToPersonViewSet(viewsets.ModelViewSet):
         is_asset_responsible = "asset_responsible" in role_codes
         is_superuser = user_account.is_superuser()
         is_exploitation_chief = "exploitation_chief" in role_codes
+        is_itbc = "it_bureau_chief" in role_codes
 
-        if not (is_asset_responsible or is_superuser or is_exploitation_chief):
+        if not (is_asset_responsible or is_superuser or is_exploitation_chief or is_itbc):
             return Response({"error": "Only Asset Responsible or superiors can assign assets"}, status=status.HTTP_403_FORBIDDEN)
 
         asset_id = request.data.get("asset")
@@ -5899,7 +6187,7 @@ class AssetIsAssignedToPersonViewSet(viewsets.ModelViewSet):
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
 
-        if "exploitation_chief" not in role_codes and not user_account.is_superuser():
+        if ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (not user_account.is_superuser()):
             return Response({"error": "Only Exploitation Chief can confirm assignments"}, status=status.HTTP_403_FORBIDDEN)
 
         assignment = self.get_object()
@@ -5924,8 +6212,9 @@ class AssetIsAssignedToPersonViewSet(viewsets.ModelViewSet):
         is_asset_responsible = "asset_responsible" in role_codes
         is_superuser = user_account.is_superuser()
         is_exploitation_chief = "exploitation_chief" in role_codes
+        is_itbc = "it_bureau_chief" in role_codes
 
-        if not (is_asset_responsible or is_superuser or is_exploitation_chief):
+        if not (is_asset_responsible or is_superuser or is_exploitation_chief or is_itbc):
             return Response(
                 {"error": "Only Asset Responsible or superiors can discharge assets"},
                 status=status.HTTP_403_FORBIDDEN,

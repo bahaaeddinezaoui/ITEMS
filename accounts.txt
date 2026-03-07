@@ -19,3 +19,15 @@ asset_resp - password123
 
 Stock items and consumables responsible:
 stock_cons_resp - password123
+
+IT Bureau Chief:
+it_bureau_chief - 123456
+
+Director of Administration and Support:
+director_admin_sup - 123456
+
+Protection and Security Bureau Chief:
+prot_sec_chief - 123456
+
+School headquarter:
+school_headquarter - 123456

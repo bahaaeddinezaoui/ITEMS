@@ -375,6 +375,7 @@ class Asset(models.Model):
     asset_id = models.AutoField(primary_key=True, db_column='asset_id')
     asset_model = models.ForeignKey(AssetModel, on_delete=models.CASCADE, db_column='asset_model_id')
     attribution_order = models.ForeignKey('AttributionOrder', on_delete=models.SET_NULL, db_column='attribution_order_id', null=True, blank=True)
+    destruction_certificate_id = models.IntegerField(blank=True, null=True, db_column='destruction_certificate_id')
     asset_serial_number = models.CharField(max_length=48, blank=True, null=True, db_column='asset_serial_number')
     asset_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='asset_inventory_number')
     asset_name = models.CharField(max_length=48, blank=True, null=True, db_column='asset_name')
@@ -636,6 +637,7 @@ class StockItem(models.Model):
     """Maps to stock_item table"""
     stock_item_id = models.AutoField(primary_key=True, db_column='stock_item_id')
     stock_item_model = models.ForeignKey(StockItemModel, on_delete=models.CASCADE, db_column='stock_item_model_id')
+    destruction_certificate_id = models.IntegerField(blank=True, null=True, db_column='destruction_certificate_id')
     stock_item_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='stock_item_inventory_number')
     stock_item_name = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name')
     stock_item_status = models.CharField(max_length=30, blank=True, null=True, db_column='stock_item_status')
@@ -679,6 +681,7 @@ class Consumable(models.Model):
     """Maps to consumable table"""
     consumable_id = models.AutoField(primary_key=True, db_column='consumable_id')
     consumable_model = models.ForeignKey(ConsumableModel, on_delete=models.CASCADE, db_column='consumable_model_id')
+    destruction_certificate_id = models.IntegerField(blank=True, null=True, db_column='destruction_certificate_id')
     consumable_serial_number = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_serial_number')
     consumable_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='consumable_inventory_number')
     consumable_name = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name')
@@ -1321,6 +1324,20 @@ class AdministrativeCertificate(models.Model):
 
     def __str__(self):
         return f"Certificate {self.administrative_certificate_id} for Order {self.attribution_order_id}"
+
+
+class DestructionCertificate(models.Model):
+    """Maps to destruction_certificate table"""
+    destruction_certificate_id = models.AutoField(primary_key=True, db_column='destruction_certificate_id')
+    digital_copy = models.TextField(blank=True, null=True, db_column='digital_copy')
+    destruction_datetime = models.DateTimeField(blank=True, null=True, db_column='destruction_datetime')
+
+    class Meta:
+        managed = False
+        db_table = 'destruction_certificate'
+
+    def __str__(self):
+        return f"Destruction Certificate {self.destruction_certificate_id}"
 
 
 class CompanyAssetRequest(models.Model):

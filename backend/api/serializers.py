@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, RoomType, Room, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, DestructionCertificate, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -299,7 +299,7 @@ class AssetSerializer(serializers.ModelSerializer):
         model = Asset
         fields = [
             'asset_id', 'asset_model', 'attribution_order', 'asset_serial_number',
-            'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag',
+            'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag', 'destruction_certificate_id',
             'included_stock_items', 'included_consumables'
         ]
         read_only_fields = ['asset_id']
@@ -654,7 +654,7 @@ class StockItemSerializer(serializers.ModelSerializer):
     """Serializer for StockItem model"""
     class Meta:
         model = StockItem
-        fields = ['stock_item_id', 'stock_item_model', 'stock_item_inventory_number', 'stock_item_name', 'stock_item_status']
+        fields = ['stock_item_id', 'stock_item_model', 'stock_item_inventory_number', 'stock_item_name', 'stock_item_status', 'destruction_certificate_id']
         read_only_fields = ['stock_item_id']
 
 
@@ -681,7 +681,7 @@ class ConsumableSerializer(serializers.ModelSerializer):
     """Serializer for Consumable model"""
     class Meta:
         model = Consumable
-        fields = ['consumable_id', 'consumable_model', 'consumable_serial_number', 'consumable_inventory_number', 'consumable_name', 'consumable_status']
+        fields = ['consumable_id', 'consumable_model', 'consumable_serial_number', 'consumable_inventory_number', 'consumable_name', 'consumable_status', 'destruction_certificate_id']
         read_only_fields = ['consumable_id']
 
 
@@ -936,6 +936,13 @@ class AdministrativeCertificateSerializer(serializers.ModelSerializer):
             'is_signed_by_warehouse_leader', 'digital_copy'
         ]
         read_only_fields = ['administrative_certificate_id']
+
+
+class DestructionCertificateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DestructionCertificate
+        fields = ['destruction_certificate_id', 'digital_copy', 'destruction_datetime']
+        read_only_fields = ['destruction_certificate_id', 'destruction_datetime', 'digital_copy']
 
 
 class CompanyAssetRequestSerializer(serializers.ModelSerializer):

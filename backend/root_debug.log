@@ -49700,3 +49700,618 @@ Response Body: {"error":"Database schema is outdated (invoice.digital_copy is by
 [2026-03-07 01:04:57.455713] END   GET /api/purchase-orders/ -> 200
 [2026-03-07 01:04:57.460163] START GET /api/purchase-orders/
 [2026-03-07 01:04:57.507237] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 20:29:31.179703] START GET /api/stock-item-movements-approval/pending/
+[2026-03-07 20:29:31.180149] START GET /api/consumable-movements-approval/pending/
+[2026-03-07 20:29:31.214914] END   GET /api/consumable-movements-approval/pending/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-03-07 20:29:31.234865] START GET /api/consumable-movements-approval/pending/
+[2026-03-07 20:29:31.238968] END   GET /api/consumable-movements-approval/pending/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-03-07 20:29:31.236354] START GET /api/stock-item-movements-approval/pending/
+[2026-03-07 20:29:31.245104] END   GET /api/stock-item-movements-approval/pending/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-03-07 20:29:39.617562] START POST /api/auth/login/
+[2026-03-07 20:29:39.767890] END   POST /api/auth/login/ -> 200
+[2026-03-07 20:29:41.598700] START GET /api/destruction-certificates/
+[2026-03-07 20:29:41.602353] START GET /api/assets/
+[2026-03-07 20:29:41.603109] START GET /api/stock-items/
+[2026-03-07 20:29:41.605067] START GET /api/consumables/
+[2026-03-07 20:29:41.642934] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:29:41.645752] END   GET /api/assets/ -> 200
+[2026-03-07 20:29:41.646400] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:29:41.650594] START GET /api/destruction-certificates/
+[2026-03-07 20:29:41.653668] START GET /api/assets/
+[2026-03-07 20:29:41.654536] START GET /api/stock-items/
+[2026-03-07 20:29:41.657489] END   GET /api/consumables/ -> 200
+[2026-03-07 20:29:41.662604] START GET /api/consumables/
+[2026-03-07 20:29:41.694597] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:29:41.695072] END   GET /api/assets/ -> 200
+[2026-03-07 20:29:41.695305] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:29:41.702793] END   GET /api/consumables/ -> 200
+[2026-03-07 20:32:14.354619] START GET /api/assets/
+ms/
+[2026-03-07 20:32:14.354982] START GET /api/destruction-certificates/
+[2026-03-07 20:32:14.355352] START GET /api/consumables/
+[2026-03-07 20:32:14.444537] END   GET /api/assets/ -> 200
+[2026-03-07 20:32:14.444806] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:32:14.445751] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:32:14.450443] END   GET /api/consumables/ -> 200
+[2026-03-07 20:32:14.451473] START GET /api/assets/
+[2026-03-07 20:32:14.452347] START GET /api/stock-items/
+[2026-03-07 20:32:14.453597] START GET /api/destruction-certificates/
+[2026-03-07 20:32:14.458579] START GET /api/consumables/
+[2026-03-07 20:32:14.496604] END   GET /api/assets/ -> 200
+[2026-03-07 20:32:14.496766] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:32:14.500700] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:32:14.502325] END   GET /api/consumables/ -> 200
+[2026-03-07 20:33:59.626862] START GET /api/assets/
+[2026-03-07 20:33:59.625966] START GET /api/destruction-certificates/
+[2026-03-07 20:33:59.628317] START GET /api/stock-items/
+[2026-03-07 20:33:59.631198] START GET /api/consumables/
+[2026-03-07 20:33:59.669637] END   GET /api/assets/ -> 200
+[2026-03-07 20:33:59.676489] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:33:59.679027] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:33:59.677581] START GET /api/assets/
+es/ -> 200
+[2026-03-07 20:33:59.683976] START GET /api/destruction-certificates/
+[2026-03-07 20:33:59.684914] START GET /api/stock-items/
+[2026-03-07 20:33:59.688900] START GET /api/consumables/
+[2026-03-07 20:33:59.720587] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:33:59.726471] END   GET /api/assets/ -> 200
+[2026-03-07 20:33:59.726903] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:33:59.728559] END   GET /api/consumables/ -> 200
+[2026-03-07 20:34:12.605326] START POST /api/destruction-certificates/
+[2026-03-07 20:34:12.672583] END   POST /api/destruction-certificates/ -> 201
+[2026-03-07 20:34:12.683593] START GET /api/destruction-certificates/
+[2026-03-07 20:34:12.684217] START GET /api/assets/
+[2026-03-07 20:34:12.688127] START GET /api/consumables/
+[2026-03-07 20:34:12.692078] START GET /api/stock-items/
+[2026-03-07 20:34:12.719590] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:34:12.726443] END   GET /api/consumables/ -> 200
+[2026-03-07 20:34:12.729309] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:34:12.732809] END   GET /api/assets/ -> 200
+[2026-03-07 20:34:32.494727] START POST /api/auth/login/
+[2026-03-07 20:34:32.554235] END   POST /api/auth/login/ -> 200
+[2026-03-07 20:34:33.820458] START GET /api/stock-item-types/
+[2026-03-07 20:34:33.834090] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 20:34:33.870087] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 20:34:33.870626] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 20:34:33.875684] START GET /api/stock-item-types/
+[2026-03-07 20:34:33.876367] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 20:34:33.911737] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 20:34:33.913855] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 20:34:34.562971] START GET /api/consumable-types/
+[2026-03-07 20:34:34.564222] START GET /api/consumable-attribute-definitions/
+[2026-03-07 20:34:34.609956] END   GET /api/consumable-types/ -> 200
+[2026-03-07 20:34:34.610544] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 20:34:34.615708] START GET /api/consumable-types/
+[2026-03-07 20:34:34.616570] START GET /api/consumable-attribute-definitions/
+[2026-03-07 20:34:34.655359] END   GET /api/consumable-types/ -> 200
+[2026-03-07 20:34:34.655805] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 20:34:35.725901] START GET /api/stock-item-movements-approval/pending/
+[2026-03-07 20:34:35.726667] START GET /api/consumable-movements-approval/pending/
+[2026-03-07 20:34:35.775803] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-07 20:34:35.784382] START GET /api/consumable-movements-approval/pending/
+[2026-03-07 20:34:35.819662] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-07 20:34:35.871754] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-07 20:34:35.876170] START GET /api/stock-item-movements-approval/pending/
+[2026-03-07 20:34:35.943675] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-07 20:34:36.567576] START GET /api/maintenance-step-item-requests/
+[2026-03-07 20:34:36.570490] START GET /api/rooms/
+[2026-03-07 20:34:36.618889] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-07 20:34:36.627011] START GET /api/maintenance-step-item-requests/
+[2026-03-07 20:34:36.630180] END   GET /api/rooms/ -> 200
+[2026-03-07 20:34:36.636526] START GET /api/rooms/
+[2026-03-07 20:34:36.670864] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-07 20:34:36.684480] END   GET /api/rooms/ -> 200
+[2026-03-07 20:34:36.995121] START GET /api/destruction-certificates/
+[2026-03-07 20:34:36.998802] START GET /api/assets/
+[2026-03-07 20:34:37.001530] START GET /api/stock-items/
+[2026-03-07 20:34:37.002045] START GET /api/consumables/
+[2026-03-07 20:34:37.030902] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:34:37.036583] START GET /api/destruction-certificates/
+[2026-03-07 20:34:37.038838] END   GET /api/consumables/ -> 200
+[2026-03-07 20:34:37.039160] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:34:37.043881] START GET /api/consumables/
+[2026-03-07 20:34:37.044681] START GET /api/stock-items/
+[2026-03-07 20:34:37.070041] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:34:37.078955] END   GET /api/consumables/ -> 200
+[2026-03-07 20:34:37.080243] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:34:37.164089] END   GET /api/assets/ -> 200
+[2026-03-07 20:34:37.170860] START GET /api/assets/
+[2026-03-07 20:34:37.213490] END   GET /api/assets/ -> 200
+[2026-03-07 20:34:53.706260] START POST /api/auth/login/
+[2026-03-07 20:34:53.752773] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 20:35:01.183693] START POST /api/auth/login/
+[2026-03-07 20:35:01.230922] END   POST /api/auth/login/ -> 200
+[2026-03-07 20:35:04.100947] START GET /api/destruction-certificates/
+[2026-03-07 20:35:04.101894] START GET /api/assets/
+[2026-03-07 20:35:04.104368] START GET /api/stock-items/
+[2026-03-07 20:35:04.106356] START GET /api/consumables/
+[2026-03-07 20:35:04.135133] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:35:04.141682] START GET /api/destruction-certificates/
+[2026-03-07 20:35:04.144594] END   GET /api/consumables/ -> 200
+[2026-03-07 20:35:04.146322] END   GET /api/assets/ -> 200
+[2026-03-07 20:35:04.146469] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:35:04.153097] START GET /api/consumables/
+[2026-03-07 20:35:04.153505] START GET /api/stock-items/
+[2026-03-07 20:35:04.154280] START GET /api/assets/
+[2026-03-07 20:35:04.179339] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:35:04.189000] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:35:04.193650] END   GET /api/consumables/ -> 200
+[2026-03-07 20:35:04.196757] END   GET /api/assets/ -> 200
+[2026-03-07 20:35:07.765701] START POST /api/destruction-certificates/1/validate/
+[2026-03-07 20:35:07.923782] END   POST /api/destruction-certificates/1/validate/ -> 200
+[2026-03-07 20:35:07.934546] START GET /api/assets/
+[2026-03-07 20:35:07.933706] START GET /api/destruction-certificates/
+[2026-03-07 20:35:07.935776] START GET /api/stock-items/
+[2026-03-07 20:35:07.937710] START GET /api/consumables/
+[2026-03-07 20:35:07.981424] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:35:07.985284] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:35:07.985600] END   GET /api/assets/ -> 200
+[2026-03-07 20:35:07.985884] END   GET /api/consumables/ -> 200
+[2026-03-07 20:37:29.087472] START POST /api/auth/login/
+[2026-03-07 20:37:29.150203] END   POST /api/auth/login/ -> 200
+[2026-03-07 20:37:30.834889] START GET /api/destruction-certificates/
+[2026-03-07 20:37:30.835255] START GET /api/assets/
+[2026-03-07 20:37:30.836063] START GET /api/stock-items/
+[2026-03-07 20:37:30.863022] START GET /api/consumables/
+[2026-03-07 20:37:30.905127] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:37:30.909041] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:37:30.909543] END   GET /api/assets/ -> 200
+[2026-03-07 20:37:30.912059] END   GET /api/consumables/ -> 200
+[2026-03-07 20:37:30.916538] START GET /api/stock-items/
+[2026-03-07 20:37:30.917304] START GET /api/destruction-certificates/
+[2026-03-07 20:37:30.918979] START GET /api/assets/
+[2026-03-07 20:37:30.920721] START GET /api/consumables/
+[2026-03-07 20:37:30.955694] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:37:30.955833] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:37:30.959117] END   GET /api/assets/ -> 200
+[2026-03-07 20:37:30.961531] END   GET /api/consumables/ -> 200
+[2026-03-07 20:37:37.677424] START POST /api/auth/login/
+[2026-03-07 20:37:37.721821] END   POST /api/auth/login/ -> 200
+[2026-03-07 20:37:38.474326] START GET /api/consumable-types/
+[2026-03-07 20:37:38.483096] START GET /api/consumable-attribute-definitions/
+[2026-03-07 20:37:38.519435] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 20:37:38.523670] START GET /api/consumable-attribute-definitions/
+[2026-03-07 20:37:38.530296] END   GET /api/consumable-types/ -> 200
+[2026-03-07 20:37:38.535516] START GET /api/consumable-types/
+[2026-03-07 20:37:38.556626] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 20:37:38.568706] END   GET /api/consumable-types/ -> 200
+[2026-03-07 20:37:38.907165] START GET /api/destruction-certificates/
+[2026-03-07 20:37:38.910094] START GET /api/assets/
+[2026-03-07 20:37:38.910881] START GET /api/stock-items/
+[2026-03-07 20:37:38.913023] START GET /api/consumables/
+[2026-03-07 20:37:38.939004] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:37:38.945109] START GET /api/destruction-certificates/
+[2026-03-07 20:37:38.946981] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:37:38.947728] END   GET /api/consumables/ -> 200
+[2026-03-07 20:37:38.951540] START GET /api/stock-items/
+[2026-03-07 20:37:38.952275] START GET /api/consumables/
+[2026-03-07 20:37:38.976460] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:37:38.987268] END   GET /api/consumables/ -> 200
+[2026-03-07 20:37:39.057588] END   GET /api/assets/ -> 200
+[2026-03-07 20:37:39.061376] START GET /api/assets/
+[2026-03-07 20:37:39.100967] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:37:39.106369] END   GET /api/assets/ -> 200
+[2026-03-07 20:38:55.618472] START GET /api/destruction-certificates/
+[2026-03-07 20:38:55.619025] START GET /api/assets/
+[2026-03-07 20:38:55.619631] START GET /api/stock-items/
+[2026-03-07 20:38:55.620620] START GET /api/consumables/
+[2026-03-07 20:38:55.680311] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:38:55.680410] END   GET /api/assets/ -> 200
+[2026-03-07 20:38:55.685138] END   GET /api/consumables/ -> 200
+[2026-03-07 20:38:55.687238] START GET /api/stock-items/
+[2026-03-07 20:38:55.687799] START GET /api/assets/
+[2026-03-07 20:38:55.690507] START GET /api/consumables/
+[2026-03-07 20:38:55.695290] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:38:55.699644] START GET /api/destruction-certificates/
+[2026-03-07 20:38:55.724782] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:38:55.729769] END   GET /api/assets/ -> 200
+[2026-03-07 20:38:55.730560] END   GET /api/consumables/ -> 200
+[2026-03-07 20:38:55.739708] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:55:14.308950] START GET /api/destruction-certificates/
+[2026-03-07 20:55:14.310644] START GET /api/assets/
+[2026-03-07 20:55:14.319070] START GET /api/stock-items/
+[2026-03-07 20:55:14.331831] START GET /api/consumables/
+[2026-03-07 20:55:14.376797] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:55:14.376890] END   GET /api/assets/ -> 200
+[2026-03-07 20:55:14.377465] END   GET /api/consumables/ -> 200
+[2026-03-07 20:55:14.384322] START GET /api/stock-items/
+[2026-03-07 20:55:14.384809] START GET /api/assets/
+[2026-03-07 20:55:14.385522] START GET /api/consumables/
+[2026-03-07 20:55:14.430148] END   GET /api/assets/ -> 200
+[2026-03-07 20:55:14.430206] END   GET /api/consumables/ -> 200
+[2026-03-07 20:55:14.430602] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:55:14.468267] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:55:14.473340] START GET /api/destruction-certificates/
+[2026-03-07 20:55:14.512939] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:55:19.920279] START POST /api/auth/login/
+[2026-03-07 20:55:19.965764] END   POST /api/auth/login/ -> 200
+[2026-03-07 20:55:20.883667] START GET /api/consumable-types/
+[2026-03-07 20:55:20.887220] START GET /api/consumable-attribute-definitions/
+[2026-03-07 20:55:20.926393] END   GET /api/consumable-types/ -> 200
+[2026-03-07 20:55:20.926756] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 20:55:20.931305] START GET /api/consumable-types/
+[2026-03-07 20:55:20.933676] START GET /api/consumable-attribute-definitions/
+[2026-03-07 20:55:20.964247] END   GET /api/consumable-types/ -> 200
+[2026-03-07 20:55:20.968372] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 20:55:22.371427] START GET /api/destruction-certificates/
+[2026-03-07 20:55:22.375793] START GET /api/assets/
+[2026-03-07 20:55:22.378843] START GET /api/stock-items/
+[2026-03-07 20:55:22.379353] START GET /api/consumables/
+[2026-03-07 20:55:22.411813] END   GET /api/assets/ -> 200
+[2026-03-07 20:55:22.414088] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:55:22.416185] START GET /api/assets/
+[2026-03-07 20:55:22.419100] START GET /api/stock-items/
+[2026-03-07 20:55:22.420681] END   GET /api/consumables/ -> 200
+[2026-03-07 20:55:22.425623] START GET /api/consumables/
+[2026-03-07 20:55:22.453169] END   GET /api/assets/ -> 200
+[2026-03-07 20:55:22.453540] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:55:22.458829] END   GET /api/consumables/ -> 200
+[2026-03-07 20:55:22.508666] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:55:22.529070] START GET /api/destruction-certificates/
+[2026-03-07 20:55:22.576224] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:59:58.981209] START GET /api/destruction-certificates/
+[2026-03-07 20:59:58.983907] START GET /api/assets/
+[2026-03-07 20:59:58.986214] START GET /api/stock-items/
+[2026-03-07 20:59:58.988796] START GET /api/consumables/
+[2026-03-07 20:59:59.070021] END   GET /api/consumables/ -> 200
+[2026-03-07 20:59:59.070522] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:59:59.070657] END   GET /api/assets/ -> 200
+[2026-03-07 20:59:59.077124] START GET /api/consumables/
+[2026-03-07 20:59:59.080122] START GET /api/assets/
+[2026-03-07 20:59:59.081133] START GET /api/stock-items/
+[2026-03-07 20:59:59.098230] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 20:59:59.103460] START GET /api/destruction-certificates/
+[2026-03-07 20:59:59.120507] END   GET /api/consumables/ -> 200
+[2026-03-07 20:59:59.123222] END   GET /api/assets/ -> 200
+[2026-03-07 20:59:59.123377] END   GET /api/stock-items/ -> 200
+[2026-03-07 20:59:59.139486] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:00:03.282715] START POST /api/destruction-certificates/
+[2026-03-07 21:00:03.354538] END   POST /api/destruction-certificates/ -> 201
+[2026-03-07 21:00:03.367308] START GET /api/assets/
+[2026-03-07 21:00:03.366834] START GET /api/destruction-certificates/
+[2026-03-07 21:00:03.368808] START GET /api/stock-items/
+[2026-03-07 21:00:03.374434] START GET /api/consumables/
+[2026-03-07 21:00:03.416439] END   GET /api/assets/ -> 200
+ificates/ -> 200
+[2026-03-07 21:00:03.417695] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:00:03.419016] END   GET /api/consumables/ -> 200
+[2026-03-07 21:01:00.614981] START GET /api/destruction-certificates/
+[2026-03-07 21:01:00.616154] START GET /api/assets/
+[2026-03-07 21:01:00.617092] START GET /api/stock-items/
+[2026-03-07 21:01:00.617892] START GET /api/consumables/
+[2026-03-07 21:01:00.678157] END   GET /api/assets/ -> 200
+[2026-03-07 21:01:00.679337] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:01:00.680543] END   GET /api/consumables/ -> 200
+[2026-03-07 21:01:00.685281] START GET /api/assets/
+[2026-03-07 21:01:00.685777] START GET /api/stock-items/
+[2026-03-07 21:01:00.687156] START GET /api/consumables/
+[2026-03-07 21:01:00.689605] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:01:00.693599] START GET /api/destruction-certificates/
+[2026-03-07 21:01:00.722740] END   GET /api/assets/ -> 200
+[2026-03-07 21:01:00.723884] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:01:00.728731] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:01:00.729279] END   GET /api/consumables/ -> 200
+[2026-03-07 21:01:34.735523] START GET /api/destruction-certificates/
+[2026-03-07 21:01:34.735950] START GET /api/assets/
+[2026-03-07 21:01:34.738322] START GET /api/stock-items/
+[2026-03-07 21:01:34.740108] START GET /api/consumables/
+[2026-03-07 21:01:34.786613] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:01:34.787317] END   GET /api/consumables/ -> 200
+[2026-03-07 21:01:34.787750] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:01:34.794625] START GET /api/destruction-certificates/
+[2026-03-07 21:01:34.795119] START GET /api/consumables/
+[2026-03-07 21:01:34.795852] START GET /api/assets/
+[2026-03-07 21:01:34.798254] START GET /api/stock-items/
+[2026-03-07 21:01:34.831429] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:01:34.839592] END   GET /api/consumables/ -> 200
+[2026-03-07 21:01:34.840157] END   GET /api/assets/ -> 200
+[2026-03-07 21:01:34.840526] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:02:27.587105] START GET /api/destruction-certificates/
+[2026-03-07 21:02:27.591293] START GET /api/assets/
+[2026-03-07 21:02:27.594558] START GET /api/stock-items/
+[2026-03-07 21:02:27.596832] START GET /api/consumables/
+[2026-03-07 21:02:27.620741] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:02:27.624322] END   GET /api/assets/ -> 200
+[2026-03-07 21:02:27.630104] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:02:27.634965] END   GET /api/consumables/ -> 200
+[2026-03-07 21:02:47.412132] START GET /api/consumables/
+[2026-03-07 21:02:47.413289] START GET /api/stock-items/
+[2026-03-07 21:02:47.411244] START GET /api/destruction-certificates/
+[2026-03-07 21:02:47.414227] START GET /api/assets/
+[2026-03-07 21:02:47.460924] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:02:47.461328] END   GET /api/consumables/ -> 200
+[2026-03-07 21:02:47.461800] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:02:47.465761] END   GET /api/assets/ -> 200
+[2026-03-07 21:02:47.467045] START GET /api/destruction-certificates/
+[2026-03-07 21:02:47.467776] START GET /api/consumables/
+[2026-03-07 21:02:47.470467] START GET /api/stock-items/
+[2026-03-07 21:02:47.473024] START GET /api/assets/
+[2026-03-07 21:02:47.503325] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:02:47.515030] END   GET /api/consumables/ -> 200
+[2026-03-07 21:02:47.515435] END   GET /api/assets/ -> 200
+[2026-03-07 21:02:47.526681] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:10:18.609896] START GET /api/destruction-certificates/
+[2026-03-07 21:10:18.610580] START GET /api/assets/
+[2026-03-07 21:10:18.611086] START GET /api/stock-items/
+[2026-03-07 21:10:18.611646] START GET /api/consumables/
+[2026-03-07 21:10:18.922979] END   GET /api/consumables/ -> 200
+[2026-03-07 21:10:18.924759] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:10:18.928259] END   GET /api/assets/ -> 200
+[2026-03-07 21:10:18.928011] START GET /api/consumables/
+[2026-03-07 21:10:18.928448] START GET /api/stock-items/
+[2026-03-07 21:10:18.933107] START GET /api/assets/
+[2026-03-07 21:10:18.939530] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:10:18.943568] START GET /api/destruction-certificates/
+[2026-03-07 21:10:18.964036] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:10:18.964192] END   GET /api/assets/ -> 200
+[2026-03-07 21:10:18.971363] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:10:18.977776] END   GET /api/consumables/ -> 200
+[2026-03-07 21:11:50.157472] START GET /api/destruction-certificates/1/digital-copy-exists/
+[2026-03-07 21:11:50.191657] END   GET /api/destruction-certificates/1/digital-copy-exists/ -> 200
+[2026-03-07 21:12:04.875633] START POST /api/destruction-certificates/1/upload-digital-copy/
+[2026-03-07 21:12:05.185112] END   POST /api/destruction-certificates/1/upload-digital-copy/ -> 500
+Response Body: DataError at /api/destruction-certificates/1/upload-digital-copy/
+invalid input syntax for type bytea
+LINE 1: ...TE "destruction_certificate" SET "digital_copy" = 'destructi...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/destruction-certificates/1/upload-digital-copy/
+Django Version: 6.0.2
+Python Executable: C:\Users\Bvhvddin\Desktop\Others\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 
+[2026-03-07 21:12:11.521500] START GET /api/destruction-certificates/
+[2026-03-07 21:12:11.521176] START GET /api/assets/
+[2026-03-07 21:12:11.522097] START GET /api/stock-items/
+[2026-03-07 21:12:11.522984] START GET /api/consumables/
+[2026-03-07 21:12:11.564732] END   GET /api/consumables/ -> 200
+[2026-03-07 21:12:11.564998] END   GET /api/assets/ -> 200
+[2026-03-07 21:12:11.570066] START GET /api/consumables/
+[2026-03-07 21:12:11.571001] START GET /api/assets/
+[2026-03-07 21:12:11.612687] END   GET /api/consumables/ -> 200
+[2026-03-07 21:12:11.613141] END   GET /api/assets/ -> 200
+[2026-03-07 21:12:11.670050] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:12:11.675200] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:12:11.676780] START GET /api/destruction-certificates/
+[2026-03-07 21:12:11.680789] START GET /api/stock-items/
+[2026-03-07 21:12:11.721247] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:12:11.723174] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:12:12.581184] START GET /api/destruction-certificates/1/digital-copy-exists/
+[2026-03-07 21:12:12.615686] END   GET /api/destruction-certificates/1/digital-copy-exists/ -> 200
+[2026-03-07 21:12:14.603614] START POST /api/destruction-certificates/1/upload-digital-copy/
+[2026-03-07 21:12:14.671192] END   POST /api/destruction-certificates/1/upload-digital-copy/ -> 500
+Response Body: DataError at /api/destruction-certificates/1/upload-digital-copy/
+invalid input syntax for type bytea
+LINE 1: ...TE "destruction_certificate" SET "digital_copy" = 'destructi...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/destruction-certificates/1/upload-digital-copy/
+Django Version: 6.0.2
+Python Executable: C:\Users\Bvhvddin\Desktop\Others\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 
+[2026-03-07 21:13:46.591398] START GET /api/destruction-certificates/
+[2026-03-07 21:13:46.592096] START GET /api/assets/
+[2026-03-07 21:13:46.592491] START GET /api/stock-items/
+[2026-03-07 21:13:46.596546] START GET /api/consumables/
+[2026-03-07 21:13:46.630907] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:13:46.635864] END   GET /api/assets/ -> 200
+[2026-03-07 21:13:46.638224] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:13:46.638517] END   GET /api/consumables/ -> 200
+[2026-03-07 21:13:46.642874] START GET /api/destruction-certificates/
+[2026-03-07 21:13:46.643232] START GET /api/assets/
+[2026-03-07 21:13:46.644105] START GET /api/stock-items/
+[2026-03-07 21:13:46.647564] START GET /api/consumables/
+[2026-03-07 21:13:46.681106] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:13:46.689456] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:13:46.689785] END   GET /api/consumables/ -> 200
+[2026-03-07 21:13:46.782436] END   GET /api/assets/ -> 200
+[2026-03-07 21:13:48.293620] START GET /api/destruction-certificates/1/digital-copy-exists/
+[2026-03-07 21:13:48.330815] END   GET /api/destruction-certificates/1/digital-copy-exists/ -> 200
+[2026-03-07 21:13:50.536159] START POST /api/destruction-certificates/1/upload-digital-copy/
+[2026-03-07 21:13:50.584202] END   POST /api/destruction-certificates/1/upload-digital-copy/ -> 500
+Response Body: DataError at /api/destruction-certificates/1/upload-digital-copy/
+invalid input syntax for type bytea
+LINE 1: ...TE "destruction_certificate" SET "digital_copy" = 'destructi...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/destruction-certificates/1/upload-digital-copy/
+Django Version: 6.0.2
+Python Executable: C:\Users\Bvhvddin\Desktop\Others\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 
+[2026-03-07 21:14:04.119772] START GET /api/destruction-certificates/1/digital-copy-exists/
+[2026-03-07 21:14:04.157703] END   GET /api/destruction-certificates/1/digital-copy-exists/ -> 200
+[2026-03-07 21:14:06.009625] START POST /api/destruction-certificates/1/upload-digital-copy/
+[2026-03-07 21:14:06.064300] END   POST /api/destruction-certificates/1/upload-digital-copy/ -> 500
+Response Body: DataError at /api/destruction-certificates/1/upload-digital-copy/
+invalid input syntax for type bytea
+LINE 1: ...TE "destruction_certificate" SET "digital_copy" = 'destructi...
+                                                             ^
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/destruction-certificates/1/upload-digital-copy/
+Django Version: 6.0.2
+Python Executable: C:\Users\Bvhvddin\Desktop\Others\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 
+[2026-03-07 21:14:25.447868] START GET /api/destruction-certificates/1/digital-copy-exists/
+[2026-03-07 21:14:25.512809] END   GET /api/destruction-certificates/1/digital-copy-exists/ -> 200
+[2026-03-07 21:14:27.295873] START POST /api/destruction-certificates/1/upload-digital-copy/
+[2026-03-07 21:14:27.341049] END   POST /api/destruction-certificates/1/upload-digital-copy/ -> 200
+[2026-03-07 21:14:27.349626] START GET /api/assets/
+[2026-03-07 21:14:27.350022] START GET /api/destruction-certificates/
+[2026-03-07 21:14:27.351894] START GET /api/stock-items/
+[2026-03-07 21:14:27.354283] START GET /api/consumables/
+[2026-03-07 21:14:27.394839] END   GET /api/assets/ -> 200
+[2026-03-07 21:14:27.395429] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:14:27.395982] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:14:27.396252] END   GET /api/consumables/ -> 200
+[2026-03-07 21:14:27.402333] START GET /api/destruction-certificates/1/digital-copy/
+[2026-03-07 21:14:27.447724] END   GET /api/destruction-certificates/1/digital-copy/ -> 200
+[2026-03-07 21:14:31.029702] START GET /api/destruction-certificates/1/digital-copy-exists/
+[2026-03-07 21:14:31.068838] END   GET /api/destruction-certificates/1/digital-copy-exists/ -> 200
+[2026-03-07 21:14:31.074980] START GET /api/destruction-certificates/1/digital-copy/
+[2026-03-07 21:14:31.109732] END   GET /api/destruction-certificates/1/digital-copy/ -> 200
+[2026-03-07 21:26:13.239681] START GET /api/destruction-certificates/
+[2026-03-07 21:26:13.240992] START GET /api/stock-items/
+[2026-03-07 21:26:13.240309] START GET /api/assets/
+[2026-03-07 21:26:13.243702] START GET /api/consumables/
+[2026-03-07 21:26:13.287863] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:26:13.288524] END   GET /api/assets/ -> 200
+[2026-03-07 21:26:13.288901] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:26:13.294477] START GET /api/destruction-certificates/
+[2026-03-07 21:26:13.295247] START GET /api/stock-items/
+[2026-03-07 21:26:13.297159] START GET /api/assets/
+[2026-03-07 21:26:13.335896] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:26:13.335959] END   GET /api/assets/ -> 200
+[2026-03-07 21:26:13.340531] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:26:13.395537] END   GET /api/consumables/ -> 200
+[2026-03-07 21:26:13.401003] START GET /api/consumables/
+[2026-03-07 21:26:13.433247] END   GET /api/consumables/ -> 200
+[2026-03-07 21:29:05.697842] START POST /api/auth/login/
+[2026-03-07 21:29:05.747297] END   POST /api/auth/login/ -> 200
+[2026-03-07 21:29:07.107878] START GET /api/stock-item-types/
+[2026-03-07 21:29:07.110358] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 21:29:07.149990] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 21:29:07.151011] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 21:29:07.156822] START GET /api/stock-item-types/
+[2026-03-07 21:29:07.157522] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 21:29:07.193777] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 21:29:07.196914] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 21:29:07.647605] START GET /api/purchase-orders/
+[2026-03-07 21:29:07.722207] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 21:29:07.734270] START GET /api/purchase-orders/
+[2026-03-07 21:29:07.780053] END   GET /api/purchase-orders/ -> 200
+[2026-03-07 21:29:10.133558] START GET /api/purchase-orders/4/acceptance-report/
+[2026-03-07 21:29:10.205650] END   GET /api/purchase-orders/4/acceptance-report/ -> 200
+[2026-03-07 21:29:13.573435] START GET /api/purchase-orders/4/acceptance-report/download/
+[2026-03-07 21:29:13.627799] END   GET /api/purchase-orders/4/acceptance-report/download/ -> 200
+[2026-03-07 21:34:22.644477] START POST /api/auth/login/
+[2026-03-07 21:34:22.682074] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 21:37:12.768426] START POST /api/auth/login/
+[2026-03-07 21:37:12.878160] END   POST /api/auth/login/ -> 200
+[2026-03-07 21:37:14.039122] START GET /api/consumable-types/
+[2026-03-07 21:37:14.039954] START GET /api/consumable-attribute-definitions/
+[2026-03-07 21:37:14.093059] END   GET /api/consumable-types/ -> 200
+[2026-03-07 21:37:14.094433] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 21:37:14.099167] START GET /api/consumable-types/
+[2026-03-07 21:37:14.101216] START GET /api/consumable-attribute-definitions/
+[2026-03-07 21:37:14.134337] END   GET /api/consumable-types/ -> 200
+[2026-03-07 21:37:14.134751] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-07 21:37:14.455654] START GET /api/stock-item-types/
+[2026-03-07 21:37:14.470244] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 21:37:14.496086] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 21:37:14.499856] START GET /api/stock-item-types/
+[2026-03-07 21:37:14.506640] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 21:37:14.510735] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 21:37:14.537624] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 21:37:14.544813] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 21:37:15.092795] START GET /api/destruction-certificates/
+[2026-03-07 21:37:15.093411] START GET /api/assets/
+[2026-03-07 21:37:15.102170] START GET /api/stock-items/
+[2026-03-07 21:37:15.104715] START GET /api/consumables/
+[2026-03-07 21:37:15.141851] END   GET /api/assets/ -> 200
+[2026-03-07 21:37:15.143145] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:37:15.143647] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:37:15.144210] END   GET /api/consumables/ -> 200
+[2026-03-07 21:37:15.151581] START GET /api/assets/
+[2026-03-07 21:37:15.153885] START GET /api/destruction-certificates/
+[2026-03-07 21:37:15.152035] START GET /api/stock-items/
+[2026-03-07 21:37:15.154827] START GET /api/consumables/
+[2026-03-07 21:37:15.187365] END   GET /api/assets/ -> 200
+[2026-03-07 21:37:15.193833] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:37:15.194204] END   GET /api/consumables/ -> 200
+[2026-03-07 21:37:15.195047] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:37:16.732663] START GET /api/destruction-certificates/1/digital-copy-exists/
+[2026-03-07 21:37:16.771669] END   GET /api/destruction-certificates/1/digital-copy-exists/ -> 200
+[2026-03-07 21:37:16.783086] START GET /api/destruction-certificates/1/digital-copy/
+[2026-03-07 21:37:16.823729] END   GET /api/destruction-certificates/1/digital-copy/ -> 200
+[2026-03-07 21:37:18.958357] START POST /api/destruction-certificates/2/validate/
+[2026-03-07 21:37:19.000540] END   POST /api/destruction-certificates/2/validate/ -> 200
+[2026-03-07 21:37:19.007204] START GET /api/destruction-certificates/
+[2026-03-07 21:37:19.007687] START GET /api/assets/
+[2026-03-07 21:37:19.009464] START GET /api/stock-items/
+[2026-03-07 21:37:19.012659] START GET /api/consumables/
+[2026-03-07 21:37:19.038954] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:37:19.045973] END   GET /api/assets/ -> 200
+[2026-03-07 21:37:19.047991] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:37:19.169376] END   GET /api/consumables/ -> 200
+[2026-03-07 21:37:20.222344] START GET /api/destruction-certificates/2/digital-copy-exists/
+[2026-03-07 21:37:20.256522] END   GET /api/destruction-certificates/2/digital-copy-exists/ -> 200
+[2026-03-07 21:37:22.753258] START POST /api/destruction-certificates/2/upload-digital-copy/
+[2026-03-07 21:37:22.789092] END   POST /api/destruction-certificates/2/upload-digital-copy/ -> 200
+[2026-03-07 21:37:22.804278] START GET /api/assets/
+[2026-03-07 21:37:22.801826] START GET /api/destruction-certificates/
+[2026-03-07 21:37:22.803562] START GET /api/stock-items/
+[2026-03-07 21:37:22.812595] START GET /api/consumables/
+[2026-03-07 21:37:22.855128] END   GET /api/assets/ -> 200
+[2026-03-07 21:37:22.855474] END   GET /api/stock-items/ -> 200
+[2026-03-07 21:37:22.856987] END   GET /api/destruction-certificates/ -> 200
+[2026-03-07 21:37:22.857493] END   GET /api/consumables/ -> 200
+[2026-03-07 21:37:22.875826] START GET /api/destruction-certificates/2/digital-copy/
+[2026-03-07 21:37:23.158224] END   GET /api/destruction-certificates/2/digital-copy/ -> 200
+[2026-03-07 21:46:47.462616] START POST /api/auth/login/
+[2026-03-07 21:46:47.516785] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 21:49:53.851339] START POST /api/auth/login/
+[2026-03-07 21:49:53.889195] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 21:49:54.420700] START POST /api/auth/login/
+[2026-03-07 21:49:54.580059] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 21:53:03.720621] START POST /api/auth/login/
+[2026-03-07 21:53:03.726540] END   POST /api/auth/login/ -> 400
+Response Body: {"username":["Ensure this field has no more than 20 characters."]}
+[2026-03-07 21:59:09.704399] START POST /api/auth/login/
+[2026-03-07 21:59:09.757924] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 21:59:10.374917] START POST /api/auth/login/
+[2026-03-07 21:59:10.421713] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-07 21:59:27.319338] START POST /api/auth/login/
+[2026-03-07 21:59:27.401941] END   POST /api/auth/login/ -> 200
+[2026-03-07 21:59:49.894994] START POST /api/auth/login/
+[2026-03-07 21:59:49.960421] END   POST /api/auth/login/ -> 200
+[2026-03-07 21:59:52.689412] START GET /api/my-items/
+[2026-03-07 21:59:52.752544] END   GET /api/my-items/ -> 200
+[2026-03-07 21:59:52.758363] START GET /api/my-items/
+[2026-03-07 21:59:52.895686] END   GET /api/my-items/ -> 200
+[2026-03-07 21:59:53.518664] START GET /api/my-items/
+[2026-03-07 21:59:53.566298] END   GET /api/my-items/ -> 200
+[2026-03-07 21:59:53.570660] START GET /api/my-items/
+[2026-03-07 21:59:53.612677] END   GET /api/my-items/ -> 200
+[2026-03-07 22:04:47.973501] START POST /api/auth/login/
+[2026-03-07 22:04:48.068543] END   POST /api/auth/login/ -> 200
+[2026-03-07 22:06:26.388537] START GET /api/maintenances/
+[2026-03-07 22:06:26.389665] START GET /api/persons/
+[2026-03-07 22:06:26.396021] START GET /api/assets/
+[2026-03-07 22:06:26.443859] END   GET /api/assets/ -> 200
+[2026-03-07 22:06:26.444094] END   GET /api/persons/ -> 200
+[2026-03-07 22:06:26.450037] START GET /api/assets/
+[2026-03-07 22:06:26.450549] START GET /api/persons/
+[2026-03-07 22:06:26.484761] END   GET /api/maintenances/ -> 200
+[2026-03-07 22:06:26.486776] END   GET /api/assets/ -> 200
+[2026-03-07 22:06:26.488776] END   GET /api/persons/ -> 200
+[2026-03-07 22:06:26.491046] START GET /api/maintenances/
+[2026-03-07 22:06:26.560464] END   GET /api/maintenances/ -> 200
+[2026-03-07 22:08:06.918602] START GET /api/my-items/
+[2026-03-07 22:08:06.977173] END   GET /api/my-items/ -> 200
+[2026-03-07 22:08:06.981880] START GET /api/my-items/
+[2026-03-07 22:08:07.025199] END   GET /api/my-items/ -> 200
+[2026-03-07 22:08:14.678479] START GET /api/stock-item-types/
+[2026-03-07 22:08:14.679303] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 22:08:14.717180] END   GET /api/stock-item-types/ -> 200
+[2026-03-07 22:08:14.717536] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 22:08:14.721907] START GET /api/stock-item-types/
+[2026-03-07 22:08:14.722282] START GET /api/stock-item-attribute-definitions/
+[2026-03-07 22:08:14.756846] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-07 22:08:14.757192] END   GET /api/stock-item-types/ -> 200

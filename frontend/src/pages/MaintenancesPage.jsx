@@ -32,7 +32,7 @@ const MaintenancesPage = () => {
 
     const isChief = useMemo(() => {
         if (isSuperuser) return true;
-        return user?.roles?.some(r => r.role_code === 'maintenance_chief' || r.role_code === 'exploitation_chief') || false;
+        return user?.roles?.some(r => r.role_code === 'maintenance_chief' || r.role_code === 'exploitation_chief' || r.role_code === 'it_bureau_chief') || false;
     }, [isSuperuser, user]);
 
     const isTechnician = useMemo(() => {

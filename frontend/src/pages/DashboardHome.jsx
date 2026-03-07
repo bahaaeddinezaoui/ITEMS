@@ -20,6 +20,7 @@ const DashboardHome = () => {
     const isMaintenanceChief = isSuperuser || roleCodes.includes('maintenance_chief');
     const isMaintenanceTechnician = roleCodes.includes('maintenance_technician');
     const isExploitationChief = isSuperuser || roleCodes.includes('exploitation_chief');
+    const isItBureauChief = isSuperuser || roleCodes.includes('it_bureau_chief');
     const isStockConsumableResponsible = isSuperuser || roleCodes.includes('stock_consumable_responsible');
     const isAssetResponsible = isSuperuser || roleCodes.includes('asset_responsible');
 
@@ -44,7 +45,7 @@ const DashboardHome = () => {
                 title: 'Assets',
                 subtitle: 'Track equipment & assets',
                 to: '/dashboard/assets',
-                visible: isAssetResponsible || isExploitationChief,
+                visible: isAssetResponsible || isExploitationChief || isItBureauChief,
                 icon: (
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2">
                         <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
@@ -58,7 +59,7 @@ const DashboardHome = () => {
                 title: 'Stock Items',
                 subtitle: 'Manage stock items inventory',
                 to: '/dashboard/stock-items',
-                visible: isStockConsumableResponsible || isExploitationChief,
+                visible: isStockConsumableResponsible || isExploitationChief || isItBureauChief,
                 icon: (
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2">
                         <circle cx="9" cy="21" r="1" />
@@ -73,7 +74,7 @@ const DashboardHome = () => {
                 title: 'Consumables',
                 subtitle: 'Manage consumables inventory',
                 to: '/dashboard/consumables',
-                visible: isStockConsumableResponsible || isExploitationChief,
+                visible: isStockConsumableResponsible || isExploitationChief || isItBureauChief,
                 icon: (
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2">
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
@@ -103,7 +104,7 @@ const DashboardHome = () => {
                 title: 'Reports',
                 subtitle: 'Consult and manage problem reports',
                 to: '/dashboard/reports',
-                visible: isMaintenanceChief || isExploitationChief,
+                visible: isMaintenanceChief || isExploitationChief || isItBureauChief,
                 icon: (
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2">
                         <path d="M3 3h18v18H3z" />
@@ -119,7 +120,7 @@ const DashboardHome = () => {
                 title: 'Maintenance',
                 subtitle: 'Schedule & track repairs',
                 to: '/dashboard/maintenances',
-                visible: isMaintenanceChief || isMaintenanceTechnician,
+                visible: isMaintenanceChief || isMaintenanceTechnician || isItBureauChief,
                 icon: (
                     <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" strokeWidth="2">
                         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
@@ -144,7 +145,7 @@ const DashboardHome = () => {
         ];
 
         return all.filter((c) => c.visible);
-    }, [isAssetResponsible, isExploitationChief, isMaintenanceChief, isMaintenanceTechnician, isStockConsumableResponsible, isSuperuser]);
+    }, [isAssetResponsible, isExploitationChief, isItBureauChief, isMaintenanceChief, isMaintenanceTechnician, isStockConsumableResponsible, isSuperuser]);
 
     return (
         <>

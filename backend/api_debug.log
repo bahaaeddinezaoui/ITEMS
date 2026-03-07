@@ -943,3 +943,46 @@ Password mismatch for user: stock_cons_resp
 [2026-03-05 22:55:39.132550+00:00] Login attempt for: stock_cons_resp
 
 [2026-03-06 19:32:51.096819+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-07 19:29:39.619252+00:00] Login attempt for: asset_resp
+
+[2026-03-07 19:34:32.497042+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-07 19:34:53.708151+00:00] Login attempt for: bensimessaouddaoud
+Password mismatch for user: bensimessaouddaoud
+
+[2026-03-07 19:35:01.185341+00:00] Login attempt for: bensimessaouddaoud
+
+[2026-03-07 19:37:29.094508+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-07 19:37:37.678946+00:00] Login attempt for: bensimessaouddaoud
+
+[2026-03-07 19:55:19.922855+00:00] Login attempt for: bensimessaouddaoud
+
+[2026-03-07 20:29:05.699252+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-07 20:34:22.646781+00:00] Login attempt for: it_bureau_chief
+User not found: it_bureau_chief
+
+[2026-03-07 20:37:12.776404+00:00] Login attempt for: bensimessaouddaoud
+
+[2026-03-07 20:46:47.470183+00:00] Login attempt for: it_bureau_chief
+User not found: it_bureau_chief
+
+[2026-03-07 20:49:53.855805+00:00] Login attempt for: it_bureau_chief
+User not found: it_bureau_chief
+
+[2026-03-07 20:49:54.422000+00:00] Login attempt for: it_bureau_chief
+User not found: it_bureau_chief
+
+[2026-03-07 20:59:09.711453+00:00] Login attempt for: mohsinamoura
+Password mismatch for user: mohsinamoura
+
+[2026-03-07 20:59:10.377041+00:00] Login attempt for: mohsinamoura
+Password mismatch for user: mohsinamoura
+
+[2026-03-07 20:59:27.321291+00:00] Login attempt for: mohsinamoura
+
+[2026-03-07 20:59:49.896954+00:00] Login attempt for: it_bureau_chief
+
+[2026-03-07 21:04:47.982245+00:00] Login attempt for: it_bureau_chief

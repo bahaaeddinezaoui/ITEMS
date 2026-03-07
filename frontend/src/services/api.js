@@ -94,6 +94,50 @@ export const authService = {
     },
 };
 
+export const destructionCertificateService = {
+    getAll: async (params) => {
+        const response = await api.get('destruction-certificates/', { params });
+        return response.data;
+    },
+
+    create: async (payload) => {
+        const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+        const response = isFormData
+            ? await postForm('destruction-certificates/', payload)
+            : await api.post('destruction-certificates/', payload);
+        return response.data;
+    },
+
+    validate: async (id) => {
+        const response = await api.post(`destruction-certificates/${id}/validate/`);
+        return response.data;
+    },
+
+    digitalCopyExists: async (id) => {
+        const response = await api.get(`destruction-certificates/${id}/digital-copy-exists/`);
+        return response.data;
+    },
+
+    uploadDigitalCopy: async (id, payload) => {
+        const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+        const response = isFormData
+            ? await postForm(`destruction-certificates/${id}/upload-digital-copy/`, payload)
+            : await api.post(`destruction-certificates/${id}/upload-digital-copy/`, payload);
+        return response.data;
+    },
+
+    getDigitalCopyBlob: async (id) => {
+        const response = await api.get(`destruction-certificates/${id}/digital-copy/`, {
+            responseType: 'blob',
+        });
+        return response.data;
+    },
+
+    getDigitalCopyUrl: (id) => {
+        return `${API_URL}destruction-certificates/${id}/digital-copy/`;
+    },
+};
+
 // Company Asset Request service
 export const companyAssetRequestService = {
     getAll: async () => {

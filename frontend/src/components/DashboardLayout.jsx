@@ -65,7 +65,8 @@ const DashboardLayout = () => {
     const isExploitationChief = user?.roles?.some(role => role.role_code === 'exploitation_chief');
     const isStockConsumableResponsible = user?.roles?.some(role => role.role_code === 'stock_consumable_responsible');
     const isAssetResponsible = user?.roles?.some(role => role.role_code === 'asset_responsible');
-    const canViewReports = isSuperuser || isMaintenanceChief || isExploitationChief;
+    const isItBureauChief = user?.roles?.some(role => role.role_code === 'it_bureau_chief');
+    const canViewReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
 
     return (
         <div className="dashboard-layout">
@@ -192,17 +193,28 @@ const DashboardLayout = () => {
                         </div>
                     )}
 
-                    {(isExploitationChief || isStockConsumableResponsible || isAssetResponsible) && (
+                    {(isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Inventory</span>
 
-                            {(isExploitationChief || isAssetResponsible) && (
+                            {(isExploitationChief || isItBureauChief || isAssetResponsible) && (
                                 <NavLink to="/dashboard/assets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                                     </svg>
                                     Assets
+                                </NavLink>
+                            )}
+
+                            {(isExploitationChief || isItBureauChief || isStockConsumableResponsible) && (
+                                <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <circle cx="9" cy="21" r="1" />
+                                        <circle cx="20" cy="21" r="1" />
+                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                    </svg>
+                                    Stock Items
                                 </NavLink>
                             )}
 
@@ -241,6 +253,19 @@ const DashboardLayout = () => {
                                         <path d="M8 17h8" />
                                     </svg>
                                     Administrative Certificates
+                                </NavLink>
+                            )}
+
+                            {(isSuperuser || isExploitationChief || isItBureauChief) && (
+                                <NavLink to="/dashboard/destruction-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M3 6h18" />
+                                        <path d="M8 6V4h8v2" />
+                                        <path d="M6 6l1 16h10l1-16" />
+                                        <path d="M10 11v6" />
+                                        <path d="M14 11v6" />
+                                    </svg>
+                                    Destruction Certificates
                                 </NavLink>
                             )}
 
@@ -327,7 +352,7 @@ const DashboardLayout = () => {
                         </div>
                     )}
 
-                    {(isSuperuser || isMaintenanceChief || isMaintenanceTechnician) && (
+                    {(isSuperuser || isMaintenanceChief || isMaintenanceTechnician || isItBureauChief) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Maintenance</span>
                             
