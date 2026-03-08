@@ -51,6 +51,8 @@ const CompanyAssetRequestsPage = () => {
     const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
     const [pendingSaveFields, setPendingSaveFields] = useState([]);
 
+    const [showAllSignaturesModal, setShowAllSignaturesModal] = useState(false);
+
     const openEditModal = (req) => {
         if (!req) return;
         setEditingRequest(req);
@@ -68,12 +70,18 @@ const CompanyAssetRequestsPage = () => {
         setEditingRequest(null);
         setShowSaveConfirmModal(false);
         setPendingSaveFields([]);
+        setShowAllSignaturesModal(false);
         setEditForm({
             is_signed_by_company: false,
             is_signed_by_company_leader: false,
             is_signed_by_regional_provider: false,
             is_signed_by_company_representative: false,
         });
+    };
+
+    const closeAllSignaturesModal = () => {
+        setShowAllSignaturesModal(false);
+        closeEditModal();
     };
 
     const requestToggleSignature = (field, nextChecked) => {
@@ -97,7 +105,7 @@ const CompanyAssetRequestsPage = () => {
         setError(null);
         setSuccess(null);
         try {
-            await companyAssetRequestService.update(editingRequest.company_asset_request_id, {
+            const updated = await companyAssetRequestService.update(editingRequest.company_asset_request_id, {
                 is_signed_by_company: !!editForm.is_signed_by_company,
                 is_signed_by_company_leader: !!editForm.is_signed_by_company_leader,
                 is_signed_by_regional_provider: !!editForm.is_signed_by_regional_provider,
@@ -108,8 +116,17 @@ const CompanyAssetRequestsPage = () => {
             const reqList = data?.results || data || [];
             setRequests(reqList);
 
-            setSuccess('Signatures updated successfully');
-            closeEditModal();
+            const allEstablished = !!updated?.is_signed_by_company
+                && !!updated?.is_signed_by_company_leader
+                && !!updated?.is_signed_by_regional_provider
+                && !!updated?.is_signed_by_company_representative;
+
+            if (allEstablished) {
+                setShowAllSignaturesModal(true);
+            } else {
+                setSuccess('Signatures updated successfully');
+                closeEditModal();
+            }
         } catch (err) {
             setError(err?.response?.data?.error || 'Failed to update signatures');
         } finally {
@@ -628,6 +645,45 @@ const CompanyAssetRequestsPage = () => {
                                 </button>
                                 <button type="button" className="btn btn-primary" onClick={confirmSaveSignatures} disabled={submitting}>
                                     Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showAllSignaturesModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.55)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 'var(--space-6)',
+                        zIndex: 70,
+                    }}
+                    onClick={closeAllSignaturesModal}
+                >
+                    <div
+                        className="card"
+                        style={{ width: '100%', maxWidth: 520 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="card-header">
+                            <h2 className="card-title">All the signatures are established</h2>
+                        </div>
+                        <div className="card-body">
+                            <div style={{ marginBottom: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
+                                All required signatures have been set to Yes.
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <button type="button" className="btn btn-primary" onClick={closeAllSignaturesModal} disabled={submitting}>
+                                    OK
                                 </button>
                             </div>
                         </div>

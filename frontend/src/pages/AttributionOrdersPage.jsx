@@ -485,113 +485,121 @@ const AttributionOrdersPage = () => {
             {success && <div className="badge badge-success" style={{ padding: 'var(--space-4)', width: '100%', marginBottom: 'var(--space-4)', borderRadius: 'var(--radius-md)' }}>{success}</div>}
 
             {viewMode === 'list' ? (
-                <div className="card">
-                    <div className="card-header">
-                        <h2 className="card-title">All Attribution Orders</h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h2 className="card-title" style={{ margin: 0 }}>All Attribution Orders</h2>
                         <button className="btn btn-primary" style={{ width: 'auto' }} onClick={() => setViewMode('create')}>
                             + New Order
                         </button>
                     </div>
-                    <div className="table-container">
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Full Code</th>
-                                    <th>Date</th>
-                                    <th>Barcode</th>
-                                    <th>ID</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {ordersList.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="4" style={{ textAlign: 'center', padding: 'var(--space-4)' }}>No attribution orders found.</td>
-                                    </tr>
-                                ) : (
-                                    ordersList.map(order => (
-                                        <tr key={order.attribution_order_id} onClick={() => handleRowClick(order)} style={{ cursor: 'pointer' }} className="hover-row">
-                                            <td style={{ fontWeight: '500', color: 'var(--color-primary)' }}>{order.attribution_order_full_code}</td>
-                                            <td>{new Date(order.attribution_order_date).toLocaleDateString()}</td>
-                                            <td>{order.attribution_order_barcode || '-'}</td>
-                                            <td>#{order.attribution_order_id}</td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+
+                    {ordersList.length === 0 ? (
+                        <div className="card" style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
+                            <p style={{ color: 'var(--color-text-light)' }}>No attribution orders found.</p>
+                        </div>
+                    ) : (
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+                            gap: 'var(--space-6)'
+                        }}>
+                            {ordersList.map(order => (
+                                <div
+                                    key={order.attribution_order_id}
+                                    className="card hover-row"
+                                    onClick={() => handleRowClick(order)}
+                                    style={{
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.2s, box-shadow 0.2s',
+                                        padding: 'var(--space-6)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 'var(--space-4)',
+                                        borderLeft: '4px solid var(--color-primary)'
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div>
+                                            <div style={{
+                                                fontSize: 'var(--font-size-lg)',
+                                                fontWeight: '700',
+                                                color: 'var(--color-primary)',
+                                                marginBottom: 'var(--space-1)'
+                                            }}>
+                                                {order.attribution_order_full_code}
+                                            </div>
+                                            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                #{order.attribution_order_id}
+                                            </div>
+                                        </div>
+                                        <div style={{
+                                            fontSize: 'var(--font-size-sm)',
+                                            padding: 'var(--space-1) var(--space-3)',
+                                            backgroundColor: 'var(--color-bg-alt)',
+                                            borderRadius: 'var(--radius-full)',
+                                            fontWeight: '500'
+                                        }}>
+                                            {new Date(order.attribution_order_date).toLocaleDateString()}
+                                        </div>
+                                    </div>
+
+                                    {order.attribution_order_barcode && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+                                                <line x1="6" y1="8" x2="6" y2="16" />
+                                                <line x1="9" y1="8" x2="9" y2="16" />
+                                                <line x1="12" y1="8" x2="12" y2="16" />
+                                                <line x1="15" y1="8" x2="15" y2="16" />
+                                                <line x1="18" y1="8" x2="18" y2="16" />
+                                            </svg>
+                                            {order.attribution_order_barcode}
+                                        </div>
+                                    )}
+
+                                    <div style={{
+                                        marginTop: 'auto',
+                                        display: 'flex',
+                                        justifyContent: 'flex-end',
+                                        color: 'var(--color-primary)',
+                                        fontSize: 'var(--font-size-sm)',
+                                        fontWeight: '600'
+                                    }}>
+                                        View Details →
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             ) : viewMode === 'detail' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-                    <div className="card">
-                        <div className="card-header">
-                            <h2 className="card-title">Order Information</h2>
-                        </div>
-                        <div className="card-body">
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)' }}>
-                                <div>
-                                    <label className="form-label">Full Code</label>
-                                    <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '500' }}>{selectedOrder?.attribution_order_full_code}</div>
-                                </div>
-                                <div>
-                                    <label className="form-label">Date</label>
-                                    <div style={{ fontSize: 'var(--font-size-md)' }}>{selectedOrder ? new Date(selectedOrder.attribution_order_date).toLocaleDateString() : ''}</div>
-                                </div>
-                                <div>
-                                    <label className="form-label">Warehouse</label>
-                                    <div style={{ fontSize: 'var(--font-size-md)' }}>
-                                        {selectedOrder && warehouses.find(w => w.warehouse_id === selectedOrder.warehouse)?.warehouse_name || 'N/A'}
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="form-label">Barcode</label>
-                                    <div style={{ fontSize: 'var(--font-size-md)' }}>{selectedOrder?.attribution_order_barcode || '-'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {orderReceipt && (
-                        <div className="card">
-                            <div className="card-header">
-                                <h2 className="card-title">Receipt Report</h2>
-                            </div>
-                            <div className="card-body">
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)' }}>
-                                    <div>
-                                        <label className="form-label">Report Code</label>
-                                        <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '500' }}>{orderReceipt.report_full_code || '-'}</div>
-                                    </div>
-                                    <div>
-                                        <label className="form-label">Report Date</label>
-                                        <div style={{ fontSize: 'var(--font-size-md)' }}>{orderReceipt.report_datetime ? new Date(orderReceipt.report_datetime).toLocaleString() : '-'}</div>
-                                    </div>
-                                    <div>
-                                        <label className="form-label">Digital Copy</label>
-                                        <div style={{ fontSize: 'var(--font-size-md)' }}>
-                                            {orderReceipt.digital_copy ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setPreviewReceipt(true)}
-                                                    className="btn btn-primary"
-                                                    style={{ padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--font-size-sm)' }}
-                                                >
-                                                    Consult Report
-                                                </button>
-                                            ) : (
-                                                <span style={{ color: 'var(--color-text-light)' }}>No file attached</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
+                    {/* Create Receipt Report Button - Above Order Info */}
                     {selectedOrder && !orderReceipt && (
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button className={`btn btn-${showReceiptForm ? 'secondary' : 'primary'}`} onClick={() => setShowReceiptForm(!showReceiptForm)}>
-                                {showReceiptForm ? 'Cancel Receipt Report' : 'Create Receipt Report'}
+                            <button 
+                                className={`btn btn-${showReceiptForm ? 'secondary' : 'primary'}`} 
+                                onClick={() => setShowReceiptForm(!showReceiptForm)}
+                                style={{ 
+                                    width: 'auto', 
+                                    padding: 'var(--space-3) var(--space-6)',
+                                    minWidth: '180px'
+                                }}
+                            >
+                                {showReceiptForm ? (
+                                    <>Cancel Receipt Report</>
+                                ) : (
+                                    <>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 'var(--space-2)', verticalAlign: 'middle' }}>
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                            <polyline points="14 2 14 8 20 8" />
+                                            <line x1="16" y1="13" x2="8" y2="13" />
+                                            <line x1="16" y1="17" x2="8" y2="17" />
+                                            <polyline points="10 9 9 9 8 9" />
+                                        </svg>
+                                        Create Receipt Report
+                                    </>
+                                )}
                             </button>
                         </div>
                     )}
@@ -631,57 +639,179 @@ const AttributionOrdersPage = () => {
                             </div>
                         </div>
                     )}
-                    <div className="card">
-                        <div className="card-header">
-                            <h2 className="card-title">Associated Assets</h2>
+
+                    {/* Large Div Card for Order Information */}
+                    <div className="card" style={{ padding: 'var(--space-8)', borderLeft: '6px solid var(--color-primary)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
+                            <div>
+                                <h2 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '800', margin: 0, color: 'var(--color-text)' }}>
+                                    {selectedOrder?.attribution_order_full_code}
+                                </h2>
+                                <p style={{ color: 'var(--color-text-secondary)', margin: 'var(--space-1) 0 0 0' }}>
+                                    Order ID: #{selectedOrder?.attribution_order_id}
+                                </p>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Order Date</div>
+                                <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600' }}>
+                                    {selectedOrder ? new Date(selectedOrder.attribution_order_date).toLocaleDateString() : ''}
+                                </div>
+                            </div>
                         </div>
-                        <div className="table-container">
-                            <table className="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Asset Name</th>
-                                        <th>Inventory #</th>
-                                        <th>Serial #</th>
-                                        <th>Status</th>
-                                        <th style={{ width: '70px' }}> </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {orderAssets.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="5" style={{ textAlign: 'center', padding: 'var(--space-4)' }}>No assets linked to this order.</td>
-                                        </tr>
-                                    ) : (
-                                        orderAssets.map(asset => (
-                                            <tr key={asset.asset_id}>
-                                                <td style={{ fontWeight: '500' }}>{asset.asset_name || '-'}</td>
-                                                <td>{asset.asset_inventory_number || '-'}</td>
-                                                <td>{asset.asset_serial_number || '-'}</td>
-                                                <td><span className={`status-badge status-${asset.asset_status?.replace(/\s+/g, '-').toLowerCase()}`}>{asset.asset_status}</span></td>
-                                                <td>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        style={{ padding: '6px 10px', width: 'auto' }}
-                                                        title="Accessories"
-                                                        aria-label="Accessories"
-                                                        onClick={() => {
-                                                            if (!selectedOrder?.attribution_order_id) return;
-                                                            navigate(`/dashboard/attribution-orders/${selectedOrder.attribution_order_id}/assets/${asset.asset_id}/accessories`);
-                                                        }}
-                                                    >
-                                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.19 9.19a2 2 0 1 1-2.83-2.83l8.48-8.48" />
-                                                        </svg>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-8)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                                <div style={{ 
+                                    width: '48px', 
+                                    height: '48px', 
+                                    borderRadius: 'var(--radius-md)', 
+                                    backgroundColor: 'var(--color-bg-alt)', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    color: 'var(--color-primary)'
+                                }}>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                        <circle cx="12" cy="10" r="3" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Warehouse</div>
+                                    <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '600' }}>
+                                        {selectedOrder && warehouses.find(w => w.warehouse_id === selectedOrder.warehouse)?.warehouse_name || 'N/A'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                                <div style={{ 
+                                    width: '48px', 
+                                    height: '48px', 
+                                    borderRadius: 'var(--radius-md)', 
+                                    backgroundColor: 'var(--color-bg-alt)', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    color: 'var(--color-primary)'
+                                }}>
+                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+                                        <line x1="6" y1="8" x2="6" y2="16" />
+                                        <line x1="9" y1="8" x2="9" y2="16" />
+                                        <line x1="12" y1="8" x2="12" y2="16" />
+                                        <line x1="15" y1="8" x2="15" y2="16" />
+                                        <line x1="18" y1="8" x2="18" y2="16" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Barcode</div>
+                                    <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '600' }}>
+                                        {selectedOrder?.attribution_order_barcode || 'No barcode'}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    {orderReceipt && (
+                        <div className="card" style={{ padding: 'var(--space-8)', borderLeft: '6px solid var(--color-success)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
+                                <h3 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', margin: 0 }}>Receipt Report</h3>
+                                {orderReceipt.digital_copy ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setPreviewReceipt(true)}
+                                        className="btn btn-primary"
+                                        style={{ padding: 'var(--space-2) var(--space-6)' }}
+                                    >
+                                        Consult Document
+                                    </button>
+                                ) : (
+                                    <span className="badge">No Attachment</span>
+                                )}
+                            </div>
+                            
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)' }}>
+                                <div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Report Code</div>
+                                    <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600' }}>{orderReceipt.report_full_code || '-'}</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Submission Date</div>
+                                    <div style={{ fontSize: 'var(--font-size-md)' }}>
+                                        {orderReceipt.report_datetime ? new Date(orderReceipt.report_datetime).toLocaleString() : '-'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Associated Assets - Clickable Card */}
+                    {selectedOrder && (
+                        <div
+                            className="card"
+                            onClick={() => {
+                                console.log('Card clicked! Order ID:', selectedOrder?.attribution_order_id);
+                                if (selectedOrder?.attribution_order_id) {
+                                    navigate(`/dashboard/attribution-orders/${selectedOrder.attribution_order_id}/assets`);
+                                }
+                            }}
+                            style={{
+                                cursor: 'pointer',
+                                padding: 'var(--space-8)',
+                                borderLeft: '6px solid var(--color-info)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                backgroundColor: 'var(--color-surface)',
+                                minHeight: '120px'
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
+                                <div style={{ 
+                                    width: '64px', 
+                                    height: '64px', 
+                                    borderRadius: 'var(--radius-lg)', 
+                                    backgroundColor: 'var(--color-bg-alt)', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    color: 'var(--color-info)'
+                                }}>
+                                    <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                                        <line x1="8" y1="21" x2="16" y2="21" />
+                                        <line x1="12" y1="17" x2="12" y2="21" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', margin: 0 }}>Associated Assets</h3>
+                                    <p style={{ color: 'var(--color-text-secondary)', margin: 'var(--space-1) 0 0 0' }}>
+                                        {orderAssets.length === 0 ? 'No assets linked to this order' : `${orderAssets.length} asset${orderAssets.length === 1 ? '' : 's'} linked`}
+                                    </p>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                                {orderAssets.length > 0 && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: 'var(--space-4)' }}>
+                                        <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>First Asset</div>
+                                        <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '600' }}>
+                                            {orderAssets[0].asset_name || orderAssets[0].asset_inventory_number || `Asset #${orderAssets[0].asset_id}`}
+                                        </div>
+                                    </div>
+                                )}
+                                <div style={{ 
+                                    color: 'var(--color-primary)', 
+                                    fontWeight: '600', 
+                                    fontSize: 'var(--font-size-lg)',
+                                    whiteSpace: 'nowrap'
+                                }}>
+                                    View All →
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Included Stock Items */}
                     {includedItems.stock_items.length > 0 && (

@@ -36,6 +36,7 @@ import AttributionOrdersPage from './pages/AttributionOrdersPage';
 import AttributionOrderAssetIncludedItemsPage from './pages/AttributionOrderAssetIncludedItemsPage';
 import AttributionOrderAssetAccessoriesPage from './pages/AttributionOrderAssetAccessoriesPage';
 import AttributionOrderAssetAccessoriesDraftPage from './pages/AttributionOrderAssetAccessoriesDraftPage';
+import AttributionOrderAssetsPage from './pages/AttributionOrderAssetsPage';
 import CompanyAssetRequestsPage from './pages/CompanyAssetRequestsPage';
 import AdministrativeCertificatesPage from './pages/AdministrativeCertificatesPage';
 import DestructionCertificatesPage from './pages/DestructionCertificatesPage';
@@ -422,6 +423,14 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <AttributionOrderAssetAccessoriesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="attribution-orders/:orderId/assets"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
+                                    <AttributionOrderAssetsPage />
                                 </RoleProtectedRoute>
                             }
                         />
