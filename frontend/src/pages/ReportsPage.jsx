@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { assetService, personService, problemReportService, roomService } from '../services/api';
+import { assetService, personService, problemReportService, locationService } from '../services/api';
 
 const ReportsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -15,9 +15,9 @@ const ReportsPage = () => {
     const [maintenanceDescription, setMaintenanceDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
-    const [maintenanceRooms, setMaintenanceRooms] = useState([]);
-    const [selectedMaintenanceRoomId, setSelectedMaintenanceRoomId] = useState('');
-    const [loadingMaintenanceRooms, setLoadingMaintenanceRooms] = useState(false);
+    const [maintenanceLocations, setMaintenanceLocations] = useState([]);
+    const [selectedMaintenanceLocationId, setSelectedMaintenanceLocationId] = useState('');
+    const [loadingMaintenanceLocations, setLoadingMaintenanceLocations] = useState(false);
 
     const [showAssetModal, setShowAssetModal] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState(null);
@@ -70,27 +70,27 @@ const ReportsPage = () => {
         setSelectedReport(report);
         setSelectedTechnician('');
         setMaintenanceDescription(report?.owner_observation || '');
-        setSelectedMaintenanceRoomId('');
+        setSelectedMaintenanceLocationId('');
         setShowCreateMaintenanceModal(true);
     };
 
     useEffect(() => {
-        const loadMaintenanceRooms = async () => {
+        const loadMaintenanceLocations = async () => {
             try {
-                setLoadingMaintenanceRooms(true);
-                const rooms = await roomService.getByRoomType(2);
-                setMaintenanceRooms(Array.isArray(rooms) ? rooms : []);
+                setLoadingMaintenanceLocations(true);
+                const locations = await locationService.getByLocationType(2);
+                setMaintenanceLocations(Array.isArray(locations) ? locations : []);
             } catch {
-                setMaintenanceRooms([]);
+                setMaintenanceLocations([]);
             } finally {
-                setLoadingMaintenanceRooms(false);
+                setLoadingMaintenanceLocations(false);
             }
         };
 
         if (!showCreateMaintenanceModal) return;
         if (selectedReport?.item_type !== 'asset') return;
 
-        loadMaintenanceRooms();
+        loadMaintenanceLocations();
     }, [showCreateMaintenanceModal, selectedReport]);
 
     const openAssetDetails = async (report) => {
@@ -116,8 +116,8 @@ const ReportsPage = () => {
             return;
         }
 
-        if (selectedReport?.item_type === 'asset' && !selectedMaintenanceRoomId) {
-            setError('Please select the maintenance room to send the asset to');
+        if (selectedReport?.item_type === 'asset' && !selectedMaintenanceLocationId) {
+            setError('Please select the maintenance location to send the asset to');
             return;
         }
 
@@ -129,13 +129,13 @@ const ReportsPage = () => {
                 report_id: selectedReport.report_id,
                 technician_person_id: selectedTechnician,
                 description: maintenanceDescription,
-                destination_room_id: selectedMaintenanceRoomId ? Number(selectedMaintenanceRoomId) : null,
+                destination_location_id: selectedMaintenanceLocationId ? Number(selectedMaintenanceLocationId) : null,
             });
             setShowCreateMaintenanceModal(false);
             setSelectedReport(null);
             setSelectedTechnician('');
             setMaintenanceDescription('');
-            setSelectedMaintenanceRoomId('');
+            setSelectedMaintenanceLocationId('');
         } catch (err) {
             const msg = err?.response?.data?.error || err?.message || 'Failed to create maintenance';
             setError(typeof msg === 'string' ? msg : 'Failed to create maintenance');
@@ -265,18 +265,18 @@ const ReportsPage = () => {
 
                                 {selectedReport?.item_type === 'asset' && (
                                     <div className="form-group">
-                                        <label htmlFor="maintenance-room" className="form-label">Destination maintenance room</label>
+                                        <label htmlFor="maintenance-location" className="form-label">Destination maintenance location</label>
                                         <select
-                                            id="maintenance-room"
+                                            id="maintenance-location"
                                             className="form-input"
-                                            value={selectedMaintenanceRoomId}
-                                            onChange={(e) => setSelectedMaintenanceRoomId(e.target.value)}
-                                            disabled={loadingMaintenanceRooms}
+                                            value={selectedMaintenanceLocationId}
+                                            onChange={(e) => setSelectedMaintenanceLocationId(e.target.value)}
+                                            disabled={loadingMaintenanceLocations}
                                         >
-                                            <option value="">{loadingMaintenanceRooms ? '-- Loading Maintenance Rooms --' : '-- Select Maintenance Room --'}</option>
-                                            {maintenanceRooms.map((r) => (
-                                                <option key={r.room_id} value={String(r.room_id)}>
-                                                    {r.room_name} (#{r.room_id})
+                                            <option value="">{loadingMaintenanceLocations ? '-- Loading Maintenance Locations --' : '-- Select Maintenance Location --'}</option>
+                                            {maintenanceLocations.map((r) => (
+                                                <option key={r.location_id} value={String(r.location_id)}>
+                                                    {r.location_name} (#{r.location_id})
                                                 </option>
                                             ))}
                                         </select>

@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
                                 db_column="destination_room_id",
                                 on_delete=django.db.models.deletion.CASCADE,
                                 related_name="problem_report_included_context",
-                                to="api.room",
+                                to="api.location",
                             ),
                         ),
                     ],

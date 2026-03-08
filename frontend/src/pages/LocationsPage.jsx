@@ -1,42 +1,42 @@
 import { useEffect, useState } from 'react';
-import { roomService, roomTypeService } from '../services/api';
+import { locationService, locationTypeService } from '../services/api';
 
-const RoomsPage = () => {
-    const [rooms, setRooms] = useState([]);
-    const [roomTypes, setRoomTypes] = useState([]);
+const LocationsPage = () => {
+    const [locations, setLocations] = useState([]);
+    const [locationTypes, setLocationTypes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState({
-        room_name: '',
-        room_type: '',
+        location_name: '',
+        location_type: '',
     });
 
     useEffect(() => {
-        fetchRooms();
-        fetchRoomTypes();
+        fetchLocations();
+        fetchLocationTypes();
     }, []);
 
-    const fetchRoomTypes = async () => {
+    const fetchLocationTypes = async () => {
         try {
-            const data = await roomTypeService.getAll();
-            setRoomTypes(Array.isArray(data) ? data : []);
+            const data = await locationTypeService.getAll();
+            setLocationTypes(Array.isArray(data) ? data : []);
         } catch (err) {
-            setRoomTypes([]);
+            setLocationTypes([]);
         }
     };
 
-    const fetchRooms = async () => {
+    const fetchLocations = async () => {
         setLoading(true);
         setError(null);
         try {
-            const data = await roomService.getAll();
-            setRooms(Array.isArray(data) ? data : []);
+            const data = await locationService.getAll();
+            setLocations(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch rooms: ' + err.message);
-            setRooms([]);
+            setError('Failed to fetch locations: ' + err.message);
+            setLocations([]);
         } finally {
             setLoading(false);
         }
@@ -57,43 +57,43 @@ const RoomsPage = () => {
 
         try {
             if (editingId) {
-                await roomService.update(editingId, formData);
+                await locationService.update(editingId, formData);
             } else {
-                await roomService.create(formData);
+                await locationService.create(formData);
             }
-            setFormData({ room_name: '', room_type: '' });
+            setFormData({ location_name: '', location_type: '' });
             setShowForm(false);
             setEditingId(null);
-            await fetchRooms();
+            await fetchLocations();
         } catch (err) {
-            setError('Failed to save room: ' + (err.response?.data?.error || err.message));
+            setError('Failed to save location: ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
     };
 
-    const handleEdit = (room) => {
+    const handleEdit = (location) => {
         setFormData({
-            room_name: room.room_name,
-            room_type: room.room_type || '',
+            location_name: location.location_name,
+            location_type: location.location_type || '',
         });
-        setEditingId(room.room_id);
+        setEditingId(location.location_id);
         setShowForm(true);
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this room?')) {
+        if (window.confirm('Are you sure you want to delete this location?')) {
             try {
-                await roomService.delete(id);
-                await fetchRooms();
+                await locationService.delete(id);
+                await fetchLocations();
             } catch (err) {
-                setError('Failed to delete room: ' + err.message);
+                setError('Failed to delete location: ' + err.message);
             }
         }
     };
 
     const handleCancel = () => {
-        setFormData({ room_name: '', room_type: '' });
+        setFormData({ location_name: '', location_type: '' });
         setShowForm(false);
         setEditingId(null);
     };
@@ -101,8 +101,8 @@ const RoomsPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Rooms</h1>
-                <p className="page-subtitle">Manage building rooms</p>
+                <h1 className="page-title">Locations</h1>
+                <p className="page-subtitle">Manage building locations</p>
             </div>
 
             {error && (
@@ -127,7 +127,7 @@ const RoomsPage = () => {
                     borderBottom: '1px solid var(--color-border)'
                 }}>
                     <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                        All Rooms
+                        All Locations
                     </h2>
                     <button
                         onClick={() => {
@@ -149,7 +149,7 @@ const RoomsPage = () => {
                             whiteSpace: 'nowrap'
                         }}
                     >
-                        {showForm ? 'Cancel' : '+ New Room'}
+                        {showForm ? 'Cancel' : '+ New Location'}
                     </button>
                 </div>
 
@@ -163,12 +163,12 @@ const RoomsPage = () => {
                                     fontSize: 'var(--font-size-sm)',
                                     fontWeight: '500'
                                 }}>
-                                    Room Name *
+                                    Location Name *
                                 </label>
                                 <input
                                     type="text"
-                                    name="room_name"
-                                    value={formData.room_name}
+                                    name="location_name"
+                                    value={formData.location_name}
                                     onChange={handleInputChange}
                                     required
                                     placeholder="e.g., Conference Room A"
@@ -192,11 +192,11 @@ const RoomsPage = () => {
                                     fontSize: 'var(--font-size-sm)',
                                     fontWeight: '500'
                                 }}>
-                                    Room Type *
+                                    Location Type *
                                 </label>
                                 <select
-                                    name="room_type"
-                                    value={formData.room_type}
+                                    name="location_type"
+                                    value={formData.location_type}
                                     onChange={handleInputChange}
                                     required
                                     style={{
@@ -209,10 +209,10 @@ const RoomsPage = () => {
                                         fontFamily: 'inherit'
                                     }}
                                 >
-                                    <option value="">Select a room type</option>
-                                    {roomTypes.map((rt) => (
-                                        <option key={rt.room_type_id} value={rt.room_type_id}>
-                                            {rt.room_type_label}
+                                    <option value="">Select a location type</option>
+                                    {locationTypes.map((rt) => (
+                                        <option key={rt.location_type_id} value={rt.location_type_id}>
+                                            {rt.location_type_label}
                                         </option>
                                     ))}
                                 </select>
@@ -264,9 +264,9 @@ const RoomsPage = () => {
                         <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
                             Loading...
                         </div>
-                    ) : rooms.length === 0 ? (
+                    ) : locations.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
-                            No rooms found
+                            No locations found
                         </div>
                     ) : (
                         <div>
@@ -283,19 +283,19 @@ const RoomsPage = () => {
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.5px'
                             }}>
-                                <div>Room Name</div>
-                                <div>Room Type</div>
+                                <div>Location Name</div>
+                                <div>Location Type</div>
                                 <div>Actions</div>
                             </div>
-                            {rooms.map((room, index) => (
+                            {locations.map((location, index) => (
                                 <div
-                                    key={room.room_id}
+                                    key={location.location_id}
                                     style={{
                                         display: 'grid',
                                         gridTemplateColumns: '1fr 200px 100px',
                                         gap: 'var(--space-3)',
                                         padding: 'var(--space-4)',
-                                        borderBottom: index < rooms.length - 1 ? '1px solid var(--color-border)' : 'none',
+                                        borderBottom: index < locations.length - 1 ? '1px solid var(--color-border)' : 'none',
                                         alignItems: 'center',
                                         transition: 'background-color 0.2s'
                                     }}
@@ -308,15 +308,15 @@ const RoomsPage = () => {
                                 >
                                     <div>
                                         <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>
-                                            {room.room_name}
+                                            {location.location_name}
                                         </div>
                                     </div>
                                     <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                        {room.room_type_label || room.room_type}
+                                        {location.location_type_label || location.location_type}
                                     </div>
                                     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                         <button
-                                            onClick={() => handleEdit(room)}
+                                            onClick={() => handleEdit(location)}
                                             style={{
                                                 backgroundColor: 'transparent',
                                                 color: 'var(--color-primary)',
@@ -333,7 +333,7 @@ const RoomsPage = () => {
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(room.room_id)}
+                                            onClick={() => handleDelete(location.location_id)}
                                             style={{
                                                 backgroundColor: 'transparent',
                                                 color: '#c33',
@@ -360,4 +360,4 @@ const RoomsPage = () => {
     );
 };
 
-export default RoomsPage;
+export default LocationsPage;

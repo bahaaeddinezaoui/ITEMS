@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { assetService, maintenanceService, personService, roomService } from '../services/api';
+import { assetService, maintenanceService, personService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const MaintenancesPage = () => {
@@ -20,10 +20,10 @@ const MaintenancesPage = () => {
     const [selectedAsset, setSelectedAsset] = useState('');
     const [createDescription, setCreateDescription] = useState('');
 
-    const [assetCurrentRoom, setAssetCurrentRoom] = useState(null);
-    const [maintenanceRooms, setMaintenanceRooms] = useState([]);
-    const [selectedMaintenanceRoom, setSelectedMaintenanceRoom] = useState('');
-    const [loadingAssetRoom, setLoadingAssetRoom] = useState(false);
+    const [assetCurrentLocation, setAssetCurrentLocation] = useState(null);
+    const [maintenanceLocations, setMaintenanceLocations] = useState([]);
+    const [selectedMaintenanceLocation, setSelectedMaintenanceLocation] = useState('');
+    const [loadingAssetLocation, setLoadingAssetLocation] = useState(false);
 
     const [sortKey, setSortKey] = useState('maintenance_id');
     const [sortDirection, setSortDirection] = useState('desc');
@@ -40,26 +40,23 @@ const MaintenancesPage = () => {
     }, [user]);
 
     useEffect(() => {
+        const loadMaintenances = async () => {
+            setLoading(true);
+            try {
+                const data = await maintenanceService.getAll();
+                setMaintenances(Array.isArray(data) ? data : []);
+            } catch (err) {
+                setError('Failed to fetch maintenances: ' + err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
         loadMaintenances();
         if (isChief) {
             loadTechnicians();
             loadAssets();
         }
     }, [isChief]);
-
-    const loadMaintenances = async () => {
-        try {
-            setLoading(true);
-            const data = await maintenanceService.getAll();
-            setMaintenances(data);
-        } catch (err) {
-            setError('Failed to load maintenances');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
 
     const loadTechnicians = async () => {
         try {
@@ -86,27 +83,27 @@ const MaintenancesPage = () => {
         setSelectedAsset('');
         setSelectedTechnician('');
         setCreateDescription('');
-        setAssetCurrentRoom(null);
-        setMaintenanceRooms([]);
-        setSelectedMaintenanceRoom('');
+        setAssetCurrentLocation(null);
+        setMaintenanceLocations([]);
+        setSelectedMaintenanceLocation('');
         setShowCreateModal(true);
     };
 
-    const isMaintenanceRoom = (room) => {
-        const code = (room?.room_type_code || '').toUpperCase();
-        const label = (room?.room_type_label || '').toLowerCase();
+    const isMaintenanceLocation = (location) => {
+        const code = (location?.location_type_code || '').toUpperCase();
+        const label = (location?.location_type_label || '').toLowerCase();
         if (code && ['MR', 'MAINTENANCE', 'MAINT'].includes(code)) return true;
         return label.includes('maintenance');
     };
 
-    const loadMaintenanceRooms = async () => {
+    const loadMaintenanceLocations = async () => {
         try {
-            const rooms = await roomService.getAll();
-            const filtered = (Array.isArray(rooms) ? rooms : []).filter(isMaintenanceRoom);
-            setMaintenanceRooms(filtered);
+            const locations = await locationService.getAll();
+            const filtered = (Array.isArray(locations) ? locations : []).filter(isMaintenanceLocation);
+            setMaintenanceLocations(filtered);
         } catch (err) {
-            console.error(err);
-            setMaintenanceRooms([]);
+            console.error('Failed to fetch maintenance locations:', err);
+            setMaintenanceLocations([]);
         }
     };
 
@@ -128,13 +125,13 @@ const MaintenancesPage = () => {
                 technician_person_id: selectedTechnician,
                 description: createDescription,
             };
-            if (assetCurrentRoom && !isMaintenanceRoom(assetCurrentRoom)) {
-                if (!selectedMaintenanceRoom) {
-                    setError('Please select the maintenance room to move the asset to');
+            if (assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation)) {
+                if (!selectedMaintenanceLocation) {
+                    setError('Please select the maintenance location to move the asset to');
                     setSubmitting(false);
                     return;
                 }
-                payload.destination_room_id = Number(selectedMaintenanceRoom);
+                payload.destination_location_id = Number(selectedMaintenanceLocation);
             }
             await maintenanceService.createDirect(payload);
             setShowCreateModal(false);
@@ -665,22 +662,22 @@ const MaintenancesPage = () => {
                                         onChange={async (e) => {
                                             const value = e.target.value;
                                             setSelectedAsset(value);
-                                            setAssetCurrentRoom(null);
-                                            setSelectedMaintenanceRoom('');
+                                            setAssetCurrentLocation(null);
+                                            setSelectedMaintenanceLocation('');
                                             if (!value) return;
                                             try {
-                                                setLoadingAssetRoom(true);
-                                                const data = await assetService.getCurrentRoom(value);
-                                                const room = data?.room || null;
-                                                setAssetCurrentRoom(room);
-                                                if (room && !isMaintenanceRoom(room)) {
-                                                    await loadMaintenanceRooms();
+                                                setLoadingAssetLocation(true);
+                                                const data = await assetService.getCurrentLocation(value);
+                                                const location = data?.location || null;
+                                                setAssetCurrentLocation(location);
+                                                if (location && !isMaintenanceLocation(location)) {
+                                                    await loadMaintenanceLocations();
                                                 }
                                             } catch (err) {
                                                 console.error(err);
-                                                setAssetCurrentRoom(null);
+                                                setAssetCurrentLocation(null);
                                             } finally {
-                                                setLoadingAssetRoom(false);
+                                                setLoadingAssetLocation(false);
                                             }
                                         }}
                                     >
@@ -694,7 +691,7 @@ const MaintenancesPage = () => {
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Asset Current Room</label>
+                                    <label className="form-label">Asset Current Location</label>
                                     <div
                                         className="form-input"
                                         style={{
@@ -702,26 +699,26 @@ const MaintenancesPage = () => {
                                             color: 'var(--color-text-primary)',
                                         }}
                                     >
-                                        {loadingAssetRoom
+                                        {loadingAssetLocation
                                             ? 'Loading...'
-                                            : assetCurrentRoom
-                                                ? `${assetCurrentRoom.room_name}${assetCurrentRoom.room_type_label ? ` (${assetCurrentRoom.room_type_label})` : ''}`
+                                            : assetCurrentLocation
+                                                ? `${assetCurrentLocation.location_name}${assetCurrentLocation.location_type_label ? ` (${assetCurrentLocation.location_type_label})` : ''}`
                                                 : '-'}
                                     </div>
                                 </div>
 
-                                {assetCurrentRoom && !isMaintenanceRoom(assetCurrentRoom) && (
+                                {assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation) && (
                                     <div className="form-group">
-                                        <label className="form-label">Move asset to maintenance room</label>
+                                        <label className="form-label">Move asset to maintenance location</label>
                                         <select
                                             className="form-input"
-                                            value={selectedMaintenanceRoom}
-                                            onChange={(e) => setSelectedMaintenanceRoom(e.target.value)}
+                                            value={selectedMaintenanceLocation}
+                                            onChange={(e) => setSelectedMaintenanceLocation(e.target.value)}
                                         >
-                                            <option value="">-- Select Maintenance Room --</option>
-                                            {maintenanceRooms.map((r) => (
-                                                <option key={r.room_id} value={r.room_id}>
-                                                    {r.room_name}{r.room_type_label ? ` (${r.room_type_label})` : ''}
+                                            <option value="">-- Select Maintenance Location --</option>
+                                            {maintenanceLocations.map((r) => (
+                                                <option key={r.location_id} value={r.location_id}>
+                                                    {r.location_name}{r.location_type_label ? ` (${r.location_type_label})` : ''}
                                                 </option>
                                             ))}
                                         </select>

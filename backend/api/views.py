@@ -57,8 +57,8 @@ from .models import (
     PersonReportsProblemOnStockItem,
     PersonRoleMapping,
     Position,
-    Room,
-    RoomType,
+    Location,
+    LocationType,
     StockItem,
     StockItemAttributeDefinition,
     StockItemAttributeValue,
@@ -73,7 +73,10 @@ from .models import (
     AttributionOrder,
     ReceiptReport,
     AdministrativeCertificate,
-    DestructionCertificate,
+    StockItemConsumableDestructionCertificate,
+    AssetDestructionCertificate,
+    AssetDestructionCertificateAsset,
+    AssetFailedExternalMaintenance,
     CompanyAssetRequest,
     StockItemIsCompatibleWithAsset,
     ConsumableIsCompatibleWithAsset,
@@ -96,7 +99,7 @@ from .models import (
     MaintenanceStepAttributeChange,
 )
 
-from .serializers import DestructionCertificateSerializer
+from .serializers import StockItemConsumableDestructionCertificateSerializer, AssetDestructionCertificateSerializer
 
 
 def _parse_default_value(data_type: str | None, default_value: str | None):
@@ -136,8 +139,8 @@ def _parse_default_value(data_type: str | None, default_value: str | None):
 def _cascade_move_composed_items(
     *,
     asset_id: int,
-    source_room_id: int,
-    destination_room_id: int,
+    source_location_id: int,
+    destination_location_id: int,
     movement_reason: str,
     movement_datetime,
     maintenance_step_id=None,
@@ -163,15 +166,15 @@ def _cascade_move_composed_items(
             .order_by("-stock_item_movement_id")
             .first()
         )
-        current_room_id = last_move.destination_room_id if last_move else source_room_id
-        if current_room_id == destination_room_id:
+        current_location_id = last_move.destination_location_id if last_move else source_location_id
+        if current_location_id == destination_location_id:
             continue
 
         StockItemMovement.objects.create(
             stock_item_movement_id=next_stock_move_id,
             stock_item_id=stock_item_id,
-            source_room_id=current_room_id,
-            destination_room_id=destination_room_id,
+            source_location_id=current_location_id,
+            destination_location_id=destination_location_id,
             maintenance_step_id=maintenance_step_id,
             external_maintenance_step_id=external_maintenance_step_id,
             movement_reason=movement_reason,
@@ -188,15 +191,15 @@ def _cascade_move_composed_items(
             .order_by("-consumable_movement_id")
             .first()
         )
-        current_room_id = last_move.destination_room_id if last_move else source_room_id
-        if current_room_id == destination_room_id:
+        current_location_id = last_move.destination_location_id if last_move else source_location_id
+        if current_location_id == destination_location_id:
             continue
 
         ConsumableMovement.objects.create(
             consumable_movement_id=next_consumable_move_id,
             consumable_id=consumable_id,
-            source_room_id=current_room_id,
-            destination_room_id=destination_room_id,
+            source_location_id=current_location_id,
+            destination_location_id=destination_location_id,
             maintenance_step_id=maintenance_step_id,
             external_maintenance_step_id=external_maintenance_step_id,
             movement_reason=movement_reason,
@@ -208,8 +211,8 @@ def _cascade_move_composed_items(
 def _cascade_move_stock_item_consumables(
     *,
     stock_item_id: int,
-    source_room_id: int,
-    destination_room_id: int,
+    source_location_id: int,
+    destination_location_id: int,
     movement_reason: str,
     movement_datetime,
     maintenance_step_id=None,
@@ -231,15 +234,15 @@ def _cascade_move_stock_item_consumables(
             .order_by("-consumable_movement_id")
             .first()
         )
-        current_room_id = last_move.destination_room_id if last_move else source_room_id
-        if current_room_id == destination_room_id:
+        current_location_id = last_move.destination_location_id if last_move else source_location_id
+        if current_location_id == destination_location_id:
             continue
 
         ConsumableMovement.objects.create(
             consumable_movement_id=next_consumable_move_id,
             consumable_id=consumable_id,
-            source_room_id=current_room_id,
-            destination_room_id=destination_room_id,
+            source_location_id=current_location_id,
+            destination_location_id=destination_location_id,
             maintenance_step_id=maintenance_step_id,
             external_maintenance_step_id=external_maintenance_step_id,
             movement_reason=movement_reason,
@@ -512,8 +515,8 @@ from .serializers import (
     PersonSerializer,
     PersonReportsProblemOnAssetSerializer,
     PositionSerializer,
-    RoomSerializer,
-    RoomTypeSerializer,
+    LocationSerializer,
+    LocationTypeSerializer,
     StockItemAttributeDefinitionSerializer,
     StockItemAttributeValueSerializer,
     StockItemBrandSerializer,
@@ -848,30 +851,30 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if not asset:
             return Response({"error": "Maintenance asset not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        destination_room_id = request.data.get("destination_room_id")
-        if not destination_room_id:
-            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        destination_location_id = request.data.get("destination_location_id")
+        if not destination_location_id:
+            return Response({"error": "destination_location_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            destination_room_id_int = int(destination_room_id)
+            destination_location_id_int = int(destination_location_id)
         except (TypeError, ValueError):
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
-        if not destination_room:
-            return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+        destination_location = Location.objects.filter(location_id=destination_location_id_int).first()
+        if not destination_location:
+            return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
 
         last_move = (
-            AssetMovement.objects.select_related("destination_room")
+            AssetMovement.objects.select_related("destination_location")
             .filter(asset_id=asset.asset_id)
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
-            return Response({"error": "Cannot infer asset current room (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+        if not last_move or not last_move.destination_location_id:
+            return Response({"error": "Cannot infer asset current location (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
 
-        source_room = last_move.destination_room
-        if source_room.room_id == destination_room.room_id:
-            return Response({"error": "Asset is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+        source_location = last_move.destination_location
+        if source_location.location_id == destination_location.location_id:
+            return Response({"error": "Asset is already in this location"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
         next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
@@ -880,8 +883,8 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         AssetMovement.objects.create(
             asset_movement_id=next_asset_move_id,
             asset=asset,
-            source_room=source_room,
-            destination_room=destination_room,
+            source_location=source_location,
+            destination_location=destination_location,
             maintenance_step=None,
             external_maintenance_step_id=None,
             movement_reason="return_to_owner",
@@ -891,8 +894,8 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         _cascade_move_composed_items(
             asset_id=asset.asset_id,
-            source_room_id=source_room.room_id,
-            destination_room_id=destination_room.room_id,
+            source_location_id=source_location.location_id,
+            destination_location_id=destination_location.location_id,
             movement_reason="return_to_owner",
             movement_datetime=now_dt,
             maintenance_step_id=None,
@@ -903,8 +906,8 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             {
                 "asset_movement_id": next_asset_move_id,
                 "asset_id": asset.asset_id,
-                "source_room_id": source_room.room_id,
-                "destination_room_id": destination_room.room_id,
+                "source_location_id": source_location.location_id,
+                "destination_location_id": destination_location.location_id,
                 "status": "pending",
             },
             status=status.HTTP_201_CREATED,
@@ -941,8 +944,8 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         return Response({"exists": bool(exists)}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["get"], url_path="return-to-owner-default-room")
-    def return_to_owner_default_room(self, request, pk=None):
+    @action(detail=True, methods=["get"], url_path="return-to-owner-default-location")
+    def return_to_owner_default_location(self, request, pk=None):
         maintenance = self.get_object()
 
         user_account = self._get_user_account(request)
@@ -962,17 +965,17 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         asset_id = getattr(maintenance, "asset_id", None)
         if not asset_id:
-            return Response({"destination_room_id": None}, status=status.HTTP_200_OK)
+            return Response({"destination_location_id": None}, status=status.HTTP_200_OK)
 
         last_move = (
             AssetMovement.objects.filter(asset_id=asset_id)
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.source_room_id:
-            return Response({"destination_room_id": None}, status=status.HTTP_200_OK)
+        if not last_move or not last_move.source_location_id:
+            return Response({"destination_location_id": None}, status=status.HTTP_200_OK)
 
-        return Response({"destination_room_id": int(last_move.source_room_id)}, status=status.HTTP_200_OK)
+        return Response({"destination_location_id": int(last_move.source_location_id)}, status=status.HTTP_200_OK)
 
 
     @action(detail=False, methods=["post"], url_path="create-direct")
@@ -990,7 +993,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         asset_id = request.data.get("asset_id")
         technician_person_id = request.data.get("technician_person_id")
         description = request.data.get("description")
-        destination_room_id = request.data.get("destination_room_id")
+        destination_location_id = request.data.get("destination_location_id")
 
         if not asset_id:
             return Response({"error": "asset_id is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -1002,47 +1005,47 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             return Response({"error": "Asset not found"}, status=status.HTTP_404_NOT_FOUND)
 
         last_move = (
-            AssetMovement.objects.select_related("destination_room", "destination_room__room_type")
+            AssetMovement.objects.select_related("destination_location", "destination_location__location_type")
             .filter(asset_id=asset.asset_id)
             .order_by("-asset_movement_id")
             .first()
         )
-        current_room = last_move.destination_room if last_move else None
+        current_location = last_move.destination_location if last_move else None
 
-        def _is_maintenance_room(room: Room | None) -> bool:
-            if not room or not getattr(room, "room_type", None):
+        def _is_maintenance_location(location: Location | None) -> bool:
+            if not location or not getattr(location, "location_type", None):
                 return False
-            code = getattr(room.room_type, "room_type_code", None)
-            label = (getattr(room.room_type, "room_type_label", None) or "").lower()
+            code = getattr(location.location_type, "location_type_code", None)
+            label = (getattr(location.location_type, "location_type_label", None) or "").lower()
             if code and str(code).upper() in {"MR", "MAINTENANCE", "MAINT"}:
                 return True
             return "maintenance" in label
 
-        if not _is_maintenance_room(current_room):
-            if not destination_room_id:
+        if not current_location or not _is_maintenance_location(current_location):
+            if not destination_location_id:
                 return Response(
                     {
-                        "error": "Asset is not in a maintenance room. destination_room_id is required to move the asset before creating maintenance.",
-                        "current_room": RoomSerializer(current_room).data if current_room else None,
+                        "error": "Asset is not in a maintenance location. destination_location_id is required to move the asset before creating maintenance.",
+                        "current_location": LocationSerializer(current_location).data if current_location else None,
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            destination_room = Room.objects.select_related("room_type").filter(room_id=destination_room_id).first()
-            if not destination_room:
-                return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
-            if not _is_maintenance_room(destination_room):
-                return Response({"error": "destination_room_id must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
-            if not current_room:
-                return Response({"error": "Cannot infer asset current room (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+            destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id).first()
+            if not destination_location:
+                return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+            if not _is_maintenance_location(destination_location):
+                return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+            if not current_location:
+                return Response({"error": "Cannot infer asset current location (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
 
             last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
             next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
             AssetMovement.objects.create(
                 asset_movement_id=next_asset_move_id,
                 asset=asset,
-                source_room=current_room,
-                destination_room=destination_room,
+                source_location=current_location,
+                destination_location=destination_location,
                 maintenance_step=None,
                 external_maintenance_step_id=None,
                 movement_reason="maintenance_create",
@@ -1050,8 +1053,8 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             )
             _cascade_move_composed_items(
                 asset_id=asset.asset_id,
-                source_room_id=current_room.room_id,
-                destination_room_id=destination_room.room_id,
+                source_location_id=current_location.location_id,
+                destination_location_id=destination_location.location_id,
                 movement_reason="maintenance_create",
                 movement_datetime=timezone.now(),
                 maintenance_step_id=None,
@@ -1967,7 +1970,7 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
 
         component_type = request.data.get("component_type")
         component_id = request.data.get("component_id")
-        destination_room_id = request.data.get("destination_room_id")
+        destination_location_id = request.data.get("destination_location_id")
         if component_type not in {"stock_item", "consumable"}:
             return Response({"error": "component_type must be 'stock_item' or 'consumable'"}, status=status.HTTP_400_BAD_REQUEST)
         try:
@@ -1975,16 +1978,16 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         except (TypeError, ValueError):
             return Response({"error": "Invalid component_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        destination_room = None
-        if destination_room_id not in (None, ""):
+        destination_location = None
+        if destination_location_id not in (None, ""):
             try:
-                destination_room_id_int = int(destination_room_id)
+                destination_location_id_int = int(destination_location_id)
             except (TypeError, ValueError):
-                return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-            destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
-            if not destination_room:
-                return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+            destination_location = Location.objects.filter(location_id=destination_location_id_int).first()
+            if not destination_location:
+                return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         maintenance = getattr(step, "maintenance", None)
         asset = getattr(maintenance, "asset", None) if maintenance else None
@@ -2017,55 +2020,55 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         if not updated_rows:
             return Response({"error": "Component not found on asset (or already removed)"}, status=status.HTTP_404_NOT_FOUND)
 
-        if destination_room and component_type == "stock_item":
+        if destination_location and component_type == "stock_item":
             last_move = (
                 StockItemMovement.objects.filter(stock_item_id=component_id_int)
                 .order_by("-stock_item_movement_id")
                 .first()
             )
             if not last_move:
-                return Response({"error": "Cannot infer stock item current room (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Cannot infer stock item current location (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
 
-            source_room = last_move.destination_room
+            source_location = last_move.destination_location
             last_move_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
             next_move_id = (last_move_global.stock_item_movement_id + 1) if last_move_global else 1
 
             StockItemMovement.objects.create(
                 stock_item_movement_id=next_move_id,
                 stock_item_id=component_id_int,
-                source_room=source_room,
-                destination_room=destination_room,
+                source_location=source_location,
+                destination_location=destination_location,
                 maintenance_step=step,
                 movement_reason="maintenance_step_remove",
                 movement_datetime=now_dt,
             )
             _cascade_move_stock_item_consumables(
                 stock_item_id=component_id_int,
-                source_room_id=source_room.room_id,
-                destination_room_id=destination_room.room_id,
+                source_location_id=source_location.location_id,
+                destination_location_id=destination_location.location_id,
                 movement_reason="maintenance_step_remove",
                 movement_datetime=now_dt,
                 maintenance_step_id=step.maintenance_step_id,
                 external_maintenance_step_id=None,
             )
-        elif destination_room and component_type == "consumable":
+        elif destination_location and component_type == "consumable":
             last_move = (
                 ConsumableMovement.objects.filter(consumable_id=component_id_int)
                 .order_by("-consumable_movement_id")
                 .first()
             )
             if not last_move:
-                return Response({"error": "Cannot infer consumable current room (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": "Cannot infer consumable current location (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
 
-            source_room = last_move.destination_room
+            source_location = last_move.destination_location
             last_move_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
             next_move_id = (last_move_global.consumable_movement_id + 1) if last_move_global else 1
 
             ConsumableMovement.objects.create(
                 consumable_movement_id=next_move_id,
                 consumable_id=component_id_int,
-                source_room=source_room,
-                destination_room=destination_room,
+                source_location=source_location,
+                destination_location=destination_location,
                 maintenance_step=step,
                 movement_reason="maintenance_step_remove",
                 movement_datetime=now_dt,
@@ -2093,17 +2096,17 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         except (TypeError, ValueError):
             return Response({"error": "Invalid component_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        destination_room_id = request.data.get("destination_room_id")
-        if not destination_room_id:
-            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        destination_location_id = request.data.get("destination_location_id")
+        if not destination_location_id:
+            return Response({"error": "destination_location_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         try:
-            destination_room_id_int = int(destination_room_id)
+            destination_location_id_int = int(destination_location_id)
         except (TypeError, ValueError):
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
-        if not destination_room:
-            return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+        destination_location = Location.objects.filter(location_id=destination_location_id_int).first()
+        if not destination_location:
+            return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
 
         now_dt = timezone.now()
 
@@ -2112,17 +2115,17 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             if not last_move:
                 return Response({"error": "No movement history for stock item"}, status=status.HTTP_400_BAD_REQUEST)
             
-            source_room = last_move.destination_room
+            source_location = last_move.destination_location
             last_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
-            next_id = (last_global.stock_item_movement_id + 1) if last_global else 1
+            next_move_id = (last_global.stock_item_movement_id + 1) if last_global else 1
 
             StockItemMovement.objects.create(
-                stock_item_movement_id=next_id,
+                stock_item_movement_id=next_move_id,
                 stock_item_id=component_id_int,
-                source_room=source_room,
-                destination_room=destination_room,
+                source_location=source_location,
+                destination_location=destination_location,
                 maintenance_step=step,
-                movement_reason="return_to_owner",
+                movement_reason="maintenance_step_return_to_owner",
                 movement_datetime=now_dt,
                 status="pending",
             )
@@ -2131,15 +2134,15 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             if not last_move:
                 return Response({"error": "No movement history for consumable"}, status=status.HTTP_400_BAD_REQUEST)
 
-            source_room = last_move.destination_room
+            source_location = last_move.destination_location
             last_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
             next_id = (last_global.consumable_movement_id + 1) if last_global else 1
 
             ConsumableMovement.objects.create(
                 consumable_movement_id=next_id,
                 consumable_id=component_id_int,
-                source_room=source_room,
-                destination_room=destination_room,
+                source_location=source_location,
+                destination_location=destination_location,
                 maintenance_step=step,
                 movement_reason="return_to_owner",
                 movement_datetime=now_dt,
@@ -2303,16 +2306,16 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
         if req.status != "pending":
             return Response({"error": "Only pending requests can be fulfilled"}, status=status.HTTP_400_BAD_REQUEST)
 
-        source_room_id = request.data.get("source_room_id")
-        destination_room_id = request.data.get("destination_room_id")
+        source_location_id = request.data.get("source_location_id")
+        destination_location_id = request.data.get("destination_location_id")
         note = request.data.get("note")
-        if not source_room_id or not destination_room_id:
-            return Response({"error": "source_room_id and destination_room_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not source_location_id or not destination_location_id:
+            return Response({"error": "source_location_id and destination_location_id are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        source_room = Room.objects.filter(room_id=source_room_id).first()
-        destination_room = Room.objects.filter(room_id=destination_room_id).first()
-        if not source_room or not destination_room:
-            return Response({"error": "Invalid source/destination room"}, status=status.HTTP_400_BAD_REQUEST)
+        source_location = Location.objects.filter(location_id=source_location_id).first()
+        destination_location = Location.objects.filter(location_id=destination_location_id).first()
+        if not source_location or not destination_location:
+            return Response({"error": "Invalid source/destination location"}, status=status.HTTP_400_BAD_REQUEST)
 
         step = req.maintenance_step
         maintenance = step.maintenance
@@ -2352,8 +2355,8 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
             StockItemMovement.objects.create(
                 stock_item_movement_id=next_move_id,
                 stock_item=stock_item,
-                source_room=source_room,
-                destination_room=destination_room,
+                source_location=source_location,
+                destination_location=destination_location,
                 maintenance_step=step,
                 movement_reason="maintenance_step_fulfill_request",
                 movement_datetime=timezone.now(),
@@ -2361,8 +2364,8 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
 
             _cascade_move_stock_item_consumables(
                 stock_item_id=stock_item.stock_item_id,
-                source_room_id=source_room.room_id,
-                destination_room_id=destination_room.room_id,
+                source_location_id=source_location.location_id,
+                destination_location_id=destination_location.location_id,
                 movement_reason="maintenance_step_fulfill_request",
                 movement_datetime=timezone.now(),
                 maintenance_step_id=step.maintenance_step_id,
@@ -2403,8 +2406,8 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
             ConsumableMovement.objects.create(
                 consumable_movement_id=next_move_id,
                 consumable=consumable,
-                source_room=source_room,
-                destination_room=destination_room,
+                source_location=source_location,
+                destination_location=destination_location,
                 maintenance_step=step,
                 movement_reason="maintenance_step_fulfill_request",
                 movement_datetime=timezone.now(),
@@ -2414,8 +2417,8 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
         else:
             return Response({"error": "Invalid request_type"}, status=status.HTTP_400_BAD_REQUEST)
 
-        req.source_room = source_room
-        req.destination_room = destination_room
+        req.source_location = source_location
+        req.destination_location = destination_location
         req.status = "fulfilled"
         req.fulfilled_at = timezone.now()
         req.fulfilled_by_person = person
@@ -2446,8 +2449,8 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
 
         req.fulfilled_at = None
         req.fulfilled_by_person = None
-        req.source_room = None
-        req.destination_room = None
+        req.source_location = None
+        req.destination_location = None
         req.stock_item = None
         req.consumable = None
         if note is not None:
@@ -2491,28 +2494,28 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
                 end_datetime__isnull=True
             ).values_list("stock_item_id", flat=True)
 
-            last_dest_room_subq = Subquery(
+            last_dest_location_subq = Subquery(
                 StockItemMovement.objects.filter(stock_item_id=OuterRef("stock_item_id"))
                 .order_by("-stock_item_movement_id")
-                .values("destination_room_id")[:1]
+                .values("destination_location_id")[:1]
             )
 
             candidates = (
                 StockItem.objects.filter(stock_item_model_id=req.requested_stock_item_model_id)
                 .exclude(stock_item_id__in=used_stock_item_ids)
-                .annotate(current_room_id=last_dest_room_subq)
-                .exclude(current_room_id__isnull=True)
-                .order_by("?")
+                .annotate(current_location_id=last_dest_location_subq)
+                .exclude(current_location_id__isnull=True)
             )
-            chosen = candidates.first()
+
+            chosen = candidates.order_by("?").first()
             if not chosen:
-                return Response({"error": "No available stock item found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "No eligible stock items found"}, status=status.HTTP_404_NOT_FOUND)
 
             return Response(
                 {
                     "request_type": "stock_item",
                     "stock_item_id": chosen.stock_item_id,
-                    "source_room_id": getattr(chosen, "current_room_id", None),
+                    "source_location_id": getattr(chosen, "current_location_id", None),
                 },
                 status=status.HTTP_200_OK,
             )
@@ -2532,28 +2535,28 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
                 end_datetime__isnull=True
             ).values_list("consumable_id", flat=True)
 
-            last_dest_room_subq = Subquery(
+            last_dest_location_subq = Subquery(
                 ConsumableMovement.objects.filter(consumable_id=OuterRef("consumable_id"))
                 .order_by("-consumable_movement_id")
-                .values("destination_room_id")[:1]
+                .values("destination_location_id")[:1]
             )
 
             candidates = (
                 Consumable.objects.filter(consumable_model_id=req.requested_consumable_model_id)
                 .exclude(consumable_id__in=used_consumable_ids)
-                .annotate(current_room_id=last_dest_room_subq)
-                .exclude(current_room_id__isnull=True)
-                .order_by("?")
+                .annotate(current_location_id=last_dest_location_subq)
+                .exclude(current_location_id__isnull=True)
             )
-            chosen = candidates.first()
+
+            chosen = candidates.order_by("?").first()
             if not chosen:
-                return Response({"error": "No available consumable found"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "No eligible consumables found"}, status=status.HTTP_404_NOT_FOUND)
 
             return Response(
                 {
                     "request_type": "consumable",
                     "consumable_id": chosen.consumable_id,
-                    "source_room_id": getattr(chosen, "current_room_id", None),
+                    "source_location_id": getattr(chosen, "current_location_id", None),
                 },
                 status=status.HTTP_200_OK,
             )
@@ -2591,18 +2594,18 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
                 end_datetime__isnull=True
             ).values_list("stock_item_id", flat=True)
 
-            last_dest_room_subq = Subquery(
+            last_dest_location_subq = Subquery(
                 StockItemMovement.objects.filter(stock_item_id=OuterRef("stock_item_id"))
                 .order_by("-stock_item_movement_id")
-                .values("destination_room_id")[:1]
+                .values("destination_location_id")[:1]
             )
 
             candidates = (
                 StockItem.objects.filter(stock_item_model_id=req.requested_stock_item_model_id)
                 .exclude(stock_item_id__in=used_stock_item_ids)
-                .annotate(current_room_id=last_dest_room_subq)
-                .exclude(current_room_id__isnull=True)
-                .values("stock_item_id", "stock_item_inventory_number", "current_room_id")
+                .annotate(current_location_id=last_dest_location_subq)
+                .exclude(current_location_id__isnull=True)
+                .values("stock_item_id", "stock_item_inventory_number", "current_location_id")
                 .order_by("stock_item_id")
             )
 
@@ -2629,18 +2632,18 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
                 end_datetime__isnull=True
             ).values_list("consumable_id", flat=True)
 
-            last_dest_room_subq = Subquery(
+            last_dest_location_subq = Subquery(
                 ConsumableMovement.objects.filter(consumable_id=OuterRef("consumable_id"))
                 .order_by("-consumable_movement_id")
-                .values("destination_room_id")[:1]
+                .values("destination_location_id")[:1]
             )
 
             candidates = (
                 Consumable.objects.filter(consumable_model_id=req.requested_consumable_model_id)
                 .exclude(consumable_id__in=used_consumable_ids)
-                .annotate(current_room_id=last_dest_room_subq)
-                .exclude(current_room_id__isnull=True)
-                .values("consumable_id", "consumable_inventory_number", "current_room_id")
+                .annotate(current_location_id=last_dest_location_subq)
+                .exclude(current_location_id__isnull=True)
+                .values("consumable_id", "consumable_inventory_number", "current_location_id")
                 .order_by("consumable_id")
             )
 
@@ -2803,16 +2806,16 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        destination_room_id = request.data.get("destination_room_id")
-        if not destination_room_id:
+        destination_location_id = request.data.get("destination_location_id")
+        if not destination_location_id:
             return Response(
-                {"error": "destination_room_id is required"},
+                {"error": "destination_location_id is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             provider_id_int = int(provider_id)
-            destination_room_id_int = int(destination_room_id)
+            destination_location_id_int = int(destination_location_id)
         except (ValueError, TypeError):
             return Response({"error": "Invalid ids"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2832,13 +2835,13 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({"error": "Provider not found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            destination_room = Room.objects.select_related("room_type").get(room_id=destination_room_id_int)
-        except Room.DoesNotExist:
-            return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+            destination_location = Location.objects.select_related("location_type").get(location_id=destination_location_id_int)
+        except Location.DoesNotExist:
+            return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if not destination_room.room_type or destination_room.room_type.room_type_label != "External Maintenance Center":
+        if not destination_location.location_type or destination_location.location_type.location_type_label != "External Maintenance Center":
             return Response(
-                {"error": "Destination room must be of type 'External Maintenance Center'"},
+                {"error": "Destination location must be of type 'External Maintenance Center'"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -2847,14 +2850,14 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({"error": "External maintenance has no associated asset"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_move = (
-            AssetMovement.objects.select_related("destination_room")
+            AssetMovement.objects.select_related("destination_location")
             .filter(asset_id=asset_id)
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
+        if not last_move or not last_move.destination_location_id:
             return Response(
-                {"error": "Cannot infer asset current room (no movement history)"},
+                {"error": "Cannot infer asset current location (no movement history)"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -2866,8 +2869,8 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             AssetMovement.objects.create(
                 asset_movement_id=next_asset_move_id,
                 asset_id=asset_id,
-                source_room_id=last_move.destination_room_id,
-                destination_room_id=destination_room_id_int,
+                source_location_id=last_move.destination_location_id,
+                destination_location_id=destination_location_id_int,
                 maintenance_step_id=None,
                 external_maintenance_step_id=None,
                 movement_reason="Sent to external maintenance provider",
@@ -2875,8 +2878,8 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             )
             _cascade_move_composed_items(
                 asset_id=asset_id,
-                source_room_id=last_move.destination_room_id,
-                destination_room_id=destination_room_id_int,
+                source_location_id=last_move.destination_location_id,
+                destination_location_id=destination_location_id_int,
                 movement_reason="Sent to external maintenance provider",
                 movement_datetime=now,
                 maintenance_step_id=None,
@@ -3047,14 +3050,14 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        destination_room_id = request.data.get("destination_room_id")
-        if not destination_room_id:
-            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        destination_location_id = request.data.get("destination_location_id")
+        if not destination_location_id:
+            return Response({"error": "destination_location_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            destination_room_id_int = int(destination_room_id)
+            destination_location_id_int = int(destination_location_id)
         except (ValueError, TypeError):
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             em = ExternalMaintenance.objects.select_related("maintenance").get(external_maintenance_id=int(pk))
@@ -3072,24 +3075,24 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({"error": "External maintenance has no associated asset"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            destination_room = Room.objects.get(room_id=destination_room_id_int)
-        except Room.DoesNotExist:
-            return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
+            destination_location = Location.objects.get(location_id=destination_location_id_int)
+        except Location.DoesNotExist:
+            return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
 
         last_move = (
-            AssetMovement.objects.select_related("destination_room")
+            AssetMovement.objects.select_related("destination_location")
             .filter(asset_id=asset_id)
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
+        if not last_move or not last_move.destination_location_id:
             return Response(
-                {"error": "Cannot infer asset current room (no movement history)"},
+                {"error": "Cannot infer asset current location (no movement history)"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if last_move.destination_room_id == destination_room_id_int:
-            return Response({"error": "Asset is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+        if last_move.destination_location_id == destination_location_id_int:
+            return Response({"error": "Asset is already in this location"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
         next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
@@ -3106,8 +3109,8 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             AssetMovement.objects.create(
                 asset_movement_id=next_asset_move_id,
                 asset_id=asset_id,
-                source_room_id=last_move.destination_room_id,
-                destination_room_id=destination_room_id_int,
+                source_location_id=last_move.destination_location_id,
+                destination_location_id=destination_location_id_int,
                 maintenance_step_id=None,
                 external_maintenance_step_id=external_step_id,
                 movement_reason="Received by company from external maintenance",
@@ -3115,8 +3118,8 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             )
             _cascade_move_composed_items(
                 asset_id=asset_id,
-                source_room_id=last_move.destination_room_id,
-                destination_room_id=destination_room_id_int,
+                source_location_id=last_move.destination_location_id,
+                destination_location_id=destination_location_id_int,
                 movement_reason="Received by company from external maintenance",
                 movement_datetime=now,
                 maintenance_step_id=None,
@@ -3132,7 +3135,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             )
 
         payload = ExternalMaintenanceSerializer(em).data
-        payload["destination_room"] = {"room_id": destination_room.room_id, "room_name": destination_room.room_name}
+        payload["destination_location"] = {"location_id": destination_location.location_id, "location_name": destination_location.location_name}
         return Response(payload, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="confirm-sent-to-company")
@@ -3269,7 +3272,18 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                 payload["updated"] = {"target_type": target_type, "target_id": target_id_int, "status": "failed"}
                 return Response(payload, status=status.HTTP_200_OK)
 
+            now = timezone.now()
             Asset.objects.filter(asset_id=asset_id).update(asset_status="failed")
+
+            # Record which external maintenance caused the asset to become failed.
+            # This is later used when creating asset destruction certificates.
+            AssetFailedExternalMaintenance.objects.update_or_create(
+                asset_id=asset_id,
+                defaults={
+                    "external_maintenance_id": int(pk),
+                    "failed_datetime": now,
+                },
+            )
 
             updated = {"asset_id": asset_id, "asset_status": "failed"}
 
@@ -3550,7 +3564,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
         if item_type == "asset":
             included_stock_item_ids = request.data.get("included_stock_item_ids") or []
             included_consumable_ids = request.data.get("included_consumable_ids") or []
-            destination_room_id = request.data.get("destination_room_id")
+            destination_location_id = request.data.get("destination_location_id")
 
             try:
                 asset_id_int = int(item_id)
@@ -3582,7 +3596,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
 
             # Asset owners can report a problem, but they must not be able to request moving the asset.
             # Asset movement requests are only initiated when a maintenance chief creates maintenance.
-            if destination_room_id and not (included_stock_item_ids or included_consumable_ids):
+            if destination_location_id and not (included_stock_item_ids or included_consumable_ids):
                 return Response(
                     {
                         "error": "You cannot request moving the asset from a problem report. The maintenance chief must create a maintenance for this asset to initiate an asset movement request.",
@@ -3596,21 +3610,21 @@ class ProblemReportViewSet(viewsets.ViewSet):
             except (TypeError, ValueError):
                 return Response({"error": "Invalid included item ids"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if (included_stock_item_ids or included_consumable_ids) and not destination_room_id:
-                return Response({"error": "destination_room_id is required when including items"}, status=status.HTTP_400_BAD_REQUEST)
+            if (included_stock_item_ids or included_consumable_ids) and not destination_location_id:
+                return Response({"error": "destination_location_id is required when including items"}, status=status.HTTP_400_BAD_REQUEST)
 
-            destination_room = None
-            if destination_room_id:
+            destination_location = None
+            if destination_location_id:
                 try:
-                    destination_room_id_int = int(destination_room_id)
+                    destination_location_id_int = int(destination_location_id)
                 except (TypeError, ValueError):
-                    destination_room = None
-            if (included_stock_item_ids or included_consumable_ids) and destination_room_id:
-                destination_room = Room.objects.select_related("room_type").filter(room_id=destination_room_id).first()
-                if not destination_room:
-                    return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
-                if not destination_room.room_type_id or int(destination_room.room_type_id) != 2:
-                    return Response({"error": "Destination room must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
+                    destination_location = None
+            if (included_stock_item_ids or included_consumable_ids) and destination_location_id:
+                destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id).first()
+                if not destination_location:
+                    return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
+                if not destination_location.location_type_id or int(destination_location.location_type_id) != 2:
+                    return Response({"error": "Destination location must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
 
             last = PersonReportsProblemOnAsset.objects.order_by("-report_id").first()
             next_id = (last.report_id + 1) if last else 1
@@ -3676,15 +3690,15 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     if invalid_consumables:
                         raise ValidationError({"error": f"Invalid consumables selected: {invalid_consumables}"})
 
-                    if not destination_room:
-                        raise ValidationError({"error": "Destination room not found"})
+                    if not destination_location:
+                        raise ValidationError({"error": "Destination location not found"})
 
-                    if not destination_room:
-                        raise ValidationError({"error": "destination_room_id is required when including items"})
+                    if not destination_location:
+                        raise ValidationError({"error": "destination_location_id is required when including items"})
 
                     PersonReportsProblemOnAssetIncludedContext.objects.update_or_create(
                         report_id=report.report_id,
-                        defaults={"destination_room_id": destination_room.room_id},
+                        defaults={"destination_location_id": destination_location.location_id},
                     )
 
                     for stock_item_id_int in included_stock_item_ids:
@@ -3738,7 +3752,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
         report_id = request.data.get("report_id")
         technician_person_id = request.data.get("technician_person_id")
         description = request.data.get("description")
-        destination_room_id = request.data.get("destination_room_id")
+        destination_location_id = request.data.get("destination_location_id")
 
         if item_type not in {"asset", "stock_item", "consumable"}:
             return Response({"error": "Invalid item_type"}, status=status.HTTP_400_BAD_REQUEST)
@@ -3766,7 +3780,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
 
         # Create included-item movements ONLY now (at maintenance creation time), using persisted selections.
         included_ctx = PersonReportsProblemOnAssetIncludedContext.objects.filter(report_id=report.report_id).first()
-        included_destination_room_id = getattr(included_ctx, "destination_room_id", None) if included_ctx else None
+        included_destination_location_id = getattr(included_ctx, "destination_location_id", None) if included_ctx else None
 
         stock_item_ids_to_include = list(
             PersonReportsProblemOnAssetIncludedStockItem.objects.filter(report_id=report.report_id).values_list(
@@ -3779,16 +3793,16 @@ class ProblemReportViewSet(viewsets.ViewSet):
             )
         )
 
-        if (stock_item_ids_to_include or consumable_ids_to_include) and not included_destination_room_id:
+        if (stock_item_ids_to_include or consumable_ids_to_include) and not included_destination_location_id:
             return Response(
-                {"error": "Included items exist for this report but destination maintenance room is missing"},
+                {"error": "Included items exist for this report but destination maintenance location is missing"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if stock_item_ids_to_include or consumable_ids_to_include:
-            destination_room = Room.objects.filter(room_id=included_destination_room_id).first()
-            if not destination_room:
-                return Response({"error": "Destination room not found"}, status=status.HTTP_400_BAD_REQUEST)
+            destination_location = Location.objects.filter(location_id=included_destination_location_id).first()
+            if not destination_location:
+                return Response({"error": "Destination location not found"}, status=status.HTTP_400_BAD_REQUEST)
 
             now_dt = timezone.now()
 
@@ -3807,22 +3821,22 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     .first()
                 )
                 if last_accepted_move:
-                    source_room = last_accepted_move.destination_room
+                    source_location = last_accepted_move.destination_location
                 elif last_move_any and getattr(last_move_any, "status", None) == "pending":
-                    source_room = last_move_any.source_room
+                    source_location = last_move_any.source_location
                 elif last_move_any:
-                    source_room = last_move_any.destination_room
+                    source_location = last_move_any.destination_location
                 else:
                     return Response(
-                        {"error": f"Cannot infer stock item current room (no movement history) for stock_item_id={stock_item_id_int}"},
+                        {"error": f"Cannot infer stock item current location (no movement history) for stock_item_id={stock_item_id_int}"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
                 StockItemMovement.objects.create(
                     stock_item_movement_id=next_stock_move_id,
                     stock_item_id=stock_item_id_int,
-                    source_room=source_room,
-                    destination_room=destination_room,
+                    source_location=source_location,
+                    destination_location=destination_location,
                     maintenance_step=None,
                     external_maintenance_step_id=None,
                     movement_reason=f"problem_report_include_{next_maintenance_id}",
@@ -3846,22 +3860,22 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     .first()
                 )
                 if last_accepted_move:
-                    source_room = last_accepted_move.destination_room
+                    source_location = last_accepted_move.destination_location
                 elif last_move_any and getattr(last_move_any, "status", None) == "pending":
-                    source_room = last_move_any.source_room
+                    source_location = last_move_any.source_location
                 elif last_move_any:
-                    source_room = last_move_any.destination_room
+                    source_location = last_move_any.destination_location
                 else:
                     return Response(
-                        {"error": f"Cannot infer consumable current room (no movement history) for consumable_id={consumable_id_int}"},
+                        {"error": f"Cannot infer consumable current location (no movement history) for consumable_id={consumable_id_int}"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
                 ConsumableMovement.objects.create(
                     consumable_movement_id=next_consumable_move_id,
                     consumable_id=consumable_id_int,
-                    source_room=source_room,
-                    destination_room=destination_room,
+                    source_location=source_location,
+                    destination_location=destination_location,
                     maintenance_step=None,
                     external_maintenance_step_id=None,
                     movement_reason=f"problem_report_include_{next_maintenance_id}",
@@ -3878,72 +3892,73 @@ class ProblemReportViewSet(viewsets.ViewSet):
             except Exception:
                 pass
 
-        # If the asset is not currently in a maintenance room, creating a maintenance should initiate
+        # If the asset is not currently in a maintenance location, creating a maintenance should initiate
         # an asset movement request (pending) to be approved by the asset responsible.
         asset_id = getattr(report, "asset_id", None)
         if asset_id:
             last_move = (
-                AssetMovement.objects.select_related("destination_room", "destination_room__room_type")
+                AssetMovement.objects.select_related("destination_location", "destination_location__location_type")
                 .filter(asset_id=asset_id)
                 .order_by("-asset_movement_id")
                 .first()
             )
-            current_room = last_move.destination_room if last_move else None
+            current_location = last_move.destination_location if last_move else None
 
-            def _is_maintenance_room(room: Room | None) -> bool:
-                if not room or not getattr(room, "room_type", None):
+            def _is_maintenance_location(location: Location | None) -> bool:
+                if not location or not getattr(location, "location_type", None):
                     return False
-                code = getattr(room.room_type, "room_type_code", None)
-                label = (getattr(room.room_type, "room_type_label", None) or "").lower()
+                code = getattr(location.location_type, "location_type_code", None)
+                label = (getattr(location.location_type, "location_type_label", None) or "").lower()
                 if code and str(code).upper() in {"MR", "MAINTENANCE", "MAINT"}:
                     return True
                 return "maintenance" in label
 
             # Always require an asset-responsible decision for maintenance creation.
-            # If the asset is already in a maintenance room, we create a no-op movement (source=destination=current)
+            # If the asset is already in a maintenance location, we create a no-op movement (source=destination=current)
             # purely to represent the approval requirement.
             movement_reason = f"maintenance_create_{next_maintenance_id}"
             already_exists = AssetMovement.objects.filter(asset_id=asset_id, movement_reason=movement_reason).exists()
 
             if not already_exists:
-                if not current_room:
+                if not current_location:
                     return Response(
-                        {"error": "Cannot infer asset current room (no movement history)"},
+                        {"error": "Cannot infer asset current location (no movement history)"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-                if not _is_maintenance_room(current_room):
-                    if not destination_room_id:
+                if not _is_maintenance_location(current_location):
+                    if not destination_location_id:
                         return Response(
                             {
-                                "error": "Asset is not in a maintenance room. destination_room_id is required to request moving the asset to a maintenance room.",
-                                "current_room": RoomSerializer(current_room).data if current_room else None,
+                                "error": "Asset is not in a maintenance location. destination_location_id is required to request moving the asset to a maintenance location.",
+                                "current_location": LocationSerializer(current_location).data if current_location else None,
                             },
                             status=status.HTTP_400_BAD_REQUEST,
                         )
 
                     try:
-                        destination_room_id_int = int(destination_room_id)
+                        destination_location_id_int = int(destination_location_id)
                     except (TypeError, ValueError):
-                        return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-                    destination_room = Room.objects.select_related("room_type").filter(room_id=destination_room_id_int).first()
-                    if not destination_room:
-                        return Response({"error": "Destination room not found"}, status=status.HTTP_404_NOT_FOUND)
-                    if not _is_maintenance_room(destination_room):
-                        return Response({"error": "destination_room_id must be a maintenance room"}, status=status.HTTP_400_BAD_REQUEST)
+                    destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id_int).first()
+                    if not destination_location:
+                        return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
 
-                    dest_room_id = destination_room.room_id
+                    if not _is_maintenance_location(destination_location):
+                        return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    dest_location_id = destination_location.location_id
                 else:
-                    dest_room_id = current_room.room_id
+                    dest_location_id = current_location.location_id
 
                 last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
                 next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
                 AssetMovement.objects.create(
                     asset_movement_id=next_asset_move_id,
                     asset_id=asset_id,
-                    source_room_id=current_room.room_id,
-                    destination_room_id=dest_room_id,
+                    source_location_id=current_location.location_id,
+                    destination_location_id=dest_location_id,
                     maintenance_step_id=None,
                     external_maintenance_step_id=None,
                     movement_reason=movement_reason,
@@ -4539,18 +4554,18 @@ class AssetViewSet(viewsets.ModelViewSet):
                     end_datetime=None
                 )
 
-    @action(detail=True, methods=["get"], url_path="current-room")
-    def current_room(self, request, pk=None):
+    @action(detail=True, methods=["get"], url_path="current-location")
+    def current_location(self, request, pk=None):
         asset = self.get_object()
         last_move = (
-            AssetMovement.objects.select_related("destination_room", "destination_room__room_type")
+            AssetMovement.objects.select_related("destination_location", "destination_location__location_type")
             .filter(asset_id=asset.asset_id)
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
-            return Response({"room": None}, status=status.HTTP_200_OK)
-        return Response({"room": RoomSerializer(last_move.destination_room).data}, status=status.HTTP_200_OK)
+        if not last_move or not last_move.destination_location_id:
+            return Response({"location": None}, status=status.HTTP_200_OK)
+        return Response({"location": LocationSerializer(last_move.destination_location).data}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="move")
     def move(self, request, pk=None):
@@ -4576,35 +4591,35 @@ class AssetViewSet(viewsets.ModelViewSet):
             )
 
         asset = self.get_object()
-        destination_room_id = request.data.get("destination_room_id")
+        destination_location_id = request.data.get("destination_location_id")
         movement_reason = request.data.get("movement_reason") or "manual_move"
-        if not destination_room_id:
-            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not destination_location_id:
+            return Response({"error": "destination_location_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            destination_room_id_int = int(destination_room_id)
+            destination_location_id_int = int(destination_location_id)
         except (TypeError, ValueError):
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
-        if not destination_room:
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+        destination_location = Location.objects.filter(location_id=destination_location_id_int).first()
+        if not destination_location:
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_move = (
-            AssetMovement.objects.select_related("destination_room")
+            AssetMovement.objects.select_related("destination_location")
             .filter(asset_id=asset.asset_id)
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
+        if not last_move or not last_move.destination_location_id:
             return Response(
-                {"error": "Cannot infer asset current room (no movement history)"},
+                {"error": "Cannot infer asset current location (no movement history)"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        source_room = last_move.destination_room
-        if source_room.room_id == destination_room.room_id:
-            return Response({"error": "Asset is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+        source_location = last_move.destination_location
+        if source_location.location_id == destination_location.location_id:
+            return Response({"error": "Asset is already in this location"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
         next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
@@ -4612,8 +4627,8 @@ class AssetViewSet(viewsets.ModelViewSet):
         AssetMovement.objects.create(
             asset_movement_id=next_asset_move_id,
             asset=asset,
-            source_room=source_room,
-            destination_room=destination_room,
+            source_location=source_location,
+            destination_location=destination_location,
             maintenance_step=None,
             external_maintenance_step_id=None,
             movement_reason=movement_reason,
@@ -4622,8 +4637,8 @@ class AssetViewSet(viewsets.ModelViewSet):
 
         _cascade_move_composed_items(
             asset_id=asset.asset_id,
-            source_room_id=source_room.room_id,
-            destination_room_id=destination_room.room_id,
+            source_location_id=source_location.location_id,
+            destination_location_id=destination_location.location_id,
             movement_reason=movement_reason,
             movement_datetime=timezone.now(),
             maintenance_step_id=None,
@@ -4633,8 +4648,8 @@ class AssetViewSet(viewsets.ModelViewSet):
         return Response(
             {
                 "asset_movement_id": next_asset_move_id,
-                "source_room_id": source_room.room_id,
-                "destination_room_id": destination_room.room_id,
+                "source_location_id": source_location.location_id,
+                "destination_location_id": destination_location.location_id,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -5064,17 +5079,17 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         _sync_stock_item_attribute_values(instance)
         return response
 
-    @action(detail=True, methods=["get"], url_path="current-room")
-    def current_room(self, request, pk=None):
+    @action(detail=True, methods=["get"], url_path="current-location")
+    def current_location(self, request, pk=None):
         stock_item = self.get_object()
         last_move = (
             StockItemMovement.objects.filter(stock_item_id=stock_item.stock_item_id)
             .order_by("-stock_item_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
-            return Response({"room_id": None}, status=status.HTTP_200_OK)
-        return Response({"room_id": last_move.destination_room_id}, status=status.HTTP_200_OK)
+        if not last_move or not last_move.destination_location_id:
+            return Response({"location_id": None}, status=status.HTTP_200_OK)
+        return Response({"location_id": last_move.destination_location_id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="move")
     def move(self, request, pk=None):
@@ -5100,35 +5115,35 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             )
 
         stock_item = self.get_object()
-        destination_room_id = request.data.get("destination_room_id")
+        destination_location_id = request.data.get("destination_location_id")
         movement_reason = request.data.get("movement_reason") or "manual_move"
-        if not destination_room_id:
-            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not destination_location_id:
+            return Response({"error": "destination_location_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            destination_room_id_int = int(destination_room_id)
+            destination_location_id_int = int(destination_location_id)
         except (TypeError, ValueError):
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
-        if not destination_room:
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+        destination_location = Location.objects.filter(location_id=destination_location_id_int).first()
+        if not destination_location:
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_move = (
-            StockItemMovement.objects.select_related("destination_room")
+            StockItemMovement.objects.select_related("destination_location")
             .filter(stock_item_id=stock_item.stock_item_id)
             .order_by("-stock_item_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
+        if not last_move or not last_move.destination_location_id:
             return Response(
-                {"error": "Cannot infer stock item current room (no movement history)"},
+                {"error": "Cannot infer stock item current location (no movement history)"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        source_room = last_move.destination_room
-        if source_room.room_id == destination_room.room_id:
-            return Response({"error": "Stock item is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+        source_location = last_move.destination_location
+        if source_location.location_id == destination_location.location_id:
+            return Response({"error": "Stock item is already in this location"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_global_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
         next_move_id = (last_global_move.stock_item_movement_id + 1) if last_global_move else 1
@@ -5136,8 +5151,8 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         StockItemMovement.objects.create(
             stock_item_movement_id=next_move_id,
             stock_item=stock_item,
-            source_room=source_room,
-            destination_room=destination_room,
+            source_location=source_location,
+            destination_location=destination_location,
             maintenance_step=None,
             external_maintenance_step_id=None,
             movement_reason=movement_reason,
@@ -5146,8 +5161,8 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         _cascade_move_stock_item_consumables(
             stock_item_id=stock_item.stock_item_id,
-            source_room_id=source_room.room_id,
-            destination_room_id=destination_room.room_id,
+            source_location_id=source_location.location_id,
+            destination_location_id=destination_location.location_id,
             movement_reason=movement_reason,
             movement_datetime=timezone.now(),
             maintenance_step_id=None,
@@ -5157,8 +5172,8 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         return Response(
             {
                 "stock_item_movement_id": next_move_id,
-                "source_room_id": source_room.room_id,
-                "destination_room_id": destination_room.room_id,
+                "source_location_id": source_location.location_id,
+                "destination_location_id": destination_location.location_id,
             },
             status=status.HTTP_201_CREATED,
         )
@@ -5583,17 +5598,17 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         _sync_consumable_attribute_values(instance)
         return response
 
-    @action(detail=True, methods=["get"], url_path="current-room")
-    def current_room(self, request, pk=None):
+    @action(detail=True, methods=["get"], url_path="current-location")
+    def current_location(self, request, pk=None):
         consumable = self.get_object()
         last_move = (
             ConsumableMovement.objects.filter(consumable_id=consumable.consumable_id)
             .order_by("-consumable_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
-            return Response({"room_id": None}, status=status.HTTP_200_OK)
-        return Response({"room_id": last_move.destination_room_id}, status=status.HTTP_200_OK)
+        if not last_move or not last_move.destination_location_id:
+            return Response({"location_id": None}, status=status.HTTP_200_OK)
+        return Response({"location_id": last_move.destination_location_id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="move")
     def move(self, request, pk=None):
@@ -5619,35 +5634,35 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             )
 
         consumable = self.get_object()
-        destination_room_id = request.data.get("destination_room_id")
+        destination_location_id = request.data.get("destination_location_id")
         movement_reason = request.data.get("movement_reason") or "manual_move"
-        if not destination_room_id:
-            return Response({"error": "destination_room_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not destination_location_id:
+            return Response({"error": "destination_location_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            destination_room_id_int = int(destination_room_id)
+            destination_location_id_int = int(destination_location_id)
         except (TypeError, ValueError):
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        destination_room = Room.objects.filter(room_id=destination_room_id_int).first()
-        if not destination_room:
-            return Response({"error": "Invalid destination_room_id"}, status=status.HTTP_400_BAD_REQUEST)
+        destination_location = Location.objects.filter(location_id=destination_location_id_int).first()
+        if not destination_location:
+            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_move = (
-            ConsumableMovement.objects.select_related("destination_room")
+            ConsumableMovement.objects.select_related("destination_location")
             .filter(consumable_id=consumable.consumable_id)
             .order_by("-consumable_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_room_id:
+        if not last_move or not last_move.destination_location_id:
             return Response(
-                {"error": "Cannot infer consumable current room (no movement history)"},
+                {"error": "Cannot infer consumable current location (no movement history)"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        source_room = last_move.destination_room
-        if source_room.room_id == destination_room.room_id:
-            return Response({"error": "Consumable is already in this room"}, status=status.HTTP_400_BAD_REQUEST)
+        source_location = last_move.destination_location
+        if source_location.location_id == destination_location.location_id:
+            return Response({"error": "Consumable is already in this location"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_global_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
         next_move_id = (last_global_move.consumable_movement_id + 1) if last_global_move else 1
@@ -5655,8 +5670,8 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         ConsumableMovement.objects.create(
             consumable_movement_id=next_move_id,
             consumable=consumable,
-            source_room=source_room,
-            destination_room=destination_room,
+            source_location=source_location,
+            destination_location=destination_location,
             maintenance_step=None,
             external_maintenance_step_id=None,
             movement_reason=movement_reason,
@@ -5666,16 +5681,16 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         return Response(
             {
                 "consumable_movement_id": next_move_id,
-                "source_room_id": source_room.room_id,
-                "destination_room_id": destination_room.room_id,
+                "source_location_id": source_location.location_id,
+                "destination_location_id": destination_location.location_id,
             },
             status=status.HTTP_201_CREATED,
         )
 
 
-class DestructionCertificateViewSet(viewsets.ModelViewSet):
-    queryset = DestructionCertificate.objects.all().order_by("-destruction_certificate_id")
-    serializer_class = DestructionCertificateSerializer
+class StockItemConsumableDestructionCertificateViewSet(viewsets.ModelViewSet):
+    queryset = StockItemConsumableDestructionCertificate.objects.all().order_by("-destruction_certificate_id")
+    serializer_class = StockItemConsumableDestructionCertificateSerializer
     permission_classes = [IsAuthenticated]
 
     def _role_codes(self, user_account: UserAccount | None):
@@ -5717,59 +5732,53 @@ class DestructionCertificateViewSet(viewsets.ModelViewSet):
                 return parsed
             raise ValidationError({field_name: "Must be a list"})
 
-        asset_ids = _parse_id_list(request.data.get("asset_ids"), "asset_ids")
         stock_item_ids = _parse_id_list(request.data.get("stock_item_ids"), "stock_item_ids")
         consumable_ids = _parse_id_list(request.data.get("consumable_ids"), "consumable_ids")
 
         # These roles can include any item type as long as it is failed.
 
         try:
-            asset_ids_int = [int(x) for x in asset_ids]
             stock_item_ids_int = [int(x) for x in stock_item_ids]
             consumable_ids_int = [int(x) for x in consumable_ids]
         except (TypeError, ValueError):
             return Response({"error": "Invalid item id(s)"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not asset_ids_int and not stock_item_ids_int and not consumable_ids_int:
+        if not stock_item_ids_int and not consumable_ids_int:
             return Response({"error": "At least one item must be included"}, status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
-            last_item = DestructionCertificate.objects.order_by("-destruction_certificate_id").first()
+            last_item = StockItemConsumableDestructionCertificate.objects.order_by("-destruction_certificate_id").first()
             next_id = (last_item.destruction_certificate_id + 1) if last_item else 1
 
-            cert = DestructionCertificate.objects.create(destruction_certificate_id=next_id, destruction_datetime=None)
-
-            if asset_ids_int:
-                invalid_assets = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(
-                    asset_status="failed",
-                )
-                if invalid_assets.exists():
-                    raise ValidationError({"asset_ids": "All assets must have status 'failed'"})
-                already_linked = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(destruction_certificate_id__isnull=True)
-                if already_linked.exists():
-                    raise ValidationError({"asset_ids": "Some assets are already linked to a destruction certificate"})
-                Asset.objects.filter(asset_id__in=asset_ids_int).update(destruction_certificate_id=cert.destruction_certificate_id)
+            cert = StockItemConsumableDestructionCertificate.objects.create(
+                destruction_certificate_id=next_id,
+                destruction_datetime=None,
+            )
 
             if stock_item_ids_int:
                 invalid = StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).exclude(stock_item_status="failed")
                 if invalid.exists():
                     raise ValidationError({"stock_item_ids": "All stock items must have status 'failed'"})
-                already_linked = StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).exclude(destruction_certificate_id__isnull=True)
+                already_linked = StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).exclude(
+                    stock_item_consumable_destruction_certificate_id__isnull=True
+                )
                 if already_linked.exists():
                     raise ValidationError({"stock_item_ids": "Some stock items are already linked to a destruction certificate"})
                 StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).update(
-                    destruction_certificate_id=cert.destruction_certificate_id
+                    stock_item_consumable_destruction_certificate_id=cert.destruction_certificate_id
                 )
 
             if consumable_ids_int:
                 invalid = Consumable.objects.filter(consumable_id__in=consumable_ids_int).exclude(consumable_status="failed")
                 if invalid.exists():
                     raise ValidationError({"consumable_ids": "All consumables must have status 'failed'"})
-                already_linked = Consumable.objects.filter(consumable_id__in=consumable_ids_int).exclude(destruction_certificate_id__isnull=True)
+                already_linked = Consumable.objects.filter(consumable_id__in=consumable_ids_int).exclude(
+                    stock_item_consumable_destruction_certificate_id__isnull=True
+                )
                 if already_linked.exists():
                     raise ValidationError({"consumable_ids": "Some consumables are already linked to a destruction certificate"})
                 Consumable.objects.filter(consumable_id__in=consumable_ids_int).update(
-                    destruction_certificate_id=cert.destruction_certificate_id
+                    stock_item_consumable_destruction_certificate_id=cert.destruction_certificate_id
                 )
 
         return Response(self.get_serializer(cert).data, status=status.HTTP_201_CREATED)
@@ -5792,12 +5801,11 @@ class DestructionCertificateViewSet(viewsets.ModelViewSet):
 
         now = timezone.now()
         with transaction.atomic():
-            DestructionCertificate.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(
+            StockItemConsumableDestructionCertificate.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(
                 destruction_datetime=now,
             )
-            Asset.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(asset_status="destroyed")
-            StockItem.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(stock_item_status="destroyed")
-            Consumable.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(consumable_status="destroyed")
+            StockItem.objects.filter(stock_item_consumable_destruction_certificate_id=cert.destruction_certificate_id).update(stock_item_status="destroyed")
+            Consumable.objects.filter(stock_item_consumable_destruction_certificate_id=cert.destruction_certificate_id).update(consumable_status="destroyed")
 
         cert.refresh_from_db()
         return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
@@ -5858,7 +5866,186 @@ class DestructionCertificateViewSet(viewsets.ModelViewSet):
         with open(abs_path, "wb") as f:
             f.write(digital_copy.read())
 
-        DestructionCertificate.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(
+        StockItemConsumableDestructionCertificate.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(
+            digital_copy=rel_path
+        )
+        cert.refresh_from_db()
+        return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
+
+
+class AssetDestructionCertificateViewSet(viewsets.ModelViewSet):
+    queryset = AssetDestructionCertificate.objects.all().order_by("-asset_destruction_certificate_id")
+    serializer_class = AssetDestructionCertificateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _role_codes(self, user_account: UserAccount | None):
+        if not user_account or not getattr(user_account, "is_authenticated", False):
+            return set()
+        if getattr(user_account, "is_superuser", False):
+            return {"superuser"}
+        person = getattr(user_account, "person", None)
+        if not person:
+            return set()
+        return set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+
+    def create(self, request, *args, **kwargs):
+        user_account = getattr(request, "user", None)
+        role_codes = self._role_codes(user_account)
+
+        is_super = getattr(user_account, "is_superuser", False) or "superuser" in role_codes
+        is_asset_responsible = "asset_responsible" in role_codes
+        is_exploitation = "exploitation_chief" in role_codes
+        is_itbc = "it_bureau_chief" in role_codes
+
+        if not (is_super or is_asset_responsible or is_exploitation or is_itbc):
+            return Response(
+                {"error": "Only asset responsible, exploitation chief, IT bureau chief, or superusers can create asset destruction certificates"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        asset_ids = request.data.get("asset_ids")
+        if asset_ids is None or asset_ids == "":
+            asset_ids = []
+        if isinstance(asset_ids, str):
+            try:
+                asset_ids = json.loads(asset_ids)
+            except json.JSONDecodeError:
+                return Response({"error": "asset_ids must be a JSON array"}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(asset_ids, list):
+            return Response({"error": "asset_ids must be a list"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            asset_ids_int = [int(x) for x in asset_ids]
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid asset id(s)"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not asset_ids_int:
+            return Response({"error": "At least one asset must be included"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            last_item = AssetDestructionCertificate.objects.order_by("-asset_destruction_certificate_id").first()
+            next_id = (last_item.asset_destruction_certificate_id + 1) if last_item else 1
+
+            cert = AssetDestructionCertificate.objects.create(
+                asset_destruction_certificate_id=next_id,
+                destruction_datetime=None,
+            )
+
+            invalid_assets = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(asset_status="failed")
+            if invalid_assets.exists():
+                raise ValidationError({"asset_ids": "All assets must have status 'failed'"})
+
+            already_linked = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(destruction_certificate_id__isnull=True)
+            if already_linked.exists():
+                raise ValidationError({"asset_ids": "Some assets are already linked to an asset destruction certificate"})
+
+            missing_origin = AssetFailedExternalMaintenance.objects.filter(asset_id__in=asset_ids_int).count() != len(asset_ids_int)
+            if missing_origin:
+                raise ValidationError({"asset_ids": "Some assets do not have an originating external maintenance recorded"})
+
+            Asset.objects.filter(asset_id__in=asset_ids_int).update(destruction_certificate_id=cert.asset_destruction_certificate_id)
+
+            origins = {
+                row.asset_id: row.external_maintenance_id
+                for row in AssetFailedExternalMaintenance.objects.filter(asset_id__in=asset_ids_int)
+            }
+
+            AssetDestructionCertificateAsset.objects.bulk_create(
+                [
+                    AssetDestructionCertificateAsset(
+                        asset_destruction_certificate_id=cert.asset_destruction_certificate_id,
+                        asset_id=asset_id,
+                        external_maintenance_id=origins[asset_id],
+                    )
+                    for asset_id in asset_ids_int
+                ]
+            )
+
+        return Response(self.get_serializer(cert).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="validate")
+    def validate_certificate(self, request, pk=None):
+        user_account = getattr(request, "user", None)
+        role_codes = self._role_codes(user_account)
+        is_super = getattr(user_account, "is_superuser", False) or "superuser" in role_codes
+        allowed = is_super or ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
+        if not allowed:
+            return Response(
+                {"error": "Only asset responsible, exploitation chief, IT bureau chief, or superusers can validate asset destruction certificates"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cert = self.get_object()
+        if getattr(cert, "destruction_datetime", None) is not None:
+            return Response({"error": "Asset destruction certificate is already validated"}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = timezone.now()
+        with transaction.atomic():
+            AssetDestructionCertificate.objects.filter(asset_destruction_certificate_id=cert.asset_destruction_certificate_id).update(
+                destruction_datetime=now,
+            )
+            Asset.objects.filter(destruction_certificate_id=cert.asset_destruction_certificate_id).update(asset_status="destroyed")
+
+        cert.refresh_from_db()
+        return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="digital-copy-exists")
+    def digital_copy_exists(self, request, pk=None):
+        cert = self.get_object()
+        rel_path = getattr(cert, "digital_copy", None)
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path) if rel_path else None
+        has_file = bool(rel_path) and abs_path is not None and os.path.isfile(abs_path)
+        return Response({"exists": has_file}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"], url_path="digital-copy")
+    def digital_copy(self, request, pk=None):
+        cert = self.get_object()
+        rel_path = getattr(cert, "digital_copy", None)
+        if not rel_path:
+            return Response({"error": "No digital copy stored"}, status=status.HTTP_404_NOT_FOUND)
+
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+        if not os.path.isfile(abs_path):
+            return Response({"error": "Digital copy file missing on server"}, status=status.HTTP_404_NOT_FOUND)
+
+        resp = FileResponse(open(abs_path, "rb"), content_type="application/pdf")
+        resp["Content-Disposition"] = f'inline; filename="asset_destruction_certificate_{cert.asset_destruction_certificate_id}.pdf"'
+        return resp
+
+    @action(detail=True, methods=["post"], url_path="upload-digital-copy")
+    def upload_digital_copy(self, request, pk=None):
+        user_account = getattr(request, "user", None)
+        role_codes = self._role_codes(user_account)
+        is_super = getattr(user_account, "is_superuser", False) or "superuser" in role_codes
+        allowed = is_super or ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
+        if not allowed:
+            return Response(
+                {"error": "Only asset responsible, exploitation chief, IT bureau chief, or superusers can upload asset destruction certificate digital copy"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        cert = self.get_object()
+        if getattr(cert, "destruction_datetime", None) is None:
+            return Response({"error": "Certificate must be validated before uploading the PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        digital_copy = request.FILES.get("digital_copy")
+        if not digital_copy:
+            return Response({"error": "digital_copy file is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        content_type = getattr(digital_copy, "content_type", "") or ""
+        if "pdf" not in content_type.lower():
+            return Response({"error": "digital_copy must be a valid PDF"}, status=status.HTTP_400_BAD_REQUEST)
+
+        rel_dir = os.path.join("asset_destruction_certificates")
+        base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+        os.makedirs(base_dir, exist_ok=True)
+
+        rel_path = os.path.join(rel_dir, f"asset_destruction_certificate_{cert.asset_destruction_certificate_id}.pdf")
+        abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+        with open(abs_path, "wb") as f:
+            f.write(digital_copy.read())
+
+        AssetDestructionCertificate.objects.filter(asset_destruction_certificate_id=cert.asset_destruction_certificate_id).update(
             digital_copy=rel_path
         )
         cert.refresh_from_db()
@@ -5997,34 +6184,34 @@ class ConsumableAttributeValueViewSet(SuperuserWriteMixin, viewsets.ModelViewSet
         return super().destroy(request, *args, **kwargs)
 
 
-# Room ViewSets
-class RoomTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
-    queryset = RoomType.objects.all().order_by("room_type_id")
-    serializer_class = RoomTypeSerializer
+# Location ViewSets
+class LocationTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = LocationType.objects.all().order_by("location_type_id")
+    serializer_class = LocationTypeSerializer
 
 
-class RoomViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
-    queryset = Room.objects.all().order_by("room_id")
-    serializer_class = RoomSerializer
+class LocationViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = Location.objects.all().order_by("location_id")
+    serializer_class = LocationSerializer
 
     def get_queryset(self):
-        queryset = Room.objects.all().order_by("room_id")
-        room_type = self.request.query_params.get("room_type")
-        if room_type is not None:
-            queryset = queryset.filter(room_type=room_type)
+        queryset = Location.objects.all().order_by("location_id")
+        location_type = self.request.query_params.get("location_type")
+        if location_type is not None:
+            queryset = queryset.filter(location_type=location_type)
         return queryset
 
     def create(self, request, *args, **kwargs):
-        denial = self._require_superuser(request, "create rooms")
+        denial = self._require_superuser(request, "create locations")
         if denial:
             return denial
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        last_room = Room.objects.order_by("-room_id").first()
-        next_id = (last_room.room_id + 1) if last_room else 1
-        room = Room.objects.create(room_id=next_id, **serializer.validated_data)
-        return Response(RoomSerializer(room).data, status=status.HTTP_201_CREATED)
+        last_item = Location.objects.order_by("-location_id").first()
+        next_id = (last_item.location_id + 1) if last_item else 1
+        item = Location.objects.create(location_id=next_id, **serializer.validated_data)
+        return Response(LocationSerializer(item).data, status=status.HTTP_201_CREATED)
 
 
 class PhysicalConditionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -6483,8 +6670,8 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
             {
                 "stock_item_movement_id": m.stock_item_movement_id,
                 "stock_item_id": m.stock_item_id,
-                "source_room_id": m.source_room_id,
-                "destination_room_id": m.destination_room_id,
+                "source_location_id": m.source_location_id,
+                "destination_location_id": m.destination_location_id,
                 "movement_reason": m.movement_reason,
                 "movement_datetime": m.movement_datetime,
                 "status": m.status,
@@ -6527,8 +6714,8 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
             {
                 "stock_item_movement_id": movement.stock_item_movement_id,
                 "stock_item_id": movement.stock_item_id,
-                "source_room_id": movement.source_room_id,
-                "destination_room_id": movement.destination_room_id,
+                "source_location_id": movement.source_location_id,
+                "destination_location_id": movement.destination_location_id,
                 "movement_reason": movement.movement_reason,
                 "movement_datetime": movement.movement_datetime,
                 "status": movement.status,
@@ -6573,8 +6760,8 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
             {
                 "consumable_movement_id": m.consumable_movement_id,
                 "consumable_id": m.consumable_id,
-                "source_room_id": m.source_room_id,
-                "destination_room_id": m.destination_room_id,
+                "source_location_id": m.source_location_id,
+                "destination_location_id": m.destination_location_id,
                 "movement_reason": m.movement_reason,
                 "movement_datetime": m.movement_datetime,
                 "status": m.status,
@@ -6620,8 +6807,8 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
             {
                 "consumable_movement_id": movement.consumable_movement_id,
                 "consumable_id": movement.consumable_id,
-                "source_room_id": movement.source_room_id,
-                "destination_room_id": movement.destination_room_id,
+                "source_location_id": movement.source_location_id,
+                "destination_location_id": movement.destination_location_id,
                 "movement_reason": movement.movement_reason,
                 "movement_datetime": movement.movement_datetime,
                 "status": movement.status,
@@ -6667,8 +6854,8 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
             {
                 "asset_movement_id": m.asset_movement_id,
                 "asset_id": m.asset_id,
-                "source_room_id": m.source_room_id,
-                "destination_room_id": m.destination_room_id,
+                "source_location_id": m.source_location_id,
+                "destination_location_id": m.destination_location_id,
                 "movement_reason": m.movement_reason,
                 "movement_datetime": m.movement_datetime,
                 "status": m.status,
@@ -6714,8 +6901,8 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
             {
                 "asset_movement_id": movement.asset_movement_id,
                 "asset_id": movement.asset_id,
-                "source_room_id": movement.source_room_id,
-                "destination_room_id": movement.destination_room_id,
+                "source_location_id": movement.source_location_id,
+                "destination_location_id": movement.destination_location_id,
                 "movement_reason": movement.movement_reason,
                 "movement_datetime": movement.movement_datetime,
                 "status": movement.status,

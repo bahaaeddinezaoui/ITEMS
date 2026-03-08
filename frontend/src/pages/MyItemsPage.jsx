@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { myItemsService, problemReportService, roomService } from '../services/api';
+import { myItemsService, problemReportService, locationService } from '../services/api';
 
 const MyItemsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -21,9 +21,9 @@ const MyItemsPage = () => {
     const [selectedStockItems, setSelectedStockItems] = useState([]);
     const [selectedConsumables, setSelectedConsumables] = useState([]);
     const [loadingEligible, setLoadingEligible] = useState(false);
-    const [maintenanceRooms, setMaintenanceRooms] = useState([]);
-    const [destinationRoomId, setDestinationRoomId] = useState('');
-    const [loadingRooms, setLoadingRooms] = useState(false);
+    const [maintenanceLocations, setMaintenanceLocations] = useState([]);
+    const [destinationLocationId, setDestinationLocationId] = useState('');
+    const [loadingLocations, setLoadingLocations] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
     const isChief = useMemo(() => {
@@ -88,35 +88,32 @@ const MyItemsPage = () => {
         setReportObservation('');
         setSelectedStockItems([]);
         setSelectedConsumables([]);
-        setDestinationRoomId('');
+        setDestinationLocationId('');
         setShowReportModal(true);
 
         if (target.item_type === 'asset') {
             try {
                 setLoadingEligible(true);
                 const data = await problemReportService.getEligibleItems(target.item_id);
-                setEligibleItems(data);
+                setEligibleItems(data || { stock_items: [], consumables: [] });
             } catch (err) {
-                const msg = err?.response?.data?.error || err?.message || 'Failed to load eligible items';
-                setReportModalError(typeof msg === 'string' ? msg : 'Failed to load eligible items');
+                console.error('Failed to load eligible items:', err);
                 setEligibleItems({ stock_items: [], consumables: [] });
-            } finally {
-                setLoadingEligible(false);
             }
 
             try {
-                setLoadingRooms(true);
-                const rooms = await roomService.getByRoomType(2);
-                setMaintenanceRooms(Array.isArray(rooms) ? rooms : []);
+                setLoadingLocations(true);
+                const locations = await locationService.getByLocationType(2);
+                setMaintenanceLocations(Array.isArray(locations) ? locations : []);
             } catch (err) {
-                console.error('Failed to load maintenance rooms:', err);
-                setMaintenanceRooms([]);
+                console.error('Failed to load maintenance locations:', err);
+                setMaintenanceLocations([]);
             } finally {
-                setLoadingRooms(false);
+                setLoadingLocations(false);
             }
         } else {
             setEligibleItems({ stock_items: [], consumables: [] });
-            setMaintenanceRooms([]);
+            setMaintenanceLocations([]);
         }
     };
 
@@ -140,8 +137,8 @@ const MyItemsPage = () => {
         }
 
         const hasIncludedItems = selectedStockItems.length > 0 || selectedConsumables.length > 0;
-        if (reportTarget.item_type === 'asset' && hasIncludedItems && !destinationRoomId) {
-            setReportModalError('Please select a destination maintenance room for the included items');
+        if (reportTarget.item_type === 'asset' && hasIncludedItems && !destinationLocationId) {
+            setReportModalError('Please select a destination maintenance location for the included items');
             return;
         }
 
@@ -156,7 +153,7 @@ const MyItemsPage = () => {
                 owner_observation: reportObservation.trim(),
                 included_stock_item_ids: selectedStockItems,
                 included_consumable_ids: selectedConsumables,
-                destination_room_id: destinationRoomId || null,
+                destination_location_id: destinationLocationId || null,
             });
             setShowReportModal(false);
             setReportTarget(null);
@@ -477,7 +474,7 @@ const MyItemsPage = () => {
                                     <h3 style={{ fontSize: 'var(--font-size-md)', marginBottom: 'var(--space-2)' }}>Include other items you own</h3>
                                     <div style={{ marginBottom: 'var(--space-3)' }}>
                                         <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>
-                                            Destination maintenance room
+                                            Destination maintenance location
                                         </label>
                                         <select
                                             value={destinationRoomId}
@@ -492,15 +489,15 @@ const MyItemsPage = () => {
                                                 color: 'var(--color-text)',
                                             }}
                                         >
-                                            <option value="">{loadingRooms ? 'Loading rooms...' : 'Select a maintenance room'}</option>
+                                            <option value="">{loadingRooms ? 'Loading locations...' : 'Select a maintenance location'}</option>
                                             {maintenanceRooms.map((r) => (
-                                                <option key={r.room_id} value={String(r.room_id)}>
-                                                    {r.room_name} (#{r.room_id})
+                                                <option key={r.location_id} value={String(r.location_id)}>
+                                                    {r.location_name} (#{r.location_id})
                                                 </option>
                                             ))}
                                         </select>
                                         <div style={{ marginTop: 'var(--space-1)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                            Only maintenance rooms are shown.
+                                            Only maintenance locations are shown.
                                         </div>
                                     </div>
 

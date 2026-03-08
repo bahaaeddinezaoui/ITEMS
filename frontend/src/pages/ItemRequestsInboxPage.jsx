@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
     maintenanceStepItemRequestService,
-    roomService,
+    locationService,
     stockItemService,
     consumableService,
 } from '../services/api';
@@ -33,20 +33,20 @@ const ItemRequestsInboxPage = () => {
         setError(null);
         setSuccess(null);
         try {
-            const [reqData, roomsData] = await Promise.all([
+            const [reqData, locationsData] = await Promise.all([
                 maintenanceStepItemRequestService.getAll(),
-                roomService.getAll(),
+                locationService.getAll(),
             ]);
 
             const reqList = reqData?.results || reqData || [];
             setRequests(Array.isArray(reqList) ? reqList : []);
-            setRooms(Array.isArray(roomsData) ? roomsData : []);
+            setLocations(Array.isArray(locationsData) ? locationsData : []);
 
             const defaults = {};
             (Array.isArray(reqList) ? reqList : []).forEach((r) => {
                 defaults[r.maintenance_step_item_request_id] = {
-                    source_room_id: '',
-                    destination_room_id: '',
+                    source_location_id: '',
+                    destination_location_id: '',
                     stock_item_id: '',
                     consumable_id: '',
                 };
@@ -99,9 +99,9 @@ const ItemRequestsInboxPage = () => {
         try {
             const stockItemId = Number(stockItemIdValue);
             if (!stockItemId || Number.isNaN(stockItemId)) return;
-            const data = await stockItemService.getCurrentRoom(stockItemId);
-            if (data && Object.prototype.hasOwnProperty.call(data, 'room_id')) {
-                updateForm(requestId, { source_room_id: data.room_id || '' });
+            const data = await stockItemService.getCurrentLocation(stockItemId);
+            if (data && Object.prototype.hasOwnProperty.call(data, 'location_id')) {
+                updateForm(requestId, { source_location_id: data.location_id || '' });
             }
         } catch {
             // Ignore; user can still pick rooms for destination and fulfill will validate.
@@ -112,9 +112,9 @@ const ItemRequestsInboxPage = () => {
         try {
             const consumableId = Number(consumableIdValue);
             if (!consumableId || Number.isNaN(consumableId)) return;
-            const data = await consumableService.getCurrentRoom(consumableId);
-            if (data && Object.prototype.hasOwnProperty.call(data, 'room_id')) {
-                updateForm(requestId, { source_room_id: data.room_id || '' });
+            const data = await consumableService.getCurrentLocation(consumableId);
+            if (data && Object.prototype.hasOwnProperty.call(data, 'location_id')) {
+                updateForm(requestId, { source_location_id: data.location_id || '' });
             }
         } catch {
             // Ignore
@@ -159,9 +159,9 @@ const ItemRequestsInboxPage = () => {
     const getRoomLabel = (roomId) => {
         const rid = Number(roomId);
         if (!rid || Number.isNaN(rid)) return '';
-        const r = rooms.find((x) => Number(x.room_id) === rid);
+        const r = locations.find((x) => Number(x.location_id) === rid);
         if (!r) return `#${rid}`;
-        return `${r.room_name} (#${r.room_id})`;
+        return `${r.location_name} (#${r.location_id})`;
     };
 
     const handleFulfill = async (req) => {
@@ -173,14 +173,14 @@ const ItemRequestsInboxPage = () => {
         setSuccess(null);
 
         try {
-            if (!form.source_room_id || !form.destination_room_id) {
-                setError('Source room and destination room are required');
+            if (!form.source_location_id || !form.destination_location_id) {
+                setError('Source location and destination location are required');
                 return;
             }
 
             const payload = {
-                source_room_id: Number(form.source_room_id),
-                destination_room_id: Number(form.destination_room_id),
+                source_location_id: Number(form.source_location_id),
+                destination_location_id: Number(form.destination_location_id),
             };
 
             if (req.request_type === 'stock_item') {
@@ -221,12 +221,12 @@ const ItemRequestsInboxPage = () => {
             if (data.request_type === 'stock_item') {
                 updateForm(id, {
                     stock_item_id: data.stock_item_id ? String(data.stock_item_id) : '',
-                    source_room_id: data.source_room_id || '',
+                    source_location_id: data.source_location_id || '',
                 });
             } else if (data.request_type === 'consumable') {
                 updateForm(id, {
                     consumable_id: data.consumable_id ? String(data.consumable_id) : '',
-                    source_room_id: data.source_room_id || '',
+                    source_location_id: data.source_location_id || '',
                 });
             } else {
                 setError('Invalid selection response');
@@ -323,17 +323,17 @@ const ItemRequestsInboxPage = () => {
                                             >
                                                 {req.request_type === 'stock_item' ? (
                                                     <div className="form-group">
-                                                        <label className="form-label">Stock Item</label>
+                                                        <label className="form-label">Choose Stock Item</label>
                                                         <select
                                                             className="form-input"
                                                             value={form.stock_item_id}
                                                             onChange={(e) => {
-                                                                const value = e.target.value;
+                                                                const { value } = e.target;
                                                                 const items = eligibleItemsByRequestId[id] || [];
                                                                 const selected = items.find((x) => String(x.stock_item_id) === String(value));
                                                                 updateForm(id, {
                                                                     stock_item_id: value,
-                                                                    source_room_id: selected?.current_room_id || '',
+                                                                    source_location_id: selected?.current_location_id || '',
                                                                 });
                                                             }}
                                                             onFocus={() => ensureEligibleItemsLoaded(req)}
@@ -341,7 +341,7 @@ const ItemRequestsInboxPage = () => {
                                                             <option value="">Select stock item</option>
                                                             {(eligibleItemsByRequestId[id] || []).map((x) => (
                                                                 <option key={x.stock_item_id} value={x.stock_item_id}>
-                                                                    {x.stock_item_id}{x.stock_item_inventory_number ? ` (${x.stock_item_inventory_number})` : ''} - {getRoomLabel(x.current_room_id)}
+                                                                    {x.stock_item_id}{x.stock_item_inventory_number ? ` (${x.stock_item_inventory_number})` : ''} - {getRoomLabel(x.current_location_id)}
                                                                 </option>
                                                             ))}
                                                         </select>
@@ -353,17 +353,17 @@ const ItemRequestsInboxPage = () => {
                                                     </div>
                                                 ) : (
                                                     <div className="form-group">
-                                                        <label className="form-label">Consumable</label>
+                                                        <label className="form-label">Choose Consumable</label>
                                                         <select
                                                             className="form-input"
                                                             value={form.consumable_id}
                                                             onChange={(e) => {
-                                                                const value = e.target.value;
+                                                                const { value } = e.target;
                                                                 const items = eligibleItemsByRequestId[id] || [];
                                                                 const selected = items.find((x) => String(x.consumable_id) === String(value));
                                                                 updateForm(id, {
                                                                     consumable_id: value,
-                                                                    source_room_id: selected?.current_room_id || '',
+                                                                    source_location_id: selected?.current_location_id || '',
                                                                 });
                                                             }}
                                                             onFocus={() => ensureEligibleItemsLoaded(req)}
@@ -371,7 +371,7 @@ const ItemRequestsInboxPage = () => {
                                                             <option value="">Select consumable</option>
                                                             {(eligibleItemsByRequestId[id] || []).map((x) => (
                                                                 <option key={x.consumable_id} value={x.consumable_id}>
-                                                                    {x.consumable_id}{x.consumable_inventory_number ? ` (${x.consumable_inventory_number})` : ''} - {getRoomLabel(x.current_room_id)}
+                                                                    {x.consumable_id}{x.consumable_inventory_number ? ` (${x.consumable_inventory_number})` : ''} - {getRoomLabel(x.current_location_id)}
                                                                 </option>
                                                             ))}
                                                         </select>
@@ -384,33 +384,33 @@ const ItemRequestsInboxPage = () => {
                                                 )}
 
                                                 <div className="form-group">
-                                                    <label className="form-label">Source Room</label>
+                                                    <label className="form-label">Source Location</label>
                                                     <select
                                                         className="form-input"
-                                                        value={form.source_room_id}
+                                                        value={form.source_location_id}
                                                         onChange={() => {}}
                                                         disabled
                                                     >
-                                                        <option value="">Source room (auto)</option>
-                                                        {rooms.map((r) => (
-                                                            <option key={r.room_id} value={r.room_id}>
-                                                                {r.room_name} (#{r.room_id})
+                                                        <option value="">Source location (auto)</option>
+                                                        {locations.map((r) => (
+                                                            <option key={r.location_id} value={r.location_id}>
+                                                                {r.location_name} (#{r.location_id})
                                                             </option>
                                                         ))}
                                                     </select>
                                                 </div>
 
                                                 <div className="form-group">
-                                                    <label className="form-label">Destination Room</label>
+                                                    <label className="form-label">Destination Location</label>
                                                     <select
                                                         className="form-input"
-                                                        value={form.destination_room_id}
-                                                        onChange={(e) => updateForm(id, { destination_room_id: e.target.value })}
+                                                        value={form.destination_location_id}
+                                                        onChange={(e) => updateForm(id, { destination_location_id: e.target.value })}
                                                     >
-                                                        <option value="">Select destination room</option>
-                                                        {rooms.map((r) => (
-                                                            <option key={r.room_id} value={r.room_id}>
-                                                                {r.room_name} (#{r.room_id})
+                                                        <option value="">Select destination location</option>
+                                                        {locations.map((r) => (
+                                                            <option key={r.location_id} value={r.location_id}>
+                                                                {r.location_name} (#{r.location_id})
                                                             </option>
                                                         ))}
                                                     </select>

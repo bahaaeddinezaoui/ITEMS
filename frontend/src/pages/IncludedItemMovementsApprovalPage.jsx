@@ -113,8 +113,8 @@ const IncludedItemMovementsApprovalPage = () => {
                                                 <tr>
                                                     <th style={{ padding: 'var(--space-3) var(--space-4)' }}>ID</th>
                                                     <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Stock Item</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>From Room</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>To Room</th>
+                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>From Location</th>
+                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>To Location</th>
                                                     <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Date</th>
                                                     <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Status</th>
                                                     <th style={{ textAlign: 'right', padding: 'var(--space-3) var(--space-4)' }}>Actions</th>
@@ -129,8 +129,8 @@ const IncludedItemMovementsApprovalPage = () => {
                                                         <tr key={id}>
                                                             <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{id}</td>
                                                             <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.stock_item_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.source_room_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.destination_room_id}</td>
+                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.source_location_id}</td>
+                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.destination_location_id}</td>
                                                             <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.movement_datetime ? String(m.movement_datetime) : ''}</td>
                                                             <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.status}</td>
                                                             <td style={{ textAlign: 'right', display: 'flex', justifyContent: 'flex-end', padding: 'var(--space-3) var(--space-4)' }}>
@@ -173,8 +173,8 @@ const IncludedItemMovementsApprovalPage = () => {
                                                 <tr>
                                                     <th style={{ padding: 'var(--space-3) var(--space-4)' }}>ID</th>
                                                     <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Consumable</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>From Room</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>To Room</th>
+                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>From Location</th>
+                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>To Location</th>
                                                     <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Date</th>
                                                     <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Status</th>
                                                     <th style={{ textAlign: 'right', padding: 'var(--space-3) var(--space-4)' }}>Actions</th>
@@ -189,8 +189,8 @@ const IncludedItemMovementsApprovalPage = () => {
                                                         <tr key={id}>
                                                             <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{id}</td>
                                                             <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.consumable_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.source_room_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.destination_room_id}</td>
+                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.source_location_id}</td>
+                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.destination_location_id}</td>
                                                             <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.movement_datetime ? String(m.movement_datetime) : ''}</td>
                                                             <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.status}</td>
                                                             <td style={{ textAlign: 'right', display: 'flex', justifyContent: 'flex-end', padding: 'var(--space-3) var(--space-4)' }}>

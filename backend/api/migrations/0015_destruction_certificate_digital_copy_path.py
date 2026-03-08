@@ -9,12 +9,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             sql="""
-            ALTER TABLE public.destruction_certificate
+            ALTER TABLE public.stock_item_consumable_destruction_certificate
                 ALTER COLUMN digital_copy TYPE text
                 USING NULL::text;
             """,
             reverse_sql="""
-            ALTER TABLE public.destruction_certificate
+            ALTER TABLE public.stock_item_consumable_destruction_certificate
                 ALTER COLUMN digital_copy TYPE bytea
                 USING NULL::bytea;
             """,

@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-    assetService,
     consumableService,
-    destructionCertificateService,
+    stockItemConsumableDestructionCertificateService,
     stockItemService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -17,18 +16,18 @@ const DestructionCertificatesPage = () => {
 
     const isExploitationChief = isSuperuser || roleCodes.includes('exploitation_chief');
     const isItBureauChief = isSuperuser || roleCodes.includes('it_bureau_chief');
+    const isStockConsumableResponsible = isSuperuser || roleCodes.includes('stock_consumable_responsible');
 
-    const canView = isSuperuser || isExploitationChief || isItBureauChief;
-    const canCreate = isSuperuser || isExploitationChief || isItBureauChief;
-    const canValidate = isSuperuser || isExploitationChief || isItBureauChief;
-    const canUploadDigitalCopy = isSuperuser || isExploitationChief || isItBureauChief;
+    const canView = isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible;
+    const canCreate = isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible;
+    const canValidate = isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible;
+    const canUploadDigitalCopy = isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible;
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
     const [certificates, setCertificates] = useState([]);
-    const [failedAssets, setFailedAssets] = useState([]);
     const [failedStockItems, setFailedStockItems] = useState([]);
     const [failedConsumables, setFailedConsumables] = useState([]);
 
@@ -36,7 +35,6 @@ const DestructionCertificatesPage = () => {
     const [submitting, setSubmitting] = useState(false);
 
     const [createForm, setCreateForm] = useState({
-        asset_ids: [],
         stock_item_ids: [],
         consumable_ids: [],
     });
@@ -51,18 +49,14 @@ const DestructionCertificatesPage = () => {
         setSuccess('');
 
         try {
-            const [certData, assetsData, stockData, consData] = await Promise.all([
-                destructionCertificateService.getAll(),
-                assetService.getAll({ asset_status: 'failed' }),
+            const [certData, stockData, consData] = await Promise.all([
+                stockItemConsumableDestructionCertificateService.getAll(),
                 stockItemService.getAll({ stock_item_status: 'failed' }),
                 consumableService.getAll({ consumable_status: 'failed' }),
             ]);
 
             const certList = certData?.results || certData || [];
             setCertificates(certList);
-
-            const assets = assetsData?.results || assetsData || [];
-            setFailedAssets(Array.isArray(assets) ? assets : []);
 
             const stockItems = stockData?.results || stockData || [];
             setFailedStockItems(Array.isArray(stockItems) ? stockItems : []);
@@ -95,7 +89,6 @@ const DestructionCertificatesPage = () => {
 
         try {
             const hasAny =
-                createForm.asset_ids.length > 0 ||
                 createForm.stock_item_ids.length > 0 ||
                 createForm.consumable_ids.length > 0;
 
@@ -105,16 +98,15 @@ const DestructionCertificatesPage = () => {
             }
 
             const formData = new FormData();
-            formData.append('asset_ids', JSON.stringify(createForm.asset_ids));
             formData.append('stock_item_ids', JSON.stringify(createForm.stock_item_ids));
             formData.append('consumable_ids', JSON.stringify(createForm.consumable_ids));
 
-            await destructionCertificateService.create(formData);
+            await stockItemConsumableDestructionCertificateService.create(formData);
             await fetchAll();
 
             setSuccess('Destruction certificate created successfully');
             setShowCreateForm(false);
-            setCreateForm({ asset_ids: [], stock_item_ids: [], consumable_ids: [] });
+            setCreateForm({ stock_item_ids: [], consumable_ids: [] });
         } catch (err) {
             const msg = err?.response?.data?.error || (typeof err?.response?.data === 'object' ? JSON.stringify(err.response.data) : '') || 'Failed to create destruction certificate';
             setError(msg);
@@ -128,7 +120,7 @@ const DestructionCertificatesPage = () => {
         setSuccess('');
         setSubmitting(true);
         try {
-            await destructionCertificateService.validate(id);
+            await stockItemConsumableDestructionCertificateService.validate(id);
             await fetchAll();
             setSuccess(`Certificate #${id} validated. Linked items were set to destroyed.`);
         } catch (err) {
@@ -142,9 +134,9 @@ const DestructionCertificatesPage = () => {
         setError('');
         setSuccess('');
         try {
-            const existsResp = await destructionCertificateService.digitalCopyExists(id);
+            const existsResp = await stockItemConsumableDestructionCertificateService.digitalCopyExists(id);
             if (existsResp?.exists) {
-                const blob = await destructionCertificateService.getDigitalCopyBlob(id);
+                const blob = await stockItemConsumableDestructionCertificateService.getDigitalCopyBlob(id);
                 const url = window.URL.createObjectURL(blob);
                 window.open(url, '_blank', 'noopener,noreferrer');
                 setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
@@ -184,9 +176,9 @@ const DestructionCertificatesPage = () => {
         try {
             const formData = new FormData();
             formData.append('digital_copy', file);
-            await destructionCertificateService.uploadDigitalCopy(id, formData);
+            await stockItemConsumableDestructionCertificateService.uploadDigitalCopy(id, formData);
             await fetchAll();
-            const blob = await destructionCertificateService.getDigitalCopyBlob(id);
+            const blob = await stockItemConsumableDestructionCertificateService.getDigitalCopyBlob(id);
             const url = window.URL.createObjectURL(blob);
             window.open(url, '_blank', 'noopener,noreferrer');
             setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
@@ -203,14 +195,11 @@ const DestructionCertificatesPage = () => {
 
     if (loading) return <div className="loading">Loading...</div>;
 
-    const selectableAssets = failedAssets.filter(
-        (a) => (a?.asset_status || '').toLowerCase() === 'failed' && !a.destruction_certificate_id
-    );
     const selectableStockItems = failedStockItems.filter(
-        (s) => (s?.stock_item_status || '').toLowerCase() === 'failed' && !s.destruction_certificate_id
+        (s) => (s?.stock_item_status || '').toLowerCase() === 'failed' && !s.stock_item_consumable_destruction_certificate_id
     );
     const selectableConsumables = failedConsumables.filter(
-        (c) => (c?.consumable_status || '').toLowerCase() === 'failed' && !c.destruction_certificate_id
+        (c) => (c?.consumable_status || '').toLowerCase() === 'failed' && !c.stock_item_consumable_destruction_certificate_id
     );
 
     return (
@@ -224,8 +213,8 @@ const DestructionCertificatesPage = () => {
             />
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Destruction Certificates</h1>
-                    <p className="page-subtitle">Create and validate destruction certificates for failed items</p>
+                    <h1 className="page-title">Destruction Certificates (Stock Items & Consumables)</h1>
+                    <p className="page-subtitle">Create and validate destruction certificates for failed stock items and consumables</p>
                 </div>
                 {canCreate && (
                     <div>
@@ -285,32 +274,6 @@ const DestructionCertificatesPage = () => {
                     <div className="card-body">
                         <form onSubmit={handleCreate}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-6)' }}>
-                                <div>
-                                    <div className="form-group">
-                                        <label className="form-label">Assets (failed)</label>
-                                        <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
-                                            {selectableAssets.length === 0 && (
-                                                <div style={{ color: 'var(--color-text-secondary)' }}>No eligible failed assets</div>
-                                            )}
-                                            {selectableAssets.map((a) => (
-                                                <label key={a.asset_id} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', padding: '4px 0' }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={createForm.asset_ids.includes(a.asset_id)}
-                                                        onChange={() =>
-                                                            setCreateForm((prev) => ({
-                                                                ...prev,
-                                                                asset_ids: toggleIdInList(prev.asset_ids, a.asset_id),
-                                                            }))
-                                                        }
-                                                    />
-                                                    <span>{a.asset_name || `Asset #${a.asset_id}`}</span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div>
                                     <div className="form-group">
                                         <label className="form-label">Stock items (failed)</label>

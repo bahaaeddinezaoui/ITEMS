@@ -94,47 +94,87 @@ export const authService = {
     },
 };
 
-export const destructionCertificateService = {
+export const stockItemConsumableDestructionCertificateService = {
     getAll: async (params) => {
-        const response = await api.get('destruction-certificates/', { params });
+        const response = await api.get('stock-item-consumable-destruction-certificates/', { params });
         return response.data;
     },
 
     create: async (payload) => {
         const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
         const response = isFormData
-            ? await postForm('destruction-certificates/', payload)
-            : await api.post('destruction-certificates/', payload);
+            ? await postForm('stock-item-consumable-destruction-certificates/', payload)
+            : await api.post('stock-item-consumable-destruction-certificates/', payload);
         return response.data;
     },
 
     validate: async (id) => {
-        const response = await api.post(`destruction-certificates/${id}/validate/`);
+        const response = await api.post(`stock-item-consumable-destruction-certificates/${id}/validate/`);
         return response.data;
     },
 
     digitalCopyExists: async (id) => {
-        const response = await api.get(`destruction-certificates/${id}/digital-copy-exists/`);
+        const response = await api.get(`stock-item-consumable-destruction-certificates/${id}/digital-copy-exists/`);
         return response.data;
     },
 
     uploadDigitalCopy: async (id, payload) => {
         const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
         const response = isFormData
-            ? await postForm(`destruction-certificates/${id}/upload-digital-copy/`, payload)
-            : await api.post(`destruction-certificates/${id}/upload-digital-copy/`, payload);
+            ? await postForm(`stock-item-consumable-destruction-certificates/${id}/upload-digital-copy/`, payload)
+            : await api.post(`stock-item-consumable-destruction-certificates/${id}/upload-digital-copy/`, payload);
         return response.data;
     },
 
     getDigitalCopyBlob: async (id) => {
-        const response = await api.get(`destruction-certificates/${id}/digital-copy/`, {
+        const response = await api.get(`stock-item-consumable-destruction-certificates/${id}/digital-copy/`, {
             responseType: 'blob',
         });
         return response.data;
     },
 
     getDigitalCopyUrl: (id) => {
-        return `${API_URL}destruction-certificates/${id}/digital-copy/`;
+        return `${API_URL}stock-item-consumable-destruction-certificates/${id}/digital-copy/`;
+    },
+};
+
+export const assetDestructionCertificateService = {
+    getAll: async (params) => {
+        const response = await api.get('asset-destruction-certificates/', { params });
+        return response.data;
+    },
+
+    create: async (payload) => {
+        const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+        const response = isFormData
+            ? await postForm('asset-destruction-certificates/', payload)
+            : await api.post('asset-destruction-certificates/', payload);
+        return response.data;
+    },
+
+    validate: async (id) => {
+        const response = await api.post(`asset-destruction-certificates/${id}/validate/`);
+        return response.data;
+    },
+
+    digitalCopyExists: async (id) => {
+        const response = await api.get(`asset-destruction-certificates/${id}/digital-copy-exists/`);
+        return response.data;
+    },
+
+    uploadDigitalCopy: async (id, payload) => {
+        const isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+        const response = isFormData
+            ? await postForm(`asset-destruction-certificates/${id}/upload-digital-copy/`, payload)
+            : await api.post(`asset-destruction-certificates/${id}/upload-digital-copy/`, payload);
+        return response.data;
+    },
+
+    getDigitalCopyBlob: async (id) => {
+        const response = await api.get(`asset-destruction-certificates/${id}/digital-copy/`, {
+            responseType: 'blob',
+        });
+        return response.data;
     },
 };
 
@@ -192,10 +232,10 @@ export const externalMaintenanceService = {
         return response.data;
     },
 
-    sendToProvider: async (external_maintenance_id, external_maintenance_provider_id, destination_room_id) => {
+    sendToProvider: async (external_maintenance_id, external_maintenance_provider_id, destination_location_id) => {
         const response = await api.post(`external-maintenances/${external_maintenance_id}/send-to-provider/`, {
             external_maintenance_provider_id,
-            destination_room_id,
+            destination_location_id,
         });
         return response.data;
     },
@@ -217,9 +257,9 @@ export const externalMaintenanceService = {
         return response.data;
     },
 
-    confirmReceivedByCompany: async (external_maintenance_id, destination_room_id) => {
+    confirmReceivedByCompany: async (external_maintenance_id, destination_location_id) => {
         const response = await api.post(`external-maintenances/${external_maintenance_id}/confirm-received-by-company/`, {
-            destination_room_id,
+            destination_location_id,
         });
         return response.data;
     },
@@ -1093,62 +1133,62 @@ export const consumableModelService = {
     },
 };
 
-// Room Type service
-export const roomTypeService = {
+// Location Type service
+export const locationTypeService = {
     getAll: async () => {
-        const response = await api.get('room-types/');
+        const response = await api.get('location-types/');
         return response.data;
     },
 
     getById: async (id) => {
-        const response = await api.get(`room-types/${id}/`);
+        const response = await api.get(`location-types/${id}/`);
         return response.data;
     },
 
-    create: async (roomTypeData) => {
-        const response = await api.post('room-types/', roomTypeData);
+    create: async (locationTypeData) => {
+        const response = await api.post('location-types/', locationTypeData);
         return response.data;
     },
 
-    update: async (id, roomTypeData) => {
-        const response = await api.put(`room-types/${id}/`, roomTypeData);
+    update: async (id, locationTypeData) => {
+        const response = await api.put(`location-types/${id}/`, locationTypeData);
         return response.data;
     },
 
     delete: async (id) => {
-        await api.delete(`room-types/${id}/`);
+        await api.delete(`location-types/${id}/`);
     },
 };
 
-// Room service
-export const roomService = {
+// Location service
+export const locationService = {
     getAll: async () => {
-        const response = await api.get('rooms/');
+        const response = await api.get('locations/');
         return response.data;
     },
 
-    getByRoomType: async (roomTypeId) => {
-        const response = await api.get(`rooms/?room_type=${roomTypeId}`);
+    getByLocationType: async (locationTypeId) => {
+        const response = await api.get(`locations/?location_type=${locationTypeId}`);
         return response.data;
     },
 
     getById: async (id) => {
-        const response = await api.get(`rooms/${id}/`);
+        const response = await api.get(`locations/${id}/`);
         return response.data;
     },
 
-    create: async (roomData) => {
-        const response = await api.post('rooms/', roomData);
+    create: async (locationData) => {
+        const response = await api.post('locations/', locationData);
         return response.data;
     },
 
-    update: async (id, roomData) => {
-        const response = await api.put(`rooms/${id}/`, roomData);
+    update: async (id, locationData) => {
+        const response = await api.put(`locations/${id}/`, locationData);
         return response.data;
     },
 
     delete: async (id) => {
-        await api.delete(`rooms/${id}/`);
+        await api.delete(`locations/${id}/`);
     },
 };
 
@@ -1261,8 +1301,8 @@ export const assetService = {
         await api.delete(`assets/${id}/`);
     },
 
-    getCurrentRoom: async (id) => {
-        const response = await api.get(`assets/${id}/current-room/`);
+    getCurrentLocation: async (id) => {
+        const response = await api.get(`assets/${id}/current-location/`);
         return response.data;
     },
 
@@ -1298,8 +1338,8 @@ export const stockItemService = {
         await api.delete(`stock-items/${id}/`);
     },
 
-    getCurrentRoom: async (id) => {
-        const response = await api.get(`stock-items/${id}/current-room/`);
+    getCurrentLocation: async (id) => {
+        const response = await api.get(`stock-items/${id}/current-location/`);
         return response.data;
     },
 
@@ -1335,8 +1375,8 @@ export const consumableService = {
         await api.delete(`consumables/${id}/`);
     },
 
-    getCurrentRoom: async (id) => {
-        const response = await api.get(`consumables/${id}/current-room/`);
+    getCurrentLocation: async (id) => {
+        const response = await api.get(`consumables/${id}/current-location/`);
         return response.data;
     },
 
@@ -1383,8 +1423,8 @@ export const maintenanceService = {
         return response.data;
     },
 
-    returnToOwnerDefaultRoom: async (id) => {
-        const response = await api.get(`maintenances/${id}/return-to-owner-default-room/`);
+    returnToOwnerDefaultLocation: async (id) => {
+        const response = await api.get(`maintenances/${id}/return-to-owner-default-location/`);
         return response.data;
     },
 

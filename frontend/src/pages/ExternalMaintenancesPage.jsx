@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { externalMaintenanceProviderService, externalMaintenanceService, roomService } from '../services/api';
+import { externalMaintenanceProviderService, externalMaintenanceService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const ExternalMaintenancesPage = () => {
@@ -28,7 +28,7 @@ const ExternalMaintenancesPage = () => {
     const [externalCenterRooms, setExternalCenterRooms] = useState([]);
     const [allRooms, setAllRooms] = useState([]);
     const [selectedProviderId, setSelectedProviderId] = useState('');
-    const [selectedDestinationRoomId, setSelectedDestinationRoomId] = useState('');
+    const [selectedDestinationLocationId, setSelectedDestinationLocationId] = useState('');
 
     const [confirmSubmitting, setConfirmSubmitting] = useState(false);
     const [confirmMessage, setConfirmMessage] = useState(null);
@@ -39,7 +39,7 @@ const ExternalMaintenancesPage = () => {
     const [receiveCompanyModalOpen, setReceiveCompanyModalOpen] = useState(false);
     const [receiveCompanySubmitting, setReceiveCompanySubmitting] = useState(false);
     const [receiveCompanyMessage, setReceiveCompanyMessage] = useState(null);
-    const [receiveCompanyRoomId, setReceiveCompanyRoomId] = useState('');
+    const [receiveCompanyLocationId, setReceiveCompanyLocationId] = useState('');
 
     const [markFailedSubmitting, setMarkFailedSubmitting] = useState(false);
     const [markFailedMessage, setMarkFailedMessage] = useState(null);
@@ -66,8 +66,8 @@ const ExternalMaintenancesPage = () => {
 
     const submitConfirmReceivedByCompany = async () => {
         if (!selectedItem) return;
-        if (!receiveCompanyRoomId) {
-            setReceiveCompanyMessage({ type: 'error', text: 'Please select a destination room.' });
+        if (!receiveCompanyLocationId) {
+            setReceiveCompanyMessage({ type: 'error', text: 'Please select a destination location.' });
             return;
         }
 
@@ -76,7 +76,7 @@ const ExternalMaintenancesPage = () => {
             setReceiveCompanyMessage(null);
             const updated = await externalMaintenanceService.confirmReceivedByCompany(
                 selectedItem.external_maintenance_id,
-                Number(receiveCompanyRoomId),
+                Number(receiveCompanyLocationId),
             );
             setReceiveCompanyMessage({ type: 'success', text: 'Confirmed as received by company.' });
             setSelectedItem(updated);
@@ -136,11 +136,11 @@ const ExternalMaintenancesPage = () => {
         setConfirmMessage(null);
         setSentToCompanyMessage(null);
         setSelectedProviderId('');
-        setSelectedDestinationRoomId('');
+        setSelectedDestinationLocationId('');
         setReceiveCompanyModalOpen(false);
         setReceiveCompanySubmitting(false);
         setReceiveCompanyMessage(null);
-        setReceiveCompanyRoomId('');
+        setReceiveCompanyLocationId('');
         setDetailsOpen(true);
     };
 
@@ -154,11 +154,11 @@ const ExternalMaintenancesPage = () => {
         setSentToCompanySubmitting(false);
         setSentToCompanyMessage(null);
         setSelectedProviderId('');
-        setSelectedDestinationRoomId('');
+        setSelectedDestinationLocationId('');
         setReceiveCompanyModalOpen(false);
         setReceiveCompanySubmitting(false);
         setReceiveCompanyMessage(null);
-        setReceiveCompanyRoomId('');
+        setReceiveCompanyLocationId('');
         setMarkFailedSubmitting(false);
         setMarkFailedMessage(null);
         setIncludeComposedOnFailed(false);
@@ -189,15 +189,15 @@ const ExternalMaintenancesPage = () => {
         const loadSendFormData = async () => {
             try {
                 if (!detailsOpen) return;
-                const [prov, rooms] = await Promise.all([
+                const [prov, locations] = await Promise.all([
                     externalMaintenanceProviderService.getAll(),
-                    roomService.getAll(),
+                    locationService.getAll(),
                 ]);
                 setProviders(Array.isArray(prov) ? prov : []);
-                const all = Array.isArray(rooms) ? rooms : [];
+                const all = Array.isArray(locations) ? locations : [];
                 setAllRooms(all);
                 const filteredRooms = all.filter(
-                    (r) => r?.room_type_label === 'External Maintenance Center'
+                    (r) => r?.location_type_label === 'External Maintenance Center'
                 );
                 setExternalCenterRooms(filteredRooms);
             } catch (err) {
@@ -217,8 +217,8 @@ const ExternalMaintenancesPage = () => {
             setSendMessage({ type: 'error', text: 'Please select provider.' });
             return;
         }
-        if (!selectedDestinationRoomId) {
-            setSendMessage({ type: 'error', text: 'Please select destination room.' });
+        if (!selectedDestinationLocationId) {
+            setSendMessage({ type: 'error', text: 'Please select destination location.' });
             return;
         }
 
@@ -228,7 +228,7 @@ const ExternalMaintenancesPage = () => {
             const updated = await externalMaintenanceService.sendToProvider(
                 selectedItem.external_maintenance_id,
                 Number(selectedProviderId),
-                Number(selectedDestinationRoomId),
+                Number(selectedDestinationLocationId),
             );
             setSendMessage({ type: 'success', text: 'Asset sent to external maintenance provider.' });
             setSelectedItem(updated);
@@ -418,17 +418,17 @@ const ExternalMaintenancesPage = () => {
                                         </div>
 
                                         <div className="form-group" style={{ marginBottom: 0 }}>
-                                            <label className="form-label">Destination Room</label>
+                                            <label className="form-label">Destination Location</label>
                                             <select
                                                 className="form-input"
-                                                value={selectedDestinationRoomId}
-                                                onChange={(e) => setSelectedDestinationRoomId(e.target.value)}
+                                                value={selectedDestinationLocationId}
+                                                onChange={(e) => setSelectedDestinationLocationId(e.target.value)}
                                                 disabled={sendSubmitting || !!selectedItem.item_sent_to_external_maintenance_datetime}
                                             >
-                                                <option value="">Select room...</option>
+                                                <option value="">Select location...</option>
                                                 {externalCenterRooms.map((r) => (
-                                                    <option key={r.room_id} value={r.room_id}>
-                                                        {r.room_name}
+                                                    <option key={r.location_id} value={r.location_id}>
+                                                        {r.location_name}
                                                     </option>
                                                 ))}
                                             </select>
@@ -438,7 +438,7 @@ const ExternalMaintenancesPage = () => {
                                     <button
                                         className="btn btn-primary"
                                         onClick={() => submitSendToProvider()}
-                                        disabled={sendSubmitting || !selectedProviderId || !selectedDestinationRoomId}
+                                        disabled={sendSubmitting || !selectedProviderId || !selectedDestinationLocationId}
                                         style={{ marginTop: 'var(--space-3)' }}
                                     >
                                         {sendSubmitting ? 'Sending...' : 'Send'}
@@ -509,7 +509,7 @@ const ExternalMaintenancesPage = () => {
                             <div className="modal-overlay" onClick={() => setReceiveCompanyModalOpen(false)}>
                                 <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
                                     <div className="modal-header">
-                                        <h3 className="modal-title">Move Asset to Room</h3>
+                                        <h3 className="modal-title">Move Asset to Location</h3>
                                         <button className="modal-close" onClick={() => setReceiveCompanyModalOpen(false)}>
                                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -524,17 +524,17 @@ const ExternalMaintenancesPage = () => {
                                             </div>
                                         )}
                                         <div className="form-group">
-                                            <label className="form-label">Destination Room</label>
+                                            <label className="form-label">Destination Location</label>
                                             <select
                                                 className="form-input"
-                                                value={receiveCompanyRoomId}
-                                                onChange={(e) => setReceiveCompanyRoomId(e.target.value)}
+                                                value={receiveCompanyLocationId}
+                                                onChange={(e) => setReceiveCompanyLocationId(e.target.value)}
                                                 disabled={receiveCompanySubmitting}
                                             >
-                                                <option value="">Select room...</option>
+                                                <option value="">Select location...</option>
                                                 {allRooms.map((r) => (
-                                                    <option key={r.room_id} value={r.room_id}>
-                                                        {r.room_name}{r.room_type_label ? ` - ${r.room_type_label}` : ''}
+                                                    <option key={r.location_id} value={r.location_id}>
+                                                        {r.location_name}{r.location_type_label ? ` - ${r.location_type_label}` : ''}
                                                     </option>
                                                 ))}
                                             </select>
@@ -544,7 +544,7 @@ const ExternalMaintenancesPage = () => {
                                         <button className="btn btn-secondary" onClick={() => setReceiveCompanyModalOpen(false)} disabled={receiveCompanySubmitting}>
                                             Cancel
                                         </button>
-                                        <button className="btn btn-primary" onClick={() => submitConfirmReceivedByCompany()} disabled={receiveCompanySubmitting || !receiveCompanyRoomId}>
+                                        <button className="btn btn-primary" onClick={() => submitConfirmReceivedByCompany()} disabled={receiveCompanySubmitting || !receiveCompanyLocationId}>
                                             {receiveCompanySubmitting ? 'Confirming...' : 'Confirm & Move'}
                                         </button>
                                     </div>

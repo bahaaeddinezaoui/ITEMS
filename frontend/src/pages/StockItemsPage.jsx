@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     authService,
     personService,
-    roomService,
+    locationService,
     stockItemAssignmentService,
     stockItemTypeService,
     stockItemModelService,
@@ -33,7 +33,7 @@ const StockItemsPage = () => {
     const [stockItems, setStockItems] = useState([]);
     const [persons, setPersons] = useState([]);
     const [assignments, setAssignments] = useState([]);
-    const [rooms, setRooms] = useState([]);
+    const [locations, setLocations] = useState([]);
     const [stockItemAttributeDefinitions, setStockItemAttributeDefinitions] = useState([]);
     const [stockItemTypeAttributes, setStockItemTypeAttributes] = useState([]);
     const [stockItemAttributes, setStockItemAttributes] = useState([]);
@@ -42,9 +42,9 @@ const StockItemsPage = () => {
 
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [movingStockItem, setMovingStockItem] = useState(null);
-    const [moveCurrentRoomId, setMoveCurrentRoomId] = useState(null);
-    const [moveCurrentRoomLabel, setMoveCurrentRoomLabel] = useState('');
-    const [selectedMoveRoomId, setSelectedMoveRoomId] = useState('');
+    const [moveLocationId, setMoveLocationId] = useState(null);
+    const [moveLocationLabel, setMoveLocationLabel] = useState('');
+    const [selectedMoveLocationId, setSelectedMoveLocationId] = useState('');
     const [moveSubmitting, setMoveSubmitting] = useState(false);
 
     const [showAssignForm, setShowAssignForm] = useState(false);
@@ -118,7 +118,7 @@ const StockItemsPage = () => {
         fetchStockItemTypes();
         fetchStockItemBrands();
         fetchStockItemAttributeDefinitions();
-        fetchRooms();
+        fetchLocations();
         fetchPersons();
         fetchAssignments();
     }, []);
@@ -155,13 +155,13 @@ const StockItemsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isInstancesMode, createParam, selectedStockItemModel, showStockItemForm]);
 
-    const fetchRooms = async () => {
+    const fetchLocations = async () => {
         try {
-            const data = await roomService.getAll();
-            setRooms(Array.isArray(data) ? data : []);
+            const data = await locationService.getAll();
+            setLocations(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error('Failed to fetch rooms:', err);
-            setRooms([]);
+            console.error('Failed to fetch locations:', err);
+            setLocations([]);
         }
     };
 
@@ -186,24 +186,24 @@ const StockItemsPage = () => {
     };
 
     useEffect(() => {
-        const loadCurrentRoom = async () => {
+        const loadCurrentLocation = async () => {
             if (!showMoveModal || !movingStockItem) return;
             try {
-                const current = await stockItemService.getCurrentRoom(movingStockItem.stock_item_id);
-                const currentRoomId = current?.room_id ?? null;
-                setMoveCurrentRoomId(currentRoomId);
-                const currentRoomObj = rooms.find((r) => r.room_id === currentRoomId);
-                setMoveCurrentRoomLabel(
-                    currentRoomObj?.room_name || (currentRoomId ? `Room ${currentRoomId}` : 'Unknown')
+                const current = await stockItemService.getCurrentLocation(movingStockItem.stock_item_id);
+                const currentLocationId = current?.location_id ?? null;
+                setMoveLocationId(currentLocationId);
+                const currentLocationObj = locations.find((r) => r.location_id === currentLocationId);
+                setMoveLocationLabel(
+                    currentLocationObj?.location_name || (currentLocationId ? `Location ${currentLocationId}` : 'Unknown')
                 );
             } catch (err) {
                 console.error(err);
-                setMoveCurrentRoomId(null);
-                setMoveCurrentRoomLabel('Unknown');
+                setMoveLocationId(null);
+                setMoveLocationLabel('Unknown');
             }
         };
-        loadCurrentRoom();
-    }, [showMoveModal, movingStockItem, rooms]);
+        loadCurrentLocation();
+    }, [showMoveModal, movingStockItem, locations]);
 
     useEffect(() => {
         if (selectedStockItemType) {
@@ -687,28 +687,28 @@ const StockItemsPage = () => {
 
     const openMoveModal = (item) => {
         setMovingStockItem(item);
-        setMoveCurrentRoomId(null);
-        setMoveCurrentRoomLabel('');
-        setSelectedMoveRoomId('');
+        setMoveLocationId(null);
+        setMoveLocationLabel('');
+        setSelectedMoveLocationId('');
         setShowMoveModal(true);
     };
 
     const closeMoveModal = () => {
         setShowMoveModal(false);
         setMovingStockItem(null);
-        setMoveCurrentRoomId(null);
-        setMoveCurrentRoomLabel('');
-        setSelectedMoveRoomId('');
+        setMoveLocationId(null);
+        setMoveLocationLabel('');
+        setSelectedMoveLocationId('');
     };
 
     const submitMove = async (e) => {
         e.preventDefault();
-        if (!movingStockItem || !selectedMoveRoomId) return;
+        if (!movingStockItem || !selectedMoveLocationId) return;
         setMoveSubmitting(true);
         setError(null);
         try {
             await stockItemService.move(movingStockItem.stock_item_id, {
-                destination_room_id: selectedMoveRoomId,
+                destination_location_id: selectedMoveLocationId,
             });
             if (selectedStockItemModel) {
                 await fetchStockItems(selectedStockItemModel.stock_item_model_id);
@@ -1441,15 +1441,15 @@ const StockItemsPage = () => {
                                     background: 'var(--color-bg-secondary)',
                                     color: 'var(--color-text)'
                                 }}>
-                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Current room</div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>Current location</div>
                                     <div style={{ fontWeight: 600 }}>
-                                        {moveCurrentRoomLabel || 'Unknown'}
+                                        {moveLocationLabel || 'Unknown'}
                                     </div>
                                 </div>
-                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Destination room</label>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Destination location</label>
                                 <select
-                                    value={selectedMoveRoomId}
-                                    onChange={(e) => setSelectedMoveRoomId(e.target.value)}
+                                    value={selectedMoveLocationId}
+                                    onChange={(e) => setSelectedMoveLocationId(e.target.value)}
                                     required
                                     disabled={moveSubmitting}
                                     style={{
@@ -1461,10 +1461,10 @@ const StockItemsPage = () => {
                                         color: 'var(--color-text)'
                                     }}
                                 >
-                                    <option value="">Select a room...</option>
-                                    {rooms.map((r) => (
-                                        <option key={r.room_id} value={r.room_id}>
-                                            {r.room_name || `Room ${r.room_id}`}
+                                    <option value="">Select a location...</option>
+                                    {locations.map((r) => (
+                                        <option key={r.location_id} value={r.location_id}>
+                                            {r.location_name || `Location ${r.location_id}`}
                                         </option>
                                     ))}
                                 </select>
@@ -1479,7 +1479,7 @@ const StockItemsPage = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={moveSubmitting || !selectedMoveRoomId}
+                                    disabled={moveSubmitting || !selectedMoveLocationId}
                                     style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                                 >
                                     {moveSubmitting ? 'Moving...' : 'Move'}

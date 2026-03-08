@@ -1014,3 +1014,18 @@ Password mismatch for user: bensimessaouddaoud
 [2026-03-07 23:30:15.299728+00:00] Login attempt for: director_admin_sup
 
 [2026-03-07 23:41:24.476533+00:00] Login attempt for: prot_sec_chief
+
+[2026-03-08 11:03:51.163640+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-08 11:27:59.518924+00:00] Login attempt for: director_admin_sup
+
+[2026-03-08 13:37:43.626787+00:00] Login attempt for: asset_resp
+Password mismatch for user: asset_resp
+
+[2026-03-08 13:37:50.429839+00:00] Login attempt for: asset_resp
+
+[2026-03-08 13:51:02.299735+00:00] Login attempt for: asset_resp
+
+[2026-03-08 13:51:54.964975+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-08 14:01:37.008493+00:00] Login attempt for: asset_resp

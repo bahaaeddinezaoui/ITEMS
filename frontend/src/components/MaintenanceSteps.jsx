@@ -14,7 +14,7 @@ import {
     stockItemModelService,
     consumableTypeService,
     consumableModelService,
-    roomService,
+    locationService,
     physicalConditionService,
     assetAttributeDefinitionService,
     stockItemAttributeDefinitionService,
@@ -78,15 +78,15 @@ const MaintenanceSteps = ({
     const [removeComponents, setRemoveComponents] = useState({ stock_items: [], consumables: [] });
     const [removeSelectedType, setRemoveSelectedType] = useState('');
     const [removeSelectedId, setRemoveSelectedId] = useState('');
-    const [removeRooms, setRemoveRooms] = useState([]);
-    const [removeDestinationRoomId, setRemoveDestinationRoomId] = useState('');
+    const [removeLocations, setRemoveLocations] = useState([]);
+    const [removeDestinationLocationId, setRemoveDestinationLocationId] = useState('');
     const [removeLoading, setRemoveLoading] = useState(false);
     const [removeSubmitting, setRemoveSubmitting] = useState(false);
 
     const [returnMaintenanceOpen, setReturnMaintenanceOpen] = useState(false);
     const [returnMaintenancePendingExists, setReturnMaintenancePendingExists] = useState(false);
-    const [returnMaintenanceDestinationRoomId, setReturnMaintenanceDestinationRoomId] = useState('');
-    const [returnMaintenanceRooms, setReturnMaintenanceRooms] = useState([]);
+    const [returnMaintenanceDestinationLocationId, setReturnMaintenanceDestinationLocationId] = useState('');
+    const [returnMaintenanceLocations, setReturnMaintenanceLocations] = useState([]);
     const [returnMaintenanceLoading, setReturnMaintenanceLoading] = useState(false);
     const [returnMaintenanceSubmitting, setReturnMaintenanceSubmitting] = useState(false);
 
@@ -754,16 +754,16 @@ const MaintenanceSteps = ({
         setRemoveComponents({ stock_items: [], consumables: [] });
         setRemoveSelectedType('');
         setRemoveSelectedId('');
-        setRemoveRooms([]);
-        setRemoveDestinationRoomId('');
+        setRemoveLocations([]);
+        setRemoveDestinationLocationId('');
         setRemoveLoading(false);
         setRemoveSubmitting(false);
     };
 
     const closeReturnMaintenance = () => {
         setReturnMaintenanceOpen(false);
-        setReturnMaintenanceDestinationRoomId('');
-        setReturnMaintenanceRooms([]);
+        setReturnMaintenanceDestinationLocationId('');
+        setReturnMaintenanceLocations([]);
         setReturnMaintenanceLoading(false);
         setReturnMaintenanceSubmitting(false);
     };
@@ -775,22 +775,22 @@ const MaintenanceSteps = ({
             return;
         }
         setReturnMaintenanceOpen(true);
-        setReturnMaintenanceDestinationRoomId('');
-        setReturnMaintenanceRooms([]);
+        setReturnMaintenanceDestinationLocationId('');
+        setReturnMaintenanceLocations([]);
         try {
             setReturnMaintenanceLoading(true);
-            const [rooms, defaultRoom] = await Promise.all([
-                roomService.getAll(),
-                maintenanceService.returnToOwnerDefaultRoom(Number(maintenanceId)).catch(() => ({ destination_room_id: null })),
+            const [locations, defaultLocation] = await Promise.all([
+                locationService.getAll(),
+                maintenanceService.returnToOwnerDefaultLocation(Number(maintenanceId)).catch(() => ({ destination_location_id: null })),
             ]);
-            setReturnMaintenanceRooms(Array.isArray(rooms) ? rooms : []);
-            const suggestedId = defaultRoom?.destination_room_id;
+            setReturnMaintenanceLocations(Array.isArray(locations) ? locations : []);
+            const suggestedId = defaultLocation?.destination_location_id;
             if (suggestedId != null && suggestedId !== '') {
-                setReturnMaintenanceDestinationRoomId(String(suggestedId));
+                setReturnMaintenanceDestinationLocationId(String(suggestedId));
             }
         } catch (err) {
             console.error(err);
-            setError('Failed to load rooms');
+            setError('Failed to load locations');
             closeReturnMaintenance();
         } finally {
             setReturnMaintenanceLoading(false);
@@ -799,15 +799,15 @@ const MaintenanceSteps = ({
 
     const submitReturnMaintenance = async () => {
         if (!maintenanceId) return;
-        if (!returnMaintenanceDestinationRoomId) {
-            setError('Please select destination room');
+        if (!returnMaintenanceDestinationLocationId) {
+            setError('Please select destination location');
             return;
         }
         try {
             setReturnMaintenanceSubmitting(true);
             setError('');
             await maintenanceService.requestReturnToOwner(Number(maintenanceId), {
-                destination_room_id: Number(returnMaintenanceDestinationRoomId),
+                destination_location_id: Number(returnMaintenanceDestinationLocationId),
             });
             await loadData();
             closeReturnMaintenance();
@@ -903,21 +903,21 @@ const MaintenanceSteps = ({
         setRemoveComponents({ stock_items: [], consumables: [] });
         setRemoveSelectedType('');
         setRemoveSelectedId('');
-        setRemoveRooms([]);
-        setRemoveDestinationRoomId('');
+        setRemoveLocations([]);
+        setRemoveDestinationLocationId('');
 
         try {
             setRemoveLoading(true);
             await handleUpdateStatus(step, 'In Progress');
-            const [data, rooms] = await Promise.all([
+            const [data, locations] = await Promise.all([
                 maintenanceStepService.getComponents(step.maintenance_step_id),
-                roomService.getAll(),
+                locationService.getAll(),
             ]);
             setRemoveComponents({
                 stock_items: Array.isArray(data?.stock_items) ? data.stock_items : [],
                 consumables: Array.isArray(data?.consumables) ? data.consumables : [],
             });
-            setRemoveRooms(Array.isArray(rooms) ? rooms : []);
+            setRemoveLocations(Array.isArray(locations) ? locations : []);
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.error || 'Failed to load components');
@@ -939,8 +939,8 @@ const MaintenanceSteps = ({
                 component_type: removeSelectedType,
                 component_id: Number(removeSelectedId),
             };
-            if (removeDestinationRoomId) {
-                payload.destination_room_id = Number(removeDestinationRoomId);
+            if (removeDestinationLocationId) {
+                payload.destination_location_id = Number(removeDestinationLocationId);
             }
             await maintenanceStepService.removeComponent(removeEditorStep.maintenance_step_id, payload);
             await loadData();
@@ -1966,17 +1966,17 @@ const MaintenanceSteps = ({
                     ) : (
                         <>
                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                <label className="form-label">Destination room (asset owner)</label>
+                                <label className="form-label">Destination location (asset owner)</label>
                                 <select
                                     className="form-input"
-                                    value={returnMaintenanceDestinationRoomId}
-                                    onChange={(e) => setReturnMaintenanceDestinationRoomId(e.target.value)}
+                                    value={returnMaintenanceDestinationLocationId}
+                                    onChange={(e) => setReturnMaintenanceDestinationLocationId(e.target.value)}
                                     disabled={returnMaintenanceSubmitting}
                                 >
-                                    <option value="">Select room...</option>
-                                    {returnMaintenanceRooms.map((r) => (
-                                        <option key={r.room_id} value={r.room_id}>
-                                            {r.room_name}{r.room_type_label ? ` (${r.room_type_label})` : ''}
+                                    <option value="">Select location...</option>
+                                    {returnMaintenanceLocations.map((r) => (
+                                        <option key={r.location_id} value={r.location_id}>
+                                            {r.location_name}{r.location_type_label ? ` (${r.location_type_label})` : ''}
                                         </option>
                                     ))}
                                 </select>
@@ -1999,7 +1999,7 @@ const MaintenanceSteps = ({
                                     className="btn btn-xs btn-primary"
                                     style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
                                     onClick={submitReturnMaintenance}
-                                    disabled={returnMaintenanceSubmitting || !returnMaintenanceDestinationRoomId}
+                                    disabled={returnMaintenanceSubmitting || !returnMaintenanceDestinationLocationId}
                                 >
                                     {returnMaintenanceSubmitting ? 'Submitting...' : 'Request Return'}
                                 </button>
@@ -2085,16 +2085,16 @@ const MaintenanceSteps = ({
                             </div>
 
                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                <label className="form-label">Move removed component to (maintenance room)</label>
+                                <label className="form-label">Move removed component to (maintenance location)</label>
                                 <select
                                     className="form-input"
-                                    value={removeDestinationRoomId}
-                                    onChange={(e) => setRemoveDestinationRoomId(e.target.value)}
+                                    value={removeDestinationLocationId}
+                                    onChange={(e) => setRemoveDestinationLocationId(e.target.value)}
                                 >
-                                    <option value="">Select room...</option>
-                                    {removeRooms.map((r) => (
-                                        <option key={r.room_id} value={r.room_id}>
-                                            {r.room_name}{r.room_type_label ? ` (${r.room_type_label})` : ''}
+                                    <option value="">Select location...</option>
+                                    {removeLocations.map((r) => (
+                                        <option key={r.location_id} value={r.location_id}>
+                                            {r.location_name}{r.location_type_label ? ` (${r.location_type_label})` : ''}
                                         </option>
                                     ))}
                                 </select>

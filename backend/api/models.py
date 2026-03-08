@@ -278,38 +278,36 @@ class ConsumableModel(models.Model):
         return self.model_name
 
 
-class RoomType(models.Model):
-    """Maps to room_type table"""
-    room_type_id = models.AutoField(primary_key=True, db_column='room_type_id')
-    room_type_label = models.CharField(max_length=60, db_column='room_type_label')
-    room_type_code = models.CharField(max_length=18, db_column='room_type_code')
+class LocationType(models.Model):
+    """Maps to location_type table"""
+    location_type_id = models.AutoField(primary_key=True, db_column='location_type_id')
+    location_type_label = models.CharField(max_length=60, db_column='location_type_label')
+    location_type_code = models.CharField(max_length=18, db_column='location_type_code')
 
     class Meta:
-        managed = False
-        db_table = 'room_type'
+        db_table = 'location_type'
 
     def __str__(self):
-        return self.room_type_label
+        return self.location_type_label
 
 
-class Room(models.Model):
-    """Maps to room table"""
-    room_id = models.AutoField(primary_key=True, db_column='room_id')
-    room_name = models.CharField(max_length=30, db_column='room_name')
-    room_type = models.ForeignKey(
-        RoomType,
+class Location(models.Model):
+    """Maps to location table"""
+    location_id = models.AutoField(primary_key=True, db_column='location_id')
+    location_name = models.CharField(max_length=30, db_column='location_name')
+    location_type = models.ForeignKey(
+        LocationType,
         on_delete=models.SET_NULL,
-        db_column='room_type_id',
+        db_column='location_type_id',
         null=True,
         blank=True,
     )
 
     class Meta:
-        managed = False
-        db_table = 'room'
+        db_table = 'location'
 
     def __str__(self):
-        return self.room_name
+        return self.location_name
 
 
 class Position(models.Model):
@@ -637,7 +635,11 @@ class StockItem(models.Model):
     """Maps to stock_item table"""
     stock_item_id = models.AutoField(primary_key=True, db_column='stock_item_id')
     stock_item_model = models.ForeignKey(StockItemModel, on_delete=models.CASCADE, db_column='stock_item_model_id')
-    destruction_certificate_id = models.IntegerField(blank=True, null=True, db_column='destruction_certificate_id')
+    stock_item_consumable_destruction_certificate_id = models.IntegerField(
+        blank=True,
+        null=True,
+        db_column='stock_item_consumable_destruction_certificate_id',
+    )
     stock_item_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='stock_item_inventory_number')
     stock_item_name = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name')
     stock_item_status = models.CharField(max_length=30, blank=True, null=True, db_column='stock_item_status')
@@ -681,7 +683,11 @@ class Consumable(models.Model):
     """Maps to consumable table"""
     consumable_id = models.AutoField(primary_key=True, db_column='consumable_id')
     consumable_model = models.ForeignKey(ConsumableModel, on_delete=models.CASCADE, db_column='consumable_model_id')
-    destruction_certificate_id = models.IntegerField(blank=True, null=True, db_column='destruction_certificate_id')
+    stock_item_consumable_destruction_certificate_id = models.IntegerField(
+        blank=True,
+        null=True,
+        db_column='stock_item_consumable_destruction_certificate_id',
+    )
     consumable_serial_number = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_serial_number')
     consumable_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='consumable_inventory_number')
     consumable_name = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name')
@@ -747,7 +753,7 @@ class PersonReportsProblemOnAssetIncludedContext(models.Model):
         primary_key=True,
         related_name='included_context',
     )
-    destination_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='destination_room_id', related_name='+')
+    destination_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='destination_location_id', related_name='+')
 
     class Meta:
         managed = False
@@ -1056,8 +1062,8 @@ class AssetMovement(models.Model):
     """Maps to asset_movement table"""
     asset_movement_id = models.IntegerField(primary_key=True, db_column='asset_movement_id')
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', related_name='+')
-    source_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='source_room_id', related_name='+')
-    destination_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='destination_room_id', related_name='+')
+    source_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='source_location_id', related_name='+')
+    destination_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='destination_location_id', related_name='+')
     maintenance_step = models.ForeignKey(
         MaintenanceStep,
         on_delete=models.SET_NULL,
@@ -1080,8 +1086,8 @@ class StockItemMovement(models.Model):
     """Maps to stock_item_movement table"""
     stock_item_movement_id = models.IntegerField(primary_key=True, db_column='stock_item_movement_id')
     stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id', related_name='+')
-    source_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='source_room_id', related_name='+')
-    destination_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='destination_room_id', related_name='+')
+    source_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='source_location_id', related_name='+')
+    destination_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='destination_location_id', related_name='+')
     maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.SET_NULL, db_column='maintenance_step_id', null=True, blank=True, related_name='+')
     external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
     movement_reason = models.CharField(max_length=128, db_column='movement_reason')
@@ -1096,8 +1102,8 @@ class StockItemMovement(models.Model):
 class ConsumableMovement(models.Model):
     """Maps to consumable_movement table"""
     consumable_movement_id = models.IntegerField(primary_key=True, db_column='consumable_movement_id')
-    destination_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='destination_room_id', related_name='+')
-    source_room = models.ForeignKey(Room, on_delete=models.CASCADE, db_column='source_room_id', related_name='+')
+    destination_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='destination_location_id', related_name='+')
+    source_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='source_location_id', related_name='+')
     maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.SET_NULL, db_column='maintenance_step_id', null=True, blank=True, related_name='+')
     external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
     consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
@@ -1154,8 +1160,8 @@ class MaintenanceStepItemRequest(models.Model):
     requested_consumable_model = models.ForeignKey(ConsumableModel, on_delete=models.SET_NULL, db_column='requested_consumable_model_id', null=True, blank=True, related_name='+')
     stock_item = models.ForeignKey(StockItem, on_delete=models.SET_NULL, db_column='stock_item_id', null=True, blank=True, related_name='+')
     consumable = models.ForeignKey(Consumable, on_delete=models.SET_NULL, db_column='consumable_id', null=True, blank=True, related_name='+')
-    source_room = models.ForeignKey(Room, on_delete=models.SET_NULL, db_column='source_room_id', null=True, blank=True, related_name='+')
-    destination_room = models.ForeignKey(Room, on_delete=models.SET_NULL, db_column='destination_room_id', null=True, blank=True, related_name='+')
+    source_location = models.ForeignKey(Location, on_delete=models.SET_NULL, db_column='source_location_id', null=True, blank=True, related_name='+')
+    destination_location = models.ForeignKey(Location, on_delete=models.SET_NULL, db_column='destination_location_id', null=True, blank=True, related_name='+')
     note = models.CharField(max_length=256, blank=True, null=True, db_column='note')
 
     class Meta:
@@ -1326,18 +1332,66 @@ class AdministrativeCertificate(models.Model):
         return f"Certificate {self.administrative_certificate_id} for Order {self.attribution_order_id}"
 
 
-class DestructionCertificate(models.Model):
-    """Maps to destruction_certificate table"""
+class StockItemConsumableDestructionCertificate(models.Model):
+    """Maps to stock_item_consumable_destruction_certificate table"""
     destruction_certificate_id = models.AutoField(primary_key=True, db_column='destruction_certificate_id')
     digital_copy = models.TextField(blank=True, null=True, db_column='digital_copy')
     destruction_datetime = models.DateTimeField(blank=True, null=True, db_column='destruction_datetime')
 
     class Meta:
         managed = False
-        db_table = 'destruction_certificate'
+        db_table = 'stock_item_consumable_destruction_certificate'
 
     def __str__(self):
-        return f"Destruction Certificate {self.destruction_certificate_id}"
+        return f"Stock/Consumable Destruction Certificate {self.destruction_certificate_id}"
+
+
+class AssetDestructionCertificate(models.Model):
+    """Maps to asset_destruction_certificate table"""
+    asset_destruction_certificate_id = models.AutoField(primary_key=True, db_column='asset_destruction_certificate_id')
+    digital_copy = models.TextField(blank=True, null=True, db_column='digital_copy')
+    destruction_datetime = models.DateTimeField(blank=True, null=True, db_column='destruction_datetime')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_destruction_certificate'
+
+    def __str__(self):
+        return f"Asset Destruction Certificate {self.asset_destruction_certificate_id}"
+
+
+class AssetFailedExternalMaintenance(models.Model):
+    """Tracks which external maintenance marked an asset as failed."""
+    asset = models.OneToOneField(
+        Asset,
+        on_delete=models.CASCADE,
+        db_column='asset_id',
+        primary_key=True,
+        related_name='+',
+    )
+    external_maintenance = models.ForeignKey(
+        'ExternalMaintenance',
+        on_delete=models.CASCADE,
+        db_column='external_maintenance_id',
+        related_name='+',
+    )
+    failed_datetime = models.DateTimeField(blank=True, null=True, db_column='failed_datetime')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_failed_external_maintenance'
+
+
+class AssetDestructionCertificateAsset(models.Model):
+    """Join table between asset_destruction_certificate and asset, capturing the originating external maintenance."""
+    id = models.AutoField(primary_key=True, db_column='id')
+    asset_destruction_certificate_id = models.IntegerField(db_column='asset_destruction_certificate_id')
+    asset_id = models.IntegerField(db_column='asset_id')
+    external_maintenance_id = models.IntegerField(db_column='external_maintenance_id')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_destruction_certificate_asset'
 
 
 class CompanyAssetRequest(models.Model):

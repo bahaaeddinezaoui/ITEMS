@@ -26,7 +26,7 @@ import ConsumablesModelsPage from './pages/ConsumablesModelsPage';
 import ConsumableModelCompatibilityPage from './pages/ConsumableModelCompatibilityPage';
 import ConsumablesAttributeDefinitionsPage from './pages/ConsumablesAttributeDefinitionsPage';
 import ConsumableInstanceCreatePage from './pages/ConsumableInstanceCreatePage';
-import RoomsPage from './pages/RoomsPage';
+import LocationsPage from './pages/LocationsPage';
 import PositionsPage from './pages/PositionsPage';
 import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
 import MyItemsPage from './pages/MyItemsPage';
@@ -39,6 +39,7 @@ import AttributionOrderAssetAccessoriesDraftPage from './pages/AttributionOrderA
 import CompanyAssetRequestsPage from './pages/CompanyAssetRequestsPage';
 import AdministrativeCertificatesPage from './pages/AdministrativeCertificatesPage';
 import DestructionCertificatesPage from './pages/DestructionCertificatesPage';
+import AssetDestructionCertificatesPage from './pages/AssetDestructionCertificatesPage';
 import ItemRequestsInboxPage from './pages/ItemRequestsInboxPage';
 import MaintenanceStepsPage from './pages/MaintenanceStepsPage';
 import ExternalMaintenancesPage from './pages/ExternalMaintenancesPage';
@@ -360,10 +361,10 @@ function App() {
                         />
 
                         <Route
-                            path="rooms"
+                            path="locations"
                             element={
                                 <RoleProtectedRoute allowedRoles={[]}>
-                                    <RoomsPage />
+                                    <LocationsPage />
                                 </RoleProtectedRoute>
                             }
                         />
@@ -461,7 +462,25 @@ function App() {
                             path="destruction-certificates"
                             element={
                                 <RoleProtectedRoute allowedRoles={['exploitation_chief', 'it_bureau_chief']}>
+                                    <Navigate to="/dashboard/stock-consumable-destruction-certificates" replace />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="stock-consumable-destruction-certificates"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <DestructionCertificatesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="asset-destruction-certificates"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <AssetDestructionCertificatesPage />
                                 </RoleProtectedRoute>
                             }
                         />
