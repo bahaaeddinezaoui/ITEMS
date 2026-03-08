@@ -4343,9 +4343,22 @@ class AssetViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+
+        queryset = queryset.annotate(
+            failed_external_maintenance_id=Subquery(
+                AssetFailedExternalMaintenance.objects.filter(asset_id=OuterRef("asset_id"))
+                .values("external_maintenance_id")[:1]
+            )
+        )
+
         status_param = self.request.query_params.get("asset_status")
         if status_param is not None:
             queryset = queryset.filter(asset_status=status_param)
+
+        failed_via_external = self.request.query_params.get("failed_via_external_maintenance")
+        if failed_via_external is not None and str(failed_via_external).strip().lower() in {"1", "true", "yes"}:
+            queryset = queryset.filter(failed_external_maintenance_id__isnull=False)
+
         destruction_certificate_id = self.request.query_params.get("destruction_certificate_id")
         if destruction_certificate_id is not None:
             try:

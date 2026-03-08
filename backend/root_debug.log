@@ -51196,3 +51196,168 @@ Response Body: {"detail":"Authentication credentials were not provided."}
 [2026-03-08 15:09:56.527432] START GET /api/assets/
 [2026-03-08 15:09:56.567310] END   GET /api/assets/ -> 200
 [2026-03-08 15:09:56.569305] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:14:18.066370] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:14:18.069072] START GET /api/assets/
+[2026-03-08 15:14:18.150948] END   GET /api/assets/ -> 200
+[2026-03-08 15:14:18.156372] START GET /api/assets/
+[2026-03-08 15:14:18.165863] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:14:18.169967] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:14:18.189878] END   GET /api/assets/ -> 200
+[2026-03-08 15:14:18.205699] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:14:38.780106] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:14:38.786745] START GET /api/assets/
+[2026-03-08 15:14:38.824156] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:14:38.828739] END   GET /api/assets/ -> 200
+[2026-03-08 15:14:38.829593] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:14:38.833525] START GET /api/assets/
+[2026-03-08 15:14:38.864931] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:14:38.867262] END   GET /api/assets/ -> 200
+[2026-03-08 15:14:46.687491] START POST /api/asset-destruction-certificates/
+[2026-03-08 15:14:46.756866] END   POST /api/asset-destruction-certificates/ -> 400
+Response Body: {"asset_ids":"Some assets do not have an originating external maintenance recorded"}
+[2026-03-08 15:15:47.937426] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:15:47.944020] START GET /api/assets/
+[2026-03-08 15:15:47.967974] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:15:47.977571] END   GET /api/assets/ -> 200
+[2026-03-08 15:16:08.844718] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:16:08.845043] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:16:08.847278] START GET /api/assets/
+[2026-03-08 15:16:08.848953] START GET /api/assets/
+[2026-03-08 15:16:08.877919] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:16:08.879339] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:16:08.885396] END   GET /api/assets/ -> 200
+[2026-03-08 15:16:08.888969] END   GET /api/assets/ -> 200
+[2026-03-08 15:16:12.732386] START POST /api/asset-destruction-certificates/
+[2026-03-08 15:16:12.774897] END   POST /api/asset-destruction-certificates/ -> 400
+Response Body: {"asset_ids":"Some assets do not have an originating external maintenance recorded"}
+[2026-03-08 15:18:13.185264] START GET /api/assets/
+[2026-03-08 15:18:13.193286] END   GET /api/assets/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-03-08 15:18:39.721369] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:18:39.721944] START GET /api/assets/
+[2026-03-08 15:18:40.177056] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:18:40.187187] END   GET /api/assets/ -> 200
+[2026-03-08 15:18:40.187843] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:18:40.196227] START GET /api/assets/
+[2026-03-08 15:18:40.233261] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:18:40.233733] END   GET /api/assets/ -> 200
+[2026-03-08 15:18:56.024465] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:18:56.025202] START GET /api/assets/
+[2026-03-08 15:18:56.108864] END   GET /api/assets/ -> 200
+[2026-03-08 15:18:56.115275] START GET /api/assets/
+[2026-03-08 15:18:56.132207] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:18:56.136226] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:18:56.150057] END   GET /api/assets/ -> 200
+[2026-03-08 15:18:56.273037] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:19:08.096187] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:19:08.095780] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:19:08.096883] START GET /api/assets/
+[2026-03-08 15:19:08.099047] START GET /api/assets/
+[2026-03-08 15:19:08.130023] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:19:08.131820] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:19:08.144782] END   GET /api/assets/ -> 200
+[2026-03-08 15:19:08.145121] END   GET /api/assets/ -> 200
+[2026-03-08 15:19:24.434437] START POST /api/asset-destruction-certificates/
+[2026-03-08 15:19:24.489071] END   POST /api/asset-destruction-certificates/ -> 400
+Response Body: {"asset_ids":"Some assets do not have an originating external maintenance recorded"}
+[2026-03-08 15:20:27.201061] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:20:27.202120] START GET /api/assets/
+[2026-03-08 15:20:27.275542] END   GET /api/assets/ -> 200
+[2026-03-08 15:20:27.280649] START GET /api/assets/
+[2026-03-08 15:20:27.285386] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:20:27.289691] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:20:27.313568] END   GET /api/assets/ -> 200
+[2026-03-08 15:20:27.321545] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:20:29.762546] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:20:29.763507] START GET /api/assets/
+[2026-03-08 15:20:29.803868] END   GET /api/assets/ -> 200
+[2026-03-08 15:20:29.807757] START GET /api/assets/
+[2026-03-08 15:20:29.845875] END   GET /api/assets/ -> 200
+[2026-03-08 15:20:29.925152] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:20:29.931643] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:20:29.963271] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:20:33.007102] START POST /api/asset-destruction-certificates/
+[2026-03-08 15:20:33.048349] END   POST /api/asset-destruction-certificates/ -> 400
+Response Body: {"asset_ids":"Some assets do not have an originating external maintenance recorded"}
+[2026-03-08 15:21:15.369478] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:21:15.370302] START GET /api/assets/
+[2026-03-08 15:21:15.449364] END   GET /api/assets/ -> 200
+[2026-03-08 15:21:15.454812] START GET /api/assets/
+[2026-03-08 15:21:15.462575] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:21:15.467248] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:21:15.493991] END   GET /api/assets/ -> 200
+[2026-03-08 15:21:15.603307] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:21:37.178502] START POST /api/auth/login/
+[2026-03-08 15:21:37.264428] END   POST /api/auth/login/ -> 200
+[2026-03-08 15:21:38.379967] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:21:38.380414] START GET /api/assets/
+[2026-03-08 15:21:38.414594] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:21:38.416263] END   GET /api/assets/ -> 200
+[2026-03-08 15:21:38.419246] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:21:38.422630] START GET /api/assets/
+[2026-03-08 15:21:38.462671] END   GET /api/assets/ -> 200
+[2026-03-08 15:21:38.557594] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:21:43.486641] START POST /api/asset-destruction-certificates/
+[2026-03-08 15:21:43.532866] END   POST /api/asset-destruction-certificates/ -> 400
+Response Body: {"asset_ids":"Some assets do not have an originating external maintenance recorded"}
+[2026-03-08 15:22:36.811646] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:22:36.812010] START GET /api/assets/
+[2026-03-08 15:22:36.895481] END   GET /api/assets/ -> 200
+[2026-03-08 15:22:36.901462] START GET /api/assets/
+[2026-03-08 15:22:36.912377] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:22:36.917096] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:22:36.948225] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:22:37.046533] END   GET /api/assets/ -> 200
+[2026-03-08 15:22:39.831238] START POST /api/asset-destruction-certificates/
+[2026-03-08 15:22:40.058659] END   POST /api/asset-destruction-certificates/ -> 500
+Response Body: KeyError at /api/asset-destruction-certificates/
+27
+
+Request Method: POST
+Request URL: http://localhost:8000/api/asset-destruction-certificates/
+Django Version: 6.0.3
+Python Executable: C:\Users\Bvhvddin\AppData\Local\Programs\Python\Python314\python.exe
+Python Version: 3.14.3
+Python Path: ['C:\\Users\\Bvhvddin\\Desktop\\Others\\Equipment Management System\\backend', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\Bvhvddin\\AppData\\Local\\Programs\
+[2026-03-08 15:25:44.956952] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:25:44.958217] START GET /api/assets/
+[2026-03-08 15:25:45.088029] END   GET /api/assets/ -> 200
+[2026-03-08 15:25:45.099809] START GET /api/assets/
+[2026-03-08 15:25:45.114623] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:25:45.120274] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:25:45.143430] END   GET /api/assets/ -> 200
+[2026-03-08 15:25:45.158973] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:25:47.318960] START POST /api/asset-destruction-certificates/
+[2026-03-08 15:25:47.388938] END   POST /api/asset-destruction-certificates/ -> 400
+Response Body: {"asset_ids":"Some assets do not have an originating external maintenance recorded"}
+[2026-03-08 15:26:51.526696] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:26:51.527601] START GET /api/assets/
+[2026-03-08 15:26:51.563061] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:26:51.568254] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:26:51.608235] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:26:51.671502] END   GET /api/assets/ -> 200
+[2026-03-08 15:26:51.677094] START GET /api/assets/
+[2026-03-08 15:26:51.709665] END   GET /api/assets/ -> 200
+[2026-03-08 15:26:53.998130] START POST /api/asset-destruction-certificates/
+[2026-03-08 15:26:54.057300] END   POST /api/asset-destruction-certificates/ -> 400
+Response Body: {"asset_ids":"Some assets do not have an originating external maintenance recorded"}
+[2026-03-08 15:27:50.926698] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:27:50.929026] START GET /api/assets/
+[2026-03-08 15:27:50.962269] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:27:50.964368] END   GET /api/assets/ -> 200
+[2026-03-08 15:28:05.987694] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:28:05.990793] START GET /api/assets/
+[2026-03-08 15:28:06.019223] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:28:06.022712] END   GET /api/assets/ -> 200
+[2026-03-08 15:28:06.025235] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:28:06.027883] START GET /api/assets/
+[2026-03-08 15:28:06.063001] END   GET /api/assets/ -> 200
+[2026-03-08 15:28:06.167193] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:30:12.073533] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:30:12.074805] START GET /api/asset-destruction-certificates/
+[2026-03-08 15:30:12.075776] START GET /api/assets/
+[2026-03-08 15:30:12.079088] START GET /api/assets/
+[2026-03-08 15:30:12.302317] END   GET /api/assets/ -> 200
+[2026-03-08 15:30:12.317928] END   GET /api/assets/ -> 200
+[2026-03-08 15:30:12.324342] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-08 15:30:12.324683] END   GET /api/asset-destruction-certificates/ -> 200

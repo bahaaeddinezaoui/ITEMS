@@ -288,6 +288,8 @@ class OrganizationalStructureRelationSerializer(serializers.ModelSerializer):
 class AssetSerializer(serializers.ModelSerializer):
     """Serializer for Asset model"""
 
+    failed_external_maintenance_id = serializers.IntegerField(read_only=True, required=False)
+
     included_stock_items = serializers.ListField(
         child=serializers.DictField(), required=False, write_only=True, default=list
     )
@@ -300,6 +302,7 @@ class AssetSerializer(serializers.ModelSerializer):
         fields = [
             'asset_id', 'asset_model', 'attribution_order', 'asset_serial_number',
             'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag', 'destruction_certificate_id',
+            'failed_external_maintenance_id',
             'included_stock_items', 'included_consumables'
         ]
         read_only_fields = ['asset_id']

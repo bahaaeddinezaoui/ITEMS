@@ -45,7 +45,7 @@ const AssetDestructionCertificatesPage = () => {
         try {
             const [certData, assetData] = await Promise.all([
                 assetDestructionCertificateService.getAll(),
-                assetService.getAll({ asset_status: 'failed' }),
+                assetService.getAll({ asset_status: 'failed', failed_via_external_maintenance: 'true' }),
             ]);
 
             const certList = certData?.results || certData || [];
@@ -184,7 +184,10 @@ const AssetDestructionCertificatesPage = () => {
     if (loading) return <div className="loading">Loading...</div>;
 
     const selectableAssets = failedAssets.filter(
-        (a) => (a?.asset_status || '').toLowerCase() === 'failed' && !a.destruction_certificate_id
+        (a) =>
+            (a?.asset_status || '').toLowerCase() === 'failed' &&
+            !a.destruction_certificate_id &&
+            !!a.failed_external_maintenance_id
     );
 
     return (
