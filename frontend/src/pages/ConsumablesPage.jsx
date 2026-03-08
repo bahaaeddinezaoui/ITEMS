@@ -112,7 +112,7 @@ const ConsumablesPage = () => {
     const [consumableFormData, setConsumableFormData] = useState({
         consumable_name: '',
         consumable_inventory_number: '',
-        consumable_status: 'active',
+        consumable_status: 'in_stock',
         consumable_warranty_expiry_in_months: '',
         consumable_name_in_administrative_certificate: '',
         destruction_certificate_id: '',
@@ -148,7 +148,7 @@ const ConsumablesPage = () => {
         setConsumableFormData({
             consumable_name: '',
             consumable_inventory_number: '',
-            consumable_status: 'active',
+            consumable_status: 'in_stock',
             consumable_warranty_expiry_in_months: '',
             consumable_name_in_administrative_certificate: '',
             destruction_certificate_id: 0,
@@ -646,7 +646,7 @@ const ConsumablesPage = () => {
             setConsumableFormData({
                 consumable_name: '',
                 consumable_inventory_number: '',
-                consumable_status: 'active',
+                consumable_status: 'in_stock',
                 consumable_warranty_expiry_in_months: '',
                 consumable_name_in_administrative_certificate: '',
                 destruction_certificate_id: '',
@@ -1068,7 +1068,7 @@ const ConsumablesPage = () => {
                                         setConsumableFormData({
                                             consumable_name: '',
                                             consumable_inventory_number: '',
-                                            consumable_status: 'active',
+                                            consumable_status: 'not_delivered_to_company',
                                             consumable_warranty_expiry_in_months: '',
                                             consumable_name_in_administrative_certificate: '',
                                             destruction_certificate_id: 0,
@@ -1293,11 +1293,13 @@ const ConsumablesPage = () => {
                                                 <div>
                                                     <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Status</label>
                                                     <select name="consumable_status" value={consumableFormData.consumable_status} onChange={handleConsumableInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}>
-                                                        <option value="active">Active</option>
-                                                        <option value="inactive">Inactive</option>
-                                                        <option value="maintenance">Maintenance</option>
+                                                        <option value="not_delivered_to_company">Not Delivered to Company</option>
+                                                        <option value="in_stock">In Stock</option>
+                                                        <option value="in_use">In Use</option>
+                                                        <option value="reserved">Reserved</option>
+                                                        <option value="expired">Expired</option>
                                                         <option value="failed">Failed</option>
-                                                        <option value="retired">Retired</option>
+                                                        <option value="destroyed">Destroyed</option>
                                                     </select>
                                                 </div>
                                                 <div>
@@ -1352,10 +1354,12 @@ const ConsumablesPage = () => {
                                                             padding: '2px 8px',
                                                             borderRadius: '12px',
                                                             fontSize: 'var(--font-size-xs)',
-                                                            backgroundColor: item.consumable_status === 'active' ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-bg-secondary)',
-                                                            color: item.consumable_status === 'active' ? 'var(--color-success)' : 'var(--color-text-secondary)'
+                                                            backgroundColor: item.consumable_status === 'in_stock' ? 'rgba(16, 185, 129, 0.15)' : 
+                                                                             item.consumable_status === 'not_delivered_to_company' ? 'rgba(245, 158, 11, 0.15)' : 'var(--color-bg-secondary)',
+                                                            color: item.consumable_status === 'in_stock' ? 'var(--color-success)' : 
+                                                                   item.consumable_status === 'not_delivered_to_company' ? 'var(--color-warning)' : 'var(--color-text-secondary)'
                                                         }}>
-                                                            {item.consumable_status}
+                                                            {String(item.consumable_status || '').split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ')}
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
@@ -1400,7 +1404,7 @@ const ConsumablesPage = () => {
                                                                             setAssignFormData({
                                                                                 person: '',
                                                                                 start_datetime: localISOTime,
-                                                                                condition_on_assignment: item.consumable_status === 'active' ? 'Good' : 'Needs Repair'
+                                                                                condition_on_assignment: item.consumable_status === 'in_stock' ? 'Good' : 'Needs Repair'
                                                                             });
                                                                             setShowAssignForm(true);
                                                                         }}

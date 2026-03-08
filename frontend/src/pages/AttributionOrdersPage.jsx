@@ -328,7 +328,7 @@ const AttributionOrdersPage = () => {
                 const payload = {
                     ...assetCleanData,
                     attribution_order: orderId,
-                    asset_status: 'In Stock',
+                    asset_status: 'not_delivered_to_company',
                     included_stock_items: Array.isArray(draftForRow?.stock_items) ? draftForRow.stock_items : [],
                     included_consumables: Array.isArray(draftForRow?.consumables) ? draftForRow.consumables : [],
                 };

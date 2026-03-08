@@ -92,7 +92,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                 stock_item_model: '',
                 stock_item_name: '',
                 stock_item_inventory_number: '',
-                stock_item_status: 'active',
+                stock_item_status: 'in_stock',
             },
         ];
         setDraftStockItems(next);
@@ -107,7 +107,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                 consumable_name: '',
                 consumable_serial_number: '',
                 consumable_inventory_number: '',
-                consumable_status: 'active',
+                consumable_status: 'in_stock',
             },
         ];
         setDraftConsumables(next);

@@ -78,7 +78,7 @@ const AssetsPage = () => {
         asset_inventory_number: '',
         asset_service_tag: '',
         asset_name: '',
-        asset_status: 'active',
+        asset_status: 'in_stock',
         attribution_order_id: '',
         destruction_certificate_id: ''
     });
@@ -118,6 +118,15 @@ const AssetsPage = () => {
     const [moveCurrentLocationLabel, setMoveCurrentLocationLabel] = useState('');
     const [selectedMoveLocationId, setSelectedMoveLocationId] = useState('');
     const [moveSubmitting, setMoveSubmitting] = useState(false);
+
+    const formatStatusLabel = (value) => {
+        const raw = (value || '').toString().trim();
+        if (!raw) return '';
+        return raw
+            .split('_')
+            .map((p) => (p ? p.charAt(0).toUpperCase() + p.slice(1) : p))
+            .join(' ');
+    };
 
     useEffect(() => {
         fetchAssetTypes();
@@ -499,7 +508,7 @@ const AssetsPage = () => {
                 asset_inventory_number: '',
                 asset_service_tag: '',
                 asset_name: '',
-                asset_status: 'active',
+                asset_status: 'in_stock',
                 attribution_order_id: '',
                 destruction_certificate_id: ''
             });
@@ -629,7 +638,7 @@ const AssetsPage = () => {
             asset_inventory_number: asset.asset_inventory_number || '',
             asset_service_tag: asset.asset_service_tag || '',
             asset_name: asset.asset_name || '',
-            asset_status: asset.asset_status || 'active',
+            asset_status: asset.asset_status || 'not_delivered_to_company',
             attribution_order_id: asset.attribution_order_id ?? '',
             destruction_certificate_id: asset.destruction_certificate_id ?? ''
         });
@@ -1097,7 +1106,7 @@ const AssetsPage = () => {
                                             asset_inventory_number: '',
                                             asset_service_tag: '',
                                             asset_name: '',
-                                            asset_status: 'active',
+                                            asset_status: 'not_delivered_to_company',
                                             attribution_order_id: 0,
                                             destruction_certificate_id: 0
                                         });
@@ -1321,11 +1330,14 @@ const AssetsPage = () => {
                                                 <div>
                                                     <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Status</label>
                                                     <select name="asset_status" value={assetFormData.asset_status} onChange={handleAssetInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}>
-                                                        <option value="active">Active</option>
-                                                        <option value="inactive">Inactive</option>
+                                                        <option value="not_delivered_to_company">Not Delivered to Company</option>
+                                                        <option value="in_stock">In Stock</option>
+                                                        <option value="assigned">Assigned</option>
                                                         <option value="maintenance">Maintenance</option>
                                                         <option value="failed">Failed</option>
-                                                        <option value="retired">Retired</option>
+                                                        <option value="lost">Lost</option>
+                                                        <option value="destroyed">Destroyed</option>
+                                                        <option value="inactive">Inactive</option>
                                                     </select>
                                                 </div>
                                                 <div>
@@ -1379,10 +1391,12 @@ const AssetsPage = () => {
                                                             padding: '2px 8px',
                                                             borderRadius: '12px',
                                                             fontSize: 'var(--font-size-xs)',
-                                                            backgroundColor: asset.asset_status === 'active' ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-bg-secondary)',
-                                                            color: asset.asset_status === 'active' ? 'var(--color-success)' : 'var(--color-text-secondary)'
+                                                            backgroundColor: asset.asset_status === 'in_stock' ? 'rgba(16, 185, 129, 0.15)' : 
+                                                                             asset.asset_status === 'not_delivered_to_company' ? 'rgba(245, 158, 11, 0.15)' : 'var(--color-bg-secondary)',
+                                                            color: asset.asset_status === 'in_stock' ? 'var(--color-success)' : 
+                                                                   asset.asset_status === 'not_delivered_to_company' ? 'var(--color-warning)' : 'var(--color-text-secondary)'
                                                         }}>
-                                                            {asset.asset_status}
+                                                            {formatStatusLabel(asset.asset_status)}
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
@@ -1428,7 +1442,7 @@ const AssetsPage = () => {
                                                                                 person: '',
                                                                                 start_datetime: localISOTime,
                                                                                 end_datetime: '',
-                                                                                condition_on_assignment: asset.asset_status === 'active' ? 'Good' : 'Needs Repair'
+                                                                                condition_on_assignment: asset.asset_status === 'in_stock' ? 'Good' : 'Needs Repair'
                                                                             });
                                                                             setShowAssignForm(true);
                                                                         }}

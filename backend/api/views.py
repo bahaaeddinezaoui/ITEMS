@@ -2160,6 +2160,16 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         if denial:
             return denial
 
+        existing_req = MaintenanceStepItemRequest.objects.filter(
+            maintenance_step=step,
+            status__in=["pending", "fulfilled"],
+        ).exists()
+        if existing_req:
+            return Response(
+                {"error": "This maintenance step already has an item request. You cannot request multiple items in the same step."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         requested_stock_item_model_id = request.data.get("requested_stock_item_model_id")
         note = request.data.get("note")
         if not requested_stock_item_model_id:
@@ -2214,6 +2224,16 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         person, denial = self._require_can_request_for_step(request, step)
         if denial:
             return denial
+
+        existing_req = MaintenanceStepItemRequest.objects.filter(
+            maintenance_step=step,
+            status__in=["pending", "fulfilled"],
+        ).exists()
+        if existing_req:
+            return Response(
+                {"error": "This maintenance step already has an item request. You cannot request multiple items in the same step."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         requested_consumable_model_id = request.data.get("requested_consumable_model_id")
         note = request.data.get("note")
@@ -8896,6 +8916,51 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
                 pass
         return queryset
 
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        self._check_signatures_and_update_status(instance)
+
+    def _check_signatures_and_update_status(self, cert):
+        signatures = [
+            cert.is_signed_by_warehouse_storage_magaziner,
+            cert.is_signed_by_warehouse_storage_accountant,
+            cert.is_signed_by_warehouse_storage_marketer,
+            cert.is_signed_by_warehouse_it_chief,
+            cert.is_signed_by_warehouse_leader,
+        ]
+        
+        if all(signatures):
+            with transaction.atomic():
+                # Update Assets
+                Asset.objects.filter(
+                    attribution_order_id=cert.attribution_order_id,
+                    asset_status='not_delivered_to_company'
+                ).update(asset_status='in_stock')
+                
+                # Update StockItems
+                stock_item_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(
+                        attribution_order_id=cert.attribution_order_id
+                    ).values_list('stock_item_id', flat=True)
+                )
+                if stock_item_ids:
+                    StockItem.objects.filter(
+                        stock_item_id__in=stock_item_ids,
+                        stock_item_status='not_delivered_to_company',
+                    ).update(stock_item_status='in_stock')
+
+                # Update Consumables
+                consumable_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(
+                        attribution_order_id=cert.attribution_order_id
+                    ).values_list('consumable_id', flat=True)
+                )
+                if consumable_ids:
+                    Consumable.objects.filter(
+                        consumable_id__in=consumable_ids,
+                        consumable_status='not_delivered_to_company',
+                    ).update(consumable_status='in_stock')
+
     def create(self, request, *args, **kwargs):
         user_account = getattr(request, "user", None)
         if not user_account or not getattr(user_account, "is_authenticated", False):
@@ -8929,7 +8994,10 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
         if digital_copy:
             validated_data['digital_copy'] = digital_copy.read()
 
-        item = AdministrativeCertificate.objects.create(administrative_certificate_id=next_id, **validated_data)
+        with transaction.atomic():
+            item = AdministrativeCertificate.objects.create(administrative_certificate_id=next_id, **validated_data)
+            self._check_signatures_and_update_status(item)
+            
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
 
 

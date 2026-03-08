@@ -149,6 +149,10 @@ const AttributionOrderAssetAccessoriesPage = () => {
         }
     };
 
+    const isAssetCreated = useMemo(() => {
+        return asset?.attribution_order != null;
+    }, [asset]);
+
     if (loading) return <div className="loading">Loading...</div>;
 
     return (
@@ -173,6 +177,12 @@ const AttributionOrderAssetAccessoriesPage = () => {
                 </button>
             </div>
 
+            {isAssetCreated && (
+                <div className="badge badge-info" style={{ padding: 'var(--space-4)', borderRadius: 'var(--radius-md)' }}>
+                    This asset is already created. Accessories cannot be modified.
+                </div>
+            )}
+
             {error && <div className="error-message">{error}</div>}
 
             <div className="card">
@@ -180,32 +190,34 @@ const AttributionOrderAssetAccessoriesPage = () => {
                     <h2 className="card-title">Stock Item Accessories</h2>
                 </div>
                 <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap' }}>
-                        <div className="form-group" style={{ minWidth: 260 }}>
-                            <label className="form-label">Add stock item</label>
-                            <select
-                                className="form-input"
-                                value={selectedStockItemId}
-                                onChange={(e) => setSelectedStockItemId(e.target.value)}
+                    {!isAssetCreated && (
+                        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap' }}>
+                            <div className="form-group" style={{ minWidth: 260 }}>
+                                <label className="form-label">Add stock item</label>
+                                <select
+                                    className="form-input"
+                                    value={selectedStockItemId}
+                                    onChange={(e) => setSelectedStockItemId(e.target.value)}
+                                >
+                                    <option value="">Select stock item...</option>
+                                    {stockItems.map((s) => (
+                                        <option key={s.stock_item_id} value={s.stock_item_id}>
+                                            {(s.stock_item_name || `Stock Item #${s.stock_item_id}`)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={addStockAccessory}
+                                disabled={saving || !selectedStockItemId}
+                                style={{ width: 'auto' }}
                             >
-                                <option value="">Select stock item...</option>
-                                {stockItems.map((s) => (
-                                    <option key={s.stock_item_id} value={s.stock_item_id}>
-                                        {(s.stock_item_name || `Stock Item #${s.stock_item_id}`)}
-                                    </option>
-                                ))}
-                            </select>
+                                Add
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={addStockAccessory}
-                            disabled={saving || !selectedStockItemId}
-                            style={{ width: 'auto' }}
-                        >
-                            Add
-                        </button>
-                    </div>
+                    )}
 
                     <div className="table-container">
                         <table className="data-table">
@@ -230,15 +242,17 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                             <tr key={a.id}>
                                                 <td style={{ fontWeight: 500 }}>{label}</td>
                                                 <td>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        style={{ width: 'auto' }}
-                                                        disabled={saving}
-                                                        onClick={() => removeStockAccessory(a.id)}
-                                                    >
-                                                        Remove
-                                                    </button>
+                                                    {!isAssetCreated && (
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-secondary"
+                                                            style={{ width: 'auto' }}
+                                                            disabled={saving}
+                                                            onClick={() => removeStockAccessory(a.id)}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -255,32 +269,34 @@ const AttributionOrderAssetAccessoriesPage = () => {
                     <h2 className="card-title">Consumable Accessories</h2>
                 </div>
                 <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap' }}>
-                        <div className="form-group" style={{ minWidth: 260 }}>
-                            <label className="form-label">Add consumable</label>
-                            <select
-                                className="form-input"
-                                value={selectedConsumableId}
-                                onChange={(e) => setSelectedConsumableId(e.target.value)}
+                    {!isAssetCreated && (
+                        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap' }}>
+                            <div className="form-group" style={{ minWidth: 260 }}>
+                                <label className="form-label">Add consumable</label>
+                                <select
+                                    className="form-input"
+                                    value={selectedConsumableId}
+                                    onChange={(e) => setSelectedConsumableId(e.target.value)}
+                                >
+                                    <option value="">Select consumable...</option>
+                                    {consumables.map((c) => (
+                                        <option key={c.consumable_id} value={c.consumable_id}>
+                                            {(c.consumable_name || `Consumable #${c.consumable_id}`)}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={addConsumableAccessory}
+                                disabled={saving || !selectedConsumableId}
+                                style={{ width: 'auto' }}
                             >
-                                <option value="">Select consumable...</option>
-                                {consumables.map((c) => (
-                                    <option key={c.consumable_id} value={c.consumable_id}>
-                                        {(c.consumable_name || `Consumable #${c.consumable_id}`)}
-                                    </option>
-                                ))}
-                            </select>
+                                Add
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={addConsumableAccessory}
-                            disabled={saving || !selectedConsumableId}
-                            style={{ width: 'auto' }}
-                        >
-                            Add
-                        </button>
-                    </div>
+                    )}
 
                     <div className="table-container">
                         <table className="data-table">
@@ -305,15 +321,17 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                             <tr key={a.id}>
                                                 <td style={{ fontWeight: 500 }}>{label}</td>
                                                 <td>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        style={{ width: 'auto' }}
-                                                        disabled={saving}
-                                                        onClick={() => removeConsumableAccessory(a.id)}
-                                                    >
-                                                        Remove
-                                                    </button>
+                                                    {!isAssetCreated && (
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-secondary"
+                                                            style={{ width: 'auto' }}
+                                                            disabled={saving}
+                                                            onClick={() => removeConsumableAccessory(a.id)}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );

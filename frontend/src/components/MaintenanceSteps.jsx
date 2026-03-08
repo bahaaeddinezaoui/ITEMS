@@ -73,6 +73,8 @@ const MaintenanceSteps = ({
     const [requestSubmitting, setRequestSubmitting] = useState(false);
     const [requestMessage, setRequestMessage] = useState(null);
 
+    const [stepsWithItemRequest, setStepsWithItemRequest] = useState([]);
+
     const [removeEditorOpen, setRemoveEditorOpen] = useState(false);
     const [removeEditorStep, setRemoveEditorStep] = useState(null);
     const [removeComponents, setRemoveComponents] = useState({ stock_items: [], consumables: [] });
@@ -632,6 +634,15 @@ const MaintenanceSteps = ({
                 isMainTechnician ? maintenanceService.pendingReturnToOwnerExists(Number(maintenanceId)).catch(() => ({ exists: false })) : Promise.resolve({ exists: false }),
             ]);
             setSteps(stepsData);
+            setStepsWithItemRequest((prev) => {
+                const terminal = new Set(['done', 'failed (to be sent to a higher level)', 'cancelled']);
+                const stepIds = new Set(
+                    (Array.isArray(stepsData) ? stepsData : [])
+                        .filter((s) => s?.maintenance_step_id && !terminal.has(s.maintenance_step_status))
+                        .map((s) => s.maintenance_step_id)
+                );
+                return prev.filter((id) => stepIds.has(id));
+            });
             if (typeof onStepsChange === 'function') {
                 onStepsChange(Array.isArray(stepsData) ? stepsData : []);
             }
@@ -954,6 +965,10 @@ const MaintenanceSteps = ({
     };
 
     const openRequestEditor = (step, requestType) => {
+        if (stepsWithItemRequest.includes(step?.maintenance_step_id)) {
+            setError('This maintenance step already has an item request');
+            return;
+        }
         setRequestEditorOpen(true);
         setRequestEditorType(requestType);
         setRequestEditorStep(step);
@@ -1009,6 +1024,10 @@ const MaintenanceSteps = ({
 
     const submitRequestEditor = async () => {
         if (!requestEditorStep || !requestEditorType) return;
+        if (stepsWithItemRequest.includes(requestEditorStep.maintenance_step_id)) {
+            setRequestMessage({ type: 'error', text: 'This maintenance step already has an item request.' });
+            return;
+        }
         if (!requestModelId) {
             setRequestMessage({ type: 'error', text: 'Please select a model.' });
             return;
@@ -1032,6 +1051,12 @@ const MaintenanceSteps = ({
             }
 
             setRequestMessage({ type: 'success', text: 'Request created successfully.' });
+            setStepsWithItemRequest((prev) => {
+                const stepId = requestEditorStep.maintenance_step_id;
+                if (!stepId) return prev;
+                if (prev.includes(stepId)) return prev;
+                return [...prev, stepId];
+            });
             await loadData();
         } catch (err) {
             console.error(err);
@@ -1053,6 +1078,10 @@ const MaintenanceSteps = ({
     };
 
     const requestStockItem = async (step) => {
+        if (stepsWithItemRequest.includes(step?.maintenance_step_id)) {
+            setError('This maintenance step already has an item request');
+            return;
+        }
         try {
             const stockItemTypeId = promptFromList(
                 'Stock item type',
@@ -1082,6 +1111,10 @@ const MaintenanceSteps = ({
     };
 
     const requestConsumable = async (step) => {
+        if (stepsWithItemRequest.includes(step?.maintenance_step_id)) {
+            setError('This maintenance step already has an item request');
+            return;
+        }
         try {
             const consumableTypeId = promptFromList(
                 'Consumable type',
@@ -1174,20 +1207,22 @@ const MaintenanceSteps = ({
                                             <path d="M8 12h8" />
                                         </svg>
                                     </button>
-                                    <button
-                                        className="btn btn-secondary btn-sm"
-                                        onClick={() => openExternalStepModal()}
-                                        disabled={loading}
-                                        style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
-                                        title="Create new external maintenance step"
-                                        aria-label="Create new external maintenance step"
-                                    >
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                            <path d="M12 8v8" />
-                                            <path d="M8 12h8" />
-                                        </svg>
-                                    </button>
+                                    {Array.isArray(externalMaintenances) && externalMaintenances.length > 0 && (
+                                        <button
+                                            className="btn btn-secondary btn-sm"
+                                            onClick={() => openExternalStepModal()}
+                                            disabled={loading}
+                                            style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
+                                            title="Create new external maintenance step"
+                                            aria-label="Create new external maintenance step"
+                                        >
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                                                <path d="M12 8v8" />
+                                                <path d="M8 12h8" />
+                                            </svg>
+                                        </button>
+                                    )}
                                     <button
                                         className="btn btn-primary btn-sm"
                                         onClick={() => {
@@ -1613,18 +1648,6 @@ const MaintenanceSteps = ({
                                                                         <path d="M9 18h6" />
                                                                         <path d="M10 22h4" />
                                                                         <path d="M12 2a7 7 0 0 0-4 12.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26A7 7 0 0 0 12 2z" />
-                                                                    </svg>
-                                                                </button>
-                                                                <button
-                                                                    className="btn btn-xs btn-warning"
-                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                    onClick={() => openReturnEditor(step)}
-                                                                    title="Return component to owner"
-                                                                    aria-label="Return component to owner"
-                                                                >
-                                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                        <path d="M9 15L3 9l6-6" />
-                                                                        <path d="M3 9h12a6 6 0 0 1 0 12h-3" />
                                                                     </svg>
                                                                 </button>
                                                             </>

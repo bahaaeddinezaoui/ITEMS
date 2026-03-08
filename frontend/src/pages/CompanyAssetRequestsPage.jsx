@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { companyAssetRequestService, attributionOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +15,15 @@ const CompanyAssetRequestsPage = () => {
     const [requests, setRequests] = useState([]);
     const [ordersById, setOrdersById] = useState({});
 
+    const attributionOrdersWithRequest = useMemo(() => {
+        const list = Array.isArray(requests) ? requests : [];
+        return new Set(
+            list
+                .map((r) => Number(r?.attribution_order))
+                .filter((id) => Number.isFinite(id) && id > 0)
+        );
+    }, [requests]);
+
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [createForm, setCreateForm] = useState({
         attribution_order: '',
@@ -29,6 +38,131 @@ const CompanyAssetRequestsPage = () => {
         is_signed_by_company_representative: false,
         digital_copy: null,
     });
+
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingRequest, setEditingRequest] = useState(null);
+    const [editForm, setEditForm] = useState({
+        is_signed_by_company: false,
+        is_signed_by_company_leader: false,
+        is_signed_by_regional_provider: false,
+        is_signed_by_company_representative: false,
+    });
+
+    const [showSaveConfirmModal, setShowSaveConfirmModal] = useState(false);
+    const [pendingSaveFields, setPendingSaveFields] = useState([]);
+
+    const openEditModal = (req) => {
+        if (!req) return;
+        setEditingRequest(req);
+        setEditForm({
+            is_signed_by_company: !!req.is_signed_by_company,
+            is_signed_by_company_leader: !!req.is_signed_by_company_leader,
+            is_signed_by_regional_provider: !!req.is_signed_by_regional_provider,
+            is_signed_by_company_representative: !!req.is_signed_by_company_representative,
+        });
+        setShowEditModal(true);
+    };
+
+    const closeEditModal = () => {
+        setShowEditModal(false);
+        setEditingRequest(null);
+        setShowSaveConfirmModal(false);
+        setPendingSaveFields([]);
+        setEditForm({
+            is_signed_by_company: false,
+            is_signed_by_company_leader: false,
+            is_signed_by_regional_provider: false,
+            is_signed_by_company_representative: false,
+        });
+    };
+
+    const requestToggleSignature = (field, nextChecked) => {
+        if (!field) return;
+        const originallyTrue = !!editingRequest?.[field];
+
+        if (originallyTrue && !nextChecked) {
+            return;
+        }
+
+        setEditForm((prev) => ({
+            ...prev,
+            [field]: !!nextChecked,
+        }));
+    };
+
+    const doSaveSignatures = async () => {
+        if (!editingRequest?.company_asset_request_id) return;
+
+        setSubmitting(true);
+        setError(null);
+        setSuccess(null);
+        try {
+            await companyAssetRequestService.update(editingRequest.company_asset_request_id, {
+                is_signed_by_company: !!editForm.is_signed_by_company,
+                is_signed_by_company_leader: !!editForm.is_signed_by_company_leader,
+                is_signed_by_regional_provider: !!editForm.is_signed_by_regional_provider,
+                is_signed_by_company_representative: !!editForm.is_signed_by_company_representative,
+            });
+
+            const data = await companyAssetRequestService.getAll();
+            const reqList = data?.results || data || [];
+            setRequests(reqList);
+
+            setSuccess('Signatures updated successfully');
+            closeEditModal();
+        } catch (err) {
+            setError(err?.response?.data?.error || 'Failed to update signatures');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const signatureFieldLabel = (field) => {
+        switch (field) {
+            case 'is_signed_by_company':
+                return 'Signed by company';
+            case 'is_signed_by_company_leader':
+                return 'Signed by company leader';
+            case 'is_signed_by_regional_provider':
+                return 'Signed by regional provider';
+            case 'is_signed_by_company_representative':
+                return 'Signed by company representative';
+            default:
+                return field;
+        }
+    };
+
+    const handleSaveSignatures = async (e) => {
+        e.preventDefault();
+
+        const fields = [
+            'is_signed_by_company',
+            'is_signed_by_company_leader',
+            'is_signed_by_regional_provider',
+            'is_signed_by_company_representative',
+        ];
+
+        const newlyTrueFields = fields.filter((f) => !editingRequest?.[f] && !!editForm?.[f]);
+
+        if (newlyTrueFields.length > 0) {
+            setPendingSaveFields(newlyTrueFields);
+            setShowSaveConfirmModal(true);
+            return;
+        }
+
+        await doSaveSignatures();
+    };
+
+    const confirmSaveSignatures = async () => {
+        setShowSaveConfirmModal(false);
+        setPendingSaveFields([]);
+        await doSaveSignatures();
+    };
+
+    const cancelSaveSignatures = () => {
+        setShowSaveConfirmModal(false);
+        setPendingSaveFields([]);
+    };
 
     useEffect(() => {
         if (!isAssetResponsible) return;
@@ -68,6 +202,16 @@ const CompanyAssetRequestsPage = () => {
         setError(null);
         setSuccess(null);
         try {
+            const selectedOrderId = Number(createForm.attribution_order);
+            if (!Number.isFinite(selectedOrderId) || selectedOrderId <= 0) {
+                setError('Attribution order is required');
+                return;
+            }
+            if (attributionOrdersWithRequest.has(selectedOrderId)) {
+                setError('This attribution order already has a company asset request');
+                return;
+            }
+
             const formData = new FormData();
             formData.append('attribution_order', createForm.attribution_order);
             if (createForm.administrative_serial_number) formData.append('administrative_serial_number', createForm.administrative_serial_number);
@@ -148,6 +292,19 @@ const CompanyAssetRequestsPage = () => {
                     <div className="card-body">
                         <form onSubmit={handleCreate}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+                                {Object.keys(ordersById).length > 0 && attributionOrdersWithRequest.size >= Object.keys(ordersById).length && (
+                                    <div
+                                        className="badge badge-warning"
+                                        style={{
+                                            gridColumn: '1 / -1',
+                                            padding: 'var(--space-4)',
+                                            borderRadius: 'var(--radius-md)',
+                                        }}
+                                    >
+                                        All attribution orders already have a company asset request.
+                                    </div>
+                                )}
+
                                 <div className="form-group">
                                     <label className="form-label">Attribution Order</label>
                                     <select
@@ -157,11 +314,13 @@ const CompanyAssetRequestsPage = () => {
                                         required
                                     >
                                         <option value="">Select Attribution Order</option>
-                                        {Object.values(ordersById).map((o) => (
-                                            <option key={o.attribution_order_id} value={o.attribution_order_id}>
-                                                {o.attribution_order_full_code || `#${o.attribution_order_id}`}
-                                            </option>
-                                        ))}
+                                        {Object.values(ordersById)
+                                            .filter((o) => !attributionOrdersWithRequest.has(Number(o.attribution_order_id)))
+                                            .map((o) => (
+                                                <option key={o.attribution_order_id} value={o.attribution_order_id}>
+                                                    {o.attribution_order_full_code || `#${o.attribution_order_id}`}
+                                                </option>
+                                            ))}
                                     </select>
                                 </div>
 
@@ -310,7 +469,13 @@ const CompanyAssetRequestsPage = () => {
                                     const orderId = r.attribution_order;
                                     const order = ordersById[orderId];
                                     return (
-                                        <tr key={r.company_asset_request_id} className="hover-row">
+                                        <tr
+                                            key={r.company_asset_request_id}
+                                            className="hover-row"
+                                            onClick={() => openEditModal(r)}
+                                            style={{ cursor: 'pointer' }}
+                                            title="Click to edit signatures"
+                                        >
                                             <td>#{r.company_asset_request_id}</td>
                                             <td>{r.administrative_serial_number || '-'}</td>
                                             <td>{r.title_of_demand || '-'}</td>
@@ -331,6 +496,144 @@ const CompanyAssetRequestsPage = () => {
                     </table>
                 </div>
             </div>
+
+            {showEditModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.4)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 'var(--space-6)',
+                        zIndex: 50,
+                    }}
+                    onClick={closeEditModal}
+                >
+                    <div
+                        className="card"
+                        style={{ width: '100%', maxWidth: 520 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h2 className="card-title">Edit Signatures</h2>
+                            <button type="button" className="btn btn-secondary" style={{ width: 'auto' }} onClick={closeEditModal}>
+                                Close
+                            </button>
+                        </div>
+                        <div className="card-body">
+                            <div style={{ marginBottom: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
+                                Request #{editingRequest?.company_asset_request_id}
+                            </div>
+
+                            <form onSubmit={handleSaveSignatures}>
+                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={!!editForm.is_signed_by_company}
+                                            onChange={(e) => requestToggleSignature('is_signed_by_company', e.target.checked)}
+                                            disabled={submitting}
+                                        />
+                                        <span>Signed by company</span>
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={!!editForm.is_signed_by_company_leader}
+                                            onChange={(e) => requestToggleSignature('is_signed_by_company_leader', e.target.checked)}
+                                            disabled={submitting}
+                                        />
+                                        <span>Signed by company leader</span>
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={!!editForm.is_signed_by_regional_provider}
+                                            onChange={(e) => requestToggleSignature('is_signed_by_regional_provider', e.target.checked)}
+                                            disabled={submitting}
+                                        />
+                                        <span>Signed by regional provider</span>
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={!!editForm.is_signed_by_company_representative}
+                                            onChange={(e) => requestToggleSignature('is_signed_by_company_representative', e.target.checked)}
+                                            disabled={submitting}
+                                        />
+                                        <span>Signed by company representative</span>
+                                    </label>
+                                </div>
+
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-6)' }}>
+                                    <button type="button" className="btn btn-secondary" onClick={closeEditModal} disabled={submitting}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn btn-primary" disabled={submitting}>
+                                        {submitting ? 'Saving...' : 'Save'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showSaveConfirmModal && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.55)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: 'var(--space-6)',
+                        zIndex: 65,
+                    }}
+                    onClick={cancelSaveSignatures}
+                >
+                    <div
+                        className="card"
+                        style={{ width: '100%', maxWidth: 560 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="card-header">
+                            <h2 className="card-title">Confirm Save</h2>
+                        </div>
+                        <div className="card-body">
+                            <div style={{ marginBottom: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
+                                You are about to set the following signature(s) to Yes. This is irreversible.
+                            </div>
+
+                            <div style={{ marginBottom: 'var(--space-6)' }}>
+                                {pendingSaveFields.map((f) => (
+                                    <div key={f} style={{ fontWeight: 500, marginBottom: 'var(--space-2)' }}>
+                                        {signatureFieldLabel(f)}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
+                                <button type="button" className="btn btn-secondary" onClick={cancelSaveSignatures} disabled={submitting}>
+                                    Cancel
+                                </button>
+                                <button type="button" className="btn btn-primary" onClick={confirmSaveSignatures} disabled={submitting}>
+                                    Confirm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

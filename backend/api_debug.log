@@ -1031,3 +1031,10 @@ Password mismatch for user: asset_resp
 [2026-03-08 14:01:37.008493+00:00] Login attempt for: asset_resp
 
 [2026-03-08 14:21:37.180197+00:00] Login attempt for: asset_resp
+
+[2026-03-08 21:03:29.561884+00:00] Login attempt for: technician2
+User not found: technician2
+
+[2026-03-08 21:03:36.006065+00:00] Login attempt for: mohsinamoura
+
+[2026-03-08 21:49:20.776260+00:00] Login attempt for: asset_resp

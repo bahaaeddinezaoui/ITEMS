@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
     administrativeCertificateService,
@@ -27,7 +27,6 @@ const AdministrativeCertificatesPage = () => {
     const [createForm, setCreateForm] = useState({
         warehouse: '',
         attribution_order: '',
-        receipt_report: '',
         interested_organization: 'ESAM/2RM',
         operation: '',
         format: '21x27',
@@ -98,6 +97,25 @@ const AdministrativeCertificatesPage = () => {
         }
     };
 
+    const eligibleAttributionOrderIds = useMemo(() => {
+        const list = Array.isArray(certificates) ? certificates : [];
+        return new Set(
+            list
+                .filter((c) => c?.attribution_order && c?.receipt_report)
+                .map((c) => Number(c.attribution_order))
+                .filter((id) => Number.isFinite(id) && id > 0)
+        );
+    }, [certificates]);
+
+    const deducedReceiptReportId = useMemo(() => {
+        const orderIdNum = Number(createForm.attribution_order);
+        if (!Number.isFinite(orderIdNum) || orderIdNum <= 0) return null;
+
+        const list = Array.isArray(certificates) ? certificates : [];
+        const found = list.find((c) => Number(c.attribution_order) === orderIdNum && c.receipt_report);
+        return found?.receipt_report ?? null;
+    }, [certificates, createForm.attribution_order]);
+
     useEffect(() => {
         if (!isAssetResponsible) return;
         fetchData();
@@ -111,6 +129,19 @@ const AdministrativeCertificatesPage = () => {
         setSuccess(null);
 
         try {
+            if (!createForm.warehouse) {
+                setError('Warehouse is required');
+                return;
+            }
+            if (!createForm.attribution_order) {
+                setError('Attribution order is required');
+                return;
+            }
+            if (!deducedReceiptReportId) {
+                setError('Receipt report is not found for this attribution order. Create it from the Attribution Orders page first.');
+                return;
+            }
+
             if (createForm.operation && !['entry', 'exit', 'transfer'].includes(createForm.operation)) {
                 setError('Operation must be entry, exit, or transfer');
                 return;
@@ -119,7 +150,7 @@ const AdministrativeCertificatesPage = () => {
             const formData = new FormData();
             if (createForm.warehouse) formData.append('warehouse', createForm.warehouse);
             if (createForm.attribution_order) formData.append('attribution_order', createForm.attribution_order);
-            if (createForm.receipt_report) formData.append('receipt_report', createForm.receipt_report);
+            formData.append('receipt_report', String(deducedReceiptReportId));
             if (createForm.interested_organization) formData.append('interested_organization', createForm.interested_organization);
             if (createForm.operation) formData.append('operation', createForm.operation);
             if (createForm.format) formData.append('format', createForm.format);
@@ -141,7 +172,6 @@ const AdministrativeCertificatesPage = () => {
             setCreateForm({
                 warehouse: '',
                 attribution_order: '',
-                receipt_report: '',
                 interested_organization: 'ESAM/2RM',
                 operation: '',
                 format: '21x27',
@@ -153,7 +183,19 @@ const AdministrativeCertificatesPage = () => {
                 digital_copy: null,
             });
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create administrative certificate');
+            const data = err?.response?.data;
+            if (data?.error) {
+                setError(data.error);
+            } else if (data && typeof data === 'object') {
+                const firstField = Object.keys(data)[0];
+                const firstValue = firstField ? data[firstField] : null;
+                const message = Array.isArray(firstValue)
+                    ? `${firstField}: ${firstValue.join(', ')}`
+                    : JSON.stringify(data);
+                setError(message);
+            } else {
+                setError('Failed to create administrative certificate');
+            }
         } finally {
             setSubmitting(false);
         }
@@ -215,6 +257,19 @@ const AdministrativeCertificatesPage = () => {
                                     marginBottom: 'var(--space-6)',
                                 }}
                             >
+                                {eligibleAttributionOrderIds.size === 0 && (
+                                    <div
+                                        className="badge badge-warning"
+                                        style={{
+                                            gridColumn: '1 / -1',
+                                            padding: 'var(--space-4)',
+                                            borderRadius: 'var(--radius-md)',
+                                        }}
+                                    >
+                                        No attribution orders are eligible here yet. Receipt reports are created from the Attribution Orders page.
+                                    </div>
+                                )}
+
                                 <div className="form-group">
                                     <label className="form-label">Warehouse</label>
                                     <select
@@ -239,22 +294,28 @@ const AdministrativeCertificatesPage = () => {
                                         onChange={(e) => setCreateForm({ ...createForm, attribution_order: e.target.value })}
                                     >
                                         <option value="">Select Attribution Order</option>
-                                        {Object.values(ordersById).map((o) => (
-                                            <option key={o.attribution_order_id} value={o.attribution_order_id}>
-                                                {o.attribution_order_full_code || `#${o.attribution_order_id}`}
-                                            </option>
-                                        ))}
+                                        {Object.values(ordersById)
+                                            .filter((o) => eligibleAttributionOrderIds.has(Number(o.attribution_order_id)))
+                                            .map((o) => (
+                                                <option key={o.attribution_order_id} value={o.attribution_order_id}>
+                                                    {o.attribution_order_full_code || `#${o.attribution_order_id}`}
+                                                </option>
+                                            ))}
                                     </select>
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Receipt Report ID</label>
+                                    <label className="form-label">Receipt Report</label>
                                     <input
-                                        type="number"
+                                        type="text"
                                         className="form-input"
-                                        value={createForm.receipt_report}
-                                        onChange={(e) => setCreateForm({ ...createForm, receipt_report: e.target.value })}
-                                        placeholder="e.g. 1"
+                                        value={
+                                            deducedReceiptReportId
+                                                ? (reportsById?.[deducedReceiptReportId]?.report_full_code || `#${deducedReceiptReportId}`)
+                                                : ''
+                                        }
+                                        readOnly
+                                        placeholder="Will be automatically deduced"
                                     />
                                 </div>
 

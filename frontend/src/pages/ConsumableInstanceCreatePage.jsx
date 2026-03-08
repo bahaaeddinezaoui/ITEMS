@@ -64,7 +64,7 @@ const ConsumableInstanceCreatePage = () => {
                 next.push(prev[i] || {
                     consumable_name: '',
                     consumable_inventory_number: '',
-                    consumable_status: 'active',
+                    consumable_status: 'not_delivered_to_company',
                     consumable_warranty_expiry_in_months: '',
                     consumable_name_in_administrative_certificate: '',
                 });
@@ -101,7 +101,7 @@ const ConsumableInstanceCreatePage = () => {
                     consumable_model: Number(modelIdParam),
                     consumable_name: l.consumable_name || '',
                     consumable_inventory_number: l.consumable_inventory_number || '',
-                    consumable_status: l.consumable_status || 'active',
+                    consumable_status: l.consumable_status || 'not_delivered_to_company',
                     consumable_warranty_expiry_in_months: l.consumable_warranty_expiry_in_months === '' ? '' : Number(l.consumable_warranty_expiry_in_months),
                     consumable_name_in_administrative_certificate: l.consumable_name_in_administrative_certificate || '',
                     destruction_certificate_id: null,
@@ -116,7 +116,7 @@ const ConsumableInstanceCreatePage = () => {
             setLines((prev) => prev.map(() => ({
                 consumable_name: '',
                 consumable_inventory_number: '',
-                consumable_status: 'active',
+                consumable_status: 'in_stock',
                 consumable_warranty_expiry_in_months: '',
                 consumable_name_in_administrative_certificate: '',
             })));
@@ -203,11 +203,13 @@ const ConsumableInstanceCreatePage = () => {
                                                 onChange={(e) => updateLine(idx, { consumable_status: e.target.value })}
                                                 disabled={submitting}
                                             >
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                                <option value="maintenance">Maintenance</option>
+                                                <option value="not_delivered_to_company">Not Delivered to Company</option>
+                                                <option value="in_stock">In Stock</option>
+                                                <option value="in_use">In Use</option>
+                                                <option value="reserved">Reserved</option>
+                                                <option value="expired">Expired</option>
                                                 <option value="failed">Failed</option>
-                                                <option value="retired">Retired</option>
+                                                <option value="destroyed">Destroyed</option>
                                             </select>
                                         </div>
 

@@ -197,6 +197,11 @@ export const companyAssetRequestService = {
         const response = await api.get(`company-asset-requests/${id}/`);
         return response.data;
     },
+
+    update: async (id, data) => {
+        const response = await api.patch(`company-asset-requests/${id}/`, data);
+        return response.data;
+    },
 };
 
 // External Maintenance services
@@ -1687,6 +1692,10 @@ export const attributionOrderAssetConsumableAccessoryService = {
 
 // Receipt Report service
 export const receiptReportService = {
+    getAll: async (params) => {
+        const response = await api.get('receipt-reports/', { params });
+        return response.data;
+    },
     getById: async (id) => {
         const response = await api.get(`receipt-reports/${id}/`);
         return response.data;

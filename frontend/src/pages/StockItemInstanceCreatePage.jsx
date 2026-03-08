@@ -64,7 +64,7 @@ const StockItemInstanceCreatePage = () => {
                 next.push(prev[i] || {
                     stock_item_name: '',
                     stock_item_inventory_number: '',
-                    stock_item_status: 'active',
+                    stock_item_status: 'not_delivered_to_company',
                     stock_item_warranty_expiry_in_months: '',
                     stock_item_name_in_administrative_certificate: '',
                 });
@@ -101,7 +101,7 @@ const StockItemInstanceCreatePage = () => {
                     stock_item_model: Number(modelIdParam),
                     stock_item_name: l.stock_item_name || '',
                     stock_item_inventory_number: l.stock_item_inventory_number || '',
-                    stock_item_status: l.stock_item_status || 'active',
+                    stock_item_status: l.stock_item_status || 'not_delivered_to_company',
                     stock_item_warranty_expiry_in_months: l.stock_item_warranty_expiry_in_months === '' ? '' : Number(l.stock_item_warranty_expiry_in_months),
                     stock_item_name_in_administrative_certificate: l.stock_item_name_in_administrative_certificate || '',
                     destruction_certificate_id: null,
@@ -116,7 +116,7 @@ const StockItemInstanceCreatePage = () => {
             setLines((prev) => prev.map(() => ({
                 stock_item_name: '',
                 stock_item_inventory_number: '',
-                stock_item_status: 'active',
+                stock_item_status: 'in_stock',
                 stock_item_warranty_expiry_in_months: '',
                 stock_item_name_in_administrative_certificate: '',
             })));
@@ -203,11 +203,13 @@ const StockItemInstanceCreatePage = () => {
                                                 onChange={(e) => updateLine(idx, { stock_item_status: e.target.value })}
                                                 disabled={submitting}
                                             >
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                                <option value="maintenance">Maintenance</option>
+                                                <option value="not_delivered_to_company">Not Delivered to Company</option>
+                                                <option value="in_stock">In Stock</option>
+                                                <option value="in_use">In Use</option>
+                                                <option value="reserved">Reserved</option>
+                                                <option value="expired">Expired</option>
                                                 <option value="failed">Failed</option>
-                                                <option value="retired">Retired</option>
+                                                <option value="destroyed">Destroyed</option>
                                             </select>
                                         </div>
 
