@@ -855,7 +855,7 @@ class Maintenance(models.Model):
     end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
     is_successful = models.BooleanField(blank=True, null=True, db_column='is_successful')
-    digital_copy = models.BinaryField(blank=True, null=True, db_column='digital_copy')
+    digital_copy = models.TextField(blank=True, null=True, db_column='digital_copy')
 
     class Meta:
         managed = False
@@ -1205,7 +1205,7 @@ class ReceiptReport(models.Model):
     receipt_report_id = models.AutoField(primary_key=True, db_column='receipt_report_id')
     report_datetime = models.DateTimeField(db_column='report_datetime', blank=True, null=True, auto_now_add=True)
     report_full_code = models.CharField(max_length=48, db_column='report_full_code', blank=True, null=True)
-    digital_copy = models.BinaryField(db_column='digital_copy', blank=True, null=True)
+    digital_copy = models.TextField(db_column='digital_copy', blank=True, null=True)
 
     class Meta:
         managed = False
@@ -1301,7 +1301,7 @@ class ExternalMaintenanceDocument(models.Model):
     document_is_signed = models.BooleanField(blank=True, null=True, db_column='document_is_signed')
     item_is_received_by_maintenance_provider = models.BooleanField(blank=True, null=True, db_column='item_is_received_by_maintenance_provider')
     maintenance_provider_final_decision = models.CharField(max_length=60, blank=True, null=True, db_column='maintenance_provider_final_decision')
-    digital_copy = models.BinaryField(blank=True, null=True, db_column='digital_copy')
+    digital_copy = models.TextField(blank=True, null=True, db_column='digital_copy')
 
     class Meta:
         managed = False
@@ -1322,7 +1322,8 @@ class AdministrativeCertificate(models.Model):
     is_signed_by_warehouse_storage_marketer = models.BooleanField(db_column='is_signed_by_warehouse_storage_marketer', default=False)
     is_signed_by_warehouse_it_chief = models.BooleanField(db_column='is_signed_by_warehouse_it_chief', default=False)
     is_signed_by_warehouse_leader = models.BooleanField(db_column='is_signed_by_warehouse_leader', default=False)
-    digital_copy = models.BinaryField(db_column='digital_copy', blank=True, null=True)
+    are_items_moved = models.BooleanField(db_column='are_items_moved', default=False)
+    digital_copy = models.TextField(db_column='digital_copy', blank=True, null=True)
 
     class Meta:
         managed = False
@@ -1422,7 +1423,7 @@ class CompanyAssetRequest(models.Model):
         null=True,
         db_column="is_signed_by_company_representative",
     )
-    digital_copy = models.BinaryField(blank=True, null=True, db_column="digital_copy")
+    digital_copy = models.TextField(blank=True, null=True, db_column="digital_copy")
 
     class Meta:
         managed = False

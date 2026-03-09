@@ -1716,11 +1716,23 @@ export const administrativeCertificateService = {
         const response = await api.get('administrative-certificates/', { params });
         return response.data;
     },
+    getById: async (id) => {
+        const response = await api.get(`administrative-certificates/${id}/`);
+        return response.data;
+    },
     create: async (data) => {
         const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
         const response = isFormData
             ? await postForm('administrative-certificates/', data)
             : await api.post('administrative-certificates/', data);
+        return response.data;
+    },
+    update: async (id, data) => {
+        const response = await api.put(`administrative-certificates/${id}/`, data);
+        return response.data;
+    },
+    patch: async (id, data) => {
+        const response = await api.patch(`administrative-certificates/${id}/`, data);
         return response.data;
     },
 };

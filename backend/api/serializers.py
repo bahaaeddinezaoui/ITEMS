@@ -936,7 +936,7 @@ class AdministrativeCertificateSerializer(serializers.ModelSerializer):
             'interested_organization', 'operation', 'format',
             'is_signed_by_warehouse_storage_magaziner', 'is_signed_by_warehouse_storage_accountant',
             'is_signed_by_warehouse_storage_marketer', 'is_signed_by_warehouse_it_chief',
-            'is_signed_by_warehouse_leader', 'digital_copy'
+            'is_signed_by_warehouse_leader', 'are_items_moved', 'digital_copy'
         ]
         read_only_fields = ['administrative_certificate_id']
 

@@ -720,7 +720,10 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         last_item = Maintenance.objects.order_by("-maintenance_id").first()
         next_id = (last_item.maintenance_id + 1) if last_item else 1
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        if 'digital_copy' in request.FILES:
+            data.pop('digital_copy', None)
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         data = dict(serializer.validated_data)
         data["start_datetime"] = None
@@ -1649,7 +1652,10 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         last_item = MaintenanceStep.objects.order_by("-maintenance_step_id").first()
         next_id = (last_item.maintenance_step_id + 1) if last_item else 1
 
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        if 'digital_copy' in request.FILES:
+            data.pop('digital_copy', None)
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
 
         maintenance = serializer.validated_data.get("maintenance")
@@ -4337,7 +4343,6 @@ class AssetModelDefaultStockItemViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # item = AssetModelDefaultStockItem.objects.create(**serializer.validated_data)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -4351,7 +4356,6 @@ class AssetModelDefaultConsumableViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # item = AssetModelDefaultConsumable.objects.create(**serializer.validated_data)
         self.perform_create(serializer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -4645,9 +4649,27 @@ class AssetViewSet(viewsets.ModelViewSet):
             .first()
         )
         if not last_move or not last_move.destination_location_id:
+            last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+            next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+
+            AssetMovement.objects.create(
+                asset_movement_id=next_asset_move_id,
+                asset=asset,
+                source_location=destination_location,
+                destination_location=destination_location,
+                maintenance_step=None,
+                external_maintenance_step_id=None,
+                movement_reason=movement_reason,
+                movement_datetime=timezone.now(),
+            )
+
             return Response(
-                {"error": "Cannot infer asset current location (no movement history)"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {
+                    "asset_movement_id": next_asset_move_id,
+                    "source_location_id": destination_location.location_id,
+                    "destination_location_id": destination_location.location_id,
+                },
+                status=status.HTTP_201_CREATED,
             )
 
         source_location = last_move.destination_location
@@ -5139,11 +5161,16 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            allowed = "stock_consumable_responsible" in role_codes
+            allowed = (
+                ("stock_consumable_responsible" in role_codes)
+                or ("asset_responsible" in role_codes)
+                or ("exploitation_chief" in role_codes)
+                or ("it_bureau_chief" in role_codes)
+            )
 
         if not allowed:
             return Response(
-                {"error": "Only Stock/Consumable Responsible or superusers can move stock items"},
+                {"error": "Only Stock/Consumable Responsible, Asset Responsible, or superiors can move stock items"},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -5169,9 +5196,27 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             .first()
         )
         if not last_move or not last_move.destination_location_id:
+            last_global_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+            next_move_id = (last_global_move.stock_item_movement_id + 1) if last_global_move else 1
+
+            StockItemMovement.objects.create(
+                stock_item_movement_id=next_move_id,
+                stock_item=stock_item,
+                source_location=destination_location,
+                destination_location=destination_location,
+                maintenance_step=None,
+                external_maintenance_step_id=None,
+                movement_reason=movement_reason,
+                movement_datetime=timezone.now(),
+            )
+
             return Response(
-                {"error": "Cannot infer stock item current location (no movement history)"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {
+                    "stock_item_movement_id": next_move_id,
+                    "source_location_id": destination_location.location_id,
+                    "destination_location_id": destination_location.location_id,
+                },
+                status=status.HTTP_201_CREATED,
             )
 
         source_location = last_move.destination_location
@@ -5658,11 +5703,16 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            allowed = "stock_consumable_responsible" in role_codes
+            allowed = (
+                ("stock_consumable_responsible" in role_codes)
+                or ("asset_responsible" in role_codes)
+                or ("exploitation_chief" in role_codes)
+                or ("it_bureau_chief" in role_codes)
+            )
 
         if not allowed:
             return Response(
-                {"error": "Only Stock/Consumable Responsible or superusers can move consumables"},
+                {"error": "Only Stock/Consumable Responsible, Asset Responsible, or superiors can move consumables"},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -5688,9 +5738,27 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             .first()
         )
         if not last_move or not last_move.destination_location_id:
+            last_global_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+            next_move_id = (last_global_move.consumable_movement_id + 1) if last_global_move else 1
+
+            ConsumableMovement.objects.create(
+                consumable_movement_id=next_move_id,
+                consumable=consumable,
+                source_location=destination_location,
+                destination_location=destination_location,
+                maintenance_step=None,
+                external_maintenance_step_id=None,
+                movement_reason=movement_reason,
+                movement_datetime=timezone.now(),
+            )
+
             return Response(
-                {"error": "Cannot infer consumable current location (no movement history)"},
-                status=status.HTTP_400_BAD_REQUEST,
+                {
+                    "consumable_movement_id": next_move_id,
+                    "source_location_id": destination_location.location_id,
+                    "destination_location_id": destination_location.location_id,
+                },
+                status=status.HTTP_201_CREATED,
             )
 
         source_location = last_move.destination_location
@@ -8868,7 +8936,10 @@ class ReceiptReportViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        if 'digital_copy' in request.FILES:
+            data.pop('digital_copy', None)
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         last_item = ReceiptReport.objects.order_by("-receipt_report_id").first()
         next_id = (last_item.receipt_report_id + 1) if last_item else 1
@@ -8877,7 +8948,15 @@ class ReceiptReportViewSet(viewsets.ModelViewSet):
         digital_copy = request.FILES.get('digital_copy')
         validated_data = serializer.validated_data
         if digital_copy:
-            validated_data['digital_copy'] = digital_copy.read()
+            rel_dir = os.path.join("receipt_reports")
+            base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+            os.makedirs(base_dir, exist_ok=True)
+
+            rel_path = os.path.join(rel_dir, f"receipt_report_{next_id}.pdf")
+            abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+            with open(abs_path, "wb") as f:
+                f.write(digital_copy.read())
+            validated_data['digital_copy'] = rel_path
 
         item = ReceiptReport.objects.create(receipt_report_id=next_id, **validated_data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
@@ -8984,7 +9063,10 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        if 'digital_copy' in request.FILES:
+            data.pop('digital_copy', None)
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         last_item = AdministrativeCertificate.objects.order_by("-administrative_certificate_id").first()
         next_id = (last_item.administrative_certificate_id + 1) if last_item else 1
@@ -8992,7 +9074,15 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
         digital_copy = request.FILES.get('digital_copy')
         validated_data = serializer.validated_data
         if digital_copy:
-            validated_data['digital_copy'] = digital_copy.read()
+            rel_dir = os.path.join("administrative_certificates")
+            base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+            os.makedirs(base_dir, exist_ok=True)
+
+            rel_path = os.path.join(rel_dir, f"administrative_certificate_{next_id}.pdf")
+            abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+            with open(abs_path, "wb") as f:
+                f.write(digital_copy.read())
+            validated_data['digital_copy'] = rel_path
 
         with transaction.atomic():
             item = AdministrativeCertificate.objects.create(administrative_certificate_id=next_id, **validated_data)
@@ -9050,7 +9140,10 @@ class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        if 'digital_copy' in request.FILES:
+            data.pop('digital_copy', None)
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
 
         last_item = CompanyAssetRequest.objects.order_by("-company_asset_request_id").first()
@@ -9060,7 +9153,16 @@ class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
         digital_copy = request.FILES.get('digital_copy')
         if digital_copy:
             validated_data = dict(validated_data)
-            validated_data['digital_copy'] = digital_copy.read()
+
+            rel_dir = os.path.join("company_asset_requests")
+            base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+            os.makedirs(base_dir, exist_ok=True)
+
+            rel_path = os.path.join(rel_dir, f"company_asset_request_{next_id}.pdf")
+            abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+            with open(abs_path, "wb") as f:
+                f.write(digital_copy.read())
+            validated_data['digital_copy'] = rel_path
 
         item = CompanyAssetRequest.objects.create(company_asset_request_id=next_id, **validated_data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)

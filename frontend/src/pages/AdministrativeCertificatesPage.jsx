@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import {
     administrativeCertificateService,
     attributionOrderService,
@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 
 const AdministrativeCertificatesPage = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
 
     const isAssetResponsible = user?.roles?.some((role) => role.role_code === 'asset_responsible' || role.role_code === 'it_bureau_chief');
 
@@ -163,7 +164,7 @@ const AdministrativeCertificatesPage = () => {
 
             if (createForm.digital_copy) formData.append('digital_copy', createForm.digital_copy);
 
-            await administrativeCertificateService.create(formData);
+            const created = await administrativeCertificateService.create(formData);
 
             await fetchData();
 
@@ -182,6 +183,17 @@ const AdministrativeCertificatesPage = () => {
                 is_signed_by_warehouse_leader: false,
                 digital_copy: null,
             });
+
+            const fullySigned = !!(
+                created?.is_signed_by_warehouse_storage_magaziner &&
+                created?.is_signed_by_warehouse_storage_accountant &&
+                created?.is_signed_by_warehouse_storage_marketer &&
+                created?.is_signed_by_warehouse_it_chief &&
+                created?.is_signed_by_warehouse_leader
+            );
+            if (fullySigned && created?.administrative_certificate_id) {
+                navigate(`/dashboard/administrative-certificates/${created.administrative_certificate_id}/move-items`);
+            }
         } catch (err) {
             const data = err?.response?.data;
             if (data?.error) {
@@ -465,6 +477,7 @@ const AdministrativeCertificatesPage = () => {
                                 <th>Signed (IT)</th>
                                 <th>Signed (Leader)</th>
                                 <th>Digital Copy</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -479,6 +492,16 @@ const AdministrativeCertificatesPage = () => {
                                     const w = warehousesById[c.warehouse];
                                     const o = ordersById[c.attribution_order];
                                     const rr = reportsById[c.receipt_report];
+
+                                    const fullySigned = !!(
+                                        c.is_signed_by_warehouse_storage_magaziner &&
+                                        c.is_signed_by_warehouse_storage_accountant &&
+                                        c.is_signed_by_warehouse_storage_marketer &&
+                                        c.is_signed_by_warehouse_it_chief &&
+                                        c.is_signed_by_warehouse_leader
+                                    );
+
+                                    const canMoveItems = fullySigned && !c.are_items_moved;
 
                                     return (
                                         <tr key={c.administrative_certificate_id} className="hover-row">
@@ -495,6 +518,22 @@ const AdministrativeCertificatesPage = () => {
                                             <td>{c.is_signed_by_warehouse_it_chief ? 'Yes' : 'No'}</td>
                                             <td>{c.is_signed_by_warehouse_leader ? 'Yes' : 'No'}</td>
                                             <td>{c.digital_copy ? 'Yes' : 'No'}</td>
+                                            <td>
+                                                {canMoveItems ? (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/dashboard/administrative-certificates/${c.administrative_certificate_id}/move-items`);
+                                                        }}
+                                                    >
+                                                        Move Items
+                                                    </button>
+                                                ) : (
+                                                    '-'
+                                                )}
+                                            </td>
                                         </tr>
                                     );
                                 })

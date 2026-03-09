@@ -39,6 +39,7 @@ import AttributionOrderAssetAccessoriesDraftPage from './pages/AttributionOrderA
 import AttributionOrderAssetsPage from './pages/AttributionOrderAssetsPage';
 import CompanyAssetRequestsPage from './pages/CompanyAssetRequestsPage';
 import AdministrativeCertificatesPage from './pages/AdministrativeCertificatesPage';
+import AdministrativeCertificateMoveItemsPage from './pages/AdministrativeCertificateMoveItemsPage';
 import DestructionCertificatesPage from './pages/DestructionCertificatesPage';
 import AssetDestructionCertificatesPage from './pages/AssetDestructionCertificatesPage';
 import ItemRequestsInboxPage from './pages/ItemRequestsInboxPage';
@@ -447,6 +448,14 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
                                     <AdministrativeCertificatesPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="administrative-certificates/:certificateId/move-items"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
+                                    <AdministrativeCertificateMoveItemsPage />
                                 </RoleProtectedRoute>
                             }
                         />
