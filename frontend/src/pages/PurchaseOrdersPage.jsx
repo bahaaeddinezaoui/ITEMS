@@ -12,7 +12,7 @@ const PurchaseOrdersPage = () => {
     const isProtectionSecurityBureauChief = user?.roles?.some((role) => role.role_code === 'protection_and_security_bureau_chief');
     const isSchoolHeadquarter = user?.roles?.some((role) => role.role_code === 'school_headquarter');
     const canConsultPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
-    const canSignAcceptanceReport = isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
+    const canSignAcceptanceReport = isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief || isStockConsumableResponsible;
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -52,6 +52,7 @@ const PurchaseOrdersPage = () => {
             || (isProtectionSecurityBureauChief && !acceptanceReportInfo?.is_signed_by_protection_and_security_bureau_chief)
             || (isSchoolHeadquarter && !acceptanceReportInfo?.is_signed_by_school_headquarter)
             || (isItBureauChief && !acceptanceReportInfo?.is_signed_by_it_bureau_chief)
+            || (isStockConsumableResponsible && !acceptanceReportInfo?.is_signed_by_stock_consumable_responsible)
         );
 
     const closeDeliveryNoteModal = () => {
@@ -119,6 +120,7 @@ const PurchaseOrdersPage = () => {
             if (isProtectionSecurityBureauChief) signAs = 'protection_and_security_bureau_chief';
             if (isSchoolHeadquarter) signAs = 'school_headquarter';
             if (isItBureauChief) signAs = 'it_bureau_chief';
+            if (isStockConsumableResponsible) signAs = 'stock_consumable_responsible';
 
             const payload = signAs ? { sign_as: signAs, is_signed: true } : { is_signed: true };
             await purchaseOrderService.signAcceptanceReport(acceptanceReportPo.purchase_order_id, payload);

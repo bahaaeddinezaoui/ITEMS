@@ -8105,6 +8105,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
             "protection_and_security_bureau_chief": "is_signed_by_protection_and_security_bureau_chief",
             "school_headquarter": "is_signed_by_school_headquarter",
             "it_bureau_chief": "is_signed_by_information_technilogy_bureau_chief",
+            "stock_consumable_responsible": "acceptance_report_is_stock_item_and_consumable_responsible",
         }
 
         eligible_roles = [r for r in role_to_field.keys() if (r in role_codes) or user_account.is_superuser()]
@@ -8154,7 +8155,8 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                     SELECT is_signed_by_director_of_administration_and_support,
                            is_signed_by_protection_and_security_bureau_chief,
                            is_signed_by_school_headquarter,
-                           is_signed_by_information_technilogy_bureau_chief
+                           is_signed_by_information_technilogy_bureau_chief,
+                           acceptance_report_is_stock_item_and_consumable_responsible
                     FROM public.acceptance_report
                     WHERE acceptance_report_id = %s
                     """,
@@ -8170,6 +8172,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 "is_signed_by_protection_and_security_bureau_chief": flags[1],
                 "is_signed_by_school_headquarter": flags[2],
                 "is_signed_by_it_bureau_chief": flags[3],
+                "is_signed_by_stock_consumable_responsible": flags[4],
             },
             status=status.HTTP_200_OK,
         )

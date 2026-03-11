@@ -55564,3 +55564,25 @@ Response Body: {"error":"Not allowed"}
 [2026-03-11 22:50:57.725835] END   POST /api/purchase-orders/5/acceptance-report/sign/ -> 200
 [2026-03-11 22:50:57.733862] START GET /api/purchase-orders/5/acceptance-report/
 [2026-03-11 22:50:57.784083] END   GET /api/purchase-orders/5/acceptance-report/ -> 200
+[2026-03-11 22:51:47.842810] START GET /api/purchase-orders/5/acceptance-report/
+[2026-03-11 22:51:47.886358] END   GET /api/purchase-orders/5/acceptance-report/ -> 200
+[2026-03-11 22:52:04.119003] START POST /api/auth/login/
+[2026-03-11 22:52:04.169431] END   POST /api/auth/login/ -> 200
+[2026-03-11 22:52:06.043609] START GET /api/maintenance-step-item-requests/
+[2026-03-11 22:52:06.044503] START GET /api/locations/
+[2026-03-11 22:52:06.090928] END   GET /api/locations/ -> 200
+[2026-03-11 22:52:06.096126] START GET /api/locations/
+[2026-03-11 22:52:06.099357] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-11 22:52:06.106738] START GET /api/maintenance-step-item-requests/
+[2026-03-11 22:52:06.132885] END   GET /api/locations/ -> 200
+[2026-03-11 22:52:06.145412] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-11 22:52:06.969975] START GET /api/purchase-orders/
+[2026-03-11 22:52:07.003083] END   GET /api/purchase-orders/ -> 200
+[2026-03-11 22:52:07.005615] START GET /api/purchase-orders/
+[2026-03-11 22:52:07.063830] END   GET /api/purchase-orders/ -> 200
+[2026-03-11 22:52:08.882126] START GET /api/purchase-orders/5/acceptance-report/
+[2026-03-11 22:52:08.925674] END   GET /api/purchase-orders/5/acceptance-report/ -> 200
+[2026-03-11 22:54:12.697148] START POST /api/purchase-orders/5/acceptance-report/sign/
+[2026-03-11 22:54:12.776403] END   POST /api/purchase-orders/5/acceptance-report/sign/ -> 200
+[2026-03-11 22:54:12.782822] START GET /api/purchase-orders/5/acceptance-report/
+[2026-03-11 22:54:12.818072] END   GET /api/purchase-orders/5/acceptance-report/ -> 200
