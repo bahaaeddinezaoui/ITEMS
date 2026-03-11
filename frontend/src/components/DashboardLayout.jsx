@@ -69,7 +69,7 @@ const DashboardLayout = () => {
     const isDirectorAdminSupport = user?.roles?.some(role => role.role_code === 'director_admin_support');
     const isProtectionSecurityBureauChief = user?.roles?.some(role => role.role_code === 'protection_and_security_bureau_chief');
     const isSchoolHeadquarter = user?.roles?.some(role => role.role_code === 'school_headquarter');
-    const canViewPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter;
+    const canViewPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
     const canViewReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
 
     return (

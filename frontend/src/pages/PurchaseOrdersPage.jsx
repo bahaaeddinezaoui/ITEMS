@@ -7,11 +7,12 @@ const PurchaseOrdersPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible');
+    const isItBureauChief = user?.roles?.some((role) => role.role_code === 'it_bureau_chief');
     const isDirectorAdminSupport = user?.roles?.some((role) => role.role_code === 'director_admin_support');
     const isProtectionSecurityBureauChief = user?.roles?.some((role) => role.role_code === 'protection_and_security_bureau_chief');
     const isSchoolHeadquarter = user?.roles?.some((role) => role.role_code === 'school_headquarter');
-    const canConsultPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter;
-    const canSignAcceptanceReport = isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter;
+    const canConsultPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
+    const canSignAcceptanceReport = isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -50,6 +51,7 @@ const PurchaseOrdersPage = () => {
             (isDirectorAdminSupport && !acceptanceReportInfo?.is_signed_by_director_of_administration_and_support)
             || (isProtectionSecurityBureauChief && !acceptanceReportInfo?.is_signed_by_protection_and_security_bureau_chief)
             || (isSchoolHeadquarter && !acceptanceReportInfo?.is_signed_by_school_headquarter)
+            || (isItBureauChief && !acceptanceReportInfo?.is_signed_by_it_bureau_chief)
         );
 
     const closeDeliveryNoteModal = () => {
@@ -116,6 +118,7 @@ const PurchaseOrdersPage = () => {
             if (isDirectorAdminSupport) signAs = 'director_admin_support';
             if (isProtectionSecurityBureauChief) signAs = 'protection_and_security_bureau_chief';
             if (isSchoolHeadquarter) signAs = 'school_headquarter';
+            if (isItBureauChief) signAs = 'it_bureau_chief';
 
             const payload = signAs ? { sign_as: signAs, is_signed: true } : { is_signed: true };
             await purchaseOrderService.signAcceptanceReport(acceptanceReportPo.purchase_order_id, payload);
@@ -363,12 +366,12 @@ const PurchaseOrdersPage = () => {
                                             <td>{o.supplier_name ? o.supplier_name : (o.supplier_id ? `Supplier #${o.supplier_id}` : '')}</td>
                                             <td style={{ whiteSpace: 'nowrap' }}>
                                                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                                    {isStockConsumableResponsible && (
+                                                    { (isStockConsumableResponsible || isItBureauChief) && (
                                                         <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}`)}>
                                                             View
                                                         </button>
                                                     )}
-                                                    {isStockConsumableResponsible && (
+                                                    { (isStockConsumableResponsible || isItBureauChief) && (
                                                         <>
                                                             <button
                                                                 type="button"

@@ -18,7 +18,7 @@ const ItemRequestsInboxPage = () => {
     const [success, setSuccess] = useState(null);
 
     const [requests, setRequests] = useState([]);
-    const [rooms, setRooms] = useState([]);
+    const [locations, setLocations] = useState([]);
 
     const [fulfillFormsById, setFulfillFormsById] = useState({});
     const [eligibleItemsByRequestId, setEligibleItemsByRequestId] = useState({});

@@ -523,7 +523,7 @@ function App() {
                         <Route
                             path="purchase-orders"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'director_admin_support', 'protection_and_security_bureau_chief', 'school_headquarter']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'director_admin_support', 'protection_and_security_bureau_chief', 'school_headquarter', 'it_bureau_chief']}>
                                     <PurchaseOrdersPage />
                                 </RoleProtectedRoute>
                             }
@@ -532,7 +532,7 @@ function App() {
                         <Route
                             path="purchase-orders/:orderId"
                             element={
-                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'director_admin_support', 'protection_and_security_bureau_chief', 'school_headquarter']}>
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'director_admin_support', 'protection_and_security_bureau_chief', 'school_headquarter', 'it_bureau_chief']}>
                                     <PurchaseOrderDetailsPage />
                                 </RoleProtectedRoute>
                             }

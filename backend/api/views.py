@@ -7028,6 +7028,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
             "director_admin_support",
             "protection_and_security_bureau_chief",
             "school_headquarter",
+            "it_bureau_chief",
         }
         if user_account.is_superuser() or (role_codes & allowed):
             return user_account, role_codes, None
@@ -7060,6 +7061,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
             "director_admin_support",
             "protection_and_security_bureau_chief",
             "school_headquarter",
+            "it_bureau_chief",
         }
         if user_account.is_superuser() or (role_codes & allowed):
             return user_account, role_codes, None
@@ -8102,6 +8104,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
             "director_admin_support": "is_signed_by_director_of_administration_and_support",
             "protection_and_security_bureau_chief": "is_signed_by_protection_and_security_bureau_chief",
             "school_headquarter": "is_signed_by_school_headquarter",
+            "it_bureau_chief": "is_signed_by_information_technilogy_bureau_chief",
         }
 
         eligible_roles = [r for r in role_to_field.keys() if (r in role_codes) or user_account.is_superuser()]
@@ -8150,7 +8153,8 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                     """
                     SELECT is_signed_by_director_of_administration_and_support,
                            is_signed_by_protection_and_security_bureau_chief,
-                           is_signed_by_school_headquarter
+                           is_signed_by_school_headquarter,
+                           is_signed_by_information_technilogy_bureau_chief
                     FROM public.acceptance_report
                     WHERE acceptance_report_id = %s
                     """,
@@ -8165,6 +8169,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 "is_signed_by_director_of_administration_and_support": flags[0],
                 "is_signed_by_protection_and_security_bureau_chief": flags[1],
                 "is_signed_by_school_headquarter": flags[2],
+                "is_signed_by_it_bureau_chief": flags[3],
             },
             status=status.HTTP_200_OK,
         )
