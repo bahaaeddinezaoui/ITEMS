@@ -430,6 +430,10 @@ export const purchaseOrderService = {
         const response = await api.get(`purchase-orders/${id}/acceptance-report/`);
         return response.data;
     },
+    includedItems: async (id) => {
+        const response = await api.get(`purchase-orders/${id}/included-items/`);
+        return response.data;
+    },
     createAcceptanceReport: async (id, formData) => {
         const response = await api.post(`purchase-orders/${id}/acceptance-report/`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },

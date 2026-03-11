@@ -1,5 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { 
+    Plus, 
+    RefreshCw, 
+    Eye, 
+    Package, 
+    History, 
+    FileText, 
+    Receipt, 
+    ClipboardCheck, 
+    X,
+    Calendar,
+    Hash,
+    Building2,
+    CheckCircle2,
+    XCircle,
+    Download,
+    Upload,
+    PenTool,
+    ChevronRight,
+    Search,
+    Filter
+} from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -322,425 +344,610 @@ const PurchaseOrdersPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
+    const arePurchaseOrderItemsMoved = (purchaseOrderId) => {
+        try {
+            return localStorage.getItem(`po_items_moved_${purchaseOrderId}`) === '1';
+        } catch {
+            return false;
+        }
+    };
+
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredOrders = orders.filter(o => 
+        (o.purchase_order_code?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (o.supplier_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        `#${o.purchase_order_id}`.includes(searchTerm)
+    );
+
+    const getStatusColor = (o) => {
+        if (o.has_remaining === false) return 'badge-success';
+        if (o.has_remaining === true) return 'badge-warning';
+        return 'badge-secondary';
+    };
+
+    const getStatusText = (o) => {
+        if (o.has_remaining === false) return 'Received';
+        if (o.has_remaining === true) return 'Partial';
+        return 'Pending';
+    };
+
     return (
-        <div className="page-container">
-            <div className="page-header">
+        <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div>
-                    <h1 className="page-title">Purchase orders</h1>
-                    <p className="page-subtitle">Create purchase orders, receive items, and track backorders.</p>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>Purchase Orders</h1>
+                    <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
+                        Manage procurement, track shipments, and oversee supplier deliveries.
+                    </p>
                 </div>
-                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                    <button 
+                        type="button" 
+                        className="btn btn-secondary" 
+                        onClick={loadOrders} 
+                        disabled={loading}
+                        style={{ padding: 'var(--space-3) var(--space-4)' }}
+                    >
+                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                        <span>Refresh</span>
+                    </button>
                     {isStockConsumableResponsible && (
-                        <button type="button" className="btn btn-primary" onClick={() => navigate('/dashboard/purchase-orders/create')}>
-                            New
+                        <button 
+                            type="button" 
+                            className="btn btn-primary" 
+                            onClick={() => navigate('/dashboard/purchase-orders/create')}
+                            style={{ padding: 'var(--space-3) var(--space-6)' }}
+                        >
+                            <Plus size={18} />
+                            <span>New Order</span>
                         </button>
                     )}
-                    <button type="button" className="btn btn-secondary" onClick={loadOrders} disabled={loading}>
-                        Refresh
-                    </button>
                 </div>
             </div>
-            <div className="card">
-                <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>Orders</h2>
+
+            <div style={{ display: 'flex', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                    <Search 
+                        size={18} 
+                        style={{ 
+                            position: 'absolute', 
+                            left: 'var(--space-4)', 
+                            top: '50%', 
+                            transform: 'translateY(-50%)', 
+                            color: 'var(--color-text-muted)' 
+                        }} 
+                    />
+                    <input 
+                        type="text" 
+                        placeholder="Search by ID, code, or supplier..." 
+                        className="form-input"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{ paddingLeft: 'var(--space-12)', height: '48px', background: 'var(--color-bg-card)' }}
+                    />
                 </div>
-                <div className="card-body">
-                    {loading ? (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
-                    ) : (orders || []).length === 0 ? (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>No purchase orders found.</div>
-                    ) : (
-                        <div style={{ overflowX: 'auto' }}>
-                            <table className="table" style={{ width: '100%' }}>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Code</th>
-                                        <th>Supplier</th>
-                                        <th style={{ width: 1 }}>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {orders.map((o) => (
-                                        <tr key={`po-${o.purchase_order_id}`}>
-                                            <td>#{o.purchase_order_id}</td>
-                                            <td>{o.purchase_order_code || ''}</td>
-                                            <td>{o.supplier_name ? o.supplier_name : (o.supplier_id ? `Supplier #${o.supplier_id}` : '')}</td>
-                                            <td style={{ whiteSpace: 'nowrap' }}>
-                                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                                    { (isStockConsumableResponsible || isItBureauChief) && (
-                                                        <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}`)}>
-                                                            View
-                                                        </button>
-                                                    )}
-                                                    { (isStockConsumableResponsible || isItBureauChief) && (
-                                                        <>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-secondary"
-                                                                onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/receive`)}
-                                                                disabled={o.has_remaining === false}
-                                                                title={o.has_remaining === false ? 'All items have been received' : undefined}
-                                                            >
-                                                                Receive
-                                                            </button>
-                                                            <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/backorder-reports`)}>
-                                                                Backorders
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-secondary"
-                                                                onClick={() => openDeliveryNoteModal(o)}
-                                                                disabled={o.has_remaining !== false}
-                                                                title={o.has_remaining !== false ? 'Receive all items before creating delivery note' : undefined}
-                                                            >
-                                                                Delivery note
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-secondary"
-                                                                onClick={() => openInvoiceModal(o)}
-                                                                disabled={o.has_remaining !== false}
-                                                                title={o.has_remaining !== false ? 'Receive all items before creating invoice' : undefined}
-                                                            >
-                                                                Invoice
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        onClick={() => openAcceptanceReportModal(o)}
-                                                        disabled={isStockConsumableResponsible ? (o.has_remaining !== false) : false}
-                                                        title={isStockConsumableResponsible && o.has_remaining !== false ? 'Receive all items before creating acceptance report' : undefined}
-                                                    >
-                                                        Acceptance report
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                <button className="btn btn-secondary" style={{ width: '48px', padding: 0 }}>
+                    <Filter size={18} />
+                </button>
+            </div>
+
+            <div className="card" style={{ border: 'none', background: 'transparent' }}>
+                {loading ? (
+                    <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
+                        <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
+                        <span style={{ fontSize: 'var(--font-size-lg)' }}>Loading orders...</span>
+                    </div>
+                ) : filteredOrders.length === 0 ? (
+                    <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
+                        <div className="empty-state-icon">
+                            <Package size={64} />
                         </div>
-                    )}
-                </div>
+                        <h3 className="empty-state-title">No orders found</h3>
+                        <p className="empty-state-text">
+                            {searchTerm ? `No results for "${searchTerm}"` : "You haven't created any purchase orders yet."}
+                        </p>
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 'var(--space-4)', paddingTop: 'var(--space-1)' }}>
+                        {filteredOrders.map((o) => (
+                            <div 
+                                key={`po-${o.purchase_order_id}`} 
+                                className="card" 
+                                style={{ 
+                                    background: 'var(--color-bg-card)', 
+                                    border: '1px solid var(--color-border)',
+                                    transition: 'all 0.2s ease',
+                                    cursor: 'default'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                                    e.currentTarget.style.transform = 'translateY(-2px)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = 'var(--color-border)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                }}
+                            >
+                                <div className="card-body" style={{ padding: 'var(--space-5)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+                                                <span style={{ 
+                                                    fontSize: 'var(--font-size-xs)', 
+                                                    fontWeight: '700', 
+                                                    color: 'var(--color-accent-secondary)',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.05em'
+                                                }}>
+                                                    #{o.purchase_order_id}
+                                                </span>
+                                                <span className={`badge ${getStatusColor(o)}`} style={{ fontSize: '10px', padding: '2px 8px' }}>
+                                                    {getStatusText(o)}
+                                                </span>
+                                            </div>
+                                            <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
+                                                {o.purchase_order_code || 'Unnamed Order'}
+                                            </h3>
+                                        </div>
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-full)' }}
+                                            onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}`)}
+                                        >
+                                            <ChevronRight size={18} />
+                                        </button>
+                                    </div>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-5)' }}>
+                                        <Building2 size={16} />
+                                        <span style={{ fontSize: 'var(--font-size-sm)' }}>
+                                            {o.supplier_name || (o.supplier_id ? `Supplier #${o.supplier_id}` : 'No supplier')}
+                                        </span>
+                                    </div>
+
+                                    <div style={{ 
+                                        display: 'grid', 
+                                        gridTemplateColumns: 'repeat(3, 1fr)', 
+                                        gap: 'var(--space-2)',
+                                        paddingTop: 'var(--space-4)',
+                                        borderTop: '1px solid var(--color-border)'
+                                    }}>
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)' }}
+                                            onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/receive`)}
+                                            disabled={o.has_remaining === false}
+                                            title="Receive items"
+                                        >
+                                            <Package size={18} />
+                                            <span>Receive</span>
+                                        </button>
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)' }}
+                                            onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/backorder-reports`)}
+                                            title="Backorders"
+                                        >
+                                            <History size={18} />
+                                            <span>History</span>
+                                        </button>
+                                        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
+                                            <button 
+                                                className="btn btn-secondary" 
+                                                style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)', width: '100%' }}
+                                                onClick={() => openAcceptanceReportModal(o)}
+                                                disabled={isStockConsumableResponsible ? (o.has_remaining !== false) : false}
+                                                title="Acceptance Report"
+                                            >
+                                                <ClipboardCheck size={18} />
+                                                <span>Report</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            style={{ flex: 1, gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', padding: 'var(--space-2)' }}
+                                            onClick={() => openDeliveryNoteModal(o)}
+                                            disabled={o.has_remaining !== false}
+                                        >
+                                            <FileText size={14} />
+                                            <span>Delivery Note</span>
+                                        </button>
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            style={{ flex: 1, gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', padding: 'var(--space-2)' }}
+                                            onClick={() => openInvoiceModal(o)}
+                                            disabled={o.has_remaining !== false}
+                                        >
+                                            <Receipt size={14} />
+                                            <span>Invoice</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {showDeliveryNoteModal && deliveryNotePo && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0, 0, 0, 0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 'var(--space-4)',
-                        zIndex: 1000,
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 'min(820px, 100%)',
-                            background: 'var(--color-bg-primary)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: 'var(--radius-md)',
-                            boxShadow: 'var(--shadow-lg)',
-                            padding: 'var(--space-4)',
-                        }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                <div className="modal-overlay">
+                    <div className="modal" style={{ maxWidth: '600px' }}>
+                        <div className="modal-header">
                             <div>
-                                <h2 style={{ margin: 0 }}>Delivery note</h2>
-                                <div style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Purchase order #{deliveryNotePo.purchase_order_id}</div>
+                                <h2 className="modal-title">Delivery Note</h2>
+                                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
+                                    PO #{deliveryNotePo.purchase_order_id} • {deliveryNotePo.purchase_order_code}
+                                </p>
                             </div>
-                            <button type="button" className="btn btn-secondary" onClick={() => !deliveryNoteSubmitting && closeDeliveryNoteModal()}>
-                                Close
+                            <button className="modal-close" onClick={() => !deliveryNoteSubmitting && closeDeliveryNoteModal()}>
+                                <X size={20} />
                             </button>
                         </div>
 
-                        {deliveryNoteError && (
-                            <div className="alert alert-error" style={{ marginBottom: 'var(--space-3)' }}>
-                                {deliveryNoteError}
-                            </div>
-                        )}
+                        <div className="modal-body">
+                            {deliveryNoteError && (
+                                <div className="error-message" style={{ marginBottom: 'var(--space-4)' }}>
+                                    {deliveryNoteError}
+                                </div>
+                            )}
 
-                        {deliveryNoteLoading ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
-                        ) : deliveryNoteInfo?.exists ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                                <div className="form-group">
-                                    <label className="form-label">Delivery note ID</label>
-                                    <input className="form-input" value={deliveryNoteInfo.delivery_note_id || ''} disabled />
+                            {deliveryNoteLoading ? (
+                                <div className="loading-state">
+                                    <div className="loading-spinner"></div>
+                                    <span>Fetching details...</span>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Date</label>
-                                    <input className="form-input" value={deliveryNoteInfo.delivery_note_date || ''} disabled />
-                                </div>
-                                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                    <label className="form-label">Code</label>
-                                    <input className="form-input" value={deliveryNoteInfo.delivery_note_code || ''} disabled />
-                                </div>
-
-                                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                            ) : deliveryNoteInfo?.exists ? (
+                                <div className="form">
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                        <div className="form-group">
+                                            <label className="form-label">Note ID</label>
+                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                                {deliveryNoteInfo.delivery_note_id}
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Issue Date</label>
+                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                                {deliveryNoteInfo.delivery_note_date}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Reference Code</label>
+                                        <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                            {deliveryNoteInfo.delivery_note_code}
+                                        </div>
+                                    </div>
                                     <button
                                         type="button"
-                                        className="btn btn-secondary"
+                                        className="btn btn-primary"
+                                        style={{ marginTop: 'var(--space-2)' }}
                                         onClick={consultDeliveryNote}
                                         disabled={!deliveryNoteInfo.has_digital_copy}
-                                        title={!deliveryNoteInfo.has_digital_copy ? 'No file stored' : undefined}
                                     >
-                                        Consult PDF
+                                        <Download size={18} />
+                                        <span>Download PDF</span>
                                     </button>
                                 </div>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>No delivery note exists for this purchase order. Create it now:</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                        <label className="form-label">Delivery note code</label>
-                                        <input className="form-input" value={deliveryNoteCode} onChange={(e) => setDeliveryNoteCode(e.target.value)} disabled={deliveryNoteSubmitting} />
-                                    </div>
-                                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                        <label className="form-label">Digital copy</label>
-                                        <input
-                                            type="file"
-                                            accept="application/pdf,.pdf"
-                                            className="form-input"
-                                            onChange={(e) => setDeliveryNoteFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-                                            disabled={deliveryNoteSubmitting}
+                            ) : (
+                                <div className="form">
+                                    <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+                                        Register a new delivery note for this purchase order.
+                                    </p>
+                                    <div className="form-group">
+                                        <label className="form-label">Delivery Note Code</label>
+                                        <input 
+                                            className="form-input" 
+                                            placeholder="Enter reference code..."
+                                            value={deliveryNoteCode} 
+                                            onChange={(e) => setDeliveryNoteCode(e.target.value)} 
+                                            disabled={deliveryNoteSubmitting} 
                                         />
                                     </div>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-                                    <button type="button" className="btn btn-primary" onClick={submitCreateDeliveryNote} disabled={deliveryNoteSubmitting}>
-                                        {deliveryNoteSubmitting ? 'Creating...' : 'Create delivery note'}
+                                    <div className="form-group">
+                                        <label className="form-label">Digital Copy (PDF)</label>
+                                        <div 
+                                            style={{ 
+                                                border: '2px dashed var(--color-border)', 
+                                                borderRadius: 'var(--radius-md)', 
+                                                padding: 'var(--space-6)',
+                                                textAlign: 'center',
+                                                position: 'relative',
+                                                cursor: 'pointer',
+                                                background: deliveryNoteFile ? 'var(--color-bg-card-hover)' : 'transparent'
+                                            }}
+                                            onClick={() => document.getElementById('dn-file').click()}
+                                        >
+                                            <Upload size={32} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }} />
+                                            <p style={{ margin: 0, fontSize: 'var(--font-size-sm)' }}>
+                                                {deliveryNoteFile ? deliveryNoteFile.name : 'Click to upload or drag and drop'}
+                                            </p>
+                                            <input
+                                                id="dn-file"
+                                                type="file"
+                                                accept="application/pdf"
+                                                style={{ display: 'none' }}
+                                                onChange={(e) => setDeliveryNoteFile(e.target.files?.[0] || null)}
+                                                disabled={deliveryNoteSubmitting}
+                                            />
+                                        </div>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-primary" 
+                                        onClick={submitCreateDeliveryNote} 
+                                        disabled={deliveryNoteSubmitting || !deliveryNoteCode || !deliveryNoteFile}
+                                        style={{ width: '100%' }}
+                                    >
+                                        {deliveryNoteSubmitting ? 'Creating...' : 'Register Delivery Note'}
                                     </button>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
 
             {showInvoiceModal && invoicePo && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0, 0, 0, 0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 'var(--space-4)',
-                        zIndex: 1000,
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 'min(820px, 100%)',
-                            background: 'var(--color-bg-primary)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: 'var(--radius-md)',
-                            boxShadow: 'var(--shadow-lg)',
-                            padding: 'var(--space-4)',
-                        }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                <div className="modal-overlay">
+                    <div className="modal" style={{ maxWidth: '600px' }}>
+                        <div className="modal-header">
                             <div>
-                                <h2 style={{ margin: 0 }}>Invoice</h2>
-                                <div style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Purchase order #{invoicePo.purchase_order_id}</div>
+                                <h2 className="modal-title">Supplier Invoice</h2>
+                                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
+                                    PO #{invoicePo.purchase_order_id} • {invoicePo.purchase_order_code}
+                                </p>
                             </div>
-                            <button type="button" className="btn btn-secondary" onClick={() => !invoiceSubmitting && closeInvoiceModal()}>
-                                Close
+                            <button className="modal-close" onClick={() => !invoiceSubmitting && closeInvoiceModal()}>
+                                <X size={20} />
                             </button>
                         </div>
 
-                        {invoiceError && (
-                            <div className="alert alert-error" style={{ marginBottom: 'var(--space-3)' }}>
-                                {invoiceError}
-                            </div>
-                        )}
-
-                        {invoiceLoading ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
-                        ) : invoiceInfo?.exists ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                                <div className="form-group">
-                                    <label className="form-label">Invoice ID</label>
-                                    <input className="form-input" value={invoiceInfo.invoice_id || ''} disabled />
+                        <div className="modal-body">
+                            {invoiceError && (
+                                <div className="error-message" style={{ marginBottom: 'var(--space-4)' }}>
+                                    {invoiceError}
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Delivery note ID</label>
-                                    <input className="form-input" value={invoiceInfo.delivery_note_id || ''} disabled />
-                                </div>
+                            )}
 
-                                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                            {invoiceLoading ? (
+                                <div className="loading-state">
+                                    <div className="loading-spinner"></div>
+                                    <span>Fetching invoice...</span>
+                                </div>
+                            ) : invoiceInfo?.exists ? (
+                                <div className="form">
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                        <div className="form-group">
+                                            <label className="form-label">Invoice ID</label>
+                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                                {invoiceInfo.invoice_id}
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Related Delivery Note</label>
+                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                                {invoiceInfo.delivery_note_id}
+                                            </div>
+                                        </div>
+                                    </div>
                                     <button
                                         type="button"
-                                        className="btn btn-secondary"
+                                        className="btn btn-primary"
+                                        style={{ marginTop: 'var(--space-2)' }}
                                         onClick={consultInvoicePdf}
                                         disabled={!invoiceInfo.has_digital_copy}
-                                        title={!invoiceInfo.has_digital_copy ? 'No file stored' : undefined}
                                     >
-                                        Consult PDF
+                                        <Download size={18} />
+                                        <span>Download PDF</span>
                                     </button>
                                 </div>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>No invoice exists for this purchase order. Create it now:</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                        <label className="form-label">Digital copy (PDF)</label>
-                                        <input
-                                            type="file"
-                                            accept="application/pdf,.pdf"
-                                            className="form-input"
-                                            onChange={(e) => setInvoiceFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-                                            disabled={invoiceSubmitting}
-                                        />
+                            ) : (
+                                <div className="form">
+                                    <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+                                        Upload the final invoice for this purchase order.
+                                    </p>
+                                    <div className="form-group">
+                                        <label className="form-label">Digital Copy (PDF)</label>
+                                        <div 
+                                            style={{ 
+                                                border: '2px dashed var(--color-border)', 
+                                                borderRadius: 'var(--radius-md)', 
+                                                padding: 'var(--space-6)',
+                                                textAlign: 'center',
+                                                position: 'relative',
+                                                cursor: 'pointer',
+                                                background: invoiceFile ? 'var(--color-bg-card-hover)' : 'transparent'
+                                            }}
+                                            onClick={() => document.getElementById('inv-file').click()}
+                                        >
+                                            <Upload size={32} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }} />
+                                            <p style={{ margin: 0, fontSize: 'var(--font-size-sm)' }}>
+                                                {invoiceFile ? invoiceFile.name : 'Click to upload or drag and drop'}
+                                            </p>
+                                            <input
+                                                id="inv-file"
+                                                type="file"
+                                                accept="application/pdf"
+                                                style={{ display: 'none' }}
+                                                onChange={(e) => setInvoiceFile(e.target.files?.[0] || null)}
+                                                disabled={invoiceSubmitting}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-                                    <button type="button" className="btn btn-primary" onClick={submitCreateInvoice} disabled={invoiceSubmitting}>
-                                        {invoiceSubmitting ? 'Creating...' : 'Create invoice'}
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-primary" 
+                                        onClick={submitCreateInvoice} 
+                                        disabled={invoiceSubmitting || !invoiceFile}
+                                        style={{ width: '100%' }}
+                                    >
+                                        {invoiceSubmitting ? 'Uploading...' : 'Upload Invoice'}
                                     </button>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
 
             {showAcceptanceReportModal && acceptanceReportPo && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'rgba(0, 0, 0, 0.6)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 'var(--space-4)',
-                        zIndex: 1000,
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 'min(920px, 100%)',
-                            background: 'var(--color-bg-primary)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: 'var(--radius-md)',
-                            boxShadow: 'var(--shadow-lg)',
-                            padding: 'var(--space-4)',
-                        }}
-                    >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                <div className="modal-overlay">
+                    <div className="modal" style={{ maxWidth: '800px' }}>
+                        <div className="modal-header">
                             <div>
-                                <h2 style={{ margin: 0 }}>Acceptance report</h2>
-                                <div style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)' }}>Purchase order #{acceptanceReportPo.purchase_order_id}</div>
+                                <h2 className="modal-title">Acceptance Report</h2>
+                                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
+                                    PO #{acceptanceReportPo.purchase_order_id} • {acceptanceReportPo.purchase_order_code}
+                                </p>
                             </div>
-                            <button type="button" className="btn btn-secondary" onClick={() => !acceptanceReportSubmitting && closeAcceptanceReportModal()}>
-                                Close
+                            <button className="modal-close" onClick={() => !acceptanceReportSubmitting && closeAcceptanceReportModal()}>
+                                <X size={20} />
                             </button>
                         </div>
 
-                        {acceptanceReportError && (
-                            <div className="alert alert-error" style={{ marginBottom: 'var(--space-3)' }}>
-                                {acceptanceReportError}
-                            </div>
-                        )}
+                        <div className="modal-body">
+                            {acceptanceReportError && (
+                                <div className="error-message" style={{ marginBottom: 'var(--space-4)' }}>
+                                    {acceptanceReportError}
+                                </div>
+                            )}
 
-                        {acceptanceReportLoading ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
-                        ) : acceptanceReportInfo?.exists ? (
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                                <div className="form-group">
-                                    <label className="form-label">Acceptance report ID</label>
-                                    <input className="form-input" value={acceptanceReportInfo.acceptance_report_id || ''} disabled />
+                            {acceptanceReportLoading ? (
+                                <div className="loading-state">
+                                    <div className="loading-spinner"></div>
+                                    <span>Fetching report...</span>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">Delivery note ID</label>
-                                    <input className="form-input" value={acceptanceReportInfo.delivery_note_id || ''} disabled />
-                                </div>
-                                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                    <label className="form-label">Datetime</label>
-                                    <input className="form-input" value={acceptanceReportInfo.acceptance_report_datetime || ''} disabled />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Signed by Director of Administration and Support</label>
-                                    <input className="form-input" value={acceptanceReportInfo.is_signed_by_director_of_administration_and_support ? 'Yes' : 'No'} disabled />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Signed by Protection and Security Bureau Chief</label>
-                                    <input className="form-input" value={acceptanceReportInfo.is_signed_by_protection_and_security_bureau_chief ? 'Yes' : 'No'} disabled />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Signed by Information Technology Bureau Chief</label>
-                                    <input className="form-input" value={acceptanceReportInfo.is_signed_by_information_technilogy_bureau_chief ? 'Yes' : 'No'} disabled />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Signed by Stock item & Consumable responsible</label>
-                                    <input className="form-input" value={acceptanceReportInfo.acceptance_report_is_stock_item_and_consumable_responsible ? 'Yes' : 'No'} disabled />
-                                </div>
-                                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                    <label className="form-label">Signed by School headquarter</label>
-                                    <input className="form-input" value={acceptanceReportInfo.is_signed_by_school_headquarter ? 'Yes' : 'No'} disabled />
-                                </div>
+                            ) : acceptanceReportInfo?.exists ? (
+                                <div className="form">
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+                                        <div className="form-group">
+                                            <label className="form-label">Report ID</label>
+                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                                {acceptanceReportInfo.acceptance_report_id}
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Date & Time</label>
+                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                                {acceptanceReportInfo.acceptance_report_datetime}
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-                                    {canSignAcceptanceReport && canCurrentUserSignAcceptanceReport && (
-                                        <button type="button" className="btn btn-primary" onClick={submitSignAcceptanceReport}>
-                                            Sign
+                                    <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-3)' }}>
+                                        Signatures Status
+                                    </h4>
+                                    
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
+                                        {[
+                                            { label: 'Director of Admin', signed: acceptanceReportInfo.is_signed_by_director_of_administration_and_support },
+                                            { label: 'Security Chief', signed: acceptanceReportInfo.is_signed_by_protection_and_security_bureau_chief },
+                                            { label: 'IT Bureau Chief', signed: acceptanceReportInfo.is_signed_by_information_technilogy_bureau_chief },
+                                            { label: 'Stock Responsible', signed: acceptanceReportInfo.acceptance_report_is_stock_item_and_consumable_responsible },
+                                            { label: 'School Headquarter', signed: acceptanceReportInfo.is_signed_by_school_headquarter },
+                                        ].map((sig, idx) => (
+                                            <div key={idx} style={{ 
+                                                padding: 'var(--space-3)', 
+                                                background: 'var(--color-bg-card)', 
+                                                border: '1px solid var(--color-border)',
+                                                borderRadius: 'var(--radius-md)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 'var(--space-2)'
+                                            }}>
+                                                {sig.signed ? <CheckCircle2 size={16} className="text-success" /> : <XCircle size={16} style={{ color: 'var(--color-text-muted)' }} />}
+                                                <span style={{ fontSize: '11px', fontWeight: '500' }}>{sig.label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                                        {isStockConsumableResponsible && !arePurchaseOrderItemsMoved(acceptanceReportPo.purchase_order_id) && 
+                                         acceptanceReportInfo?.is_signed_by_director_of_administration_and_support && 
+                                         acceptanceReportInfo?.is_signed_by_protection_and_security_bureau_chief && 
+                                         acceptanceReportInfo?.is_signed_by_school_headquarter && 
+                                         acceptanceReportInfo?.is_signed_by_information_technilogy_bureau_chief && 
+                                         acceptanceReportInfo?.acceptance_report_is_stock_item_and_consumable_responsible && (
+                                            <button type="button" className="btn btn-primary" onClick={() => navigate(`/dashboard/purchase-orders/${acceptanceReportPo.purchase_order_id}/move-items`)}>
+                                                <Package size={18} />
+                                                <span>Move Items to Stock</span>
+                                            </button>
+                                        )}
+                                        {canSignAcceptanceReport && canCurrentUserSignAcceptanceReport && (
+                                            <button type="button" className="btn btn-primary" onClick={submitSignAcceptanceReport}>
+                                                <PenTool size={18} />
+                                                <span>Sign Report</span>
+                                            </button>
+                                        )}
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            onClick={consultAcceptanceReportPdf}
+                                            disabled={!acceptanceReportInfo.has_digital_copy}
+                                        >
+                                            <Download size={18} />
+                                            <span>Download PDF</span>
                                         </button>
-                                    )}
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={consultAcceptanceReportPdf}
-                                        disabled={!acceptanceReportInfo.has_digital_copy}
-                                        title={!acceptanceReportInfo.has_digital_copy ? 'No file stored' : undefined}
-                                    >
-                                        Consult PDF
-                                    </button>
-                                </div>
-                            </div>
-                        ) : isStockConsumableResponsible ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>No acceptance report exists for this purchase order. Create it now:</div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                        <label className="form-label">Digital copy (PDF)</label>
-                                        <input
-                                            type="file"
-                                            accept="application/pdf,.pdf"
-                                            className="form-input"
-                                            onChange={(e) => setAcceptanceReportFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
-                                            disabled={acceptanceReportSubmitting}
-                                        />
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-                                    <button type="button" className="btn btn-primary" onClick={submitCreateAcceptanceReport} disabled={acceptanceReportSubmitting}>
-                                        {acceptanceReportSubmitting ? 'Creating...' : 'Create acceptance report'}
+                            ) : isStockConsumableResponsible ? (
+                                <div className="form">
+                                    <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+                                        Create a new acceptance report by uploading the digital copy.
+                                    </p>
+                                    <div className="form-group">
+                                        <label className="form-label">Digital Copy (PDF)</label>
+                                        <div 
+                                            style={{ 
+                                                border: '2px dashed var(--color-border)', 
+                                                borderRadius: 'var(--radius-md)', 
+                                                padding: 'var(--space-8)',
+                                                textAlign: 'center',
+                                                position: 'relative',
+                                                cursor: 'pointer',
+                                                background: acceptanceReportFile ? 'var(--color-bg-card-hover)' : 'transparent'
+                                            }}
+                                            onClick={() => document.getElementById('ar-file').click()}
+                                        >
+                                            <Upload size={40} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }} />
+                                            <p style={{ margin: 0, fontSize: 'var(--font-size-base)', fontWeight: '500' }}>
+                                                {acceptanceReportFile ? acceptanceReportFile.name : 'Choose a file or drag here'}
+                                            </p>
+                                            <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                                Only PDF files are supported
+                                            </p>
+                                            <input
+                                                id="ar-file"
+                                                type="file"
+                                                accept="application/pdf"
+                                                style={{ display: 'none' }}
+                                                onChange={(e) => setAcceptanceReportFile(e.target.files?.[0] || null)}
+                                                disabled={acceptanceReportSubmitting}
+                                            />
+                                        </div>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        className="btn btn-primary" 
+                                        onClick={submitCreateAcceptanceReport} 
+                                        disabled={acceptanceReportSubmitting || !acceptanceReportFile}
+                                        style={{ width: '100%' }}
+                                    >
+                                        {acceptanceReportSubmitting ? 'Creating...' : 'Create Acceptance Report'}
                                     </button>
                                 </div>
-                            </div>
-                        ) : (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>No acceptance report exists for this purchase order.</div>
-                        )}
+                            ) : (
+                                <div className="empty-state" style={{ padding: 'var(--space-10)' }}>
+                                    <ClipboardCheck size={48} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }} />
+                                    <p style={{ color: 'var(--color-text-secondary)' }}>No acceptance report has been created for this order yet.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

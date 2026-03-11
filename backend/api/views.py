@@ -7145,6 +7145,96 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=True, methods=["get"], url_path="included-items")
+    def included_items(self, request, pk=None):
+        _, _, denial = self._require_purchase_order_consult(request)
+        if denial:
+            return denial
+
+        try:
+            purchase_order_id = int(pk)
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid purchase order id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT 1 FROM public.purchase_order WHERE purchase_order_id = %s",
+                [purchase_order_id],
+            )
+            if cursor.fetchone() is None:
+                return Response({"error": "Purchase order not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            cursor.execute(
+                """
+                SELECT stock_item_model_id, COALESCE(quantity_received, 0)
+                FROM public.stock_item_model_is_found_in_purchase_order
+                WHERE purchase_order_id = %s
+                """,
+                [purchase_order_id],
+            )
+            stock_lines = cursor.fetchall()
+
+            cursor.execute(
+                """
+                SELECT consumable_model_id, COALESCE(quantity_received, 0)
+                FROM public.consumable_model_is_found_in_purchase_order
+                WHERE purchase_order_id = %s
+                """,
+                [purchase_order_id],
+            )
+            cons_lines = cursor.fetchall()
+
+        stock_items = []
+        for model_id, qty in stock_lines:
+            try:
+                qty_int = int(qty or 0)
+            except (TypeError, ValueError):
+                qty_int = 0
+            if qty_int <= 0:
+                continue
+            qs = (
+                StockItem.objects.filter(stock_item_model_id=model_id)
+                .order_by("-stock_item_id")
+                .values(
+                    "stock_item_id",
+                    "stock_item_model_id",
+                    "stock_item_name",
+                    "stock_item_inventory_number",
+                    "stock_item_status",
+                )[:qty_int]
+            )
+            stock_items.extend(list(qs))
+
+        consumables = []
+        for model_id, qty in cons_lines:
+            try:
+                qty_int = int(qty or 0)
+            except (TypeError, ValueError):
+                qty_int = 0
+            if qty_int <= 0:
+                continue
+            qs = (
+                Consumable.objects.filter(consumable_model_id=model_id)
+                .order_by("-consumable_id")
+                .values(
+                    "consumable_id",
+                    "consumable_model_id",
+                    "consumable_name",
+                    "consumable_inventory_number",
+                    "consumable_status",
+                )[:qty_int]
+            )
+            consumables.extend(list(qs))
+
+        return Response(
+            {
+                "purchase_order_id": purchase_order_id,
+                "stock_items": stock_items,
+                "consumables": consumables,
+            },
+            status=status.HTTP_200_OK,
+        )
+
     def create(self, request):
         _, denial = self._require_responsible(request)
         if denial:
