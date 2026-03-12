@@ -113,7 +113,6 @@ class AssetBrand(models.Model):
     brand_name = models.CharField(max_length=48, db_column='brand_name')
     brand_code = models.CharField(max_length=16, db_column='brand_code')
     is_active = models.BooleanField(db_column='is_active')
-    brand_photo = models.CharField(max_length=512, blank=True, null=True, db_column='brand_photo')
 
     class Meta:
         managed = False
@@ -196,7 +195,6 @@ class StockItemBrand(models.Model):
     brand_name = models.CharField(max_length=48, db_column='brand_name')
     brand_code = models.CharField(max_length=16, db_column='brand_code')
     is_active = models.BooleanField(db_column='is_active')
-    brand_photo = models.CharField(max_length=512, blank=True, null=True, db_column='brand_photo')
 
     class Meta:
         managed = False
@@ -247,7 +245,6 @@ class ConsumableBrand(models.Model):
     brand_name = models.CharField(max_length=48, db_column='brand_name')
     brand_code = models.CharField(max_length=16, db_column='brand_code')
     is_active = models.BooleanField(db_column='is_active')
-    brand_photo = models.CharField(max_length=512, blank=True, null=True, db_column='brand_photo')
 
     class Meta:
         managed = False

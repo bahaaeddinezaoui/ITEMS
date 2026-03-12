@@ -1,5 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
+import { 
+    CheckCircle2, 
+    XCircle, 
+    Clock, 
+    RefreshCw, 
+    ArrowRightLeft, 
+    Layers, 
+    ShoppingCart, 
+    MapPin, 
+    Calendar,
+    Check,
+    X
+} from 'lucide-react';
 import { movementApprovalService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -36,7 +49,6 @@ const IncludedItemMovementsApprovalPage = () => {
     useEffect(() => {
         if (!isStockConsumableResponsible) return;
         loadPending();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isStockConsumableResponsible]);
 
     const handleDecision = async ({ kind, id, decision }) => {
@@ -70,161 +82,173 @@ const IncludedItemMovementsApprovalPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    return (
-        <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Included Items Movements Approval</h1>
-                <p className="page-subtitle">Approve/reject pending stock items and consumables movements requested in problem reports.</p>
-            </div>
+    const renderMovementCard = (m, kind) => {
+        const id = kind === 'stock_item' ? m.stock_item_movement_id : m.consumable_movement_id;
+        const itemId = kind === 'stock_item' ? m.stock_item_id : m.consumable_id;
+        const pendingKeyAccept = `${kind}:${id}:accepted`;
+        const pendingKeyReject = `${kind}:${id}:rejected`;
+        const isSubmitting = submittingKey === pendingKeyAccept || submittingKey === pendingKeyReject;
 
-            {error && (
-                <div className="alert alert-error" style={{ marginBottom: 'var(--space-4)' }}>
-                    {error}
-                </div>
-            )}
-            {success && (
-                <div className="alert alert-success" style={{ marginBottom: 'var(--space-4)' }}>
-                    {success}
-                </div>
-            )}
-
-            <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 className="card-title" style={{ margin: 0 }}>Pending Movements</h2>
-                    <button type="button" className="btn btn-secondary" onClick={loadPending} disabled={loading}>
-                        Refresh
-                    </button>
-                </div>
-                <div className="card-body">
-                    {loading ? (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
-                    ) : totalPending === 0 ? (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>No pending movements.</div>
-                    ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-4)' }}>
-                            <div>
-                                <h3 style={{ marginTop: 0 }}>Stock Items</h3>
-                                {(pendingStockMoves || []).length === 0 ? (
-                                    <div style={{ color: 'var(--color-text-secondary)' }}>No pending stock item movements.</div>
-                                ) : (
-                                    <div style={{ overflowX: 'auto' }}>
-                                        <table className="table" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 var(--space-2)' }}>
-                                            <thead>
-                                                <tr>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>ID</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Stock Item</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>From Location</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>To Location</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Date</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Status</th>
-                                                    <th style={{ textAlign: 'right', padding: 'var(--space-3) var(--space-4)' }}>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {pendingStockMoves.map((m) => {
-                                                    const id = m.stock_item_movement_id;
-                                                    const pendingKeyAccept = `stock_item:${id}:accepted`;
-                                                    const pendingKeyReject = `stock_item:${id}:rejected`;
-                                                    return (
-                                                        <tr key={id}>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.stock_item_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.source_location_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.destination_location_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.movement_datetime ? String(m.movement_datetime) : ''}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.status}</td>
-                                                            <td style={{ textAlign: 'right', display: 'flex', justifyContent: 'flex-end', padding: 'var(--space-3) var(--space-4)' }}>
-                                                                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'nowrap', minWidth: 'max-content' }}>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-primary"
-                                                                        disabled={submittingKey === pendingKeyAccept || submittingKey === pendingKeyReject}
-                                                                        onClick={() => handleDecision({ kind: 'stock_item', id, decision: 'accepted' })}
-                                                                    >
-                                                                        Accept
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-danger"
-                                                                        disabled={submittingKey === pendingKeyAccept || submittingKey === pendingKeyReject}
-                                                                        onClick={() => handleDecision({ kind: 'stock_item', id, decision: 'rejected' })}
-                                                                    >
-                                                                        Reject
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
+        return (
+            <div key={`${kind}-${id}`} className="card" style={{ transition: 'all 0.2s ease' }}>
+                <div className="card-body" style={{ padding: 'var(--space-5)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
+                        <div style={{ 
+                            width: '40px', 
+                            height: '40px', 
+                            background: 'var(--color-bg-secondary)', 
+                            borderRadius: 'var(--radius-md)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--color-accent-primary)'
+                        }}>
+                            {kind === 'stock_item' ? <ShoppingCart size={20} /> : <Layers size={20} />}
+                        </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <button 
+                                className="btn btn-primary" 
+                                style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '36px', height: '36px' }}
+                                onClick={() => handleDecision({ kind, id, decision: 'accepted' })}
+                                disabled={isSubmitting}
+                                title="Accept Movement"
+                            >
+                                <Check size={18} />
+                            </button>
+                            <button 
+                                className="btn btn-danger" 
+                                style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '36px', height: '36px' }}
+                                onClick={() => handleDecision({ kind, id, decision: 'rejected' })}
+                                disabled={isSubmitting}
+                                title="Reject Movement"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
+                        {kind === 'stock_item' ? 'Stock Item' : 'Consumable'} #{itemId}
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginLeft: 'var(--space-2)', fontWeight: 'normal' }}>
+                            Move #{id}
+                        </span>
+                    </h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>From</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text)' }}>
+                                    <MapPin size={14} className="text-accent" />
+                                    <span style={{ fontWeight: '500' }}>Location #{m.source_location_id}</span>
+                                </div>
                             </div>
-
-                            <div>
-                                <h3 style={{ marginTop: 0 }}>Consumables</h3>
-                                {(pendingConsumableMoves || []).length === 0 ? (
-                                    <div style={{ color: 'var(--color-text-secondary)' }}>No pending consumable movements.</div>
-                                ) : (
-                                    <div style={{ overflowX: 'auto' }}>
-                                        <table className="table" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 var(--space-2)' }}>
-                                            <thead>
-                                                <tr>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>ID</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Consumable</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>From Location</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>To Location</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Date</th>
-                                                    <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Status</th>
-                                                    <th style={{ textAlign: 'right', padding: 'var(--space-3) var(--space-4)' }}>Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {pendingConsumableMoves.map((m) => {
-                                                    const id = m.consumable_movement_id;
-                                                    const pendingKeyAccept = `consumable:${id}:accepted`;
-                                                    const pendingKeyReject = `consumable:${id}:rejected`;
-                                                    return (
-                                                        <tr key={id}>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.consumable_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.source_location_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.destination_location_id}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.movement_datetime ? String(m.movement_datetime) : ''}</td>
-                                                            <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.status}</td>
-                                                            <td style={{ textAlign: 'right', display: 'flex', justifyContent: 'flex-end', padding: 'var(--space-3) var(--space-4)' }}>
-                                                                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'nowrap', minWidth: 'max-content' }}>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-primary"
-                                                                        disabled={submittingKey === pendingKeyAccept || submittingKey === pendingKeyReject}
-                                                                        onClick={() => handleDecision({ kind: 'consumable', id, decision: 'accepted' })}
-                                                                    >
-                                                                        Accept
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn btn-danger"
-                                                                        disabled={submittingKey === pendingKeyAccept || submittingKey === pendingKeyReject}
-                                                                        onClick={() => handleDecision({ kind: 'consumable', id, decision: 'rejected' })}
-                                                                    >
-                                                                        Reject
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
+                            <ArrowRightLeft size={16} className="text-muted" style={{ marginTop: 'var(--font-size-xs)' }} />
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>To</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text)' }}>
+                                    <MapPin size={14} className="text-success" />
+                                    <span style={{ fontWeight: '500' }}>Location #{m.destination_location_id}</span>
+                                </div>
                             </div>
                         </div>
-                    )}
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                <Calendar size={14} />
+                                <span>{m.movement_datetime ? new Date(m.movement_datetime).toLocaleString() : 'N/A'}</span>
+                            </div>
+                            <span className="badge badge-warning" style={{ textTransform: 'capitalize' }}>{m.status}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
+        );
+    };
+
+    return (
+        <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
+                <div>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>Included Items Movements Approval</h1>
+                    <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
+                        Review and decide on pending equipment movements requested in problem reports.
+                    </p>
+                </div>
+                <button 
+                    type="button" 
+                    className="btn btn-secondary" 
+                    onClick={loadPending} 
+                    disabled={loading}
+                    style={{ padding: 'var(--space-3) var(--space-4)' }}
+                >
+                    <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                    <span>Refresh</span>
+                </button>
+            </div>
+
+            {success && (
+                <div className="success-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <CheckCircle2 size={20} />
+                    <span>{success}</span>
+                    <button onClick={() => setSuccess('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                        <X size={18} />
+                    </button>
+                </div>
+            )}
+
+            {error && (
+                <div className="error-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <XCircle size={20} />
+                    <span>{error}</span>
+                    <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                        <X size={18} />
+                    </button>
+                </div>
+            )}
+
+            {loading ? (
+                <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
+                    <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
+                    <span style={{ fontSize: 'var(--font-size-lg)' }}>Loading pending approvals...</span>
+                </div>
+            ) : totalPending === 0 ? (
+                <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
+                    <div className="empty-state-icon">
+                        <CheckCircle2 size={64} className="text-success" />
+                    </div>
+                    <h3 className="empty-state-title">All caught up!</h3>
+                    <p className="empty-state-text">There are no pending movements requiring your approval at this time.</p>
+                </div>
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
+                    {pendingStockMoves.length > 0 && (
+                        <section>
+                            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                <ShoppingCart size={20} className="text-accent" />
+                                Pending Stock Item Movements
+                                <span className="badge badge-secondary" style={{ marginLeft: 'var(--space-2)' }}>{pendingStockMoves.length}</span>
+                            </h2>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 'var(--space-6)' }}>
+                                {pendingStockMoves.map(m => renderMovementCard(m, 'stock_item'))}
+                            </div>
+                        </section>
+                    )}
+
+                    {pendingConsumableMoves.length > 0 && (
+                        <section>
+                            <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                <Layers size={20} className="text-accent" />
+                                Pending Consumable Movements
+                                <span className="badge badge-secondary" style={{ marginLeft: 'var(--space-2)' }}>{pendingConsumableMoves.length}</span>
+                            </h2>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 'var(--space-6)' }}>
+                                {pendingConsumableMoves.map(m => renderMovementCard(m, 'consumable'))}
+                            </div>
+                        </section>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

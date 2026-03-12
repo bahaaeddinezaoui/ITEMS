@@ -197,7 +197,7 @@ const DashboardLayout = () => {
                         </div>
                     )}
 
-                    {(isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible || canViewPurchaseOrders) && (
+                    {(isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Inventory</span>
 
@@ -330,48 +330,28 @@ const DashboardLayout = () => {
                                 </NavLink>
                             )}
 
-                            {(isExploitationChief || isStockConsumableResponsible) && (
+                            {isStockConsumableResponsible && (
                                 <>
-                                    {isStockConsumableResponsible && (
-                                        <NavLink to="/dashboard/item-requests-inbox" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M9 12h6" />
-                                                <path d="M9 16h6" />
-                                                <path d="M9 8h6" />
-                                                <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
-                                                <path d="M15 2v4h4" />
-                                            </svg>
-                                            Item Requests Inbox
-                                        </NavLink>
-                                    )}
-
-                                    {isStockConsumableResponsible && (
-                                        <NavLink to="/dashboard/included-item-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path d="M9 12h6" />
-                                                <path d="M9 16h6" />
-                                                <path d="M9 8h6" />
-                                                <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
-                                                <path d="M15 2v4h4" />
-                                            </svg>
-                                            Included Items Approvals
-                                        </NavLink>
-                                    )}
-
-                                    <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <NavLink to="/dashboard/item-requests-inbox" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <circle cx="9" cy="21" r="1" />
-                                            <circle cx="20" cy="21" r="1" />
-                                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                                            <path d="M9 12h6" />
+                                            <path d="M9 16h6" />
+                                            <path d="M9 8h6" />
+                                            <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
+                                            <path d="M15 2v4h4" />
                                         </svg>
-                                        Stock Items
+                                        Item Requests Inbox
                                     </NavLink>
 
-                                    <NavLink to="/dashboard/consumables" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <NavLink to="/dashboard/included-item-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                                            <path d="M9 12h6" />
+                                            <path d="M9 16h6" />
+                                            <path d="M9 8h6" />
+                                            <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
+                                            <path d="M15 2v4h4" />
                                         </svg>
-                                        Consumables
+                                        Included Items Approvals
                                     </NavLink>
                                 </>
                             )}

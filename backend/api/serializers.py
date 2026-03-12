@@ -57,18 +57,11 @@ class AssetTypeSerializer(serializers.ModelSerializer):
 
 class AssetBrandSerializer(serializers.ModelSerializer):
     """Serializer for AssetBrand model"""
-    brand_photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = AssetBrand
-        fields = ['asset_brand_id', 'brand_name', 'brand_code', 'is_active', 'brand_photo', 'brand_photo_url']
-        read_only_fields = ['asset_brand_id', 'brand_photo']
-
-    def get_brand_photo_url(self, obj):
-        if obj.brand_photo:
-            from django.conf import settings
-            return f"{settings.MEDIA_URL}{obj.brand_photo}"
-        return None
+        fields = ['asset_brand_id', 'brand_name', 'brand_code', 'is_active']
+        read_only_fields = ['asset_brand_id']
 
 
 class AssetModelSerializer(serializers.ModelSerializer):
@@ -96,18 +89,11 @@ class StockItemTypeSerializer(serializers.ModelSerializer):
 
 class StockItemBrandSerializer(serializers.ModelSerializer):
     """Serializer for StockItemBrand model"""
-    brand_photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = StockItemBrand
-        fields = ['stock_item_brand_id', 'brand_name', 'brand_code', 'is_active', 'brand_photo', 'brand_photo_url']
-        read_only_fields = ['stock_item_brand_id', 'brand_photo']
-
-    def get_brand_photo_url(self, obj):
-        if obj.brand_photo:
-            from django.conf import settings
-            return f"{settings.MEDIA_URL}{obj.brand_photo}"
-        return None
+        fields = ['stock_item_brand_id', 'brand_name', 'brand_code', 'is_active']
+        read_only_fields = ['stock_item_brand_id']
 
 
 class StockItemModelSerializer(serializers.ModelSerializer):
@@ -135,18 +121,11 @@ class ConsumableTypeSerializer(serializers.ModelSerializer):
 
 class ConsumableBrandSerializer(serializers.ModelSerializer):
     """Serializer for ConsumableBrand model"""
-    brand_photo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = ConsumableBrand
-        fields = ['consumable_brand_id', 'brand_name', 'brand_code', 'is_active', 'brand_photo', 'brand_photo_url']
-        read_only_fields = ['consumable_brand_id', 'brand_photo']
-
-    def get_brand_photo_url(self, obj):
-        if obj.brand_photo:
-            from django.conf import settings
-            return f"{settings.MEDIA_URL}{obj.brand_photo}"
-        return None
+        fields = ['consumable_brand_id', 'brand_name', 'brand_code', 'is_active']
+        read_only_fields = ['consumable_brand_id']
 
 
 class ConsumableModelSerializer(serializers.ModelSerializer):

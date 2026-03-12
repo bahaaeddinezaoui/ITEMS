@@ -1,9 +1,29 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+    Plus, 
+    Layers, 
+    Settings2, 
+    Trash2, 
+    ChevronRight, 
+    Info, 
+    ArrowLeft,
+    Tag,
+    Hash,
+    CheckCircle2,
+    XCircle,
+    X,
+    LayoutGrid,
+    Search,
+    RefreshCw
+} from 'lucide-react';
 import { stockItemAttributeDefinitionService, stockItemTypeAttributeService, stockItemTypeService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const StockItemsTypesPage = () => {
+    const { user } = useAuth();
     const navigate = useNavigate();
+    const isSuperuser = user?.roles?.some((role) => role.role_code === 'superuser');
 
     const [stockItemTypes, setStockItemTypes] = useState([]);
     const [attributeDefinitions, setAttributeDefinitions] = useState([]);
@@ -216,264 +236,357 @@ const StockItemsTypesPage = () => {
         navigate('/dashboard/stock-items/attribute-definitions');
     };
 
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredTypes = stockItemTypes.filter(type => 
+        type.stock_item_type_label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        type.stock_item_type_code?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
-        <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
-            <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">Stock Items</h1>
-                <p className="page-subtitle">Select a stock item type</p>
+        <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
+                <div>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>Stock Item Types</h1>
+                    <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
+                        Define and manage categories for your inventory items and their specific attributes.
+                    </p>
+                </div>
+                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                    <button 
+                        type="button" 
+                        className="btn btn-secondary" 
+                        onClick={fetchTypes} 
+                        disabled={loading}
+                        style={{ padding: 'var(--space-3) var(--space-4)' }}
+                    >
+                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                        <span>Refresh</span>
+                    </button>
+                    <button 
+                        type="button" 
+                        className="btn btn-primary" 
+                        onClick={() => setShowTypeForm(true)}
+                        style={{ padding: 'var(--space-3) var(--space-6)' }}
+                    >
+                        <Plus size={18} />
+                        <span>New Type</span>
+                    </button>
+                </div>
             </div>
 
             {error && (
-                <div style={{
-                    backgroundColor: '#fee',
-                    color: '#c33',
-                    padding: 'var(--space-4)',
-                    borderRadius: 'var(--radius-sm)',
-                    marginBottom: 'var(--space-4)',
-                    border: '1px solid #fcc'
-                }}>
-                    {error}
+                <div className="error-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <XCircle size={20} />
+                    <span>{error}</span>
+                    <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                        <X size={18} />
+                    </button>
                 </div>
             )}
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 'var(--space-6)',
-                flex: 1,
-                minHeight: 0
-            }}>
-                <div className="card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                    <div className="card-header" style={{
-                        padding: 'var(--space-4)',
-                        borderBottom: '1px solid var(--color-border)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        backgroundColor: 'var(--color-bg-secondary)'
-                    }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Types</h2>
-                        <button
-                            onClick={() => setShowTypeForm(!showTypeForm)}
-                            style={{
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: 'var(--font-size-lg)',
-                                color: 'var(--color-primary)',
-                                padding: '0 var(--space-2)'
-                            }}
-                            title="Add Stock Item Type"
-                        >
-                            +
-                        </button>
+            <div style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'flex-start' }}>
+                {/* Left Column: Types Grid */}
+                <div style={{ flex: '1.2' }}>
+                    <div style={{ marginBottom: 'var(--space-6)', position: 'relative' }}>
+                        <Search 
+                            size={18} 
+                            style={{ 
+                                position: 'absolute', 
+                                left: 'var(--space-4)', 
+                                top: '50%', 
+                                transform: 'translateY(-50%)', 
+                                color: 'var(--color-text-muted)' 
+                            }} 
+                        />
+                        <input 
+                            type="text" 
+                            placeholder="Search types by name or code..." 
+                            className="form-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{ paddingLeft: 'var(--space-12)', height: '48px', background: 'var(--color-bg-card)' }}
+                        />
                     </div>
 
-                    {showTypeForm && (
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
-                            <form onSubmit={handleTypeSubmit}>
-                                <input
-                                    type="text"
-                                    name="stock_item_type_label"
-                                    value={formData.stock_item_type_label}
-                                    onChange={handleInputChange}
-                                    placeholder="Type Name"
-                                    required
-                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                />
-                                <input
-                                    type="text"
-                                    name="stock_item_type_code"
-                                    value={formData.stock_item_type_code}
-                                    onChange={handleInputChange}
-                                    placeholder="Code (e.g. CBL)"
-                                    required
-                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                />
-                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                    <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                    <button type="button" onClick={() => setShowTypeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                    {loading ? (
+                        <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
+                            <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
+                            <span style={{ fontSize: 'var(--font-size-lg)' }}>Loading types...</span>
+                        </div>
+                    ) : filteredTypes.length === 0 ? (
+                        <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
+                            <div className="empty-state-icon">
+                                <Layers size={64} />
+                            </div>
+                            <h3 className="empty-state-title">No item types found</h3>
+                            <p className="empty-state-text">
+                                {searchTerm ? `No results for "${searchTerm}"` : "Start by creating your first stock item category."}
+                            </p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+                            {filteredTypes.map((type) => (
+                                <div 
+                                    key={type.stock_item_type_id} 
+                                    className="card" 
+                                    style={{ 
+                                        background: selectedStockItemType?.stock_item_type_id === type.stock_item_type_id ? 'var(--color-accent-glow)' : 'var(--color-bg-card)', 
+                                        border: '1px solid',
+                                        borderColor: selectedStockItemType?.stock_item_type_id === type.stock_item_type_id ? 'var(--color-accent-primary)' : 'var(--color-border)',
+                                        transition: 'all 0.2s ease',
+                                        cursor: 'pointer'
+                                    }}
+                                    onClick={() => showTypeAttributes(type)}
+                                    onMouseEnter={(e) => {
+                                        if (selectedStockItemType?.stock_item_type_id !== type.stock_item_type_id) {
+                                            e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                                        }
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        if (selectedStockItemType?.stock_item_type_id !== type.stock_item_type_id) {
+                                            e.currentTarget.style.borderColor = 'var(--color-border)';
+                                        }
+                                    }}
+                                >
+                                    <div className="card-body" style={{ padding: 'var(--space-5)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
+                                            <div style={{ 
+                                                width: '40px', 
+                                                height: '40px', 
+                                                background: 'var(--color-bg-secondary)', 
+                                                borderRadius: 'var(--radius-md)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'var(--color-accent-primary)'
+                                            }}>
+                                                <Tag size={20} />
+                                            </div>
+                                            {isSuperuser && (
+                                                <button 
+                                                    className="btn btn-secondary" 
+                                                    style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px', color: 'var(--color-error)' }}
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteType(type.stock_item_type_id); }}
+                                                    title="Delete Type"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            )}
+                                        </div>
+                                        
+                                        <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
+                                            {type.stock_item_type_label}
+                                        </h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                            <Hash size={14} />
+                                            <span style={{ fontWeight: '600', letterSpacing: '0.05em' }}>{type.stock_item_type_code}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </form>
+                            ))}
                         </div>
                     )}
-
-                    <div style={{ overflowY: 'auto', flex: 1 }}>
-                        {stockItemTypes.map((type) => (
-                            <div
-                                key={type.stock_item_type_id}
-                                onClick={() => goToModels(type)}
-                                style={{
-                                    padding: 'var(--space-3) var(--space-4)',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    borderBottom: '1px solid var(--color-border)'
-                                }}
-                            >
-                                <span style={{ fontWeight: '500' }}>{type.stock_item_type_label}</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); showTypeAttributes(type); }}
-                                        style={{
-                                            padding: 'var(--space-1) var(--space-2)',
-                                            border: '1px solid var(--color-border)',
-                                            background: 'var(--color-bg-tertiary)',
-                                            color: 'var(--color-text)',
-                                            borderRadius: 'var(--radius-sm)',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        Attributes
-                                    </button>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteType(type.stock_item_type_id); }}
-                                        style={{ border: 'none', background: 'none', color: '#999', cursor: 'pointer' }}
-                                    >
-                                        &times;
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-
-                        {stockItemTypes.length === 0 && !loading && (
-                            <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                                No stock item types.
-                            </div>
-                        )}
-                    </div>
                 </div>
 
-                <div className="card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                    <div className="card-header" style={{
-                        padding: 'var(--space-4)',
-                        borderBottom: '1px solid var(--color-border)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        backgroundColor: 'var(--color-bg-secondary)'
-                    }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>
-                            Type Attributes {selectedStockItemType ? `• ${selectedStockItemType.stock_item_type_label}` : ''}
-                        </h2>
-                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                            <button
-                                onClick={() => setShowAddTypeAttributeForm((v) => !v)}
-                                disabled={!selectedStockItemType}
-                                style={{
-                                    border: 'none',
-                                    background: 'none',
-                                    color: 'var(--color-primary)',
-                                    cursor: selectedStockItemType ? 'pointer' : 'not-allowed',
-                                    opacity: selectedStockItemType ? 1 : 0.6
-                                }}
-                            >
-                                + Add
-                            </button>
-                            <button
-                                onClick={goToAttributeDefinitions}
-                                style={{
-                                    padding: 'var(--space-2) var(--space-3)',
-                                    border: '1px solid var(--color-border)',
-                                    background: 'var(--color-bg-tertiary)',
-                                    color: 'var(--color-text)',
-                                    borderRadius: 'var(--radius-sm)',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                Manage
-                            </button>
+                {/* Right Column: Attributes & Management */}
+                <div style={{ flex: '0.8', position: 'sticky', top: 'var(--space-6)' }}>
+                    <div className="card" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
+                        <div className="card-header" style={{ padding: 'var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <Settings2 size={20} className="text-accent" />
+                                <h2 className="card-title" style={{ margin: 0 }}>Type Attributes</h2>
+                            </div>
+                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                <button
+                                    onClick={goToAttributeDefinitions}
+                                    className="btn btn-secondary"
+                                    style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
+                                >
+                                    Definitions
+                                </button>
+                                {selectedStockItemType && (
+                                    <button
+                                        onClick={() => setShowAddTypeAttributeForm(!showAddTypeAttributeForm)}
+                                        className="btn btn-primary"
+                                        style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
+                                    >
+                                        <Plus size={14} />
+                                        <span>Add</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
 
-                    <div style={{ overflowY: 'auto', flex: 1, padding: 'var(--space-4)' }}>
-                        {!selectedStockItemType ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>Click "Attributes" on a type to view its attributes.</div>
-                        ) : (
-                            <>
-                                {showAddTypeAttributeForm && (
-                                    <form onSubmit={handleAddTypeAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
-                                        <select
-                                            name="stock_item_attribute_definition"
-                                            value={typeAttributeForm.stock_item_attribute_definition}
-                                            onChange={handleTypeAttributeInputChange}
-                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                        >
-                                            <option value="">Select attribute definition...</option>
-                                            {availableAttributeDefinitions.map((def) => (
-                                                <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
-                                                    {def.description || `Attribute ${def.stock_item_attribute_definition_id}`}
-                                                </option>
-                                            ))}
-                                        </select>
+                        <div className="card-body" style={{ padding: 'var(--space-5)' }}>
+                            {!selectedStockItemType ? (
+                                <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-muted)' }}>
+                                    <Info size={40} style={{ marginBottom: 'var(--space-3)', opacity: 0.5 }} />
+                                    <p>Select a type to manage its attributes</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-3)', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600', color: 'var(--color-accent-primary)' }}>{selectedStockItemType.stock_item_type_label}</div>
+                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{typeAttributes.length} assigned attributes</div>
+                                    </div>
 
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                                            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    name="is_mandatory"
-                                                    checked={typeAttributeForm.is_mandatory}
-                                                    onChange={handleTypeAttributeInputChange}
-                                                />
-                                                Mandatory
-                                            </label>
-                                            <input
-                                                type="text"
-                                                name="default_value"
-                                                placeholder="Default value (optional)"
-                                                value={typeAttributeForm.default_value}
-                                                onChange={handleTypeAttributeInputChange}
-                                                style={{ padding: 'var(--space-2)' }}
-                                            />
-                                        </div>
-
-                                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                            <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                            <button type="button" onClick={() => setShowAddTypeAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
-                                        </div>
-                                    </form>
-                                )}
-
-                                {attributesLoading && <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>}
-                                {!attributesLoading && typeAttributes.length === 0 && (
-                                    <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned to this type.</div>
-                                )}
-                                {!attributesLoading && typeAttributes.map((attr) => {
-                                    const definition = attr.definition || attributeDefinitions.find((d) => d.stock_item_attribute_definition_id === attr.stock_item_attribute_definition);
-                                    return (
-                                        <div
-                                            key={`${attr.stock_item_type}-${attr.stock_item_attribute_definition}`}
-                                            style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                padding: 'var(--space-2) 0',
-                                                borderBottom: '1px solid var(--color-border)'
-                                            }}
-                                        >
-                                            <div>
-                                                <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.stock_item_attribute_definition}`}</div>
-                                                <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
-                                                    {(definition?.data_type || 'n/a')}{definition?.unit ? ` • ${definition.unit}` : ''}
-                                                    {attr.is_mandatory ? ' • mandatory' : ''}
-                                                    {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                    {showAddTypeAttributeForm && (
+                                        <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-accent-primary)', borderRadius: 'var(--radius-md)' }}>
+                                            <form onSubmit={handleAddTypeAttributeSubmit} className="form">
+                                                <div className="form-group">
+                                                    <label className="form-label">Definition</label>
+                                                    <select
+                                                        name="stock_item_attribute_definition"
+                                                        value={typeAttributeForm.stock_item_attribute_definition}
+                                                        onChange={handleTypeAttributeInputChange}
+                                                        className="form-input"
+                                                    >
+                                                        <option value="">Select an attribute...</option>
+                                                        {availableAttributeDefinitions.map((def) => (
+                                                            <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
+                                                                {def.description}
+                                                            </option>
+                                                        ))}
+                                                    </select>
                                                 </div>
-                                            </div>
-                                            <button
-                                                onClick={() => handleDeleteTypeAttribute(attr.stock_item_attribute_definition)}
-                                                style={{ border: 'none', background: 'none', color: '#999', cursor: 'pointer' }}
-                                            >
-                                                &times;
-                                            </button>
+
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+                                                    <div className="form-group">
+                                                        <label className="form-label">Default Value</label>
+                                                        <input
+                                                            type="text"
+                                                            name="default_value"
+                                                            placeholder="None"
+                                                            value={typeAttributeForm.default_value}
+                                                            onChange={handleTypeAttributeInputChange}
+                                                            className="form-input"
+                                                        />
+                                                    </div>
+                                                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 'var(--space-3)' }}>
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                name="is_mandatory"
+                                                                checked={typeAttributeForm.is_mandatory}
+                                                                onChange={handleTypeAttributeInputChange}
+                                                            />
+                                                            <span style={{ fontSize: 'var(--font-size-sm)' }}>Mandatory</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                                    <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1 }}>Save</button>
+                                                    <button type="button" onClick={() => setShowAddTypeAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                                                </div>
+                                            </form>
                                         </div>
-                                    );
-                                })}
-                            </>
-                        )}
+                                    )}
+
+                                    {attributesLoading ? (
+                                        <div className="loading-state">
+                                            <div className="loading-spinner"></div>
+                                        </div>
+                                    ) : typeAttributes.length === 0 ? (
+                                        <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>No attributes defined for this type.</p>
+                                    ) : (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                                            {typeAttributes.map((attr) => {
+                                                const definition = attr.definition || attributeDefinitions.find((d) => d.stock_item_attribute_definition_id === attr.stock_item_attribute_definition);
+                                                return (
+                                                    <div
+                                                        key={`${attr.stock_item_type}-${attr.stock_item_attribute_definition}`}
+                                                        style={{
+                                                            padding: 'var(--space-3) var(--space-4)',
+                                                            background: 'var(--color-bg-secondary)',
+                                                            borderRadius: 'var(--radius-md)',
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            border: '1px solid var(--color-border)'
+                                                        }}
+                                                    >
+                                                        <div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+                                                                <span style={{ fontWeight: '600', fontSize: 'var(--font-size-sm)' }}>{definition?.description}</span>
+                                                                {attr.is_mandatory && (
+                                                                    <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-error)', padding: '1px 4px', borderRadius: '4px', textTransform: 'uppercase' }}>Mandatory</span>
+                                                                )}
+                                                            </div>
+                                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '11px', display: 'flex', gap: 'var(--space-3)' }}>
+                                                                <span>{definition?.data_type || 'any'}</span>
+                                                                {definition?.unit && <span>• {definition.unit}</span>}
+                                                                {attr.default_value && <span>• Def: {attr.default_value}</span>}
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleDeleteTypeAttribute(attr.stock_item_attribute_definition)}
+                                                            style={{ border: 'none', background: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: 'var(--space-1)' }}
+                                                            className="hover-text-error"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Modal for Creating New Type */}
+            {showTypeForm && (
+                <div className="modal-overlay">
+                    <div className="modal" style={{ maxWidth: '500px' }}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">New Stock Item Type</h2>
+                            <button className="modal-close" onClick={() => setShowTypeForm(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <form onSubmit={handleTypeSubmit} className="form">
+                                <div className="form-group">
+                                    <label className="form-label">Type Name</label>
+                                    <input
+                                        type="text"
+                                        name="stock_item_type_label"
+                                        value={formData.stock_item_type_label}
+                                        onChange={handleInputChange}
+                                        placeholder="e.g. Network Cables"
+                                        required
+                                        className="form-input"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Type Code</label>
+                                    <input
+                                        type="text"
+                                        name="stock_item_type_code"
+                                        value={formData.stock_item_type_code}
+                                        onChange={handleInputChange}
+                                        placeholder="e.g. NET_CBL"
+                                        required
+                                        className="form-input"
+                                    />
+                                    <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: 'var(--space-1)' }}>Used for inventory tracking and identification.</p>
+                                </div>
+                                <div className="modal-footer" style={{ padding: 'var(--space-4) 0 0', border: 'none' }}>
+                                    <button type="button" onClick={() => setShowTypeForm(false)} className="btn btn-secondary">Cancel</button>
+                                    <button type="submit" disabled={saving} className="btn btn-primary">
+                                        {saving ? 'Creating...' : 'Create Type'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

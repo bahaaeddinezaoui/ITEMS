@@ -8,12 +8,12 @@ import {
     AlertCircle, 
     Search, 
     RefreshCw, 
+    ChevronRight,
+    Eye,
+    MessageSquare,
     Clock,
     X,
-    CheckCircle2,
-    Hash,
-    Tag,
-    XCircle
+    CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { myItemsService, problemReportService, locationService } from '../services/api';
@@ -41,11 +41,6 @@ const MyItemsPage = () => {
     const [destinationLocationId, setDestinationLocationId] = useState('');
     const [loadingLocations, setLoadingLocations] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-
-    const isChief = useMemo(() => {
-        if (isSuperuser) return true;
-        return user?.roles?.some((r) => r.role_code === 'maintenance_chief' || r.role_code === 'exploitation_chief' || r.role_code === 'it_bureau_chief') || false;
-    }, [isSuperuser, user]);
 
     const filteredCurrentItems = useMemo(() => {
         if (!myItems) return [];
@@ -89,6 +84,82 @@ const MyItemsPage = () => {
     useEffect(() => {
         loadMyItems();
     }, []);
+
+    const isChief = useMemo(() => {
+        if (isSuperuser) return true;
+        return user?.roles?.some((r) => r.role_code === 'maintenance_chief' || r.role_code === 'exploitation_chief' || r.role_code === 'it_bureau_chief') || false;
+    }, [isSuperuser, user]);
+
+    const renderItemCard = (item, type) => {
+        const id = type === 'asset' ? item.asset_id : type === 'stock_item' ? item.stock_item_id : item.consumable_id;
+        const name = type === 'asset' ? item.asset_name : type === 'stock_item' ? item.stock_item_name : item.consumable_name;
+        const inventory = type === 'asset' ? item.asset_inventory_number : type === 'stock_item' ? item.stock_item_inventory_number : item.consumable_inventory_number;
+        const status = type === 'asset' ? item.asset_status : type === 'stock_item' ? item.stock_item_status : item.consumable_status;
+        const serial = type === 'asset' ? item.asset_serial_number : type === 'consumable' ? item.consumable_serial_number : null;
+
+        return (
+            <div key={id} className="card" style={{ transition: 'all 0.2s ease' }}>
+                <div className="card-body" style={{ padding: 'var(--space-5)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
+                        <div style={{ 
+                            width: '40px', 
+                            height: '40px', 
+                            background: 'var(--color-bg-secondary)', 
+                            borderRadius: 'var(--radius-md)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--color-accent-primary)'
+                        }}>
+                            {type === 'asset' ? <Box size={20} /> : type === 'stock_item' ? <ShoppingCart size={20} /> : <Layers size={20} />}
+                        </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            {type === 'asset' && (
+                                <button 
+                                    className="btn btn-secondary" 
+                                    style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px' }}
+                                    onClick={() => navigate(`/dashboard/my-items/assets/${id}/maintenance-timeline`)}
+                                    title="View Maintenance"
+                                >
+                                    <Clock size={16} />
+                                </button>
+                            )}
+                            <button 
+                                className="btn btn-secondary" 
+                                style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px', color: 'var(--color-error)' }}
+                                onClick={() => openReportModal({ item_type: type, item_id: id, item_label: name })}
+                                title="Report Problem"
+                            >
+                                <AlertCircle size={16} />
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
+                        {name || `${type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ')} #${id}`}
+                    </h3>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                            <Hash size={14} />
+                            <span>Inv: {inventory || 'N/A'}</span>
+                        </div>
+                        {serial && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                <Tag size={14} />
+                                <span>SN: {serial}</span>
+                            </div>
+                        )}
+                        <div style={{ marginTop: 'var(--space-2)' }}>
+                            <span className={`badge badge-${status?.toLowerCase() === 'active' || status?.toLowerCase() === 'assigned' ? 'success' : 'warning'}`}>
+                                {status}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     const openReportModal = async (target) => {
         setSuccessMessage('');
@@ -169,83 +240,17 @@ const MyItemsPage = () => {
             setReportTarget(null);
             setReportObservation('');
             setSuccessMessage('Report submitted successfully');
+
+            if (isChief && activeTab === 'reports') {
+                const data = await problemReportService.getAll();
+                void data;
+            }
         } catch (e) {
             const msg = e?.response?.data?.error || e?.message || 'Failed to submit report';
             setReportModalError(typeof msg === 'string' ? msg : 'Failed to submit report');
         } finally {
             setReportSubmitting(false);
         }
-    };
-
-    const renderItemCard = (item, type) => {
-        const id = type === 'asset' ? item.asset_id : type === 'stock_item' ? item.stock_item_id : item.consumable_id;
-        const name = type === 'asset' ? item.asset_name : type === 'stock_item' ? item.stock_item_name : item.consumable_name;
-        const inventory = type === 'asset' ? item.asset_inventory_number : type === 'stock_item' ? item.stock_item_inventory_number : item.consumable_inventory_number;
-        const status = type === 'asset' ? item.asset_status : type === 'stock_item' ? item.stock_item_status : item.consumable_status;
-        const serial = type === 'asset' ? item.asset_serial_number : type === 'consumable' ? item.consumable_serial_number : null;
-
-        return (
-            <div key={`${type}-${id}`} className="card" style={{ transition: 'all 0.2s ease' }}>
-                <div className="card-body" style={{ padding: 'var(--space-5)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
-                        <div style={{ 
-                            width: '40px', 
-                            height: '40px', 
-                            background: 'var(--color-bg-secondary)', 
-                            borderRadius: 'var(--radius-md)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'var(--color-accent-primary)'
-                        }}>
-                            {type === 'asset' ? <Box size={20} /> : type === 'stock_item' ? <ShoppingCart size={20} /> : <Layers size={20} />}
-                        </div>
-                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                            {type === 'asset' && (
-                                <button 
-                                    className="btn btn-secondary" 
-                                    style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px' }}
-                                    onClick={() => navigate(`/dashboard/my-items/assets/${id}/maintenance-timeline`)}
-                                    title="View Maintenance"
-                                >
-                                    <Clock size={16} />
-                                </button>
-                            )}
-                            <button 
-                                className="btn btn-secondary" 
-                                style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px', color: 'var(--color-error)' }}
-                                onClick={() => openReportModal({ item_type: type, item_id: id, item_label: name })}
-                                title="Report Problem"
-                            >
-                                <AlertCircle size={16} />
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
-                        {name || `${type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ')} #${id}`}
-                    </h3>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                            <Hash size={14} />
-                            <span>Inv: {inventory || 'N/A'}</span>
-                        </div>
-                        {serial && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                <Tag size={14} />
-                                <span>SN: {serial}</span>
-                            </div>
-                        )}
-                        <div style={{ marginTop: 'var(--space-2)' }}>
-                            <span className={`badge badge-${status?.toLowerCase() === 'active' || status?.toLowerCase() === 'assigned' ? 'success' : 'warning'}`}>
-                                {status}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
     };
 
     const renderHistoryTable = (rows, type) => {
@@ -301,6 +306,133 @@ const MyItemsPage = () => {
         );
     };
 
+    const assetCurrentRows = (myItems?.assets?.current || []).map((a) => ({
+        id: a.asset_id,
+        name: a.asset_name || `Asset ${a.asset_id}`,
+        status: a.asset_status,
+        inventory: a.asset_inventory_number,
+        serial: a.asset_serial_number,
+    }));
+
+    const assetHistoryRows = myItems?.assets?.history || [];
+
+    const stockCurrentRows = (myItems?.stock_items?.current || []).map((s) => ({
+        id: s.stock_item_id,
+        name: s.stock_item_name || `Stock Item ${s.stock_item_id}`,
+        status: s.stock_item_status,
+        inventory: s.stock_item_inventory_number,
+    }));
+
+    const stockHistoryRows = myItems?.stock_items?.history || [];
+
+    const consumableCurrentRows = (myItems?.consumables?.current || []).map((c) => ({
+        id: c.consumable_id,
+        name: c.consumable_name || `Consumable ${c.consumable_id}`,
+        status: c.consumable_status,
+        inventory: c.consumable_inventory_number,
+        serial: c.consumable_serial_number,
+    }));
+
+    const consumableHistoryRows = myItems?.consumables?.history || [];
+
+    const currentColumnsByTab = {
+        assets: [
+            { key: 'id', label: 'ID', render: (r) => r.id },
+            { key: 'name', label: 'Name', render: (r) => r.name },
+            { key: 'inventory', label: 'Inventory #', render: (r) => r.inventory || '-' },
+            { key: 'serial', label: 'Serial #', render: (r) => r.serial || '-' },
+            { key: 'status', label: 'Status', render: (r) => r.status || '-' },
+            {
+                key: 'actions',
+                label: 'Actions',
+                render: (r) => (
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => navigate(`/dashboard/my-items/assets/${r.id}/maintenance-timeline`)}
+                            style={{ padding: '0.25rem 0.5rem' }}
+                        >
+                            View Maintenance
+                        </button>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => openReportModal({ item_type: 'asset', item_id: r.id, item_label: r.name })}
+                            style={{ padding: '0.25rem 0.5rem' }}
+                        >
+                            Report problem
+                        </button>
+                    </div>
+                ),
+            },
+        ],
+        stock_items: [
+            { key: 'id', label: 'ID', render: (r) => r.id },
+            { key: 'name', label: 'Name', render: (r) => r.name },
+            { key: 'inventory', label: 'Inventory #', render: (r) => r.inventory || '-' },
+            { key: 'status', label: 'Status', render: (r) => r.status || '-' },
+            {
+                key: 'actions',
+                label: 'Actions',
+                render: (r) => (
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => openReportModal({ item_type: 'stock_item', item_id: r.id, item_label: r.name })}
+                        style={{ padding: '0.25rem 0.5rem' }}
+                    >
+                        Report problem
+                    </button>
+                ),
+            },
+        ],
+        consumables: [
+            { key: 'id', label: 'ID', render: (r) => r.id },
+            { key: 'name', label: 'Name', render: (r) => r.name },
+            { key: 'inventory', label: 'Inventory #', render: (r) => r.inventory || '-' },
+            { key: 'serial', label: 'Serial #', render: (r) => r.serial || '-' },
+            { key: 'status', label: 'Status', render: (r) => r.status || '-' },
+            {
+                key: 'actions',
+                label: 'Actions',
+                render: (r) => (
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => openReportModal({ item_type: 'consumable', item_id: r.id, item_label: r.name })}
+                        style={{ padding: '0.25rem 0.5rem' }}
+                    >
+                        Report problem
+                    </button>
+                ),
+            },
+        ],
+    };
+
+    const historyColumnsByTab = {
+        assets: [
+            { key: 'assignment_id', label: 'Assignment ID', render: (r) => r.assignment_id },
+            { key: 'asset_id', label: 'Asset ID', render: (r) => r.asset?.asset_id },
+            { key: 'name', label: 'Name', render: (r) => r.asset?.asset_name || `Asset ${r.asset?.asset_id}` },
+            { key: 'start', label: 'Start', render: (r) => (r.start_datetime ? new Date(r.start_datetime).toLocaleString() : '-') },
+            { key: 'end', label: 'End', render: (r) => (r.end_datetime ? new Date(r.end_datetime).toLocaleString() : '-') },
+            { key: 'condition', label: 'Condition', render: (r) => r.condition_on_assignment || '-' },
+        ],
+        stock_items: [
+            { key: 'assignment_id', label: 'Assignment ID', render: (r) => r.assignment_id },
+            { key: 'stock_item_id', label: 'Stock Item ID', render: (r) => r.stock_item?.stock_item_id },
+            { key: 'name', label: 'Name', render: (r) => r.stock_item?.stock_item_name || `Stock Item ${r.stock_item?.stock_item_id}` },
+            { key: 'start', label: 'Start', render: (r) => (r.start_datetime ? new Date(r.start_datetime).toLocaleString() : '-') },
+            { key: 'end', label: 'End', render: (r) => (r.end_datetime ? new Date(r.end_datetime).toLocaleString() : '-') },
+            { key: 'condition', label: 'Condition', render: (r) => r.condition_on_assignment || '-' },
+        ],
+        consumables: [
+            { key: 'assignment_id', label: 'Assignment ID', render: (r) => r.assignment_id },
+            { key: 'consumable_id', label: 'Consumable ID', render: (r) => r.consumable?.consumable_id },
+            { key: 'name', label: 'Name', render: (r) => r.consumable?.consumable_name || `Consumable ${r.consumable?.consumable_id}` },
+            { key: 'start', label: 'Start', render: (r) => (r.start_datetime ? new Date(r.start_datetime).toLocaleString() : '-') },
+            { key: 'end', label: 'End', render: (r) => (r.end_datetime ? new Date(r.end_datetime).toLocaleString() : '-') },
+            { key: 'condition', label: 'Condition', render: (r) => r.condition_on_assignment || '-' },
+        ],
+    };
+
     return (
         <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
@@ -345,21 +477,17 @@ const MyItemsPage = () => {
             )}
 
             <div style={{ marginBottom: 'var(--space-8)' }}>
-                <div className="card" style={{ padding: 'var(--space-1)', background: 'var(--color-bg-secondary)', display: 'inline-flex', borderRadius: 'var(--radius-lg)', alignItems: 'stretch' }}>
+                <div className="card" style={{ padding: 'var(--space-1)', background: 'var(--color-bg-secondary)', display: 'inline-flex', borderRadius: 'var(--radius-lg)' }}>
                     <button 
                         className={`btn ${activeTab === 'assets' ? 'btn-primary' : ''}`} 
                         onClick={() => setActiveTab('assets')}
                         style={{ 
-                            padding: 'var(--space-2) var(--space-8)', 
+                            padding: 'var(--space-3) var(--space-8)', 
                             borderRadius: 'var(--radius-md)',
                             background: activeTab === 'assets' ? '' : 'transparent',
                             color: activeTab === 'assets' ? '' : 'var(--color-text-secondary)',
                             border: 'none',
-                            boxShadow: activeTab === 'assets' ? '' : 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: '44px'
+                            boxShadow: activeTab === 'assets' ? '' : 'none'
                         }}
                     >
                         Assets
@@ -368,18 +496,12 @@ const MyItemsPage = () => {
                         className={`btn ${activeTab === 'stock_items' ? 'btn-primary' : ''}`} 
                         onClick={() => setActiveTab('stock_items')}
                         style={{ 
-                            padding: 'var(--space-2) var(--space-8)', 
+                            padding: 'var(--space-3) var(--space-8)', 
                             borderRadius: 'var(--radius-md)',
                             background: activeTab === 'stock_items' ? '' : 'transparent',
                             color: activeTab === 'stock_items' ? '' : 'var(--color-text-secondary)',
                             border: 'none',
-                            boxShadow: activeTab === 'stock_items' ? '' : 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: '44px',
-                            textAlign: 'center',
-                            lineHeight: '1.2'
+                            boxShadow: activeTab === 'stock_items' ? '' : 'none'
                         }}
                     >
                         Stock Items
@@ -388,16 +510,12 @@ const MyItemsPage = () => {
                         className={`btn ${activeTab === 'consumables' ? 'btn-primary' : ''}`} 
                         onClick={() => setActiveTab('consumables')}
                         style={{ 
-                            padding: 'var(--space-2) var(--space-8)', 
+                            padding: 'var(--space-3) var(--space-8)', 
                             borderRadius: 'var(--radius-md)',
                             background: activeTab === 'consumables' ? '' : 'transparent',
                             color: activeTab === 'consumables' ? '' : 'var(--color-text-secondary)',
                             border: 'none',
-                            boxShadow: activeTab === 'consumables' ? '' : 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: '44px'
+                            boxShadow: activeTab === 'consumables' ? '' : 'none'
                         }}
                     >
                         Consumables
@@ -449,7 +567,7 @@ const MyItemsPage = () => {
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
-                        {filteredCurrentItems.map(item => renderItemCard(item, activeTab.slice(0, -1)))}
+                        {filteredCurrentItems.map(item => renderItemCard(item, activeTab.slice(0, -1).replace('stock_item', 'stock_item')))}
                     </div>
                 )}
             </div>
@@ -501,18 +619,19 @@ const MyItemsPage = () => {
                     >
                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Report a problem</h2>
-                            <button
-                                className="btn btn-secondary"
-                                style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
-                                onClick={() => {
-                                    if (!reportSubmitting) {
-                                        setShowReportModal(false);
-                                        setReportTarget(null);
-                                    }
-                                }}
-                            >
-                                Close
-                            </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                        onClick={() => {
+                                            if (!reportSubmitting) {
+                                                setShowReportModal(false);
+                                                setReportTarget(null);
+                                            }
+                                        }}
+                                    >
+                                        Close
+                                    </button>
                         </div>
 
                         <div style={{ padding: 'var(--space-4)' }}>
@@ -525,9 +644,9 @@ const MyItemsPage = () => {
                                     style={{
                                         marginBottom: 'var(--space-3)',
                                         padding: 'var(--space-3)',
-                                        border: '1px solid var(--color-error)',
+                                        border: '1px solid var(--color-danger)',
                                         borderRadius: 'var(--radius-sm)',
-                                        color: 'var(--color-error)',
+                                        color: 'var(--color-danger)',
                                         background: 'rgba(220, 38, 38, 0.08)',
                                         fontSize: 'var(--font-size-sm)',
                                     }}
@@ -698,6 +817,169 @@ const MyItemsPage = () => {
                                     {reportSubmitting ? 'Submitting...' : 'Submit report'}
                                 </button>
                             </div>
+                        ) : null}
+
+                        <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: 500 }}>
+                            Observation
+                        </label>
+                        <textarea
+                            value={reportObservation}
+                            onChange={(e) => setReportObservation(e.target.value)}
+                            rows={4}
+                            style={{
+                                width: '100%',
+                                padding: 'var(--space-3)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: 'var(--radius-sm)',
+                                resize: 'vertical',
+                                fontFamily: 'inherit',
+                                fontSize: 'var(--font-size-sm)',
+                                boxSizing: 'border-box',
+                                marginBottom: 'var(--space-4)',
+                            }}
+                        />
+
+                        {reportTarget?.item_type === 'asset' && (
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <h3 style={{ fontSize: 'var(--font-size-md)', marginBottom: 'var(--space-2)' }}>Include other items you own</h3>
+                                <div style={{ marginBottom: 'var(--space-3)' }}>
+                                    <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>
+                                        Destination maintenance location
+                                    </label>
+                                    <select
+                                        value={destinationLocationId}
+                                        onChange={(e) => setDestinationLocationId(e.target.value)}
+                                        disabled={loadingLocations}
+                                        className="form-input"
+                                        style={{
+                                            width: '100%',
+                                            background: 'var(--color-surface)',
+                                            color: 'var(--color-text)',
+                                        }}
+                                    >
+                                        <option value="">{loadingLocations ? 'Loading locations...' : 'Select a maintenance location'}</option>
+                                        {maintenanceLocations.map((r) => (
+                                            <option key={r.location_id} value={String(r.location_id)}>
+                                                {r.location_name} (#{r.location_id})
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <div style={{ marginTop: 'var(--space-1)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                        Only maintenance locations are shown.
+                                    </div>
+                                </div>
+
+                                {loadingEligible ? (
+                                    <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>Loading eligible items...</div>
+                                ) : (
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+                                                <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Stock Items</h4>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                                        onClick={() => setSelectedStockItems(eligibleItems.stock_items.map((s) => s.stock_item_id))}
+                                                        disabled={eligibleItems.stock_items.length === 0}
+                                                    >
+                                                        Select all
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                                        onClick={() => setSelectedStockItems([])}
+                                                        disabled={selectedStockItems.length === 0}
+                                                    >
+                                                        Clear
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {eligibleItems.stock_items.length === 0 ? (
+                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>None available</div>
+                                            ) : (
+                                                <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                                    {eligibleItems.stock_items.map(s => (
+                                                        <label key={s.stock_item_id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)', cursor: 'pointer' }}>
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={selectedStockItems.includes(s.stock_item_id)}
+                                                                onChange={() => toggleItemSelection(s.stock_item_id, 'stock_item')}
+                                                            />
+                                                            <span>{s.stock_item_name} ({s.stock_item_inventory_number})</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
+                                                <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Consumables</h4>
+                                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                                        onClick={() => setSelectedConsumables(eligibleItems.consumables.map((c) => c.consumable_id))}
+                                                        disabled={eligibleItems.consumables.length === 0}
+                                                    >
+                                                        Select all
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
+                                                        onClick={() => setSelectedConsumables([])}
+                                                        disabled={selectedConsumables.length === 0}
+                                                    >
+                                                        Clear
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            {eligibleItems.consumables.length === 0 ? (
+                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>None available</div>
+                                            ) : (
+                                                <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                                    {eligibleItems.consumables.map(c => (
+                                                        <label key={c.consumable_id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)', cursor: 'pointer' }}>
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={selectedConsumables.includes(c.consumable_id)}
+                                                                onChange={() => toggleItemSelection(c.consumable_id, 'consumable')}
+                                                            />
+                                                            <span>{c.consumable_name} ({c.consumable_inventory_number})</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <div style={{ marginTop: 'var(--space-4)', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => {
+                                    if (!reportSubmitting) {
+                                        setShowReportModal(false);
+                                        setReportTarget(null);
+                                    }
+                                }}
+                                disabled={reportSubmitting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={submitReport}
+                                disabled={reportSubmitting}
+                            >
+                                {reportSubmitting ? 'Submitting...' : 'Submit report'}
+                            </button>
                         </div>
                     </div>
                 </div>

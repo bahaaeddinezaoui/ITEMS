@@ -4123,18 +4123,6 @@ class AssetBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if denial:
             return denial
 
-        # Handle file upload
-        brand_photo_file = request.FILES.get('brand_photo')
-        brand_photo_path = None
-        if brand_photo_file:
-            from django.core.files.storage import default_storage
-            from django.core.files.base import ContentFile
-            import os
-            
-            # Save file to media/brands/
-            file_path = f"brands/assets/{brand_photo_file.name}"
-            brand_photo_path = default_storage.save(file_path, ContentFile(brand_photo_file.read()))
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -4142,12 +4130,9 @@ class AssetBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_brand.asset_brand_id + 1) if last_brand else 1
 
         try:
-            data = serializer.validated_data.copy()
-            if brand_photo_path:
-                data['brand_photo'] = brand_photo_path
             brand = AssetBrand.objects.create(
                 asset_brand_id=next_id,
-                **data,
+                **serializer.validated_data,
             )
         except IntegrityError:
             return Response(
@@ -4903,17 +4888,6 @@ class StockItemBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if denial:
             return denial
 
-        # Handle file upload
-        brand_photo_file = request.FILES.get('brand_photo')
-        brand_photo_path = None
-        if brand_photo_file:
-            from django.core.files.storage import default_storage
-            from django.core.files.base import ContentFile
-            
-            # Save file to media/brands/
-            file_path = f"brands/stock_items/{brand_photo_file.name}"
-            brand_photo_path = default_storage.save(file_path, ContentFile(brand_photo_file.read()))
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -4921,12 +4895,9 @@ class StockItemBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_brand.stock_item_brand_id + 1) if last_brand else 1
 
         try:
-            data = serializer.validated_data.copy()
-            if brand_photo_path:
-                data['brand_photo'] = brand_photo_path
             brand = StockItemBrand.objects.create(
                 stock_item_brand_id=next_id,
-                **data,
+                **serializer.validated_data,
             )
         except IntegrityError:
             return Response(
@@ -5433,17 +5404,6 @@ class ConsumableBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if denial:
             return denial
 
-        # Handle file upload
-        brand_photo_file = request.FILES.get('brand_photo')
-        brand_photo_path = None
-        if brand_photo_file:
-            from django.core.files.storage import default_storage
-            from django.core.files.base import ContentFile
-            
-            # Save file to media/brands/
-            file_path = f"brands/consumables/{brand_photo_file.name}"
-            brand_photo_path = default_storage.save(file_path, ContentFile(brand_photo_file.read()))
-
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -5451,12 +5411,9 @@ class ConsumableBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_brand.consumable_brand_id + 1) if last_brand else 1
 
         try:
-            data = serializer.validated_data.copy()
-            if brand_photo_path:
-                data['brand_photo'] = brand_photo_path
             brand = ConsumableBrand.objects.create(
                 consumable_brand_id=next_id,
-                **data,
+                **serializer.validated_data,
             )
         except IntegrityError:
             return Response(
