@@ -1106,3 +1106,45 @@ Password mismatch for user: admin
 [2026-03-11 23:30:11.186566+00:00] Login attempt for: admin
 
 [2026-03-11 23:50:10.526597+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-13 00:02:46.175872+00:00] Login attempt for: net_tech
+Password mismatch for user: net_tech
+
+[2026-03-13 00:02:57.812346+00:00] Login attempt for: net_tech
+Password mismatch for user: net_tech
+
+[2026-03-13 00:02:59.977823+00:00] Login attempt for: net_tech
+Password mismatch for user: net_tech
+
+[2026-03-13 00:06:58.689927+00:00] Login attempt for: net_tech
+Password mismatch for user: net_tech
+
+[2026-03-13 00:07:03.220990+00:00] Login attempt for: net_tech
+Password mismatch for user: net_tech
+
+[2026-03-13 00:09:16.973408+00:00] Login attempt for: net_tech
+
+[2026-03-13 00:09:32.186369+00:00] Login attempt for: net_tech
+
+[2026-03-13 01:43:22.917959+00:00] Login attempt for: network_tech
+User not found: network_tech
+
+[2026-03-13 01:44:09.004124+00:00] Login attempt for: network_tech
+User not found: network_tech
+
+[2026-03-13 01:50:32.287956+00:00] Login attempt for: network_tech
+
+[2026-03-13 01:51:49.906447+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-03-13 08:55:45.762279+00:00] Login attempt for: net_tech
+User not found: net_tech
+
+[2026-03-13 08:55:50.071224+00:00] Login attempt for: network_tech
+
+[2026-03-13 08:55:58.223311+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-03-13 09:27:29.673382+00:00] Login attempt for: network_tech
+
+[2026-03-13 09:44:52.344556+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-03-13 09:45:14.584620+00:00] Login attempt for: network_tech

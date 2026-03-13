@@ -32,6 +32,13 @@ CREATE TYPE public.movement_status AS ENUM (
     'accepted'
 );
 
+CREATE TYPE public.maintenance_domain AS ENUM (
+    'it',
+    'network',
+    'electrical',
+    'security',
+    'hvac'
+);
 
 ALTER TYPE public.movement_status OWNER TO postgres;
 
@@ -133,7 +140,8 @@ CREATE TABLE public.asset_attribute_definition (
     asset_attribute_definition_id integer CONSTRAINT asset_attribute_definition_asset_attribute_definition__not_null NOT NULL,
     data_type character varying(18),
     unit character varying(24),
-    description character varying(256)
+    description character varying(256),
+    maintenance_domain character varying(24)
 );
 
 
@@ -1000,7 +1008,8 @@ CREATE TABLE public.consumable_attribute_definition (
     consumable_type_code character varying(18),
     data_type character varying(18),
     unit character varying(24),
-    description character varying(256)
+    description character varying(256),
+    maintenance_domain character varying(24)
 );
 
 
@@ -1709,6 +1718,7 @@ CREATE TABLE public.maintenance_typical_step (
     description character varying(256),
     maintenance_type character(8),
     operation_type character varying(24) DEFAULT 'change'::character varying NOT NULL,
+    maintenance_domain character varying(24),
     CONSTRAINT maintenance_typical_step_operation_type_check CHECK (((operation_type)::text = ANY (ARRAY[('add'::character varying)::text, ('remove'::character varying)::text, ('change'::character varying)::text, ('replace'::character varying)::text, ('repair'::character varying)::text, ('inspect'::character varying)::text, ('clean'::character varying)::text, ('calibrate'::character varying)::text, ('test'::character varying)::text])))
 );
 
@@ -2102,7 +2112,8 @@ CREATE TABLE public.stock_item_attribute_definition (
     stock_item_attribute_definition_id integer CONSTRAINT stock_item_attribute_defini_stock_item_attribute_defin_not_null NOT NULL,
     unit character varying(24),
     description character varying(256),
-    data_type character varying(18)
+    data_type character varying(18),
+    maintenance_domain character varying(24)
 );
 
 
@@ -4202,11 +4213,13 @@ COPY public.maintenance_step_item_request (maintenance_step_item_request_id, mai
 -- Data for Name: maintenance_typical_step; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.maintenance_typical_step (maintenance_typical_step_id, estimated_cost, actual_cost, description, maintenance_type, operation_type) FROM stdin;
-1	1000.00	700.00	Changing the thermal paste	Hardware	change
-2	\N	\N	Unmounting the old RAM	Hardware	change
-3	\N	\N	Adding a pen	Hardware	add
-4	\N	\N	Removing a pen	Hardware	remove
+COPY public.maintenance_typical_step (maintenance_typical_step_id, estimated_cost, actual_cost, description, maintenance_type, operation_type, maintenance_domain) FROM stdin;
+1	1000.00	700.00	Changing the thermal paste	Hardware	change	it
+2	\N	\N	Unmounting the old RAM	Hardware	change	it
+3	\N	\N	Adding a pen	Hardware	add	it
+4	\N	\N	Removing a pen	Hardware	remove	it
+5	\N	\N	Network Hardware Diagnostic	Hardware	inspect	network
+6	\N	\N	Network Software Configuration	Software	change	network
 \.
 
 
@@ -4443,6 +4456,7 @@ COPY public.role (role_id, role_code, role_label, description) FROM stdin;
 103	director_admin_support	Director of Administration and Support	Director of Administration and Support
 104	protection_and_security_bureau_chief	Protection and Security Bureau Chief	Protection and Security Bureau Chief
 105	school_headquarter	School headquarter	School headquarter
+106	network_maintenance_technician	Network Maintenance Technician	\N
 \.
 
 
@@ -4766,6 +4780,7 @@ COPY public.user_account (user_id, person_id, username, password_hash, created_a
 5	10	bensimessaouddaoud	1d3005bd778154738f4876dfe5b7815a25dd36ae79eaa68b44b78175c4d5cbf4400073ec6e4ce40ff2d11d981fd06ec421ba71c531dc67133ead14635c9471c9	2026-02-11 10:50:19.833168	2026-02-11 10:50:19.833168	2026-03-07 21:18:59.417652	active	0	2026-02-11 10:50:19.833168	1	1	2026-02-11 10:50:19.833168
 4	8	mohsinamoura	40c82ecd90443ed156f5e4d3911c9659b6ecc21174a5ac4cb36f1804a45de6bcb2cae9110329419b04145e4d2ba55bd41a44f65c1e5617e592d7ebaf212c524e	2026-02-10 20:18:23.485554	2026-02-10 20:18:23.485554	2026-03-08 21:03:36.04215	active	0	2026-02-10 20:18:23.485554	\N	\N	2026-02-10 20:18:23.485554
 11	1008	asset_resp	bed4efa1d4fdbd954bd3705d6a2a78270ec9a52ecfbfb010c61862af5c76af1761ffeb1aef6aca1bf5d02b3781aa854fabd2b69c790de74e17ecfec3cb6ac4bf	2026-02-18 09:15:48.937778	2026-02-18 09:15:48.937778	2026-03-08 21:49:20.928861	active	0	2026-02-18 09:15:48.937778	\N	\N	2026-02-18 09:15:48.937778
+16	1015	network_maintenance_tech	bed4efa1d4fdbd954bd3705d6a2a78270ec9a52ecfbfb010c61862af5c76af1761ffeb1aef6aca1bf5d02b3781aa854fabd2b69c790de74e17ecfec3cb6ac4bf	2026-03-13 02:30:00.000000	\N	\N	active	0	2026-03-13 02:30:00.000000	\N	\N	2026-03-13 02:30:00.000000
 \.
 
 

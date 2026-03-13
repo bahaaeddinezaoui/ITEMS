@@ -117,7 +117,7 @@ const SearchableSelect = ({
                         top: '100%',
                         left: 0,
                         right: 0,
-                        zIndex: 1000,
+                        zIndex: 2000,
                         marginTop: 4,
                         backgroundColor: 'var(--color-bg-primary)',
                         border: '1px solid var(--color-border)',

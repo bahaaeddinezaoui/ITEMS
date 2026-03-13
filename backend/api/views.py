@@ -708,7 +708,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 return qs.filter(asset_id__in=asset_ids, start_datetime__isnull=True, end_datetime__isnull=True)
             return Maintenance.objects.none()
 
-        if "maintenance_technician" in role_codes:
+        if "maintenance_technician" in role_codes or "network_maintenance_technician" in role_codes:
             return qs.filter(performed_by_person=person)
 
         return Maintenance.objects.none()
@@ -4722,6 +4722,13 @@ class AssetAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet
     queryset = AssetAttributeDefinition.objects.all().order_by("asset_attribute_definition_id")
     serializer_class = AssetAttributeDefinitionSerializer
 
+    def get_queryset(self):
+        queryset = AssetAttributeDefinition.objects.all().order_by("asset_attribute_definition_id")
+        domain = self.request.query_params.get('maintenance_domain')
+        if domain:
+            queryset = queryset.filter(maintenance_domain=domain)
+        return queryset
+
     def create(self, request, *args, **kwargs):
         denial = self._require_superuser(request, "create asset attribute definitions")
         if denial:
@@ -5231,6 +5238,13 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 class StockItemAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = StockItemAttributeDefinition.objects.all().order_by("stock_item_attribute_definition_id")
     serializer_class = StockItemAttributeDefinitionSerializer
+
+    def get_queryset(self):
+        queryset = StockItemAttributeDefinition.objects.all().order_by("stock_item_attribute_definition_id")
+        domain = self.request.query_params.get('maintenance_domain')
+        if domain:
+            queryset = queryset.filter(maintenance_domain=domain)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         denial = self._require_superuser(request, "create stock item attribute definitions")
@@ -6112,6 +6126,13 @@ class AssetDestructionCertificateViewSet(viewsets.ModelViewSet):
 class ConsumableAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = ConsumableAttributeDefinition.objects.all().order_by("consumable_attribute_definition_id")
     serializer_class = ConsumableAttributeDefinitionSerializer
+
+    def get_queryset(self):
+        queryset = ConsumableAttributeDefinition.objects.all().order_by("consumable_attribute_definition_id")
+        domain = self.request.query_params.get('maintenance_domain')
+        if domain:
+            queryset = queryset.filter(maintenance_domain=domain)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         denial = self._require_superuser(request, "create consumable attribute definitions")

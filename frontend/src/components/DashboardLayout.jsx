@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -35,6 +35,29 @@ const DashboardLayout = () => {
         return 'User';
     };
 
+    const isChief = useMemo(() => {
+        if (isSuperuser) return true;
+        return user?.roles?.some(r =>
+            r.role_code === 'maintenance_chief' ||
+            r.role_code === 'exploitation_chief' ||
+            r.role_code === 'it_bureau_chief' ||
+            r.role_code === 'network_maintenance_technician'
+        ) || false;
+    }, [isSuperuser, user]);
+
+    const isMaintenanceChief = user?.roles?.some(role => role.role_code === 'maintenance_chief');
+    const isMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'maintenance_technician');
+    const isNetworkMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'network_maintenance_technician');
+    const isExploitationChief = user?.roles?.some(role => role.role_code === 'exploitation_chief');
+    const isStockConsumableResponsible = user?.roles?.some(role => role.role_code === 'stock_consumable_responsible');
+    const isAssetResponsible = user?.roles?.some(role => role.role_code === 'asset_responsible');
+    const isItBureauChief = user?.roles?.some(role => role.role_code === 'it_bureau_chief');
+    const isDirectorAdminSupport = user?.roles?.some(role => role.role_code === 'director_admin_support');
+    const isProtectionSecurityBureauChief = user?.roles?.some(role => role.role_code === 'protection_and_security_bureau_chief');
+    const isSchoolHeadquarter = user?.roles?.some(role => role.role_code === 'school_headquarter');
+    const canViewPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
+    const canViewReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
+
     useEffect(() => {
         if (!isUserMenuOpen) return;
 
@@ -59,18 +82,6 @@ const DashboardLayout = () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
     }, [isUserMenuOpen]);
-
-    const isMaintenanceChief = user?.roles?.some(role => role.role_code === 'maintenance_chief');
-    const isMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'maintenance_technician');
-    const isExploitationChief = user?.roles?.some(role => role.role_code === 'exploitation_chief');
-    const isStockConsumableResponsible = user?.roles?.some(role => role.role_code === 'stock_consumable_responsible');
-    const isAssetResponsible = user?.roles?.some(role => role.role_code === 'asset_responsible');
-    const isItBureauChief = user?.roles?.some(role => role.role_code === 'it_bureau_chief');
-    const isDirectorAdminSupport = user?.roles?.some(role => role.role_code === 'director_admin_support');
-    const isProtectionSecurityBureauChief = user?.roles?.some(role => role.role_code === 'protection_and_security_bureau_chief');
-    const isSchoolHeadquarter = user?.roles?.some(role => role.role_code === 'school_headquarter');
-    const canViewPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
-    const canViewReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
 
     return (
         <div className="dashboard-layout">
@@ -358,15 +369,16 @@ const DashboardLayout = () => {
                         </div>
                     )}
 
-                    {(isSuperuser || isMaintenanceChief || isMaintenanceTechnician || isItBureauChief) && (
+                    {(isSuperuser || user?.roles?.some(r =>
+                        ['maintenance_chief', 'maintenance_technician', 'exploitation_chief', 'it_bureau_chief', 'network_maintenance_technician'].includes(r.role_code)
+                    )) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Maintenance</span>
-                            
                             <NavLink to="/dashboard/maintenances" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
                                 </svg>
-                                Maintenance
+                                Maintenances
                             </NavLink>
                         </div>
                     )}

@@ -207,19 +207,12 @@ function App() {
                         <Route
                             path="maintenances"
                             element={
-                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'maintenance_technician', 'it_bureau_chief']}>
+                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'maintenance_technician', 'it_bureau_chief', 'network_maintenance_technician']}>
                                     <MaintenancesPage />
                                 </RoleProtectedRoute>
                             }
                         />
-                        <Route
-                            path="maintenances/:maintenanceId/steps"
-                            element={
-                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'maintenance_technician', 'it_bureau_chief']}>
-                                    <MaintenanceStepsPage />
-                                </RoleProtectedRoute>
-                            }
-                        />
+                        <Route path="maintenances/:maintenanceId/steps" element={<MaintenanceStepsPage />} />
 
                         <Route
                             path="stock-items"

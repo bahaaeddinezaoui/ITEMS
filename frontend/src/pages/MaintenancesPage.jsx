@@ -39,18 +39,19 @@ const MaintenancesPage = () => {
         return user?.roles?.some(r => r.role_code === 'maintenance_technician') || false;
     }, [user]);
 
+    const loadMaintenances = async () => {
+        setLoading(true);
+        try {
+            const data = await maintenanceService.getAll();
+            setMaintenances(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch maintenances: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const loadMaintenances = async () => {
-            setLoading(true);
-            try {
-                const data = await maintenanceService.getAll();
-                setMaintenances(Array.isArray(data) ? data : []);
-            } catch (err) {
-                setError('Failed to fetch maintenances: ' + err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
         loadMaintenances();
         if (isChief) {
             loadTechnicians();
@@ -60,9 +61,22 @@ const MaintenancesPage = () => {
 
     const loadTechnicians = async () => {
         try {
-            // Filter by role code 'maintenance_technician'
-            const data = await personService.getAll({ role: 'maintenance_technician' });
-            setTechnicians(data);
+            // Fetch both IT technicians and network maintenance technicians
+            const [itTechs, networkTechs] = await Promise.all([
+                personService.getAll({ role: 'maintenance_technician' }),
+                personService.getAll({ role: 'network_maintenance_technician' })
+            ]);
+            
+            // Combine and remove duplicates based on person_id
+            const combined = [...itTechs];
+            if (Array.isArray(networkTechs)) {
+                networkTechs.forEach(tech => {
+                    if (!combined.some(p => p.person_id === tech.person_id)) {
+                        combined.push(tech);
+                    }
+                });
+            }
+            setTechnicians(combined);
         } catch (err) {
             console.error('Failed to load technicians', err);
         }
@@ -90,9 +104,18 @@ const MaintenancesPage = () => {
     };
 
     const isMaintenanceLocation = (location) => {
+        if (!location) return false;
         const code = (location?.location_type_code || '').toUpperCase();
         const label = (location?.location_type_label || '').toLowerCase();
+        const typeId = location?.location_type;
+        
+        // Match by type ID (2 = Maintenance Room in project_iguana.sql)
+        if (typeId === 2 || typeId === '2') return true;
+        
+        // Match by code
         if (code && ['MR', 'MAINTENANCE', 'MAINT'].includes(code)) return true;
+        
+        // Match by label
         return label.includes('maintenance');
     };
 
@@ -670,9 +693,10 @@ const MaintenancesPage = () => {
                                                 const data = await assetService.getCurrentLocation(value);
                                                 const location = data?.location || null;
                                                 setAssetCurrentLocation(location);
-                                                if (location && !isMaintenanceLocation(location)) {
-                                                    await loadMaintenanceLocations();
-                                                }
+                                                
+                                                // Always load maintenance locations when an asset is selected
+                                                // to ensure the list is ready if the current location isn't a maintenance room
+                                                await loadMaintenanceLocations();
                                             } catch (err) {
                                                 console.error(err);
                                                 setAssetCurrentLocation(null);

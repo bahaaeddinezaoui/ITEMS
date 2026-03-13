@@ -1397,8 +1397,8 @@ export const consumableService = {
 
 // Maintenance service
 export const maintenanceService = {
-    getAll: async () => {
-        const response = await api.get('maintenances/');
+    getAll: async (params) => {
+        const response = await api.get('maintenances/', { params });
         return response.data;
     },
 

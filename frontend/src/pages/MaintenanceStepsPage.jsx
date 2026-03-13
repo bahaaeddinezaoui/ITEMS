@@ -25,6 +25,14 @@ const MaintenanceStepsPage = () => {
         return user?.roles?.some(r => r.role_code === 'maintenance_chief' || r.role_code === 'exploitation_chief' || r.role_code === 'it_bureau_chief') || false;
     }, [isSuperuser, user]);
 
+    const isTechnician = useMemo(() => {
+        return user?.roles?.some(r => r.role_code === 'maintenance_technician') || false;
+    }, [user]);
+
+    const isNetworkTechnician = useMemo(() => {
+        return user?.roles?.some(r => r.role_code === 'network_maintenance_technician') || false;
+    }, [user]);
+
     const canEndMaintenance = useMemo(() => {
         if (isChief) return true;
         const userPersonId = user?.person?.person_id;
@@ -134,6 +142,7 @@ const MaintenanceStepsPage = () => {
                     maintenancePerformedBy={maintenance?.performed_by_person}
                     maintenanceEnded={!!maintenance?.end_datetime}
                     isChief={isChief}
+                    maintenanceDomain={maintenance?.maintenance_domain}
                     onStepsChange={(steps) => setMaintenanceSteps(Array.isArray(steps) ? steps : [])}
                     canShowEndMaintenanceButton={canShowEndMaintenanceButton}
                     canEndMaintenance={canEndMaintenance}

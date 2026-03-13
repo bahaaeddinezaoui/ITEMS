@@ -31,3 +31,6 @@ prot_sec_chief - 123456
 
 School headquarter:
 school_headquarter - 123456
+
+Network Maintenance Technician:
+network_tech - password123

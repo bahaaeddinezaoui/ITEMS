@@ -4,10 +4,18 @@ from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, Ass
 
 class PersonSerializer(serializers.ModelSerializer):
     """Serializer for Person model"""
+    role_code = serializers.SerializerMethodField()
+
     class Meta:
         model = Person
-        fields = ['person_id', 'first_name', 'last_name', 'sex', 'birth_date', 'is_approved']
+        fields = ['person_id', 'first_name', 'last_name', 'sex', 'birth_date', 'is_approved', 'role_code']
         read_only_fields = ['person_id']
+
+    def get_role_code(self, obj):
+        # Returns the role code of the first role associated with this person
+        from .models import PersonRoleMapping
+        mapping = PersonRoleMapping.objects.filter(person=obj).select_related('role').first()
+        return mapping.role.role_code if mapping and mapping.role else None
 
 
 class RoleSerializer(serializers.ModelSerializer):
@@ -297,7 +305,7 @@ class AssetAttributeDefinitionSerializer(serializers.ModelSerializer):
     """Serializer for AssetAttributeDefinition model"""
     class Meta:
         model = AssetAttributeDefinition
-        fields = ['asset_attribute_definition_id', 'data_type', 'unit', 'description']
+        fields = ['asset_attribute_definition_id', 'data_type', 'unit', 'description', 'maintenance_domain']
         read_only_fields = ['asset_attribute_definition_id']
 
 
@@ -423,7 +431,7 @@ class StockItemAttributeDefinitionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StockItemAttributeDefinition
-        fields = ['stock_item_attribute_definition_id', 'data_type', 'unit', 'description']
+        fields = ['stock_item_attribute_definition_id', 'data_type', 'unit', 'description', 'maintenance_domain']
         read_only_fields = ['stock_item_attribute_definition_id']
 
 
@@ -530,7 +538,7 @@ class ConsumableAttributeDefinitionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ConsumableAttributeDefinition
-        fields = ['consumable_attribute_definition_id', 'data_type', 'unit', 'description']
+        fields = ['consumable_attribute_definition_id', 'data_type', 'unit', 'description', 'maintenance_domain']
         read_only_fields = ['consumable_attribute_definition_id']
 
 
@@ -714,7 +722,15 @@ class MaintenanceTypicalStepSerializer(serializers.ModelSerializer):
     """Serializer for MaintenanceTypicalStep model"""
     class Meta:
         model = MaintenanceTypicalStep
-        fields = ['maintenance_typical_step_id', 'estimated_cost', 'actual_cost', 'description', 'maintenance_type', 'operation_type']
+        fields = [
+            'maintenance_typical_step_id',
+            'estimated_cost',
+            'actual_cost',
+            'description',
+            'maintenance_type',
+            'operation_type',
+            'maintenance_domain'
+        ]
         read_only_fields = ['maintenance_typical_step_id']
 
 

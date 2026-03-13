@@ -391,6 +391,7 @@ class AssetAttributeDefinition(models.Model):
     data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
     unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
 
     class Meta:
         managed = False
@@ -463,6 +464,7 @@ class StockItemAttributeDefinition(models.Model):
     data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
     unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
 
     class Meta:
         managed = False
@@ -535,6 +537,7 @@ class ConsumableAttributeDefinition(models.Model):
     data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
     unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
 
     class Meta:
         managed = False
@@ -831,6 +834,7 @@ class MaintenanceTypicalStep(models.Model):
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
     maintenance_type = models.CharField(max_length=8, blank=True, null=True, db_column='maintenance_type')
     operation_type = models.CharField(max_length=24, blank=True, null=True, db_column='operation_type')
+    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
 
     class Meta:
         managed = False

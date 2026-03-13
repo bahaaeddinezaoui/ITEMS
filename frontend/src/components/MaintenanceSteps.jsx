@@ -30,6 +30,7 @@ const MaintenanceSteps = ({
     maintenancePerformedBy,
     maintenanceEnded,
     isChief,
+    maintenanceDomain,
     onStepsChange,
     canShowEndMaintenanceButton,
     endMaintenanceDisabled,
@@ -191,7 +192,30 @@ const MaintenanceSteps = ({
         return user?.person?.person_id === maintenancePerformedBy;
     }, [user, maintenancePerformedBy]);
 
+    const isNetworkMaintenanceTechnician = useMemo(() => {
+        return user?.roles?.some(role => role.role_code === 'network_maintenance_technician');
+    }, [user]);
+
+    const canOperateStep = (step) => {
+        if (isChief) return true;
+        if (!isMainTechnician) return false;
+        
+        const stepDomain = step.maintenance_typical_step?.maintenance_domain;
+        if (isNetworkMaintenanceTechnician) {
+            return stepDomain === 'network';
+        }
+        
+        // IT technician (standard maintenance_technician) can operate anything not explicitly network
+        return stepDomain !== 'network';
+    };
+
     const canManageSteps = isChief || isMainTechnician;
+
+    const canAddStep = useMemo(() => {
+        if (isChief) return true;
+        if (!isMainTechnician) return false;
+        return true;
+    }, [isChief, isMainTechnician]);
 
     const hasOngoingExternalMaintenance = useMemo(() => {
         if (!Array.isArray(externalMaintenances) || externalMaintenances.length === 0) return false;
@@ -394,11 +418,12 @@ const MaintenanceSteps = ({
         setAttributeMessage(null);
 
         try {
+            const stepDomain = step.maintenance_typical_step?.maintenance_domain;
             const [componentsData, assetDefs, stockDefs, consDefs] = await Promise.all([
                 maintenanceStepService.getComponents(step.maintenance_step_id).catch(() => ({ stock_items: [], consumables: [] })),
-                assetAttributeDefinitionService.getAll().catch(() => []),
-                stockItemAttributeDefinitionService.getAll().catch(() => []),
-                consumableAttributeDefinitionService.getAll().catch(() => []),
+                assetAttributeDefinitionService.getAll(stepDomain ? { maintenance_domain: stepDomain } : {}).catch(() => []),
+                stockItemAttributeDefinitionService.getAll(stepDomain ? { maintenance_domain: stepDomain } : {}).catch(() => []),
+                consumableAttributeDefinitionService.getAll(stepDomain ? { maintenance_domain: stepDomain } : {}).catch(() => []),
             ]);
 
             setAttributeEditorComponents({
@@ -623,12 +648,13 @@ const MaintenanceSteps = ({
         try {
             setLoading(true);
             // Fetch both technicians and chiefs so chiefs can assign themselves
-            const [stepsData, externalStepsData, typicalStepsData, techniciansData, chiefsData, externalMaintenancesData, externalTypicalStepsData, pendingReturn] = await Promise.all([
+            const [stepsData, externalStepsData, typicalStepsData, techniciansData, chiefsData, networkTechsData, externalMaintenancesData, externalTypicalStepsData, pendingReturn] = await Promise.all([
                 maintenanceStepService.getAll({ maintenance: maintenanceId }),
                 externalMaintenanceStepService.getAll({ maintenance: maintenanceId }),
                 maintenanceTypicalStepService.getAll(),
                 personService.getAll({ role: 'maintenance_technician' }),
                 isChief ? personService.getAll({ role: 'maintenance_chief' }) : Promise.resolve([]),
+                personService.getAll({ role: 'network_maintenance_technician' }),
                 externalMaintenanceService.getAll({ maintenance: maintenanceId }),
                 externalMaintenanceTypicalStepService.getAll(),
                 isMainTechnician ? maintenanceService.pendingReturnToOwnerExists(Number(maintenanceId)).catch(() => ({ exists: false })) : Promise.resolve({ exists: false }),
@@ -648,8 +674,15 @@ const MaintenanceSteps = ({
             }
             setExternalSteps(Array.isArray(externalStepsData) ? externalStepsData : []);
             setTypicalSteps(typicalStepsData);
-            // Combine technicians and chiefs, removing duplicates
+            // Combine technicians, network technicians, and chiefs, removing duplicates
             const combinedPeople = [...(Array.isArray(techniciansData) ? techniciansData : [])];
+            if (Array.isArray(networkTechsData)) {
+                networkTechsData.forEach(tech => {
+                    if (!combinedPeople.some(p => p.person_id === tech.person_id)) {
+                        combinedPeople.push(tech);
+                    }
+                });
+            }
             if (Array.isArray(chiefsData)) {
                 chiefsData.forEach(chief => {
                     if (!combinedPeople.some(p => p.person_id === chief.person_id)) {
@@ -1260,7 +1293,9 @@ const MaintenanceSteps = ({
                                     className="modal"
                                     onClick={(e) => e.stopPropagation()}
                                     style={{
-                                        maxHeight: '80vh',
+                                        maxHeight: '95vh',
+                                        width: '90%',
+                                        maxWidth: '1000px',
                                         overflow: 'hidden',
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -1277,7 +1312,7 @@ const MaintenanceSteps = ({
                                     </div>
 
                                     <form onSubmit={submitExternalMaintenance} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                                        <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                        <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
                                             {externalMaintenanceMessage && (
                                                 <div className={`alert ${externalMaintenanceMessage.type === 'error' ? 'alert-error' : 'alert-success'} mb-4`}>
                                                     {externalMaintenanceMessage.text}
@@ -1314,7 +1349,9 @@ const MaintenanceSteps = ({
                                     className="modal"
                                     onClick={(e) => e.stopPropagation()}
                                     style={{
-                                        maxHeight: '80vh',
+                                        maxHeight: '95vh',
+                                        width: '90%',
+                                        maxWidth: '1000px',
                                         overflow: 'hidden',
                                         display: 'flex',
                                         flexDirection: 'column',
@@ -1331,7 +1368,7 @@ const MaintenanceSteps = ({
                                     </div>
 
                                     <form onSubmit={submitCreateExternalStep} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                                        <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                        <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
                                             {externalStepMessage && (
                                                 <div className={`alert ${externalStepMessage.type === 'error' ? 'alert-error' : 'alert-success'} mb-4`}>
                                                     {externalStepMessage.text}
@@ -1386,7 +1423,9 @@ const MaintenanceSteps = ({
                             className="modal"
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                                maxHeight: '80vh',
+                                maxHeight: '95vh',
+                                width: '90%',
+                                maxWidth: '1000px',
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -1403,18 +1442,24 @@ const MaintenanceSteps = ({
                             </div>
 
                             <form onSubmit={handleAddStep} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                                <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
                                     <div className="form-group">
                                         <label className="form-label">Typical Step</label>
                                         <SearchableSelect
                                             value={newStepTypicalId}
                                             onChange={(e) => setNewStepTypicalId(e.target.value)}
-                                            options={typicalSteps.map((ts) => ({
-                                                value: ts.maintenance_typical_step_id,
-                                                label: ts.description,
-                                            }))}
+                                            options={typicalSteps
+                                                .filter(ts => {
+                                                    if (isChief) return true;
+                                                    if (isNetworkMaintenanceTechnician) return ts.maintenance_domain === 'network';
+                                                    return ts.maintenance_domain !== 'network';
+                                                })
+                                                .map((ts) => ({
+                                                    value: ts.maintenance_typical_step_id,
+                                                    label: ts.description,
+                                                }))}
                                             placeholder="Select Task..."
-                                            required
+                                            className="w-full"
                                         />
                                     </div>
 
@@ -1427,12 +1472,22 @@ const MaintenanceSteps = ({
                                             required
                                         >
                                             <option value="">Select Person...</option>
-                                            {technicians.map((tech) => (
-                                                <option key={tech.person_id} value={tech.person_id}>
-                                                    {tech.first_name} {tech.last_name}
-                                                    {tech.role_code === 'maintenance_chief' ? ' (Chief)' : ''}
-                                                </option>
-                                            ))}
+                                            {technicians
+                                                .filter(tech => {
+                                                    if (isChief) return true;
+                                                    if (isNetworkMaintenanceTechnician) {
+                                                        // Network tech can only assign to other network techs (including themselves)
+                                                        return tech.role_code === 'network_maintenance_technician';
+                                                    }
+                                                    // Standard maintenance tech can only assign to other standard techs
+                                                    return tech.role_code === 'maintenance_technician';
+                                                })
+                                                .map((tech) => (
+                                                    <option key={tech.person_id} value={tech.person_id}>
+                                                        {tech.first_name} {tech.last_name}
+                                                        {tech.role_code === 'maintenance_chief' ? ' (Chief)' : ''}
+                                                    </option>
+                                                ))}
                                         </select>
                                     </div>
                                 </div>
@@ -1605,7 +1660,7 @@ const MaintenanceSteps = ({
                                                         <strong>Ended:</strong> {formatDateTime(step.end_datetime)}
                                                     </div>
                                                 )}
-                                                {isInternal && !maintenanceEnded && (user?.person?.person_id === step.person?.person_id || isChief) && (
+                                                {isInternal && !maintenanceEnded && (user?.person?.person_id === step.person?.person_id || isChief) && canOperateStep(step) && (
                                                     <div className="step-timeline-actions">
                                                         {step.maintenance_step_status !== 'done' && (
                                                             <>
@@ -1797,7 +1852,9 @@ const MaintenanceSteps = ({
                             className="modal"
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                                maxHeight: '80vh',
+                                maxHeight: '95vh',
+                                width: '90%',
+                                maxWidth: '1000px',
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -1813,7 +1870,7 @@ const MaintenanceSteps = ({
                                 </button>
                             </div>
 
-                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                            <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
                                 <div className="form-group" style={{ marginBottom: 10 }}>
                                     <label className="form-label">Status</label>
                                     <select
@@ -2153,7 +2210,9 @@ const MaintenanceSteps = ({
                             className="modal"
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                                maxHeight: '80vh',
+                                maxHeight: '95vh',
+                                width: '90%',
+                                maxWidth: '1000px',
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -2169,7 +2228,7 @@ const MaintenanceSteps = ({
                                 </button>
                             </div>
 
-                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                            <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
                                 <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
                                     Step: <b>{assetConditionEditorStep.maintenance_step_id}</b>
                                 </div>
@@ -2265,11 +2324,12 @@ const MaintenanceSteps = ({
                             className="modal"
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                                maxHeight: '80vh',
+                                maxHeight: '95vh',
+                                width: '90%',
+                                maxWidth: '1000px',
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                width: 680,
                             }}
                         >
                             <div className="modal-header">
@@ -2282,7 +2342,7 @@ const MaintenanceSteps = ({
                                 </button>
                             </div>
 
-                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                            <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
                                 <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
                                     Step: <b>{attributeEditorStep.maintenance_step_id}</b>
                                 </div>
@@ -2339,34 +2399,40 @@ const MaintenanceSteps = ({
 
                                 <div className="form-group" style={{ marginBottom: 10 }}>
                                     <label className="form-label">Attribute</label>
-                                    <select
-                                        className="form-input"
-                                        value={attributeDefinitionId}
-                                        onChange={(e) => {
-                                            setAttributeDefinitionId(e.target.value);
-                                            setAttributeMessage(null);
-                                        }}
-                                        disabled={attributeSubmitting}
-                                    >
-                                        <option value="">Select attribute...</option>
-                                        {(attributeTargetValue === 'asset'
-                                            ? assetAttributeDefinitions
-                                            : attributeTargetValue === 'stock_item'
-                                                ? stockItemAttributeDefinitions
-                                                : consumableAttributeDefinitions
-                                        ).map((d) => {
-                                            const id = attributeTargetValue === 'asset'
-                                                ? d.asset_attribute_definition_id
+                                        <select
+                                            className="form-input"
+                                            value={attributeDefinitionId}
+                                            onChange={(e) => {
+                                                setAttributeDefinitionId(e.target.value);
+                                                setAttributeMessage(null);
+                                            }}
+                                            disabled={attributeSubmitting}
+                                        >
+                                            <option value="">Select attribute...</option>
+                                            {(attributeTargetValue === 'asset'
+                                                ? assetAttributeDefinitions
                                                 : attributeTargetValue === 'stock_item'
-                                                    ? d.stock_item_attribute_definition_id
-                                                    : d.consumable_attribute_definition_id;
-                                            return (
-                                                <option key={id} value={id}>
-                                                    {d.description || `Attribute ${id}`}{d.unit ? ` (${d.unit})` : ''}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
+                                                    ? stockItemAttributeDefinitions
+                                                    : consumableAttributeDefinitions
+                                            )
+                                            .filter(d => {
+                                                const stepDomain = attributeEditorStep?.maintenance_typical_step?.maintenance_domain;
+                                                if (!stepDomain) return true;
+                                                return d.maintenance_domain === stepDomain;
+                                            })
+                                            .map((d) => {
+                                                const id = attributeTargetValue === 'asset'
+                                                    ? d.asset_attribute_definition_id
+                                                    : attributeTargetValue === 'stock_item'
+                                                        ? d.stock_item_attribute_definition_id
+                                                        : d.consumable_attribute_definition_id;
+                                                return (
+                                                    <option key={id} value={id}>
+                                                        {d.description || `Attribute ${id}`}{d.unit ? ` (${d.unit})` : ''}
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
                                     {attributeDefinitionId && (
                                         <div style={{ marginTop: 8, fontSize: 12, opacity: 0.85 }}>
                                             <b>Current value:</b>{' '}
