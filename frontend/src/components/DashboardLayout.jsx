@@ -46,7 +46,7 @@ const DashboardLayout = () => {
     }, [isSuperuser, user]);
 
     const isMaintenanceChief = user?.roles?.some(role => role.role_code === 'maintenance_chief');
-    const isMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'maintenance_technician');
+    const isMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'it_maintenance_technician');
     const isNetworkMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'network_maintenance_technician');
     const isExploitationChief = user?.roles?.some(role => role.role_code === 'exploitation_chief');
     const isStockConsumableResponsible = user?.roles?.some(role => role.role_code === 'stock_consumable_responsible');
@@ -370,7 +370,7 @@ const DashboardLayout = () => {
                     )}
 
                     {(isSuperuser || user?.roles?.some(r =>
-                        ['maintenance_chief', 'maintenance_technician', 'exploitation_chief', 'it_bureau_chief', 'network_maintenance_technician'].includes(r.role_code)
+                        ['maintenance_chief', 'it_maintenance_technician', 'exploitation_chief', 'it_bureau_chief', 'network_maintenance_technician'].includes(r.role_code)
                     )) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Maintenance</span>

@@ -1486,7 +1486,8 @@ CREATE TABLE public.external_maintenance_typical_step (
     estimated_cost numeric(10,2),
     actual_cost numeric(10,2),
     maintenance_type character(8),
-    description character varying(256)
+    description character varying(256),
+    maintenance_domain character varying(24)
 );
 
 
@@ -4446,7 +4447,7 @@ COPY public.receipt_report (receipt_report_id, report_datetime, report_full_code
 COPY public.role (role_id, role_code, role_label, description) FROM stdin;
 1	superuser	Superuser	Full system access
 2	maintenance_chief	Maintenance Chief	Responsible for maintenance operations
-3	maintenance_technician	Maintenance Technician	Performs maintenance tasks
+3	it_maintenance_technician	IT Maintenance Technician	Performs maintenance tasks
 4	exploitation_chief	Exploitation Chief	\N
 99	technician	Technician	\N
 98	maintenance_chief	Maintenance Chief	\N

@@ -36,7 +36,7 @@ const MaintenancesPage = () => {
     }, [isSuperuser, user]);
 
     const isTechnician = useMemo(() => {
-        return user?.roles?.some(r => r.role_code === 'maintenance_technician') || false;
+        return user?.roles?.some(r => r.role_code === 'it_maintenance_technician') || false;
     }, [user]);
 
     const loadMaintenances = async () => {
@@ -63,12 +63,12 @@ const MaintenancesPage = () => {
         try {
             // Fetch both IT technicians and network maintenance technicians
             const [itTechs, networkTechs] = await Promise.all([
-                personService.getAll({ role: 'maintenance_technician' }),
+                personService.getAll({ role: 'it_maintenance_technician' }),
                 personService.getAll({ role: 'network_maintenance_technician' })
             ]);
             
             // Combine and remove duplicates based on person_id
-            const combined = [...itTechs];
+            const combined = [...(Array.isArray(itTechs) ? itTechs : [])];
             if (Array.isArray(networkTechs)) {
                 networkTechs.forEach(tech => {
                     if (!combined.some(p => p.person_id === tech.person_id)) {

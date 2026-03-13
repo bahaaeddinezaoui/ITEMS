@@ -1257,11 +1257,13 @@ class ExternalMaintenance(models.Model):
 
 
 class ExternalMaintenanceTypicalStep(models.Model):
-    external_maintenance_typical_step_id = models.IntegerField(primary_key=True, db_column='external_maintenance_typical_step_id')
+    """Maps to external_maintenance_typical_step table"""
+    external_maintenance_typical_step_id = models.AutoField(primary_key=True, db_column='external_maintenance_typical_step_id')
     estimated_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, db_column='estimated_cost')
     actual_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, db_column='actual_cost')
     maintenance_type = models.CharField(max_length=8, blank=True, null=True, db_column='maintenance_type')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
+    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
 
     class Meta:
         managed = False

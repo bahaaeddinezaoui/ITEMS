@@ -192,6 +192,10 @@ const MaintenanceSteps = ({
         return user?.person?.person_id === maintenancePerformedBy;
     }, [user, maintenancePerformedBy]);
 
+    const isItMaintenanceTechnician = useMemo(() => {
+        return user?.roles?.some(role => role.role_code === 'it_maintenance_technician');
+    }, [user]);
+
     const isNetworkMaintenanceTechnician = useMemo(() => {
         return user?.roles?.some(role => role.role_code === 'network_maintenance_technician');
     }, [user]);
@@ -205,8 +209,11 @@ const MaintenanceSteps = ({
             return stepDomain === 'network';
         }
         
-        // IT technician (standard maintenance_technician) can operate anything not explicitly network
-        return stepDomain !== 'network';
+        if (isItMaintenanceTechnician) {
+            return stepDomain === 'it';
+        }
+        
+        return false;
     };
 
     const canManageSteps = isChief || isMainTechnician;
@@ -647,12 +654,12 @@ const MaintenanceSteps = ({
     const loadData = async () => {
         try {
             setLoading(true);
-            // Fetch both technicians and chiefs so chiefs can assign themselves
+            // Fetch both IT technicians and network maintenance technicians
             const [stepsData, externalStepsData, typicalStepsData, techniciansData, chiefsData, networkTechsData, externalMaintenancesData, externalTypicalStepsData, pendingReturn] = await Promise.all([
                 maintenanceStepService.getAll({ maintenance: maintenanceId }),
                 externalMaintenanceStepService.getAll({ maintenance: maintenanceId }),
                 maintenanceTypicalStepService.getAll(),
-                personService.getAll({ role: 'maintenance_technician' }),
+                personService.getAll({ role: 'it_maintenance_technician' }),
                 isChief ? personService.getAll({ role: 'maintenance_chief' }) : Promise.resolve([]),
                 personService.getAll({ role: 'network_maintenance_technician' }),
                 externalMaintenanceService.getAll({ maintenance: maintenanceId }),
@@ -1452,7 +1459,8 @@ const MaintenanceSteps = ({
                                                 .filter(ts => {
                                                     if (isChief) return true;
                                                     if (isNetworkMaintenanceTechnician) return ts.maintenance_domain === 'network';
-                                                    return ts.maintenance_domain !== 'network';
+                                                    if (isItMaintenanceTechnician) return ts.maintenance_domain === 'it';
+                                                    return false;
                                                 })
                                                 .map((ts) => ({
                                                     value: ts.maintenance_typical_step_id,
@@ -1475,12 +1483,15 @@ const MaintenanceSteps = ({
                                             {technicians
                                                 .filter(tech => {
                                                     if (isChief) return true;
+                                                    
+                                                    const techRole = tech.role_code;
                                                     if (isNetworkMaintenanceTechnician) {
-                                                        // Network tech can only assign to other network techs (including themselves)
-                                                        return tech.role_code === 'network_maintenance_technician';
+                                                        return techRole === 'network_maintenance_technician';
                                                     }
-                                                    // Standard maintenance tech can only assign to other standard techs
-                                                    return tech.role_code === 'maintenance_technician';
+                                                    if (isItMaintenanceTechnician) {
+                                                        return techRole === 'it_maintenance_technician';
+                                                    }
+                                                    return false;
                                                 })
                                                 .map((tech) => (
                                                     <option key={tech.person_id} value={tech.person_id}>

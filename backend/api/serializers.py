@@ -1005,7 +1005,9 @@ class ExternalMaintenanceTypicalStepSerializer(serializers.ModelSerializer):
             'actual_cost',
             'maintenance_type',
             'description',
+            'maintenance_domain'
         ]
+        read_only_fields = ['external_maintenance_typical_step_id']
 
 
 class ExternalMaintenanceStepSerializer(serializers.ModelSerializer):

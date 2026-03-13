@@ -207,7 +207,7 @@ function App() {
                         <Route
                             path="maintenances"
                             element={
-                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'maintenance_technician', 'it_bureau_chief', 'network_maintenance_technician']}>
+                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'it_maintenance_technician', 'it_bureau_chief', 'network_maintenance_technician']}>
                                     <MaintenancesPage />
                                 </RoleProtectedRoute>
                             }

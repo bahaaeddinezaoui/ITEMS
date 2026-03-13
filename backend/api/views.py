@@ -708,7 +708,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 return qs.filter(asset_id__in=asset_ids, start_datetime__isnull=True, end_datetime__isnull=True)
             return Maintenance.objects.none()
 
-        if "maintenance_technician" in role_codes or "network_maintenance_technician" in role_codes:
+        if "it_maintenance_technician" in role_codes or "network_maintenance_technician" in role_codes:
             return qs.filter(performed_by_person=person)
 
         return Maintenance.objects.none()
@@ -843,7 +843,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        is_technician = ("maintenance_technician" in role_codes) or user_account.is_superuser()
+        is_technician = ("it_maintenance_technician" in role_codes) or ("network_maintenance_technician" in role_codes) or user_account.is_superuser()
         if not is_technician:
             return Response({"error": "Only maintenance technicians can request return"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -928,7 +928,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        is_technician = ("maintenance_technician" in role_codes) or user_account.is_superuser()
+        is_technician = ("it_maintenance_technician" in role_codes) or ("network_maintenance_technician" in role_codes) or user_account.is_superuser()
         if not is_technician:
             return Response({"error": "Only maintenance technicians can access this"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -959,7 +959,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        is_technician = ("maintenance_technician" in role_codes) or user_account.is_superuser()
+        is_technician = ("it_maintenance_technician" in role_codes) or ("network_maintenance_technician" in role_codes) or user_account.is_superuser()
         if not is_technician:
             return Response({"error": "Only maintenance technicians can access this"}, status=status.HTTP_403_FORBIDDEN)
 
@@ -2939,7 +2939,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if (not user_account.is_superuser()) and ("maintenance_technician" not in role_codes):
+        if (not user_account.is_superuser()) and ("it_maintenance_technician" not in role_codes) and ("network_maintenance_technician" not in role_codes):
             return Response(
                 {"error": "Only maintenance technician can create external maintenance steps"},
                 status=status.HTTP_403_FORBIDDEN,
