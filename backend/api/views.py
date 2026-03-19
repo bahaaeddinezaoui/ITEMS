@@ -4345,7 +4345,7 @@ class AssetModelDefaultConsumableViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class AssetViewSet(viewsets.ModelViewSet):
+class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = Asset.objects.all().order_by("asset_id")
     serializer_class = AssetSerializer
     permission_classes = [IsAuthenticated]
@@ -4416,22 +4416,16 @@ class AssetViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
     def suggest_for_destruction(self, request, pk=None):
-        user_account = SuperuserWriteMixin()._get_user_account(request)
-        if not user_account:
+        user_account = self._get_user_account(request)
+        if not user_account or not user_account.person:
             return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if user_account.is_superuser():
-            allowed = True
-        else:
-            person = getattr(user_account, "person", None)
-            if not person:
-                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
-            role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
-            allowed = "maintenance_chief" in role_codes
-
-        if not allowed:
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes):
             return Response(
-                {"error": "Only maintenance chief or superusers can suggest an asset for destruction"},
+                {"error": "Only maintenance chief can suggest for destruction"},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -4448,12 +4442,88 @@ class AssetViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Get selected items for destruction from request
+        stock_item_ids = request.data.get("stock_item_ids", [])
+        consumable_ids = request.data.get("consumable_ids", [])
+        storage_location_id = request.data.get("storage_location_id")
+
+        now = timezone.now()
+        
+        # 1. Update asset status
         Asset.objects.filter(asset_id=asset.asset_id).update(asset_status="suggested_for_destruction")
+        
+        # 2. Handle Stock Items
+        from .models import AssetIsComposedOfStockItemHistory, StockItem, StockItemMovement
+        current_stock_items = AssetIsComposedOfStockItemHistory.objects.filter(asset=asset, end_datetime__isnull=True)
+        
+        for mapping in current_stock_items:
+            si = mapping.stock_item
+            if si.stock_item_id in stock_item_ids:
+                # Suggest for destruction
+                StockItem.objects.filter(stock_item_id=si.stock_item_id).update(stock_item_status="suggested_for_destruction")
+            else:
+                # Move to storage (creates pending movement)
+                if storage_location_id:
+                    # End composition
+                    mapping.end_datetime = now
+                    mapping.save()
+                    
+                    # Create movement request
+                    last_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+                    next_id = (last_move.stock_item_movement_id + 1) if last_move else 1
+                    
+                    # Find current location (usually where the asset is)
+                    asset_last_move = AssetMovement.objects.filter(asset=asset).order_by("-asset_movement_id").first()
+                    source_loc_id = asset_last_move.destination_location_id if asset_last_move else None
+                    
+                    if source_loc_id:
+                        StockItemMovement.objects.create(
+                            stock_item_movement_id=next_id,
+                            stock_item=si,
+                            source_location_id=source_loc_id,
+                            destination_location_id=storage_location_id,
+                            movement_reason="Asset suggested for destruction - item recovered",
+                            movement_datetime=now,
+                            status="pending"
+                        )
+
+        # 3. Handle Consumables
+        from .models import AssetIsComposedOfConsumableHistory, Consumable, ConsumableMovement
+        current_consumables = AssetIsComposedOfConsumableHistory.objects.filter(asset=asset, end_datetime__isnull=True)
+        
+        for mapping in current_consumables:
+            c = mapping.consumable
+            if c.consumable_id in consumable_ids:
+                # Suggest for destruction
+                Consumable.objects.filter(consumable_id=c.consumable_id).update(consumable_status="suggested_for_destruction")
+            else:
+                # Move to storage (creates pending movement)
+                if storage_location_id:
+                    # End composition
+                    mapping.end_datetime = now
+                    mapping.save()
+                    
+                    # Create movement request
+                    last_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+                    next_id = (last_move.consumable_movement_id + 1) if last_move else 1
+                    
+                    # Find current location
+                    asset_last_move = AssetMovement.objects.filter(asset=asset).order_by("-asset_movement_id").first()
+                    source_loc_id = asset_last_move.destination_location_id if asset_last_move else None
+                    
+                    if source_loc_id:
+                        ConsumableMovement.objects.create(
+                            consumable_movement_id=next_id,
+                            consumable=c,
+                            source_location_id=source_loc_id,
+                            destination_location_id=storage_location_id,
+                            movement_reason="Asset suggested for destruction - item recovered",
+                            movement_datetime=now,
+                            status="pending"
+                        )
+
         asset.refresh_from_db()
         return Response(self.get_serializer(asset).data, status=status.HTTP_200_OK)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # Debug: log incoming data

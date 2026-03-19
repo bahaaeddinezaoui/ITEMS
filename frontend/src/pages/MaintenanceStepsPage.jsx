@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { assetService, maintenanceService, maintenanceStepService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import MaintenanceSteps from '../components/MaintenanceSteps';
+import DestructionSelectionModal from '../components/DestructionSelectionModal';
 
 const MaintenanceStepsPage = () => {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ const MaintenanceStepsPage = () => {
 
     const [asset, setAsset] = useState(null);
     const [suggesting, setSuggesting] = useState(false);
+    const [destructionModalOpen, setDestructionModalOpen] = useState(false);
 
     const [ending, setEnding] = useState(false);
 
@@ -93,13 +95,14 @@ const MaintenanceStepsPage = () => {
         return status === 'failed';
     }, [asset, isMaintenanceChief]);
 
-    const submitSuggestForDestruction = async () => {
+    const submitSuggestForDestruction = async (selectionData = {}) => {
         if (!asset?.asset_id) return;
         try {
             setSuggesting(true);
             setError('');
-            const updated = await assetService.suggestForDestruction(asset.asset_id);
+            const updated = await assetService.suggestForDestruction(asset.asset_id, selectionData);
             setAsset(updated);
+            setDestructionModalOpen(false);
         } catch (err) {
             setError(err?.response?.data?.error || 'Failed to suggest asset for destruction');
         } finally {
@@ -153,7 +156,7 @@ const MaintenanceStepsPage = () => {
                         {canSuggestForDestruction && (
                             <button
                                 className="btn btn-secondary"
-                                onClick={submitSuggestForDestruction}
+                                onClick={() => setDestructionModalOpen(true)}
                                 disabled={loading || suggesting}
                                 title="Suggest asset for destruction"
                             >
@@ -250,6 +253,13 @@ const MaintenanceStepsPage = () => {
                     </div>
                 </div>
             )}
+            <DestructionSelectionModal 
+                isOpen={destructionModalOpen}
+                onClose={() => setDestructionModalOpen(false)}
+                onConfirm={submitSuggestForDestruction}
+                asset={asset}
+                submitting={suggesting}
+            />
         </>
     );
 };

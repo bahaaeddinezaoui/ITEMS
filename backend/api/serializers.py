@@ -284,15 +284,43 @@ class AssetSerializer(serializers.ModelSerializer):
         child=serializers.DictField(), required=False, write_only=True, default=list
     )
 
+    stock_item_composition = serializers.SerializerMethodField()
+    consumable_composition = serializers.SerializerMethodField()
+
     class Meta:
         model = Asset
         fields = [
             'asset_id', 'asset_model', 'attribution_order', 'asset_serial_number',
             'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag', 'destruction_certificate_id',
             'failed_external_maintenance_id',
-            'included_stock_items', 'included_consumables'
+            'included_stock_items', 'included_consumables',
+            'stock_item_composition', 'consumable_composition'
         ]
         read_only_fields = ['asset_id']
+
+    def get_stock_item_composition(self, obj):
+        from .models import AssetIsComposedOfStockItemHistory
+        # Get current composition (where end_datetime is null)
+        current = AssetIsComposedOfStockItemHistory.objects.filter(asset=obj, end_datetime__isnull=True).select_related('stock_item')
+        return [
+            {
+                'stock_item_id': item.stock_item.stock_item_id,
+                'stock_item_name': item.stock_item.stock_item_name,
+                'stock_item_status': item.stock_item.stock_item_status
+            } for item in current
+        ]
+
+    def get_consumable_composition(self, obj):
+        from .models import AssetIsComposedOfConsumableHistory
+        # Get current composition (where end_datetime is null)
+        current = AssetIsComposedOfConsumableHistory.objects.filter(asset=obj, end_datetime__isnull=True).select_related('consumable')
+        return [
+            {
+                'consumable_id': item.consumable.consumable_id,
+                'consumable_name': item.consumable.consumable_name,
+                'consumable_status': item.consumable.consumable_status
+            } for item in current
+        ]
 
     def create(self, validated_data):
         # Remove non-model fields before creating the Asset
