@@ -494,7 +494,7 @@ const ExternalMaintenancesPage = () => {
                                         className="btn btn-primary"
                                         onClick={() => {
                                             setReceiveCompanyMessage(null);
-                                            setReceiveCompanyRoomId('');
+                                            setReceiveCompanyLocationId('');
                                             setReceiveCompanyModalOpen(true);
                                         }}
                                         disabled={receiveCompanySubmitting}

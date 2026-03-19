@@ -672,8 +672,28 @@ const StockItemsPage = () => {
     const isSuperuser = userAccount?.is_superuser;
     const isStockConsumableResponsible = userAccount?.roles?.some(r => r.role_code === 'stock_consumable_responsible') || isSuperuser;
     const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
+    const isMaintenanceChief = userAccount?.roles?.some(r => r.role_code === 'maintenance_chief') || isSuperuser;
     const canMoveStockItems = isStockConsumableResponsible;
     const canAssignStockItems = isStockConsumableResponsible || isExploitationChief;
+
+    const canSuggestStockItemForDestruction = isMaintenanceChief;
+
+    const submitSuggestStockItemForDestruction = async () => {
+        if (!selectedStockItem) return;
+        setSaving(true);
+        setError(null);
+        try {
+            const updated = await stockItemService.suggestForDestruction(selectedStockItem.stock_item_id);
+            setSelectedStockItem(updated);
+            if (selectedStockItemModel) {
+                await fetchStockItems(selectedStockItemModel.stock_item_model_id);
+            }
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to suggest stock item for destruction');
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const activeAssignmentsByStockItem = useMemo(() => {
         const map = new Map();
@@ -1256,6 +1276,26 @@ const StockItemsPage = () => {
                                 Close
                             </button>
                         </div>
+
+                        {canSuggestStockItemForDestruction && (selectedStockItem.stock_item_status || '').toLowerCase() === 'failed' && (
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <button
+                                    type="button"
+                                    onClick={submitSuggestStockItemForDestruction}
+                                    disabled={saving}
+                                    style={{
+                                        padding: '6px 10px',
+                                        borderRadius: 'var(--radius-sm)',
+                                        border: '1px solid var(--color-border)',
+                                        background: 'var(--color-bg-secondary)',
+                                        color: 'var(--color-text)',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    {saving ? 'Saving...' : 'Suggest for destruction'}
+                                </button>
+                            </div>
+                        )}
 
                         <div style={{
                             marginBottom: 'var(--space-6)',

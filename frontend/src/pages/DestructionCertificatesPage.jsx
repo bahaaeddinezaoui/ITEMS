@@ -51,8 +51,8 @@ const DestructionCertificatesPage = () => {
         try {
             const [certData, stockData, consData] = await Promise.all([
                 stockItemConsumableDestructionCertificateService.getAll(),
-                stockItemService.getAll({ stock_item_status: 'failed' }),
-                consumableService.getAll({ consumable_status: 'failed' }),
+                stockItemService.getAll({ stock_item_status: 'suggested_for_destruction' }),
+                consumableService.getAll({ consumable_status: 'suggested_for_destruction' }),
             ]);
 
             const certList = certData?.results || certData || [];
@@ -196,10 +196,14 @@ const DestructionCertificatesPage = () => {
     if (loading) return <div className="loading">Loading...</div>;
 
     const selectableStockItems = failedStockItems.filter(
-        (s) => (s?.stock_item_status || '').toLowerCase() === 'failed' && !s.stock_item_consumable_destruction_certificate_id
+        (s) =>
+            (s?.stock_item_status || '').toLowerCase() === 'suggested_for_destruction' &&
+            !s.stock_item_consumable_destruction_certificate_id
     );
     const selectableConsumables = failedConsumables.filter(
-        (c) => (c?.consumable_status || '').toLowerCase() === 'failed' && !c.stock_item_consumable_destruction_certificate_id
+        (c) =>
+            (c?.consumable_status || '').toLowerCase() === 'suggested_for_destruction' &&
+            !c.stock_item_consumable_destruction_certificate_id
     );
 
     return (
@@ -214,7 +218,7 @@ const DestructionCertificatesPage = () => {
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Destruction Certificates (Stock Items & Consumables)</h1>
-                    <p className="page-subtitle">Create and validate destruction certificates for failed stock items and consumables</p>
+                    <p className="page-subtitle">Create and validate destruction certificates for suggested stock items and consumables</p>
                 </div>
                 {canCreate && (
                     <div>
@@ -276,10 +280,10 @@ const DestructionCertificatesPage = () => {
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-6)' }}>
                                 <div>
                                     <div className="form-group">
-                                        <label className="form-label">Stock items (failed)</label>
+                                        <label className="form-label">Stock items (suggested for destruction)</label>
                                         <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                             {selectableStockItems.length === 0 && (
-                                                <div style={{ color: 'var(--color-text-secondary)' }}>No eligible failed stock items</div>
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No eligible suggested stock items</div>
                                             )}
                                             {selectableStockItems.map((s) => (
                                                 <label key={s.stock_item_id} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', padding: '4px 0' }}>
@@ -302,10 +306,10 @@ const DestructionCertificatesPage = () => {
 
                                 <div>
                                     <div className="form-group">
-                                        <label className="form-label">Consumables (failed)</label>
+                                        <label className="form-label">Consumables (suggested for destruction)</label>
                                         <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                             {selectableConsumables.length === 0 && (
-                                                <div style={{ color: 'var(--color-text-secondary)' }}>No eligible failed consumables</div>
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>No eligible suggested consumables</div>
                                             )}
                                             {selectableConsumables.map((c) => (
                                                 <label key={c.consumable_id} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', padding: '4px 0' }}>

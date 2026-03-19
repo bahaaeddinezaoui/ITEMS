@@ -766,8 +766,28 @@ const ConsumablesPage = () => {
     const isSuperuser = userAccount?.is_superuser;
     const isStockConsumableResponsible = userAccount?.roles?.some(r => r.role_code === 'stock_consumable_responsible') || isSuperuser;
     const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
+    const isMaintenanceChief = userAccount?.roles?.some(r => r.role_code === 'maintenance_chief') || isSuperuser;
     const canMoveConsumables = isStockConsumableResponsible;
     const canAssignConsumables = isStockConsumableResponsible || isExploitationChief;
+
+    const canSuggestConsumableForDestruction = isMaintenanceChief;
+
+    const submitSuggestConsumableForDestruction = async () => {
+        if (!selectedConsumable) return;
+        setSaving(true);
+        setError(null);
+        try {
+            const updated = await consumableService.suggestForDestruction(selectedConsumable.consumable_id);
+            setSelectedConsumable(updated);
+            if (selectedConsumableModel) {
+                await fetchConsumables(selectedConsumableModel.consumable_model_id);
+            }
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to suggest consumable for destruction');
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const activeAssignmentsByConsumable = useMemo(() => {
         const map = new Map();
@@ -1564,6 +1584,26 @@ const ConsumablesPage = () => {
                                 Close
                             </button>
                         </div>
+
+                        {canSuggestConsumableForDestruction && (selectedConsumable.consumable_status || '').toLowerCase() === 'failed' && (
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <button
+                                    type="button"
+                                    onClick={submitSuggestConsumableForDestruction}
+                                    disabled={saving}
+                                    style={{
+                                        padding: '6px 10px',
+                                        borderRadius: 'var(--radius-sm)',
+                                        border: '1px solid var(--color-border)',
+                                        background: 'var(--color-bg-secondary)',
+                                        color: 'var(--color-text)',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    {saving ? 'Saving...' : 'Suggest for destruction'}
+                                </button>
+                            </div>
+                        )}
                         <form onSubmit={submitMove}>
                             <div style={{ marginBottom: 'var(--space-6)' }}>
                                 <div style={{

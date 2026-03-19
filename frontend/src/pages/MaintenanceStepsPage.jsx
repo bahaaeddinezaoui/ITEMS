@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { maintenanceService, maintenanceStepService } from '../services/api';
+import { assetService, maintenanceService, maintenanceStepService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import MaintenanceSteps from '../components/MaintenanceSteps';
 
@@ -14,6 +14,9 @@ const MaintenanceStepsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const [asset, setAsset] = useState(null);
+    const [suggesting, setSuggesting] = useState(false);
+
     const [ending, setEnding] = useState(false);
 
     const [endModalOpen, setEndModalOpen] = useState(false);
@@ -23,6 +26,11 @@ const MaintenanceStepsPage = () => {
     const isChief = useMemo(() => {
         if (isSuperuser) return true;
         return user?.roles?.some(r => r.role_code === 'maintenance_chief' || r.role_code === 'exploitation_chief' || r.role_code === 'it_bureau_chief') || false;
+    }, [isSuperuser, user]);
+
+    const isMaintenanceChief = useMemo(() => {
+        if (isSuperuser) return true;
+        return user?.roles?.some((r) => r.role_code === 'maintenance_chief') || false;
     }, [isSuperuser, user]);
 
     const isTechnician = useMemo(() => {
@@ -46,6 +54,7 @@ const MaintenanceStepsPage = () => {
             try {
                 setLoading(true);
                 setError('');
+                setAsset(null);
                 const id = Number(maintenanceId);
                 if (!id || Number.isNaN(id)) {
                     setError('Invalid maintenance id');
@@ -57,6 +66,16 @@ const MaintenanceStepsPage = () => {
                 ]);
                 setMaintenance(data);
                 setMaintenanceSteps(Array.isArray(steps) ? steps : []);
+
+                const assetId = data?.asset;
+                if (assetId) {
+                    try {
+                        const assetData = await assetService.getById(assetId);
+                        setAsset(assetData);
+                    } catch (e) {
+                        setAsset(null);
+                    }
+                }
             } catch (err) {
                 console.error(err);
                 setError('Failed to load maintenance');
@@ -67,6 +86,26 @@ const MaintenanceStepsPage = () => {
 
         fetchMaintenance();
     }, [maintenanceId]);
+
+    const canSuggestForDestruction = useMemo(() => {
+        if (!isMaintenanceChief) return false;
+        const status = (asset?.asset_status || '').toString().trim().toLowerCase();
+        return status === 'failed';
+    }, [asset, isMaintenanceChief]);
+
+    const submitSuggestForDestruction = async () => {
+        if (!asset?.asset_id) return;
+        try {
+            setSuggesting(true);
+            setError('');
+            const updated = await assetService.suggestForDestruction(asset.asset_id);
+            setAsset(updated);
+        } catch (err) {
+            setError(err?.response?.data?.error || 'Failed to suggest asset for destruction');
+        } finally {
+            setSuggesting(false);
+        }
+    };
 
     const canShowEndMaintenanceButton = useMemo(() => {
         const steps = Array.isArray(maintenanceSteps) ? maintenanceSteps : [];
@@ -111,6 +150,16 @@ const MaintenanceStepsPage = () => {
                         </p>
                     </div>
                     <div className="d-flex" style={{ gap: '0.5rem' }}>
+                        {canSuggestForDestruction && (
+                            <button
+                                className="btn btn-secondary"
+                                onClick={submitSuggestForDestruction}
+                                disabled={loading || suggesting}
+                                title="Suggest asset for destruction"
+                            >
+                                {suggesting ? 'Saving...' : 'Suggest for destruction'}
+                            </button>
+                        )}
                         <button
                             className="btn btn-secondary"
                             onClick={() => navigate('/dashboard/maintenances')}

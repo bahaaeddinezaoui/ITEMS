@@ -183,8 +183,8 @@ class LocationTypeSerializer(serializers.ModelSerializer):
 
 class LocationSerializer(serializers.ModelSerializer):
     """Serializer for Location model"""
-    location_type_label = serializers.CharField(source='room_type.location_type_label', read_only=True)
-    location_type_code = serializers.CharField(source='room_type.location_type_code', read_only=True)
+    location_type_label = serializers.CharField(source='location_type.location_type_label', read_only=True)
+    location_type_code = serializers.CharField(source='location_type.location_type_code', read_only=True)
     class Meta:
         model = Location
         fields = ['location_id', 'location_name', 'location_type', 'location_type_label', 'location_type_code']

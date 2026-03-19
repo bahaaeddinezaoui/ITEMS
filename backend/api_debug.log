@@ -1159,3 +1159,22 @@ User not found: technician1
 [2026-03-13 10:06:30.945073+00:00] Login attempt for: mohsinamoura
 
 [2026-03-13 10:11:54.007465+00:00] Login attempt for: mohsinamoura
+
+[2026-03-19 07:42:28.651381+00:00] Login attempt for: asset_resp
+Password mismatch for user: asset_resp
+
+[2026-03-19 07:42:32.827140+00:00] Login attempt for: asset_resp
+
+[2026-03-19 07:45:11.916643+00:00] Login attempt for: bahaaeddinezaoui
+Password mismatch for user: bahaaeddinezaoui
+
+[2026-03-19 07:45:15.645712+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-03-19 09:00:59.857150+00:00] Login attempt for: asset_resp
+Password mismatch for user: asset_resp
+
+[2026-03-19 09:01:04.480074+00:00] Login attempt for: asset_resp
+
+[2026-03-19 09:07:47.308456+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-03-19 09:26:18.481405+00:00] Login attempt for: asset_resp

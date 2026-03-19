@@ -4383,6 +4383,11 @@ class AssetViewSet(viewsets.ModelViewSet):
                 {"error": "Asset status can only be set to failed during external maintenance."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if isinstance(asset_status, str) and asset_status.strip().lower() == "suggested_for_destruction":
+            return Response(
+                {"error": "Asset status can only be set to suggested_for_destruction by a maintenance chief."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if isinstance(asset_status, str) and asset_status.strip().lower() == "destroyed":
             return Response(
                 {"error": "Asset status can only be set to destroyed by validating a destruction certificate."},
@@ -4397,12 +4402,55 @@ class AssetViewSet(viewsets.ModelViewSet):
                 {"error": "Asset status can only be set to failed during external maintenance."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        if isinstance(asset_status, str) and asset_status.strip().lower() == "suggested_for_destruction":
+            return Response(
+                {"error": "Asset status can only be set to suggested_for_destruction by a maintenance chief."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if isinstance(asset_status, str) and asset_status.strip().lower() == "destroyed":
             return Response(
                 {"error": "Asset status can only be set to destroyed by validating a destruction certificate."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return super().partial_update(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
+    def suggest_for_destruction(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+            allowed = "maintenance_chief" in role_codes
+
+        if not allowed:
+            return Response(
+                {"error": "Only maintenance chief or superusers can suggest an asset for destruction"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        asset = self.get_object()
+        current = (getattr(asset, "asset_status", None) or "").strip().lower()
+        if current != "failed":
+            return Response(
+                {"error": "Asset must have status 'failed' before it can be suggested for destruction"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if getattr(asset, "destruction_certificate_id", None):
+            return Response(
+                {"error": "Asset is already linked to a destruction certificate"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        Asset.objects.filter(asset_id=asset.asset_id).update(asset_status="suggested_for_destruction")
+        asset.refresh_from_db()
+        return Response(self.get_serializer(asset).data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -5054,23 +5102,57 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 pass
         return queryset
 
-    def update(self, request, *args, **kwargs):
-        stock_item_status = request.data.get("stock_item_status")
-        if isinstance(stock_item_status, str) and stock_item_status.strip().lower() == "destroyed":
-            return Response(
-                {"error": "Stock item status can only be set to destroyed by validating a destruction certificate."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        return super().update(request, *args, **kwargs)
-
     def partial_update(self, request, *args, **kwargs):
         stock_item_status = request.data.get("stock_item_status")
+        if isinstance(stock_item_status, str) and stock_item_status.strip().lower() == "suggested_for_destruction":
+            return Response(
+                {"error": "Stock item status can only be set to suggested_for_destruction by a maintenance chief."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if isinstance(stock_item_status, str) and stock_item_status.strip().lower() == "destroyed":
             return Response(
                 {"error": "Stock item status can only be set to destroyed by validating a destruction certificate."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return super().partial_update(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
+    def suggest_for_destruction(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+            allowed = "maintenance_chief" in role_codes
+
+        if not allowed:
+            return Response(
+                {"error": "Only maintenance chief or superusers can suggest a stock item for destruction"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        item = self.get_object()
+        current = (getattr(item, "stock_item_status", None) or "").strip().lower()
+        if current != "failed":
+            return Response(
+                {"error": "Stock item must have status 'failed' before it can be suggested for destruction"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if getattr(item, "stock_item_consumable_destruction_certificate_id", None):
+            return Response(
+                {"error": "Stock item is already linked to a destruction certificate"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        StockItem.objects.filter(stock_item_id=item.stock_item_id).update(stock_item_status="suggested_for_destruction")
+        item.refresh_from_db()
+        return Response(self.get_serializer(item).data, status=status.HTTP_200_OK)
 
     def _require_responsible_or_superuser(self, request, action_desc):
         user_account = SuperuserWriteMixin()._get_user_account(request)
@@ -5107,6 +5189,18 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         return Response(StockItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
+        stock_item_status = request.data.get("stock_item_status")
+        if isinstance(stock_item_status, str) and stock_item_status.strip().lower() == "suggested_for_destruction":
+            return Response(
+                {"error": "Stock item status can only be set to suggested_for_destruction by a maintenance chief."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if isinstance(stock_item_status, str) and stock_item_status.strip().lower() == "destroyed":
+            return Response(
+                {"error": "Stock item status can only be set to destroyed by validating a destruction certificate."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         response = super().update(request, *args, **kwargs)
         instance = self.get_object()
         _sync_stock_item_attribute_values(instance)
@@ -5579,17 +5673,13 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 pass
         return queryset
 
-    def update(self, request, *args, **kwargs):
-        consumable_status = request.data.get("consumable_status")
-        if isinstance(consumable_status, str) and consumable_status.strip().lower() == "destroyed":
-            return Response(
-                {"error": "Consumable status can only be set to destroyed by validating a destruction certificate."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        return super().update(request, *args, **kwargs)
-
     def partial_update(self, request, *args, **kwargs):
         consumable_status = request.data.get("consumable_status")
+        if isinstance(consumable_status, str) and consumable_status.strip().lower() == "suggested_for_destruction":
+            return Response(
+                {"error": "Consumable status can only be set to suggested_for_destruction by a maintenance chief."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if isinstance(consumable_status, str) and consumable_status.strip().lower() == "destroyed":
             return Response(
                 {"error": "Consumable status can only be set to destroyed by validating a destruction certificate."},
@@ -5599,6 +5689,44 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         instance = self.get_object()
         _sync_consumable_attribute_values(instance)
         return response
+
+    @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
+    def suggest_for_destruction(self, request, pk=None):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+            allowed = "maintenance_chief" in role_codes
+
+        if not allowed:
+            return Response(
+                {"error": "Only maintenance chief or superusers can suggest a consumable for destruction"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        item = self.get_object()
+        current = (getattr(item, "consumable_status", None) or "").strip().lower()
+        if current != "failed":
+            return Response(
+                {"error": "Consumable must have status 'failed' before it can be suggested for destruction"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if getattr(item, "stock_item_consumable_destruction_certificate_id", None):
+            return Response(
+                {"error": "Consumable is already linked to a destruction certificate"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        Consumable.objects.filter(consumable_id=item.consumable_id).update(consumable_status="suggested_for_destruction")
+        item.refresh_from_db()
+        return Response(self.get_serializer(item).data, status=status.HTTP_200_OK)
 
     def _require_responsible_or_superuser(self, request, action_desc):
         user_account = SuperuserWriteMixin()._get_user_account(request)
@@ -5636,6 +5764,11 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         consumable_status = request.data.get("consumable_status")
+        if isinstance(consumable_status, str) and consumable_status.strip().lower() == "suggested_for_destruction":
+            return Response(
+                {"error": "Consumable status can only be set to suggested_for_destruction by a maintenance chief."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if isinstance(consumable_status, str) and consumable_status.strip().lower() == "destroyed":
             return Response(
                 {"error": "Consumable status can only be set to destroyed by validating a destruction certificate."},
@@ -5828,9 +5961,9 @@ class StockItemConsumableDestructionCertificateViewSet(viewsets.ModelViewSet):
             )
 
             if stock_item_ids_int:
-                invalid = StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).exclude(stock_item_status="failed")
+                invalid = StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).exclude(stock_item_status="suggested_for_destruction")
                 if invalid.exists():
-                    raise ValidationError({"stock_item_ids": "All stock items must have status 'failed'"})
+                    raise ValidationError({"stock_item_ids": "All stock items must have status 'suggested_for_destruction'"})
                 already_linked = StockItem.objects.filter(stock_item_id__in=stock_item_ids_int).exclude(
                     stock_item_consumable_destruction_certificate_id__isnull=True
                 )
@@ -5841,9 +5974,9 @@ class StockItemConsumableDestructionCertificateViewSet(viewsets.ModelViewSet):
                 )
 
             if consumable_ids_int:
-                invalid = Consumable.objects.filter(consumable_id__in=consumable_ids_int).exclude(consumable_status="failed")
+                invalid = Consumable.objects.filter(consumable_id__in=consumable_ids_int).exclude(consumable_status="suggested_for_destruction")
                 if invalid.exists():
-                    raise ValidationError({"consumable_ids": "All consumables must have status 'failed'"})
+                    raise ValidationError({"consumable_ids": "All consumables must have status 'suggested_for_destruction'"})
                 already_linked = Consumable.objects.filter(consumable_id__in=consumable_ids_int).exclude(
                     stock_item_consumable_destruction_certificate_id__isnull=True
                 )
@@ -6003,9 +6136,9 @@ class AssetDestructionCertificateViewSet(viewsets.ModelViewSet):
                 destruction_datetime=None,
             )
 
-            invalid_assets = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(asset_status="failed")
+            invalid_assets = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(asset_status="suggested_for_destruction")
             if invalid_assets.exists():
-                raise ValidationError({"asset_ids": "All assets must have status 'failed'"})
+                raise ValidationError({"asset_ids": "All assets must have status 'suggested_for_destruction'"})
 
             already_linked = Asset.objects.filter(asset_id__in=asset_ids_int).exclude(destruction_certificate_id__isnull=True)
             if already_linked.exists():

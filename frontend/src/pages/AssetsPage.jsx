@@ -734,6 +734,23 @@ const AssetsPage = () => {
         setShowAssetAttributeForm(false);
     };
 
+    const submitSuggestAssetForDestruction = async () => {
+        if (!selectedAsset) return;
+        setSaving(true);
+        setError(null);
+        try {
+            const updated = await assetService.suggestForDestruction(selectedAsset.asset_id);
+            setSelectedAsset(updated);
+            if (selectedAssetModel) {
+                await fetchAssets(selectedAssetModel.asset_model_id);
+            }
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to suggest asset for destruction');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const closeMoveModal = () => {
         setShowMoveModal(false);
         setMovingAsset(null);
@@ -801,8 +818,11 @@ const AssetsPage = () => {
     const isSuperuser = userAccount?.is_superuser;
     const isAssetResponsible = userAccount?.roles?.some(r => r.role_code === 'asset_responsible') || isSuperuser;
     const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
+    const isMaintenanceChief = userAccount?.roles?.some(r => r.role_code === 'maintenance_chief') || isSuperuser;
     const canMoveAssets = isAssetResponsible || isExploitationChief;
     const canAssignAssets = isAssetResponsible || isExploitationChief;
+
+    const canSuggestAssetForDestruction = isMaintenanceChief;
 
     const pendingConfirmations = assignments.filter(a => !a.is_confirmed_by_exploitation_chief && a.is_active);
 
@@ -1701,6 +1721,26 @@ const AssetsPage = () => {
                                 Close
                             </button>
                         </div>
+
+                        {canSuggestAssetForDestruction && (selectedAsset.asset_status || '').toLowerCase() === 'failed' && (
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <button
+                                    type="button"
+                                    onClick={submitSuggestAssetForDestruction}
+                                    disabled={saving}
+                                    style={{
+                                        padding: '6px 10px',
+                                        borderRadius: 'var(--radius-sm)',
+                                        border: '1px solid var(--color-border)',
+                                        background: 'var(--color-bg-secondary)',
+                                        color: 'var(--color-text)',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    {saving ? 'Saving...' : 'Suggest for destruction'}
+                                </button>
+                            </div>
+                        )}
 
                         <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>

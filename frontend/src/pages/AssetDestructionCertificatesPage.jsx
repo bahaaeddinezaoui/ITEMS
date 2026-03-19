@@ -45,7 +45,7 @@ const AssetDestructionCertificatesPage = () => {
         try {
             const [certData, assetData] = await Promise.all([
                 assetDestructionCertificateService.getAll(),
-                assetService.getAll({ asset_status: 'failed', failed_via_external_maintenance: 'true' }),
+                assetService.getAll({ asset_status: 'suggested_for_destruction' }),
             ]);
 
             const certList = certData?.results || certData || [];
@@ -185,9 +185,8 @@ const AssetDestructionCertificatesPage = () => {
 
     const selectableAssets = failedAssets.filter(
         (a) =>
-            (a?.asset_status || '').toLowerCase() === 'failed' &&
-            !a.destruction_certificate_id &&
-            !!a.failed_external_maintenance_id
+            (a?.asset_status || '').toLowerCase() === 'suggested_for_destruction' &&
+            !a.destruction_certificate_id
     );
 
     return (
@@ -203,7 +202,7 @@ const AssetDestructionCertificatesPage = () => {
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Destruction Certificates (Assets)</h1>
-                    <p className="page-subtitle">Create and validate destruction certificates for failed assets (external maintenance)</p>
+                    <p className="page-subtitle">Create and validate destruction certificates for suggested assets (external maintenance)</p>
                 </div>
                 {canCreate && (
                     <div>
@@ -289,7 +288,7 @@ const AssetDestructionCertificatesPage = () => {
                     <div className="card-body">
                         <form onSubmit={handleCreate}>
                             <div className="form-group">
-                                <label className="form-label">Assets (failed)</label>
+                                <label className="form-label">Assets (suggested for destruction)</label>
                                 <div
                                     style={{
                                         maxHeight: 260,
@@ -300,7 +299,7 @@ const AssetDestructionCertificatesPage = () => {
                                     }}
                                 >
                                     {selectableAssets.length === 0 && (
-                                        <div style={{ color: 'var(--color-text-secondary)' }}>No eligible failed assets</div>
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No eligible suggested assets</div>
                                     )}
                                     {selectableAssets.map((a) => (
                                         <label
