@@ -903,36 +903,60 @@ class MaintenanceSerializer(serializers.ModelSerializer):
                         total_cost += float(actual_cost)
                         
                     if operation_type == 'add':
-                        # Added stock items to asset
+                        # Added stock items to asset — only first-time additions
+                        # (no prior history entry for the same stock_item+asset pair)
                         cursor.execute('''
                             SELECT st.stock_item_model_id
                             FROM asset_is_composed_of_stock_item_history h
                             JOIN stock_item st ON h.stock_item_id = st.stock_item_id
                             WHERE h.maintenance_step_id = %s
+                              AND NOT EXISTS (
+                                  SELECT 1
+                                  FROM asset_is_composed_of_stock_item_history prior
+                                  WHERE prior.stock_item_id = h.stock_item_id
+                                    AND prior.asset_id = h.asset_id
+                                    AND prior.id < h.id
+                              )
                         ''', [step_id])
                         for (model_id,) in cursor.fetchall():
                             cursor.execute('SELECT AVG(unit_price) FROM stock_item_model_is_found_in_purchase_order WHERE stock_item_model_id = %s', [model_id])
                             avg = cursor.fetchone()[0]
                             if avg: total_cost += float(avg)
                             
-                        # Added consumables to asset
+                        # Added consumables to asset — only first-time additions
+                        # (no prior history entry for the same consumable+asset pair)
                         cursor.execute('''
                             SELECT c.consumable_model_id
                             FROM asset_is_composed_of_consumable_history h
                             JOIN consumable c ON h.consumable_id = c.consumable_id
                             WHERE h.maintenance_step_id = %s
+                              AND NOT EXISTS (
+                                  SELECT 1
+                                  FROM asset_is_composed_of_consumable_history prior
+                                  WHERE prior.consumable_id = h.consumable_id
+                                    AND prior.asset_id = h.asset_id
+                                    AND prior.id < h.id
+                              )
                         ''', [step_id])
                         for (model_id,) in cursor.fetchall():
                             cursor.execute('SELECT AVG(unit_price) FROM consumable_model_is_found_in_purchase_order WHERE consumable_model_id = %s', [model_id])
                             avg = cursor.fetchone()[0]
                             if avg: total_cost += float(avg)
                             
-                        # Added consumables to stock item
+                        # Added consumables to stock item — only first-time additions
+                        # (no prior history entry for the same consumable+stock_item pair)
                         cursor.execute('''
                             SELECT c.consumable_model_id
                             FROM consumable_is_used_in_stock_item_history h
                             JOIN consumable c ON h.consumable_id = c.consumable_id
                             WHERE h.maintenance_step_id = %s
+                              AND NOT EXISTS (
+                                  SELECT 1
+                                  FROM consumable_is_used_in_stock_item_history prior
+                                  WHERE prior.consumable_id = h.consumable_id
+                                    AND prior.stock_item_id = h.stock_item_id
+                                    AND prior.id < h.id
+                              )
                         ''', [step_id])
                         for (model_id,) in cursor.fetchall():
                             cursor.execute('SELECT AVG(unit_price) FROM consumable_model_is_found_in_purchase_order WHERE consumable_model_id = %s', [model_id])
