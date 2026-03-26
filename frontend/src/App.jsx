@@ -56,6 +56,8 @@ import PurchaseOrderReceivePage from './pages/PurchaseOrderReceivePage';
 import PurchaseOrderBackorderReportsPage from './pages/PurchaseOrderBackorderReportsPage';
 import DeliveryNoteConsultPage from './pages/DeliveryNoteConsultPage';
 import PurchaseOrderMoveItemsPage from './pages/PurchaseOrderMoveItemsPage';
+import LocationInventoryPage from './pages/LocationInventoryPage';
+import StockConsumablesInventoryPage from './pages/StockConsumablesInventoryPage';
 import './index.css';
 
 // Protected route wrapper
@@ -353,6 +355,24 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['maintenance_chief', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ReportsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="location-inventory"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'it_bureau_chief']}>
+                                    <LocationInventoryPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="stock-consumables-inventory"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible']}>
+                                    <StockConsumablesInventoryPage />
                                 </RoleProtectedRoute>
                             }
                         />

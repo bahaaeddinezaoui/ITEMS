@@ -1201,6 +1201,14 @@ export const locationService = {
     },
 };
 
+// Location Inventory service
+export const locationInventoryService = {
+    getInventory: async (params) => {
+        const response = await api.get('location-inventory/', { params });
+        return response.data;
+    },
+};
+
 // Position service
 export const positionService = {
     getAll: async () => {
