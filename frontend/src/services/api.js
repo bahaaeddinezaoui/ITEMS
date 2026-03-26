@@ -1756,4 +1756,11 @@ export const administrativeCertificateService = {
     },
 };
 
+export const inventoryReportService = {
+    getAll: async () => {
+        const response = await api.get('inventory-reports/');
+        return response.data;
+    },
+};
+
 export default api;

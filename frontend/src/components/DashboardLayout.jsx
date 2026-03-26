@@ -341,6 +341,21 @@ const DashboardLayout = () => {
                                 </NavLink>
                             )}
 
+                            {isAssetResponsible && (
+                                <NavLink to="/dashboard/inventory-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M9 12h6" />
+                                        <path d="M9 16h6" />
+                                        <path d="M9 8h6" />
+                                        <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
+                                        <path d="M15 2v4h4" />
+                                        <circle cx="9" cy="9" r="2" />
+                                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+                                    </svg>
+                                    Inventory Reports
+                                </NavLink>
+                            )}
+
                             {isStockConsumableResponsible && (
                                 <>
                                     <NavLink to="/dashboard/item-requests-inbox" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>

@@ -9,7 +9,7 @@ from decimal import Decimal
 from django.utils import timezone
 from django.db import connection
 from django.db import transaction
-from django.db.models import OuterRef, Subquery, Q
+from django.db.models import OuterRef, Subquery, Q, Max
 from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -9445,3 +9445,111 @@ class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
 
         item = CompanyAssetRequest.objects.create(company_asset_request_id=next_id, **validated_data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
+
+
+class InventoryReportViewSet(viewsets.ViewSet):
+    """ViewSet for inventory reports - shows item counts by location"""
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        """Get inventory counts by location for assets, stock items, and consumables"""
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_account.is_superuser():
+            allowed = True
+        else:
+            person = getattr(user_account, "person", None)
+            if not person:
+                return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            allowed = "asset_responsible" in role_codes
+
+        if not allowed:
+            return Response(
+                {"error": "Only Asset Responsible can view inventory reports"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get all locations
+        locations = Location.objects.all().order_by('location_name')
+
+        # Get asset counts by location (current location based on latest accepted movement)
+        asset_counts = {}
+        # Get the latest accepted movement for each asset
+        latest_asset_movements = AssetMovement.objects.filter(
+            status='accepted'
+        ).values('asset').annotate(
+            latest_datetime=Max('movement_datetime')
+        )
+        
+        for movement_data in latest_asset_movements:
+            # Get the destination location of the latest movement
+            latest_movement = AssetMovement.objects.get(
+                asset_id=movement_data['asset'],
+                movement_datetime=movement_data['latest_datetime'],
+                status='accepted'
+            )
+            location_id = latest_movement.destination_location_id
+            asset_counts[location_id] = asset_counts.get(location_id, 0) + 1
+
+        # Get stock item counts by location (current location based on latest accepted movement)
+        stock_item_counts = {}
+        # Get the latest accepted movement for each stock item
+        latest_stock_item_movements = StockItemMovement.objects.filter(
+            status='accepted'
+        ).values('stock_item').annotate(
+            latest_datetime=Max('movement_datetime')
+        )
+        
+        for movement_data in latest_stock_item_movements:
+            # Get the destination location of the latest movement
+            latest_movement = StockItemMovement.objects.get(
+                stock_item_id=movement_data['stock_item'],
+                movement_datetime=movement_data['latest_datetime'],
+                status='accepted'
+            )
+            location_id = latest_movement.destination_location_id
+            stock_item_counts[location_id] = stock_item_counts.get(location_id, 0) + 1
+
+        # Get consumable counts by location (current location based on latest accepted movement)
+        consumable_counts = {}
+        # Get the latest accepted movement for each consumable
+        latest_consumable_movements = ConsumableMovement.objects.filter(
+            status='accepted'
+        ).values('consumable').annotate(
+            latest_datetime=Max('movement_datetime')
+        )
+        
+        for movement_data in latest_consumable_movements:
+            # Get the destination location of the latest movement
+            latest_movement = ConsumableMovement.objects.get(
+                consumable_id=movement_data['consumable'],
+                movement_datetime=movement_data['latest_datetime'],
+                status='accepted'
+            )
+            location_id = latest_movement.destination_location_id
+            consumable_counts[location_id] = consumable_counts.get(location_id, 0) + 1
+
+        # Build response data
+        data = []
+        for location in locations:
+            location_id = location.location_id
+            data.append({
+                'location_id': location_id,
+                'location_name': location.location_name,
+                'location_type': location.location_type.location_type_label if location.location_type else None,
+                'asset_count': asset_counts.get(location_id, 0),
+                'stock_item_count': stock_item_counts.get(location_id, 0),
+                'consumable_count': consumable_counts.get(location_id, 0),
+                'total_items': (
+                    asset_counts.get(location_id, 0) +
+                    stock_item_counts.get(location_id, 0) +
+                    consumable_counts.get(location_id, 0)
+                )
+            })
+
+        return Response(data, status=status.HTTP_200_OK)

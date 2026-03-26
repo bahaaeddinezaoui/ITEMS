@@ -63773,3 +63773,216 @@ Response Body: {"error":"Invalid credentials"}
 [2026-03-26 10:52:34.011661] END   GET /api/warehouses/ -> 200
 [2026-03-26 10:52:34.011945] END   GET /api/asset-models/ -> 200
 [2026-03-26 10:52:34.075323] END   GET /api/attribution-orders/ -> 200
+[2026-03-26 10:58:41.957699] START POST /api/auth/login/
+[2026-03-26 10:58:42.117699] END   POST /api/auth/login/ -> 200
+[2026-03-26 10:59:44.647555] START POST /api/auth/login/
+[2026-03-26 10:59:44.710935] END   POST /api/auth/login/ -> 200
+[2026-03-26 10:59:45.879538] START GET /api/problem-reports/
+[2026-03-26 10:59:45.880527] START GET /api/persons/
+[2026-03-26 10:59:45.967396] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:45.978775] START GET /api/persons/
+[2026-03-26 10:59:46.006279] END   GET /api/problem-reports/ -> 200
+[2026-03-26 10:59:46.014788] START GET /api/problem-reports/
+[2026-03-26 10:59:46.019605] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:46.107138] END   GET /api/problem-reports/ -> 200
+[2026-03-26 10:59:46.294968] START GET /api/maintenances/
+[2026-03-26 10:59:46.295825] START GET /api/persons/
+[2026-03-26 10:59:46.297557] START GET /api/assets/
+[2026-03-26 10:59:46.382977] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:46.384152] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:46.402160] START GET /api/persons/
+[2026-03-26 10:59:46.407333] START GET /api/persons/
+[2026-03-26 10:59:46.489731] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:46.493392] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:46.604840] END   GET /api/assets/ -> 200
+[2026-03-26 10:59:46.615472] START GET /api/assets/
+[2026-03-26 10:59:46.674367] END   GET /api/maintenances/ -> 200
+[2026-03-26 10:59:46.682944] START GET /api/maintenances/
+[2026-03-26 10:59:46.931675] END   GET /api/assets/ -> 200
+[2026-03-26 10:59:46.983780] END   GET /api/maintenances/ -> 200
+[2026-03-26 10:59:54.406382] START GET /api/maintenance-steps/
+[2026-03-26 10:59:54.407144] START GET /api/maintenances/37/
+[2026-03-26 10:59:54.458677] END   GET /api/maintenance-steps/ -> 200
+[2026-03-26 10:59:54.465138] START GET /api/maintenance-steps/
+[2026-03-26 10:59:54.519431] END   GET /api/maintenance-steps/ -> 200
+[2026-03-26 10:59:54.568610] END   GET /api/maintenances/37/ -> 200
+[2026-03-26 10:59:54.574022] START GET /api/maintenances/37/
+[2026-03-26 10:59:54.578399] START GET /api/assets/8/
+[2026-03-26 10:59:54.621825] END   GET /api/assets/8/ -> 200
+[2026-03-26 10:59:54.633842] END   GET /api/maintenances/37/ -> 200
+[2026-03-26 10:59:54.644524] START GET /api/external-maintenance-steps/
+[2026-03-26 10:59:54.643981] START GET /api/maintenance-steps/
+[2026-03-26 10:59:54.645500] START GET /api/maintenance-typical-steps/
+[2026-03-26 10:59:54.658896] START GET /api/persons/
+[2026-03-26 10:59:54.666591] START GET /api/persons/
+[2026-03-26 10:59:54.672653] START GET /api/persons/
+[2026-03-26 10:59:54.730740] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-26 10:59:54.737982] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:54.741301] START GET /api/external-maintenances/
+[2026-03-26 10:59:54.744811] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:54.745107] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:54.748613] START GET /api/external-maintenance-typical-steps/
+[2026-03-26 10:59:54.753500] START GET /api/assets/8/
+[2026-03-26 10:59:54.756142] START GET /api/external-maintenance-steps/
+[2026-03-26 10:59:54.786799] END   GET /api/external-maintenances/ -> 200
+[2026-03-26 10:59:54.789565] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-26 10:59:54.794483] START GET /api/persons/
+[2026-03-26 10:59:54.797053] START GET /api/persons/
+[2026-03-26 10:59:54.803443] END   GET /api/assets/8/ -> 200
+[2026-03-26 10:59:54.810377] START GET /api/persons/
+[2026-03-26 10:59:54.819062] END   GET /api/maintenance-steps/ -> 200
+[2026-03-26 10:59:54.826514] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-26 10:59:54.826429] START GET /api/external-maintenances/
+[2026-03-26 10:59:54.831512] START GET /api/external-maintenance-typical-steps/
+[2026-03-26 10:59:54.847066] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:54.852407] START GET /api/maintenance-steps/
+[2026-03-26 10:59:54.868154] END   GET /api/external-maintenances/ -> 200
+[2026-03-26 10:59:54.870071] END   GET /api/external-maintenance-typical-steps/ -> 200
+[2026-03-26 10:59:54.876147] START GET /api/maintenance-typical-steps/
+[2026-03-26 10:59:54.876924] START GET /api/physical-conditions/
+[2026-03-26 10:59:54.896362] END   GET /api/maintenance-steps/ -> 200
+[2026-03-26 10:59:54.901160] END   GET /api/external-maintenance-steps/ -> 200
+[2026-03-26 10:59:54.913855] END   GET /api/maintenance-typical-steps/ -> 200
+[2026-03-26 10:59:54.920037] END   GET /api/physical-conditions/ -> 200
+[2026-03-26 10:59:54.928937] START GET /api/stock-item-types/
+[2026-03-26 10:59:54.933321] START GET /api/consumable-types/
+[2026-03-26 10:59:54.953229] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:54.965047] END   GET /api/persons/ -> 200
+[2026-03-26 10:59:54.971730] END   GET /api/stock-item-types/ -> 200
+[2026-03-26 10:59:54.971817] END   GET /api/consumable-types/ -> 200
+[2026-03-26 10:59:54.978365] START GET /api/physical-conditions/
+[2026-03-26 10:59:55.016654] END   GET /api/physical-conditions/ -> 200
+[2026-03-26 10:59:55.028028] START GET /api/stock-item-types/
+[2026-03-26 10:59:55.030020] START GET /api/consumable-types/
+[2026-03-26 10:59:55.069597] END   GET /api/stock-item-types/ -> 200
+[2026-03-26 10:59:55.071482] END   GET /api/consumable-types/ -> 200
+[2026-03-26 11:00:00.127008] START POST /api/maintenances/37/end/
+[2026-03-26 11:00:00.225132] END   POST /api/maintenances/37/end/ -> 200
+[2026-03-26 11:00:00.248224] START GET /api/maintenances/37/return-to-owner-default-location/
+[2026-03-26 11:00:00.252808] START GET /api/locations/
+[2026-03-26 11:00:00.307644] END   GET /api/maintenances/37/return-to-owner-default-location/ -> 403
+Response Body: {"error":"Only maintenance technicians can access this"}
+[2026-03-26 11:00:00.444645] END   GET /api/locations/ -> 200
+[2026-03-26 11:00:11.657349] START POST /api/maintenances/37/request-return-to-owner/
+[2026-03-26 11:00:11.721857] END   POST /api/maintenances/37/request-return-to-owner/ -> 403
+Response Body: {"error":"Only maintenance technicians can request return"}
+[2026-03-26 11:00:20.934090] START GET /api/persons/
+[2026-03-26 11:00:20.935033] START GET /api/persons/
+[2026-03-26 11:00:20.933050] START GET /api/maintenances/
+[2026-03-26 11:00:20.937015] START GET /api/assets/
+[2026-03-26 11:00:21.028819] END   GET /api/persons/ -> 200
+[2026-03-26 11:00:21.033985] END   GET /api/persons/ -> 200
+[2026-03-26 11:00:21.048230] START GET /api/persons/
+[2026-03-26 11:00:21.052777] START GET /api/persons/
+[2026-03-26 11:00:21.120847] END   GET /api/persons/ -> 200
+[2026-03-26 11:00:21.126196] END   GET /api/persons/ -> 200
+[2026-03-26 11:00:21.242773] END   GET /api/assets/ -> 200
+[2026-03-26 11:00:21.252139] START GET /api/assets/
+[2026-03-26 11:00:21.350884] END   GET /api/maintenances/ -> 200
+[2026-03-26 11:00:21.363436] START GET /api/maintenances/
+[2026-03-26 11:00:21.468967] END   GET /api/assets/ -> 200
+[2026-03-26 11:00:21.580403] END   GET /api/maintenances/ -> 200
+[2026-03-26 11:00:41.338484] START GET /api/maintenances/
+[2026-03-26 11:00:41.339421] START GET /api/persons/
+[2026-03-26 11:00:41.339964] START GET /api/persons/
+[2026-03-26 11:00:41.346421] START GET /api/assets/
+[2026-03-26 11:00:41.418631] END   GET /api/persons/ -> 200
+[2026-03-26 11:00:41.429686] START GET /api/persons/
+[2026-03-26 11:00:41.494274] END   GET /api/persons/ -> 200
+[2026-03-26 11:00:41.525300] END   GET /api/persons/ -> 200
+[2026-03-26 11:00:41.549299] START GET /api/persons/
+[2026-03-26 11:00:41.623114] END   GET /api/persons/ -> 200
+[2026-03-26 11:00:41.633929] END   GET /api/assets/ -> 200
+[2026-03-26 11:00:41.646949] START GET /api/assets/
+[2026-03-26 11:00:41.742950] END   GET /api/maintenances/ -> 200
+[2026-03-26 11:00:41.754756] START GET /api/maintenances/
+[2026-03-26 11:00:41.889677] END   GET /api/assets/ -> 200
+[2026-03-26 11:00:42.003343] END   GET /api/maintenances/ -> 200
+[2026-03-26 11:00:57.918337] START POST /api/auth/login/
+[2026-03-26 11:00:57.961766] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:04.858156] START POST /api/auth/login/
+[2026-03-26 11:01:04.922634] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:13.733588] START POST /api/auth/login/
+[2026-03-26 11:01:13.783475] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:35.832390] START POST /api/auth/login/
+[2026-03-26 11:01:35.903749] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:36.966892] START POST /api/auth/login/
+[2026-03-26 11:01:37.017236] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:37.570517] START POST /api/auth/login/
+[2026-03-26 11:01:37.629324] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:37.948863] START POST /api/auth/login/
+[2026-03-26 11:01:38.004819] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:38.119302] START POST /api/auth/login/
+[2026-03-26 11:01:38.168764] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:38.277554] START POST /api/auth/login/
+[2026-03-26 11:01:38.324200] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:45.032210] START POST /api/auth/login/
+[2026-03-26 11:01:45.079203] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:01:57.639291] START POST /api/auth/login/
+[2026-03-26 11:01:57.699310] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:02:02.803573] START POST /api/auth/login/
+[2026-03-26 11:02:02.849449] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:02:06.648045] START POST /api/auth/login/
+[2026-03-26 11:02:06.702679] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:02:20.833316] START POST /api/auth/login/
+[2026-03-26 11:02:20.878004] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:02:25.521120] START POST /api/auth/login/
+[2026-03-26 11:02:25.671633] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:02:41.059807] START POST /api/auth/login/
+[2026-03-26 11:02:41.117836] END   POST /api/auth/login/ -> 200
+[2026-03-26 11:03:04.899248] START POST /api/auth/login/
+[2026-03-26 11:03:04.951533] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-03-26 11:03:12.332427] START POST /api/auth/login/
+[2026-03-26 11:03:12.389734] END   POST /api/auth/login/ -> 200
+[2026-03-26 11:07:56.818317] START POST /api/auth/login/
+[2026-03-26 11:07:56.900088] END   POST /api/auth/login/ -> 200
+[2026-03-26 11:08:01.706595] START GET /api/inventory-reports/
+[2026-03-26 11:08:02.003134] END   GET /api/inventory-reports/ -> 500
+Response Body: DataError at /api/inventory-reports/
+invalid input value for enum movement_status: "approved"
+LINE 1: ...location_id" = 25 AND "asset_movement"."status" = 'approved'...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/inventory-reports/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Others\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Others\\Equipment Manage
+[2026-03-26 11:08:02.008910] START GET /api/inventory-reports/
+[2026-03-26 11:08:02.080433] END   GET /api/inventory-reports/ -> 500
+Response Body: DataError at /api/inventory-reports/
+invalid input value for enum movement_status: "approved"
+LINE 1: ...location_id" = 25 AND "asset_movement"."status" = 'approved'...
+                                                             ^
+
+
+Request Method: GET
+Request URL: http://localhost:8000/api/inventory-reports/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Others\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Others\\Equipment Manage
+[2026-03-26 11:10:26.435238] START GET /api/inventory-reports/
+[2026-03-26 11:10:26.811840] END   GET /api/inventory-reports/ -> 200
+[2026-03-26 11:10:26.817573] START GET /api/inventory-reports/
+[2026-03-26 11:10:27.057455] END   GET /api/inventory-reports/ -> 200
+[2026-03-26 11:11:10.344601] START GET /api/inventory-reports/
+[2026-03-26 11:11:10.852366] END   GET /api/inventory-reports/ -> 200
