@@ -1264,3 +1264,7 @@ Password mismatch for user: bensimessaouddaoud
 [2026-03-26 10:03:12.333725+00:00] Login attempt for: bensimessaouddaoud
 
 [2026-03-26 10:07:56.826425+00:00] Login attempt for: asset_resp
+
+[2026-03-26 14:16:05.949924+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-26 14:21:07.444185+00:00] Login attempt for: asset_resp

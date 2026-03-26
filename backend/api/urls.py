@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from .views import LoginView, ChangePasswordView, AdminResetUserPasswordView, PersonViewSet, AssetTypeViewSet, AssetBrandViewSet, AssetModelViewSet, AssetModelDefaultStockItemViewSet, AssetModelDefaultConsumableViewSet, AssetViewSet, AssetIsAssignedToPersonViewSet, StockItemIsAssignedToPersonViewSet, ConsumableIsAssignedToPersonViewSet, StockItemTypeViewSet, StockItemBrandViewSet, StockItemModelViewSet, StockItemViewSet, ConsumableTypeViewSet, ConsumableBrandViewSet, ConsumableModelViewSet, ConsumableViewSet, AssetAttributeDefinitionViewSet, AssetTypeAttributeViewSet, AssetModelAttributeValueViewSet, AssetAttributeValueViewSet, StockItemAttributeDefinitionViewSet, StockItemTypeAttributeViewSet, StockItemModelAttributeValueViewSet, StockItemAttributeValueViewSet, ConsumableAttributeDefinitionViewSet, ConsumableTypeAttributeViewSet, ConsumableModelAttributeValueViewSet, ConsumableAttributeValueViewSet, MaintenanceViewSet, MaintenanceStepViewSet, MaintenanceTypicalStepViewSet, MaintenanceStepItemRequestViewSet, ProblemReportViewSet, MyItemsView, LocationTypeViewSet, LocationViewSet, PhysicalConditionViewSet, PositionViewSet, OrganizationalStructureViewSet, OrganizationalStructureRelationViewSet, WarehouseViewSet, AttributionOrderViewSet, AttributionOrderAssetStockItemAccessoryViewSet, AttributionOrderAssetConsumableAccessoryViewSet, ReceiptReportViewSet, AdministrativeCertificateViewSet, StockItemConsumableDestructionCertificateViewSet, AssetDestructionCertificateViewSet, CompanyAssetRequestViewSet, ExternalMaintenanceProviderViewSet, ExternalMaintenanceTypicalStepViewSet, ExternalMaintenanceViewSet, ExternalMaintenanceStepViewSet, AssetMaintenanceTimelineView, StockItemMovementApprovalViewSet, ConsumableMovementApprovalViewSet, AssetMovementApprovalViewSet, PurchaseOrderViewSet, BackorderReportViewSet, InventoryReportViewSet
+from .location_inventory import LocationInventoryView
 
 router = DefaultRouter()
 router.register(r'persons', PersonViewSet, basename='person')
@@ -71,6 +72,7 @@ urlpatterns = [
     path('asset-maintenance-timeline/<int:asset_id>/', AssetMaintenanceTimelineView.as_view(), name='asset-maintenance-timeline-detail'),
     path('auth/change-password/', ChangePasswordView.as_view(), name='change-password'),
     path('auth/admin-reset-password/', AdminResetUserPasswordView.as_view(), name='admin-reset-password'),
+    path('location-inventory/', LocationInventoryView.as_view(), name='location-inventory'),
     # All endpoints have been restored and are now available
     path('', include(router.urls)),
 ]

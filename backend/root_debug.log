@@ -63986,3 +63986,255 @@ Python Path: ['D:\\Mine\\Others\\Equipment Manage
 [2026-03-26 11:10:27.057455] END   GET /api/inventory-reports/ -> 200
 [2026-03-26 11:11:10.344601] START GET /api/inventory-reports/
 [2026-03-26 11:11:10.852366] END   GET /api/inventory-reports/ -> 200
+[2026-03-26 15:15:22.182145] START GET /api/purchase-orders/
+[2026-03-26 15:15:22.335238] END   GET /api/purchase-orders/ -> 200
+[2026-03-26 15:15:22.344242] START GET /api/purchase-orders/
+[2026-03-26 15:15:22.510672] END   GET /api/purchase-orders/ -> 200
+[2026-03-26 15:15:22.510241] START GET /api/consumable-attribute-definitions/
+[2026-03-26 15:15:22.509490] START GET /api/consumable-types/
+[2026-03-26 15:15:22.553218] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-26 15:15:22.558402] END   GET /api/consumable-types/ -> 200
+[2026-03-26 15:15:22.559381] START GET /api/consumable-attribute-definitions/
+[2026-03-26 15:15:22.563874] START GET /api/consumable-types/
+[2026-03-26 15:15:22.609011] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-26 15:15:22.609866] END   GET /api/consumable-types/ -> 200
+[2026-03-26 15:15:23.040840] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-03-26 15:15:23.039946] START GET /api/stock-items/
+[2026-03-26 15:15:23.045206] START GET /api/consumables/
+[2026-03-26 15:15:23.098118] END   GET /api/stock-items/ -> 200
+[2026-03-26 15:15:23.101303] END   GET /api/consumables/ -> 200
+[2026-03-26 15:15:23.105412] START GET /api/stock-items/
+[2026-03-26 15:15:23.108471] START GET /api/consumables/
+[2026-03-26 15:15:23.132915] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-03-26 15:15:23.138543] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-03-26 15:15:23.148046] END   GET /api/stock-items/ -> 200
+[2026-03-26 15:15:23.151797] END   GET /api/consumables/ -> 200
+[2026-03-26 15:15:23.183870] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-03-26 15:15:23.498443] START GET /api/stock-item-types/
+[2026-03-26 15:15:23.501790] START GET /api/stock-item-attribute-definitions/
+[2026-03-26 15:15:23.548905] END   GET /api/stock-item-types/ -> 200
+[2026-03-26 15:15:23.549672] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-26 15:15:23.557317] START GET /api/stock-item-attribute-definitions/
+[2026-03-26 15:15:23.558265] START GET /api/stock-item-types/
+[2026-03-26 15:15:23.600939] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-26 15:15:23.711714] END   GET /api/stock-item-types/ -> 200
+[2026-03-26 15:15:24.061552] START GET /api/my-items/
+[2026-03-26 15:15:24.122504] END   GET /api/my-items/ -> 200
+[2026-03-26 15:15:24.128340] START GET /api/my-items/
+[2026-03-26 15:15:24.192447] END   GET /api/my-items/ -> 200
+[2026-03-26 15:15:24.492793] START GET /api/stock-item-types/
+[2026-03-26 15:15:24.498242] START GET /api/stock-item-attribute-definitions/
+[2026-03-26 15:15:24.545212] END   GET /api/stock-item-types/ -> 200
+[2026-03-26 15:15:24.545310] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-26 15:15:24.551932] START GET /api/stock-item-types/
+[2026-03-26 15:15:24.554016] START GET /api/stock-item-attribute-definitions/
+[2026-03-26 15:15:24.593148] END   GET /api/stock-item-types/ -> 200
+[2026-03-26 15:15:24.598903] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-26 15:15:24.886050] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-03-26 15:15:24.889592] START GET /api/stock-items/
+[2026-03-26 15:15:24.891433] START GET /api/consumables/
+[2026-03-26 15:15:24.931760] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-03-26 15:15:24.939710] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-03-26 15:15:24.944306] END   GET /api/consumables/ -> 200
+[2026-03-26 15:15:24.947646] END   GET /api/stock-items/ -> 200
+[2026-03-26 15:15:24.949405] START GET /api/consumables/
+[2026-03-26 15:15:24.955083] START GET /api/stock-items/
+[2026-03-26 15:15:24.986647] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-03-26 15:15:24.994464] END   GET /api/consumables/ -> 200
+[2026-03-26 15:15:24.998246] END   GET /api/stock-items/ -> 200
+[2026-03-26 15:15:25.855636] START GET /api/stock-item-movements-approval/pending/
+[2026-03-26 15:15:25.856886] START GET /api/consumable-movements-approval/pending/
+[2026-03-26 15:15:25.910293] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-26 15:15:25.910473] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-26 15:15:25.915926] START GET /api/stock-item-movements-approval/pending/
+[2026-03-26 15:15:25.916646] START GET /api/consumable-movements-approval/pending/
+[2026-03-26 15:15:25.970187] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-03-26 15:15:25.972996] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-03-26 15:15:26.473492] START GET /api/maintenance-step-item-requests/
+[2026-03-26 15:15:26.478318] START GET /api/locations/
+[2026-03-26 15:15:26.534416] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-26 15:15:26.541703] START GET /api/maintenance-step-item-requests/
+[2026-03-26 15:15:26.566835] END   GET /api/locations/ -> 200
+[2026-03-26 15:15:26.572930] START GET /api/locations/
+[2026-03-26 15:15:26.593541] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-03-26 15:15:26.646959] END   GET /api/locations/ -> 200
+[2026-03-26 15:15:29.113928] START GET /api/locations/
+[2026-03-26 15:15:29.116174] START GET /api/location-inventory/
+[2026-03-26 15:15:29.211336] END   GET /api/location-inventory/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/location-inventory/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; marg
+[2026-03-26 15:15:29.225015] START GET /api/location-inventory/
+[2026-03-26 15:15:29.282820] END   GET /api/location-inventory/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/location-inventory/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; marg
+[2026-03-26 15:15:29.306609] END   GET /api/locations/ -> 200
+[2026-03-26 15:15:29.313597] START GET /api/locations/
+[2026-03-26 15:15:29.396440] END   GET /api/locations/ -> 200
+[2026-03-26 15:15:31.936457] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-03-26 15:15:31.941094] START GET /api/consumables/
+[2026-03-26 15:15:31.943995] START GET /api/stock-items/
+[2026-03-26 15:15:31.991426] END   GET /api/consumables/ -> 200
+[2026-03-26 15:15:31.994836] END   GET /api/stock-items/ -> 200
+[2026-03-26 15:15:31.999613] START GET /api/consumables/
+[2026-03-26 15:15:32.002575] START GET /api/stock-items/
+[2026-03-26 15:15:32.046572] END   GET /api/consumables/ -> 200
+[2026-03-26 15:15:32.049202] END   GET /api/stock-items/ -> 200
+[2026-03-26 15:15:32.080388] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-03-26 15:15:32.087867] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-03-26 15:15:32.133079] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-03-26 15:15:32.474947] START GET /api/locations/
+[2026-03-26 15:15:32.476524] START GET /api/location-inventory/
+[2026-03-26 15:15:32.526245] END   GET /api/location-inventory/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/location-inventory/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; marg
+[2026-03-26 15:15:32.533027] START GET /api/location-inventory/
+[2026-03-26 15:15:32.582968] END   GET /api/location-inventory/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/location-inventory/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; marg
+[2026-03-26 15:15:32.616072] END   GET /api/locations/ -> 200
+[2026-03-26 15:15:32.625063] START GET /api/locations/
+[2026-03-26 15:15:32.706871] END   GET /api/locations/ -> 200
+[2026-03-26 15:16:05.947398] START POST /api/auth/login/
+[2026-03-26 15:16:06.017067] END   POST /api/auth/login/ -> 200
+[2026-03-26 15:16:09.439447] START GET /api/locations/
+[2026-03-26 15:16:09.440464] START GET /api/location-inventory/
+[2026-03-26 15:16:09.491881] END   GET /api/location-inventory/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/location-inventory/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; marg
+[2026-03-26 15:16:09.500446] START GET /api/location-inventory/
+[2026-03-26 15:16:09.552026] END   GET /api/location-inventory/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/location-inventory/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; marg
+[2026-03-26 15:16:09.575447] END   GET /api/locations/ -> 200
+[2026-03-26 15:16:09.581024] START GET /api/locations/
+[2026-03-26 15:16:09.659936] END   GET /api/locations/ -> 200
+[2026-03-26 15:16:54.834452] START GET /api/locations/
+[2026-03-26 15:16:54.834875] START GET /api/location-inventory/
+[2026-03-26 15:16:54.883615] END   GET /api/location-inventory/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/location-inventory/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; marg
+[2026-03-26 15:16:54.890886] START GET /api/location-inventory/
+[2026-03-26 15:16:54.943392] END   GET /api/location-inventory/ -> 404
+Response Body: <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Page not found at /api/location-inventory/</title>
+  <meta name="robots" content="NONE,NOARCHIVE">
+  <style>
+    html * { padding:0; margin:0; }
+    body * { padding:10px 20px; }
+    body * * { padding:0; }
+    body { font-family: sans-serif; background:#eee; color:#000; }
+    body > :where(header, main, footer) { border-bottom:1px solid #ddd; }
+    h1 { font-weight:normal; marg
+[2026-03-26 15:16:54.968964] END   GET /api/locations/ -> 200
+[2026-03-26 15:16:54.978859] START GET /api/locations/
+[2026-03-26 15:16:55.068595] END   GET /api/locations/ -> 200
+[2026-03-26 15:20:41.898998] START GET /api/locations/
+[2026-03-26 15:20:41.901589] START GET /api/location-inventory/
+[2026-03-26 15:20:42.107050] END   GET /api/locations/ -> 200
+[2026-03-26 15:20:42.115750] START GET /api/locations/
+[2026-03-26 15:20:42.147541] END   GET /api/location-inventory/ -> 200
+[2026-03-26 15:20:42.154364] START GET /api/location-inventory/
+[2026-03-26 15:20:42.308237] END   GET /api/location-inventory/ -> 200
+[2026-03-26 15:20:42.320614] END   GET /api/locations/ -> 200
+[2026-03-26 15:20:57.771807] START GET /api/location-inventory/
+[2026-03-26 15:20:57.856354] END   GET /api/location-inventory/ -> 200
+[2026-03-26 15:21:07.441338] START POST /api/auth/login/
+[2026-03-26 15:21:07.532031] END   POST /api/auth/login/ -> 200
+[2026-03-26 15:21:10.307366] START GET /api/asset-movements-approval/pending/
+[2026-03-26 15:21:10.368483] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-03-26 15:21:10.375471] START GET /api/asset-movements-approval/pending/
+[2026-03-26 15:21:10.432783] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-03-26 15:21:11.474710] START GET /api/inventory-reports/
+[2026-03-26 15:21:11.620135] END   GET /api/inventory-reports/ -> 200
+[2026-03-26 15:21:11.630738] START GET /api/inventory-reports/
+[2026-03-26 15:21:11.723521] END   GET /api/inventory-reports/ -> 200
+[2026-03-26 15:21:15.494028] START GET /api/locations/
+[2026-03-26 15:21:15.498203] START GET /api/location-inventory/
+[2026-03-26 15:21:15.615430] END   GET /api/locations/ -> 200
+[2026-03-26 15:21:15.625898] START GET /api/locations/
+[2026-03-26 15:21:15.659661] END   GET /api/location-inventory/ -> 200
+[2026-03-26 15:21:15.665658] START GET /api/location-inventory/
+[2026-03-26 15:21:15.717055] END   GET /api/locations/ -> 200
+[2026-03-26 15:21:15.805175] END   GET /api/location-inventory/ -> 200
+[2026-03-26 15:21:28.227360] START GET /api/location-inventory/
+[2026-03-26 15:21:28.317183] END   GET /api/location-inventory/ -> 200
