@@ -840,6 +840,7 @@ class MaintenanceSerializer(serializers.ModelSerializer):
     asset_name = serializers.SerializerMethodField()
     has_steps = serializers.SerializerMethodField()
     has_external_maintenances = serializers.SerializerMethodField()
+    total_cost = serializers.SerializerMethodField()
 
     class Meta:
         model = Maintenance
@@ -856,6 +857,7 @@ class MaintenanceSerializer(serializers.ModelSerializer):
             'asset_name',
             'has_steps',
             'has_external_maintenances',
+            'total_cost',
         ]
         read_only_fields = ['maintenance_id']
 
@@ -880,6 +882,80 @@ class MaintenanceSerializer(serializers.ModelSerializer):
     def get_has_external_maintenances(self, obj):
         from .models import ExternalMaintenance
         return ExternalMaintenance.objects.filter(maintenance=obj).exists()
+
+    def get_total_cost(self, obj):
+        from django.db import connection
+        try:
+            with connection.cursor() as cursor:
+                total_cost = 0.0
+
+                # 1. Normal steps
+                cursor.execute('''
+                    SELECT s.maintenance_step_id, t.actual_cost, t.operation_type
+                    FROM maintenance_step s
+                    JOIN maintenance_typical_step t ON s.maintenance_typical_step_id = t.maintenance_typical_step_id
+                    WHERE s.maintenance_id = %s
+                ''', [obj.maintenance_id])
+                steps = cursor.fetchall()
+                
+                for step_id, actual_cost, operation_type in steps:
+                    if actual_cost:
+                        total_cost += float(actual_cost)
+                        
+                    if operation_type == 'add':
+                        # Added stock items to asset
+                        cursor.execute('''
+                            SELECT st.stock_item_model_id
+                            FROM asset_is_composed_of_stock_item_history h
+                            JOIN stock_item st ON h.stock_item_id = st.stock_item_id
+                            WHERE h.maintenance_step_id = %s
+                        ''', [step_id])
+                        for (model_id,) in cursor.fetchall():
+                            cursor.execute('SELECT AVG(unit_price) FROM stock_item_model_is_found_in_purchase_order WHERE stock_item_model_id = %s', [model_id])
+                            avg = cursor.fetchone()[0]
+                            if avg: total_cost += float(avg)
+                            
+                        # Added consumables to asset
+                        cursor.execute('''
+                            SELECT c.consumable_model_id
+                            FROM asset_is_composed_of_consumable_history h
+                            JOIN consumable c ON h.consumable_id = c.consumable_id
+                            WHERE h.maintenance_step_id = %s
+                        ''', [step_id])
+                        for (model_id,) in cursor.fetchall():
+                            cursor.execute('SELECT AVG(unit_price) FROM consumable_model_is_found_in_purchase_order WHERE consumable_model_id = %s', [model_id])
+                            avg = cursor.fetchone()[0]
+                            if avg: total_cost += float(avg)
+                            
+                        # Added consumables to stock item
+                        cursor.execute('''
+                            SELECT c.consumable_model_id
+                            FROM consumable_is_used_in_stock_item_history h
+                            JOIN consumable c ON h.consumable_id = c.consumable_id
+                            WHERE h.maintenance_step_id = %s
+                        ''', [step_id])
+                        for (model_id,) in cursor.fetchall():
+                            cursor.execute('SELECT AVG(unit_price) FROM consumable_model_is_found_in_purchase_order WHERE consumable_model_id = %s', [model_id])
+                            avg = cursor.fetchone()[0]
+                            if avg: total_cost += float(avg)
+
+                # 2. External steps
+                cursor.execute('''
+                    SELECT t.actual_cost
+                    FROM external_maintenance ext
+                    JOIN external_maintenance_step es ON ext.external_maintenance_id = es.external_maintenance_id
+                    JOIN external_maintenance_typical_step t ON es.external_maintenance_typical_step_id = t.external_maintenance_typical_step_id
+                    WHERE ext.maintenance_id = %s
+                ''', [obj.maintenance_id])
+                ext_steps = cursor.fetchall()
+                
+                for (actual_cost,) in ext_steps:
+                    if actual_cost:
+                        total_cost += float(actual_cost)
+
+                return round(total_cost, 2)
+        except Exception:
+            return 0.0
 
 
 class WarehouseSerializer(serializers.ModelSerializer):

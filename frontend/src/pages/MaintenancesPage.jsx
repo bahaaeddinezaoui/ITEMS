@@ -523,6 +523,12 @@ const MaintenancesPage = () => {
                                                     <span className="maintenance-timeline-meta-value">{formatDate(maintenance.end_datetime)}</span>
                                                 </div>
                                                 <div className="maintenance-timeline-meta-item">
+                                                    <span className="maintenance-timeline-meta-label">Total Cost</span>
+                                                    <span className="maintenance-timeline-meta-value">
+                                                        {maintenance.total_cost != null ? `${maintenance.total_cost} DZD` : '-'}
+                                                    </span>
+                                                </div>
+                                                <div className="maintenance-timeline-meta-item">
                                                     <span className="maintenance-timeline-meta-label">Technician</span>
                                                     <span className="maintenance-timeline-meta-value">
                                                         {maintenance.performed_by_person_name || (

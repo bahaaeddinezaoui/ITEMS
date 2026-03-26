@@ -1,0 +1,7 @@
+('pg_proc', 'procost')
+('consumable_model_is_found_in_purchase_order', 'unit_price')
+('external_maintenance_typical_step', 'estimated_cost')
+('external_maintenance_typical_step', 'actual_cost')
+('maintenance_typical_step', 'estimated_cost')
+('maintenance_typical_step', 'actual_cost')
+('stock_item_model_is_found_in_purchase_order', 'unit_price')

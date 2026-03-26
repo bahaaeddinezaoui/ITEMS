@@ -1186,3 +1186,17 @@ Password mismatch for user: asset_resp
 [2026-03-19 09:56:37.670292+00:00] Login attempt for: bahaaeddinezaoui
 
 [2026-03-19 10:08:38.685102+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-03-26 07:53:26.050735+00:00] Login attempt for: bahaaeddinezaoui
+
+[2026-03-26 09:28:38.538432+00:00] Login attempt for: asset_resp
+Password mismatch for user: asset_resp
+
+[2026-03-26 09:28:43.106594+00:00] Login attempt for: asset_resp
+
+[2026-03-26 09:29:09.230298+00:00] Login attempt for: stock_cons_respo
+User not found: stock_cons_respo
+
+[2026-03-26 09:29:13.209742+00:00] Login attempt for: stock_cons_resp
+
+[2026-03-26 09:29:45.004411+00:00] Login attempt for: bahaaeddinezaoui
