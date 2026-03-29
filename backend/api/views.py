@@ -1113,19 +1113,35 @@ class AssetMaintenanceTimelineView(APIView):
 
         person = user_account.person
 
-        # Get assets for which the user made a problem report
-        reported_asset_ids = set(
-            PersonReportsProblemOnAsset.objects.filter(person=person)
-            .values_list("asset_id", flat=True)
-        )
+        visibility = (request.query_params.get("visibility") or "").strip().lower() or "owned_only"
+        try:
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+        except Exception:
+            role_codes = set()
+        allowed_anytime = getattr(user_account, "is_superuser", lambda: False)() or ("maintenance_chief" in role_codes)
+        if visibility == "anytime" and not allowed_anytime:
+            visibility = "owned_only"
 
-        # If asset_id is specified, check if user reported a problem on it
         if asset_id is not None:
-            if int(asset_id) not in reported_asset_ids:
-                return Response({"error": "You have not reported a problem on this asset"}, status=status.HTTP_403_FORBIDDEN)
-            asset_ids = [int(asset_id)]
+            aid = int(asset_id)
+            if visibility == "anytime":
+                asset_ids = [aid]
+            else:
+                # owned_only: allow if the user has ever been assigned this asset
+                owned = AssetIsAssignedToPerson.objects.filter(asset_id=aid, person_id=person.person_id).exists()
+                if not owned:
+                    return Response({"error": "Not allowed to view maintenance timeline for this asset"}, status=status.HTTP_403_FORBIDDEN)
+                asset_ids = [aid]
         else:
-            asset_ids = list(reported_asset_ids)
+            # When no asset_id is provided, default to assets owned by the user
+            owned_ids = list(
+                AssetIsAssignedToPerson.objects.filter(person_id=person.person_id)
+                .values_list("asset_id", flat=True)
+                .distinct()
+            )
+            asset_ids = owned_ids
 
         if not asset_ids:
             return Response({"maintenances": [], "steps": []})

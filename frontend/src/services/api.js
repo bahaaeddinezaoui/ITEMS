@@ -1552,8 +1552,8 @@ export const assetMaintenanceTimelineService = {
         return response.data;
     },
 
-    getByAssetId: async (assetId) => {
-        const response = await api.get(`asset-maintenance-timeline/${assetId}/`);
+    getByAssetId: async (assetId, params) => {
+        const response = await api.get(`asset-maintenance-timeline/${assetId}/`, { params });
         return response.data;
     },
 };

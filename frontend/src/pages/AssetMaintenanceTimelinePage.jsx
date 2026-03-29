@@ -17,7 +17,14 @@ const AssetMaintenanceTimelinePage = () => {
             try {
                 setLoading(true);
                 setError('');
-                const data = await assetMaintenanceTimelineService.getByAssetId(assetId);
+                let visibility = 'owned_only';
+                try {
+                    const saved = localStorage.getItem('maintenanceTimelineVisibilityPolicy');
+                    if (saved && ['owned_only', 'anytime'].includes(saved)) {
+                        visibility = saved;
+                    }
+                } catch {}
+                const data = await assetMaintenanceTimelineService.getByAssetId(assetId, { visibility });
                 setMaintenances(data.maintenances || []);
                 setSteps(data.steps || []);
                 // Get asset info from first maintenance if available

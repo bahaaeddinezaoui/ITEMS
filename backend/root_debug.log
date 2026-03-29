@@ -65100,3 +65100,98 @@ Response Body: {"detail":"Given token not valid for any token type","code":"toke
 [2026-03-29 08:35:55.414436] START GET /api/locations/
 [2026-03-29 08:35:55.486404] END   GET /api/assets/1/current-location/ -> 200
 [2026-03-29 08:35:55.535197] END   GET /api/locations/ -> 200
+[2026-03-29 09:17:51.823436] START GET /api/persons/
+[2026-03-29 09:17:51.825990] START GET /api/problem-reports/
+[2026-03-29 09:17:51.906070] END   GET /api/persons/ -> 200
+[2026-03-29 09:17:51.914663] START GET /api/persons/
+[2026-03-29 09:17:51.941481] END   GET /api/problem-reports/ -> 200
+[2026-03-29 09:17:51.945922] START GET /api/problem-reports/
+[2026-03-29 09:17:51.960116] END   GET /api/persons/ -> 200
+[2026-03-29 09:17:52.006802] END   GET /api/problem-reports/ -> 200
+[2026-03-29 09:20:05.433696] START GET /api/my-items/
+[2026-03-29 09:20:05.573002] END   GET /api/my-items/ -> 200
+[2026-03-29 09:20:05.581753] START GET /api/my-items/
+[2026-03-29 09:20:05.796061] END   GET /api/my-items/ -> 200
+[2026-03-29 09:20:13.995876] START POST /api/auth/login/
+[2026-03-29 09:20:14.089657] END   POST /api/auth/login/ -> 200
+[2026-03-29 09:20:17.848292] START GET /api/locations/
+[2026-03-29 09:20:17.850906] START GET /api/location-inventory/
+[2026-03-29 09:20:17.970605] END   GET /api/locations/ -> 200
+[2026-03-29 09:20:17.979408] START GET /api/locations/
+[2026-03-29 09:20:18.126634] END   GET /api/locations/ -> 200
+[2026-03-29 09:20:18.182681] END   GET /api/location-inventory/ -> 200
+[2026-03-29 09:20:18.193740] START GET /api/location-inventory/
+[2026-03-29 09:20:18.444334] END   GET /api/location-inventory/ -> 200
+[2026-03-29 09:20:45.080998] START GET /api/asset-destruction-certificates/
+[2026-03-29 09:20:45.082980] START GET /api/assets/
+[2026-03-29 09:20:45.178654] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-29 09:20:45.190798] START GET /api/asset-destruction-certificates/
+[2026-03-29 09:20:45.355180] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-03-29 09:20:45.388680] END   GET /api/assets/ -> 200
+[2026-03-29 09:20:45.397971] START GET /api/assets/
+[2026-03-29 09:20:45.639512] END   GET /api/assets/ -> 200
+[2026-03-29 09:20:46.229977] START GET /api/attribution-orders/
+[2026-03-29 09:20:46.231105] START GET /api/administrative-certificates/
+[2026-03-29 09:20:46.233341] START GET /api/warehouses/
+[2026-03-29 09:20:46.316437] END   GET /api/administrative-certificates/ -> 200
+[2026-03-29 09:20:46.318488] END   GET /api/warehouses/ -> 200
+[2026-03-29 09:20:46.333946] START GET /api/administrative-certificates/
+[2026-03-29 09:20:46.342648] START GET /api/warehouses/
+[2026-03-29 09:20:46.370271] END   GET /api/attribution-orders/ -> 200
+[2026-03-29 09:20:46.376879] START GET /api/attribution-orders/
+[2026-03-29 09:20:46.387307] START GET /api/receipt-reports/2/
+[2026-03-29 09:20:46.392817] END   GET /api/administrative-certificates/ -> 200
+[2026-03-29 09:20:46.392544] START GET /api/receipt-reports/1/
+[2026-03-29 09:20:46.400541] START GET /api/receipt-reports/3/
+[2026-03-29 09:20:46.405231] END   GET /api/warehouses/ -> 200
+[2026-03-29 09:20:46.408572] START GET /api/receipt-reports/4/
+[2026-03-29 09:20:46.417059] START GET /api/receipt-reports/5/
+[2026-03-29 09:20:46.445420] END   GET /api/receipt-reports/2/ -> 200
+[2026-03-29 09:20:46.454459] END   GET /api/receipt-reports/1/ -> 200
+[2026-03-29 09:20:46.459193] END   GET /api/receipt-reports/3/ -> 200
+[2026-03-29 09:20:46.463534] END   GET /api/receipt-reports/4/ -> 200
+[2026-03-29 09:20:46.462348] START GET /api/receipt-reports/7/
+[2026-03-29 09:20:46.459833] START GET /api/receipt-reports/6/
+[2026-03-29 09:20:46.471997] END   GET /api/receipt-reports/5/ -> 200
+[2026-03-29 09:20:46.472743] END   GET /api/attribution-orders/ -> 200
+[2026-03-29 09:20:46.472625] START GET /api/receipt-reports/8/
+[2026-03-29 09:20:46.488377] START GET /api/receipt-reports/1/
+[2026-03-29 09:20:46.489543] START GET /api/receipt-reports/2/
+[2026-03-29 09:20:46.490743] START GET /api/receipt-reports/3/
+[2026-03-29 09:20:46.514917] END   GET /api/receipt-reports/6/ -> 200
+[2026-03-29 09:20:46.516907] END   GET /api/receipt-reports/8/ -> 200
+[2026-03-29 09:20:46.522919] START GET /api/receipt-reports/4/
+[2026-03-29 09:20:46.523901] START GET /api/receipt-reports/5/
+[2026-03-29 09:20:46.526713] START GET /api/receipt-reports/7/
+[2026-03-29 09:20:46.538883] END   GET /api/receipt-reports/1/ -> 200
+[2026-03-29 09:20:46.539247] END   GET /api/receipt-reports/2/ -> 200
+[2026-03-29 09:20:46.540676] END   GET /api/receipt-reports/3/ -> 200
+[2026-03-29 09:20:46.552535] START GET /api/receipt-reports/6/
+[2026-03-29 09:20:46.556894] START GET /api/receipt-reports/8/
+[2026-03-29 09:20:46.571093] END   GET /api/receipt-reports/4/ -> 200
+[2026-03-29 09:20:46.576750] END   GET /api/receipt-reports/5/ -> 200
+[2026-03-29 09:20:46.579704] END   GET /api/receipt-reports/7/ -> 200
+[2026-03-29 09:20:46.594601] END   GET /api/receipt-reports/8/ -> 200
+[2026-03-29 09:20:46.707768] END   GET /api/receipt-reports/6/ -> 200
+[2026-03-29 09:20:52.803528] START POST /api/auth/login/
+[2026-03-29 09:20:52.865174] END   POST /api/auth/login/ -> 200
+[2026-03-29 09:20:55.136097] START GET /api/my-items/
+[2026-03-29 09:20:55.259360] END   GET /api/my-items/ -> 200
+[2026-03-29 09:20:55.267795] START GET /api/my-items/
+[2026-03-29 09:20:55.387531] END   GET /api/my-items/ -> 200
+[2026-03-29 09:21:22.602025] START POST /api/auth/login/
+[2026-03-29 09:21:22.666848] END   POST /api/auth/login/ -> 200
+[2026-03-29 09:21:23.615173] START GET /api/my-items/
+[2026-03-29 09:21:23.745094] END   GET /api/my-items/ -> 200
+[2026-03-29 09:21:23.756225] START GET /api/my-items/
+[2026-03-29 09:21:23.894562] END   GET /api/my-items/ -> 200
+[2026-03-29 09:21:27.146105] START GET /api/asset-maintenance-timeline/1/
+[2026-03-29 09:21:27.397106] END   GET /api/asset-maintenance-timeline/1/ -> 200
+[2026-03-29 09:21:27.402859] START GET /api/asset-maintenance-timeline/1/
+[2026-03-29 09:21:27.623315] END   GET /api/asset-maintenance-timeline/1/ -> 200
+[2026-03-29 09:27:17.680386] START GET /api/asset-maintenance-timeline/1/
+[2026-03-29 09:27:17.985891] END   GET /api/asset-maintenance-timeline/1/ -> 200
+[2026-03-29 09:27:17.994788] START GET /api/asset-maintenance-timeline/1/
+[2026-03-29 09:27:18.220282] END   GET /api/asset-maintenance-timeline/1/ -> 200
+[2026-03-29 09:30:06.395653] START POST /api/auth/login/
+[2026-03-29 09:30:06.462085] END   POST /api/auth/login/ -> 200

@@ -286,6 +286,56 @@ const OptionsPage = () => {
                                         </label>
                                     </div>
                                 </div>
+                                <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>Users' Maintenance Timeline visibility</h3>
+                                    <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
+                                        Control whether users can view the full maintenance history of an asset in My Items.
+                                    </p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="timelineVisibility"
+                                                value="owned_only"
+                                                defaultChecked={(typeof window !== 'undefined' && localStorage.getItem('maintenanceTimelineVisibilityPolicy') !== 'anytime')}
+                                                onChange={() => {
+                                                    try {
+                                                        localStorage.setItem('maintenanceTimelineVisibilityPolicy', 'owned_only');
+                                                        setMessage({ type: 'success', text: 'Visibility preference saved' });
+                                                        setTimeout(() => setMessage({ type: '', text: '' }), 1500);
+                                                    } catch {}
+                                                }}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Owned only</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Users see maintenance history only for assets they have been assigned to.
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="timelineVisibility"
+                                                value="anytime"
+                                                defaultChecked={(typeof window !== 'undefined' && localStorage.getItem('maintenanceTimelineVisibilityPolicy') === 'anytime')}
+                                                onChange={() => {
+                                                    try {
+                                                        localStorage.setItem('maintenanceTimelineVisibilityPolicy', 'anytime');
+                                                        setMessage({ type: 'success', text: 'Visibility preference saved' });
+                                                        setTimeout(() => setMessage({ type: '', text: '' }), 1500);
+                                                    } catch {}
+                                                }}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Anytime</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Users can view the maintenance history of the selected asset at any time.
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
                                 {message.text && message.type === 'success' && (
                                     <div className="success-message">{message.text}</div>
                                 )}
