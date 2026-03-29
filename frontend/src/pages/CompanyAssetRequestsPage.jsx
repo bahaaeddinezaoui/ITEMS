@@ -3,6 +3,13 @@ import { Navigate } from 'react-router-dom';
 import { companyAssetRequestService, attributionOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
+const REQUEST_SIGNATURE_FIELDS = [
+    { key: 'is_signed_by_company', label: 'Company', fullLabel: 'Signed by company', short: 'C' },
+    { key: 'is_signed_by_company_leader', label: 'Leader', fullLabel: 'Signed by company leader', short: 'L' },
+    { key: 'is_signed_by_regional_provider', label: 'Regional', fullLabel: 'Signed by regional provider', short: 'R' },
+    { key: 'is_signed_by_company_representative', label: 'Representative', fullLabel: 'Signed by company representative', short: 'Rep' },
+];
+
 const CompanyAssetRequestsPage = () => {
     const { user } = useAuth();
 
@@ -22,6 +29,25 @@ const CompanyAssetRequestsPage = () => {
                 .map((r) => Number(r?.attribution_order))
                 .filter((id) => Number.isFinite(id) && id > 0)
         );
+    }, [requests]);
+
+    const requestStats = useMemo(() => {
+        const list = Array.isArray(requests) ? requests : [];
+        let fullySignedCount = 0;
+        let withDigitalCopyCount = 0;
+
+        list.forEach((r) => {
+            const fullySigned = REQUEST_SIGNATURE_FIELDS.every((field) => !!r?.[field.key]);
+            if (fullySigned) fullySignedCount += 1;
+            if (r?.digital_copy) withDigitalCopyCount += 1;
+        });
+
+        return {
+            total: list.length,
+            fullySignedCount,
+            pendingSignaturesCount: Math.max(list.length - fullySignedCount, 0),
+            withDigitalCopyCount,
+        };
     }, [requests]);
 
     const [showCreateForm, setShowCreateForm] = useState(false);
@@ -134,20 +160,7 @@ const CompanyAssetRequestsPage = () => {
         }
     };
 
-    const signatureFieldLabel = (field) => {
-        switch (field) {
-            case 'is_signed_by_company':
-                return 'Signed by company';
-            case 'is_signed_by_company_leader':
-                return 'Signed by company leader';
-            case 'is_signed_by_regional_provider':
-                return 'Signed by regional provider';
-            case 'is_signed_by_company_representative':
-                return 'Signed by company representative';
-            default:
-                return field;
-        }
-    };
+    const signatureFieldLabel = (field) => REQUEST_SIGNATURE_FIELDS.find((f) => f.key === field)?.fullLabel || field;
 
     const handleSaveSignatures = async (e) => {
         e.preventDefault();
@@ -281,317 +294,299 @@ const CompanyAssetRequestsPage = () => {
     if (loading) return <div className="loading">Loading...</div>;
 
     return (
-        <>
-            <div className="page-header">
-                <div>
-                    <h1 className="page-title">Company Asset Requests</h1>
-                    <p className="page-subtitle">Consult company asset requests</p>
-                </div>
-                <div>
-                    <button className={`btn btn-${showCreateForm ? 'secondary' : 'primary'}`} onClick={() => setShowCreateForm(!showCreateForm)}>
-                        {showCreateForm ? 'Cancel' : '+ New Request'}
+        <div className="company-asset-requests-page">
+            <div className="card company-asset-requests-hero">
+                <div className="company-asset-requests-header">
+                    <div>
+                        <h1 className="page-title">Company Asset Requests</h1>
+                        <p className="page-subtitle">Consult requests, verify signatures, and update approval status</p>
+                    </div>
+                    <button className="btn btn-primary company-asset-requests-create-btn" onClick={() => setShowCreateForm(true)}>
+                        + New Request
                     </button>
+                </div>
+                <div className="company-asset-requests-hero-foot">
+                    <span className="badge badge-info">Click any request card to edit signatures</span>
+                    <span className="badge badge-warning">Signature set to Yes cannot be reverted</span>
                 </div>
             </div>
 
-            {error && <div className="error-message">{error}</div>}
-            {success && (
-                <div className="badge badge-success" style={{ padding: 'var(--space-4)', width: '100%', marginBottom: 'var(--space-4)', borderRadius: 'var(--radius-md)' }}>
-                    {success}
+            <div className="stat-grid company-asset-requests-stat-grid">
+                <div className="stat-card">
+                    <div className="stat-value">{requestStats.total}</div>
+                    <div className="stat-label">Total requests</div>
                 </div>
-            )}
+                <div className="stat-card">
+                    <div className="stat-value">{requestStats.fullySignedCount}</div>
+                    <div className="stat-label">Fully signed</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{requestStats.pendingSignaturesCount}</div>
+                    <div className="stat-label">Pending signatures</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{requestStats.withDigitalCopyCount}</div>
+                    <div className="stat-label">With digital copy</div>
+                </div>
+            </div>
+
+            {error && <div className="error-message company-asset-requests-alert">{error}</div>}
+            {success && <div className="success-message company-asset-requests-alert">{success}</div>}
+
+            <div className="card company-asset-requests-list-card">
+                <div className="card-header">
+                    <h2 className="card-title">All Requests</h2>
+                    <div className="company-asset-requests-subtle-text">{requests.length} records</div>
+                </div>
+                <div className="card-body">
+                    {requests.length === 0 ? (
+                        <div className="company-asset-requests-empty-state">No company asset requests found.</div>
+                    ) : (
+                        <div className="company-asset-requests-list">
+                            {requests.map((r) => {
+                                const orderId = r.attribution_order;
+                                const order = ordersById[orderId];
+                                const fullySigned = REQUEST_SIGNATURE_FIELDS.every((field) => !!r?.[field.key]);
+                                return (
+                                    <button
+                                        key={r.company_asset_request_id}
+                                        type="button"
+                                        className="company-asset-requests-item"
+                                        onClick={() => openEditModal(r)}
+                                        title="Click to edit signatures"
+                                    >
+                                        <div className="company-asset-requests-item-head">
+                                            <div>
+                                                <div className="company-asset-requests-item-title">Request #{r.company_asset_request_id}</div>
+                                                <div className="company-asset-requests-item-subtitle">
+                                                    {order?.attribution_order_full_code || `#${orderId}`}
+                                                </div>
+                                            </div>
+                                            <div className="company-asset-requests-badges">
+                                                <span className={`badge ${fullySigned ? 'badge-success' : 'badge-warning'}`}>
+                                                    {fullySigned ? 'Fully signed' : 'Pending signatures'}
+                                                </span>
+                                                <span className={`badge ${r.digital_copy ? 'badge-info' : 'badge-warning'}`}>
+                                                    {r.digital_copy ? 'Copy attached' : 'No copy'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="company-asset-requests-item-grid">
+                                            <div>
+                                                <div className="company-asset-requests-field-label">Administrative #</div>
+                                                <div className="company-asset-requests-field-value">{r.administrative_serial_number || '-'}</div>
+                                            </div>
+                                            <div>
+                                                <div className="company-asset-requests-field-label">Title</div>
+                                                <div className="company-asset-requests-field-value">{r.title_of_demand || '-'}</div>
+                                            </div>
+                                            <div>
+                                                <div className="company-asset-requests-field-label">Body</div>
+                                                <div className="company-asset-requests-field-value">{r.organization_body_designation || '-'}</div>
+                                            </div>
+                                            <div>
+                                                <div className="company-asset-requests-field-label">Reg (Corpse)</div>
+                                                <div className="company-asset-requests-field-value">{r.register_number_or_book_journal_of_corpse || '-'}</div>
+                                            </div>
+                                            <div>
+                                                <div className="company-asset-requests-field-label">Reg (Est.)</div>
+                                                <div className="company-asset-requests-field-value">{r.register_number_or_book_journal_of_establishment || '-'}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="company-asset-requests-footer">
+                                            <div className="company-asset-requests-signature-pill-list">
+                                                {REQUEST_SIGNATURE_FIELDS.map((field) => (
+                                                    <span
+                                                        key={`${r.company_asset_request_id}-${field.key}`}
+                                                        className={`badge ${r?.[field.key] ? 'badge-success' : 'badge-error'}`}
+                                                    >
+                                                        {field.short}: {r?.[field.key] ? 'Yes' : 'No'}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <span className="company-asset-requests-subtle-text">Edit signatures</span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {showCreateForm && (
-                <div className="card" style={{ marginBottom: 'var(--space-6)', border: '2px solid var(--color-primary)' }}>
-                    <div className="card-header">
-                        <h2 className="card-title">New Company Asset Request</h2>
-                    </div>
-                    <div className="card-body">
-                        <form onSubmit={handleCreate}>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
+                <div className="modal-overlay company-asset-requests-modal-overlay" onClick={() => !submitting && setShowCreateForm(false)}>
+                    <div className="modal company-asset-requests-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header company-asset-requests-modal-header">
+                            <div>
+                                <div className="modal-title">New Company Asset Request</div>
+                                <div className="company-asset-requests-subtle-text">Complete request metadata and signatures</div>
+                            </div>
+                            <button type="button" className="modal-close" disabled={submitting} onClick={() => setShowCreateForm(false)}>
+                                ✕
+                            </button>
+                        </div>
+                        <div className="modal-body company-asset-requests-modal-body">
+                            <form onSubmit={handleCreate}>
                                 {Object.keys(ordersById).length > 0 && attributionOrdersWithRequest.size >= Object.keys(ordersById).length && (
-                                    <div
-                                        className="badge badge-warning"
-                                        style={{
-                                            gridColumn: '1 / -1',
-                                            padding: 'var(--space-4)',
-                                            borderRadius: 'var(--radius-md)',
-                                        }}
-                                    >
+                                    <div className="company-asset-requests-modal-warning">
                                         All attribution orders already have a company asset request.
                                     </div>
                                 )}
 
-                                <div className="form-group">
-                                    <label className="form-label">Attribution Order</label>
-                                    <select
-                                        className="form-input"
-                                        value={createForm.attribution_order}
-                                        onChange={(e) => setCreateForm({ ...createForm, attribution_order: e.target.value })}
-                                        required
-                                    >
-                                        <option value="">Select Attribution Order</option>
-                                        {Object.values(ordersById)
-                                            .filter((o) => !attributionOrdersWithRequest.has(Number(o.attribution_order_id)))
-                                            .map((o) => (
-                                                <option key={o.attribution_order_id} value={o.attribution_order_id}>
-                                                    {o.attribution_order_full_code || `#${o.attribution_order_id}`}
-                                                </option>
-                                            ))}
-                                    </select>
-                                </div>
+                                <div className="company-asset-requests-form-grid">
+                                    <div className="form-group">
+                                        <select
+                                            className="form-input"
+                                            value={createForm.attribution_order}
+                                            onChange={(e) => setCreateForm({ ...createForm, attribution_order: e.target.value })}
+                                            required
+                                            aria-label="Attribution order"
+                                        >
+                                            <option value="">Attribution order</option>
+                                            {Object.values(ordersById)
+                                                .filter((o) => !attributionOrdersWithRequest.has(Number(o.attribution_order_id)))
+                                                .map((o) => (
+                                                    <option key={o.attribution_order_id} value={o.attribution_order_id}>
+                                                        {o.attribution_order_full_code || `#${o.attribution_order_id}`}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                    </div>
 
-                                <div className="form-group">
-                                    <label className="form-label">Administrative Serial Number</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={createForm.administrative_serial_number}
-                                        onChange={(e) => setCreateForm({ ...createForm, administrative_serial_number: e.target.value })}
-                                        placeholder="e.g. ADM-2026-001"
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="form-label">Title of Demand</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={createForm.title_of_demand}
-                                        onChange={(e) => setCreateForm({ ...createForm, title_of_demand: e.target.value })}
-                                        placeholder="Title"
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="form-label">Organization Body Designation</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={createForm.organization_body_designation}
-                                        onChange={(e) => setCreateForm({ ...createForm, organization_body_designation: e.target.value })}
-                                        placeholder="Designation"
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="form-label">Register Number / Book Journal of Corpse</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={createForm.register_number_or_book_journal_of_corpse}
-                                        onChange={(e) => setCreateForm({ ...createForm, register_number_or_book_journal_of_corpse: e.target.value })}
-                                        placeholder="Register #"
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="form-label">Register Number / Book Journal of Establishment</label>
-                                    <input
-                                        type="text"
-                                        className="form-input"
-                                        value={createForm.register_number_or_book_journal_of_establishment}
-                                        onChange={(e) => setCreateForm({ ...createForm, register_number_or_book_journal_of_establishment: e.target.value })}
-                                        placeholder="Register #"
-                                    />
-                                </div>
-
-                                <div className="form-group">
-                                    <label className="form-label">Digital Copy (Attachment)</label>
-                                    <input
-                                        type="file"
-                                        className="form-input"
-                                        onChange={(e) => setCreateForm({ ...createForm, digital_copy: e.target.files[0] })}
-                                        accept="image/*,application/pdf"
-                                    />
-                                </div>
-
-                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                                    <label className="form-label">Signatures</label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                    <div className="form-group">
                                         <input
-                                            type="checkbox"
-                                            checked={!!createForm.is_signed_by_company}
-                                            onChange={(e) => setCreateForm({ ...createForm, is_signed_by_company: e.target.checked })}
+                                            type="text"
+                                            className="form-input"
+                                            value={createForm.administrative_serial_number}
+                                            onChange={(e) => setCreateForm({ ...createForm, administrative_serial_number: e.target.value })}
+                                            placeholder="Administrative serial number"
+                                            aria-label="Administrative serial number"
                                         />
-                                        <span>Signed by company</span>
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!createForm.is_signed_by_company_leader}
-                                            onChange={(e) => setCreateForm({ ...createForm, is_signed_by_company_leader: e.target.checked })}
-                                        />
-                                        <span>Signed by company leader</span>
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!createForm.is_signed_by_regional_provider}
-                                            onChange={(e) => setCreateForm({ ...createForm, is_signed_by_regional_provider: e.target.checked })}
-                                        />
-                                        <span>Signed by regional provider</span>
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!createForm.is_signed_by_company_representative}
-                                            onChange={(e) => setCreateForm({ ...createForm, is_signed_by_company_representative: e.target.checked })}
-                                        />
-                                        <span>Signed by company representative</span>
-                                    </label>
-                                </div>
-                            </div>
+                                    </div>
 
-                            <button type="submit" className="btn btn-primary" disabled={submitting}>
-                                {submitting ? 'Creating...' : 'Create Request'}
-                            </button>
-                        </form>
+                                    <div className="form-group">
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={createForm.title_of_demand}
+                                            onChange={(e) => setCreateForm({ ...createForm, title_of_demand: e.target.value })}
+                                            placeholder="Title of demand"
+                                            aria-label="Title of demand"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={createForm.organization_body_designation}
+                                            onChange={(e) => setCreateForm({ ...createForm, organization_body_designation: e.target.value })}
+                                            placeholder="Organization body designation"
+                                            aria-label="Organization body designation"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={createForm.register_number_or_book_journal_of_corpse}
+                                            onChange={(e) => setCreateForm({ ...createForm, register_number_or_book_journal_of_corpse: e.target.value })}
+                                            placeholder="Register / journal (corpse)"
+                                            aria-label="Register number or book journal of corpse"
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={createForm.register_number_or_book_journal_of_establishment}
+                                            onChange={(e) => setCreateForm({ ...createForm, register_number_or_book_journal_of_establishment: e.target.value })}
+                                            placeholder="Register / journal (establishment)"
+                                            aria-label="Register number or book journal of establishment"
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <input
+                                            type="file"
+                                            className="form-input"
+                                            onChange={(e) => setCreateForm({ ...createForm, digital_copy: e.target.files[0] })}
+                                            accept="image/*,application/pdf"
+                                            aria-label="Digital copy attachment"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="company-asset-requests-modal-signatures">
+                                    {REQUEST_SIGNATURE_FIELDS.map((field) => (
+                                        <label key={field.key} className="company-asset-requests-signature-chip">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!createForm[field.key]}
+                                                onChange={(e) =>
+                                                    setCreateForm({
+                                                        ...createForm,
+                                                        [field.key]: e.target.checked,
+                                                    })
+                                                }
+                                            />
+                                            <span>{field.fullLabel}</span>
+                                        </label>
+                                    ))}
+                                </div>
+
+                                <div className="company-asset-requests-modal-footer">
+                                    <button type="button" className="btn btn-secondary" style={{ width: 'auto' }} disabled={submitting} onClick={() => setShowCreateForm(false)}>
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn btn-primary company-asset-requests-submit-btn" disabled={submitting}>
+                                        {submitting ? 'Creating...' : 'Create Request'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
 
-            <div className="card">
-                <div className="card-header">
-                    <h2 className="card-title">All Requests</h2>
-                </div>
-
-                <div className="table-container">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Administrative #</th>
-                                <th>Title</th>
-                                <th>Attribution Order</th>
-                                <th>Body Designation</th>
-                                <th>Reg. (Corpse)</th>
-                                <th>Reg. (Est.)</th>
-                                <th>Signed (Company)</th>
-                                <th>Signed (Leader)</th>
-                                <th>Signed (Regional)</th>
-                                <th>Signed (Representative)</th>
-                                <th>Digital Copy</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {requests.length === 0 ? (
-                                <tr>
-                                    <td colSpan="12" style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
-                                        No company asset requests found.
-                                    </td>
-                                </tr>
-                            ) : (
-                                requests.map((r) => {
-                                    const orderId = r.attribution_order;
-                                    const order = ordersById[orderId];
-                                    return (
-                                        <tr
-                                            key={r.company_asset_request_id}
-                                            className="hover-row"
-                                            onClick={() => openEditModal(r)}
-                                            style={{ cursor: 'pointer' }}
-                                            title="Click to edit signatures"
-                                        >
-                                            <td>#{r.company_asset_request_id}</td>
-                                            <td>{r.administrative_serial_number || '-'}</td>
-                                            <td>{r.title_of_demand || '-'}</td>
-                                            <td>{order?.attribution_order_full_code || `#${orderId}`}</td>
-                                            <td>{r.organization_body_designation || '-'}</td>
-                                            <td>{r.register_number_or_book_journal_of_corpse || '-'}</td>
-                                            <td>{r.register_number_or_book_journal_of_establishment || '-'}</td>
-                                            <td>{r.is_signed_by_company ? 'Yes' : 'No'}</td>
-                                            <td>{r.is_signed_by_company_leader ? 'Yes' : 'No'}</td>
-                                            <td>{r.is_signed_by_regional_provider ? 'Yes' : 'No'}</td>
-                                            <td>{r.is_signed_by_company_representative ? 'Yes' : 'No'}</td>
-                                            <td>{r.digital_copy ? 'Yes' : 'No'}</td>
-                                        </tr>
-                                    );
-                                })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             {showEditModal && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.4)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 'var(--space-6)',
-                        zIndex: 50,
-                    }}
-                    onClick={closeEditModal}
-                >
-                    <div
-                        className="card"
-                        style={{ width: '100%', maxWidth: 520 }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 className="card-title">Edit Signatures</h2>
-                            <button type="button" className="btn btn-secondary" style={{ width: 'auto' }} onClick={closeEditModal}>
-                                Close
+                <div className="modal-overlay company-asset-requests-modal-overlay" onClick={closeEditModal}>
+                    <div className="modal company-asset-requests-edit-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header company-asset-requests-modal-header">
+                            <div>
+                                <div className="modal-title">Edit Signatures</div>
+                                <div className="company-asset-requests-subtle-text">Request #{editingRequest?.company_asset_request_id}</div>
+                            </div>
+                            <button type="button" className="modal-close" onClick={closeEditModal}>
+                                ✕
                             </button>
                         </div>
-                        <div className="card-body">
-                            <div style={{ marginBottom: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
-                                Request #{editingRequest?.company_asset_request_id}
-                            </div>
-
+                        <div className="modal-body company-asset-requests-modal-body">
                             <form onSubmit={handleSaveSignatures}>
-                                <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!editForm.is_signed_by_company}
-                                            onChange={(e) => requestToggleSignature('is_signed_by_company', e.target.checked)}
-                                            disabled={submitting}
-                                        />
-                                        <span>Signed by company</span>
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!editForm.is_signed_by_company_leader}
-                                            onChange={(e) => requestToggleSignature('is_signed_by_company_leader', e.target.checked)}
-                                            disabled={submitting}
-                                        />
-                                        <span>Signed by company leader</span>
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!editForm.is_signed_by_regional_provider}
-                                            onChange={(e) => requestToggleSignature('is_signed_by_regional_provider', e.target.checked)}
-                                            disabled={submitting}
-                                        />
-                                        <span>Signed by regional provider</span>
-                                    </label>
-                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <input
-                                            type="checkbox"
-                                            checked={!!editForm.is_signed_by_company_representative}
-                                            onChange={(e) => requestToggleSignature('is_signed_by_company_representative', e.target.checked)}
-                                            disabled={submitting}
-                                        />
-                                        <span>Signed by company representative</span>
-                                    </label>
+                                <div className="company-asset-requests-modal-signatures">
+                                    {REQUEST_SIGNATURE_FIELDS.map((field) => (
+                                        <label key={field.key} className="company-asset-requests-signature-chip">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!editForm[field.key]}
+                                                onChange={(e) => requestToggleSignature(field.key, e.target.checked)}
+                                                disabled={submitting}
+                                            />
+                                            <span>{field.fullLabel}</span>
+                                        </label>
+                                    ))}
                                 </div>
 
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-6)' }}>
-                                    <button type="button" className="btn btn-secondary" onClick={closeEditModal} disabled={submitting}>
+                                <div className="company-asset-requests-modal-footer">
+                                    <button type="button" className="btn btn-secondary" style={{ width: 'auto' }} onClick={closeEditModal} disabled={submitting}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn btn-primary" disabled={submitting}>
+                                    <button type="submit" className="btn btn-primary company-asset-requests-submit-btn" disabled={submitting}>
                                         {submitting ? 'Saving...' : 'Save'}
                                     </button>
                                 </div>
@@ -602,48 +597,29 @@ const CompanyAssetRequestsPage = () => {
             )}
 
             {showSaveConfirmModal && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.55)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 'var(--space-6)',
-                        zIndex: 65,
-                    }}
-                    onClick={cancelSaveSignatures}
-                >
-                    <div
-                        className="card"
-                        style={{ width: '100%', maxWidth: 560 }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="card-header">
-                            <h2 className="card-title">Confirm Save</h2>
+                <div className="modal-overlay company-asset-requests-modal-overlay" onClick={cancelSaveSignatures}>
+                    <div className="modal company-asset-requests-confirm-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header company-asset-requests-modal-header">
+                            <div className="modal-title">Confirm Save</div>
                         </div>
-                        <div className="card-body">
-                            <div style={{ marginBottom: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
+                        <div className="modal-body company-asset-requests-modal-body">
+                            <div className="company-asset-requests-subtle-text">
                                 You are about to set the following signature(s) to Yes. This is irreversible.
                             </div>
 
-                            <div style={{ marginBottom: 'var(--space-6)' }}>
+                            <div className="company-asset-requests-confirm-list">
                                 {pendingSaveFields.map((f) => (
-                                    <div key={f} style={{ fontWeight: 500, marginBottom: 'var(--space-2)' }}>
+                                    <div key={f} className="company-asset-requests-confirm-item">
                                         {signatureFieldLabel(f)}
                                     </div>
                                 ))}
                             </div>
 
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>
-                                <button type="button" className="btn btn-secondary" onClick={cancelSaveSignatures} disabled={submitting}>
+                            <div className="company-asset-requests-modal-footer">
+                                <button type="button" className="btn btn-secondary" style={{ width: 'auto' }} onClick={cancelSaveSignatures} disabled={submitting}>
                                     Cancel
                                 </button>
-                                <button type="button" className="btn btn-primary" onClick={confirmSaveSignatures} disabled={submitting}>
+                                <button type="button" className="btn btn-primary company-asset-requests-submit-btn" onClick={confirmSaveSignatures} disabled={submitting}>
                                     Confirm
                                 </button>
                             </div>
@@ -653,36 +629,17 @@ const CompanyAssetRequestsPage = () => {
             )}
 
             {showAllSignaturesModal && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.55)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 'var(--space-6)',
-                        zIndex: 70,
-                    }}
-                    onClick={closeAllSignaturesModal}
-                >
-                    <div
-                        className="card"
-                        style={{ width: '100%', maxWidth: 520 }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="card-header">
-                            <h2 className="card-title">All the signatures are established</h2>
+                <div className="modal-overlay company-asset-requests-modal-overlay" onClick={closeAllSignaturesModal}>
+                    <div className="modal company-asset-requests-confirm-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header company-asset-requests-modal-header">
+                            <div className="modal-title">All signatures are established</div>
                         </div>
-                        <div className="card-body">
-                            <div style={{ marginBottom: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
+                        <div className="modal-body company-asset-requests-modal-body">
+                            <div className="company-asset-requests-subtle-text">
                                 All required signatures have been set to Yes.
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                <button type="button" className="btn btn-primary" onClick={closeAllSignaturesModal} disabled={submitting}>
+                            <div className="company-asset-requests-modal-footer">
+                                <button type="button" className="btn btn-primary company-asset-requests-submit-btn" onClick={closeAllSignaturesModal} disabled={submitting}>
                                     OK
                                 </button>
                             </div>
@@ -690,7 +647,7 @@ const CompanyAssetRequestsPage = () => {
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 };
 

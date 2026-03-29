@@ -7137,16 +7137,7 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
         if denial:
             return denial
 
-        qs = (
-            AssetMovement.objects.filter(Q(status="pending") | Q(status__isnull=True))
-            .filter(
-                Q(movement_reason="return_to_owner")
-                | Q(movement_reason="maintenance_create")
-                | Q(movement_reason__startswith="maintenance_create_")
-                | Q(movement_reason="Maintenance")
-            )
-            .order_by("-movement_datetime", "-asset_movement_id")
-        )
+        qs = AssetMovement.objects.filter(Q(status="pending") | Q(status__isnull=True)).order_by("-movement_datetime", "-asset_movement_id")
 
         data = [
             {
@@ -7180,15 +7171,6 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
         movement = AssetMovement.objects.filter(asset_movement_id=movement_id).first()
         if not movement:
             return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        if not (
-            movement.movement_reason in {"return_to_owner", "maintenance_create", "Maintenance"}
-            or str(movement.movement_reason).startswith("maintenance_create_")
-        ):
-            return Response(
-                {"error": "Only return_to_owner or maintenance_create movements can be decided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
         if movement.status != "pending":
             return Response({"error": "Only pending movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { authService } from '../services/api';
+import { authService, movementApprovalService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const OptionsPage = () => {
@@ -24,6 +24,11 @@ const OptionsPage = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
     const [destMode, setDestMode] = useState('maintenance_room');
+    const [showAutoAcceptConfirm, setShowAutoAcceptConfirm] = useState(false);
+    const [autoAcceptLoading, setAutoAcceptLoading] = useState(false);
+    const [autoAcceptSubmitting, setAutoAcceptSubmitting] = useState(false);
+    const [autoAcceptEligibleCount, setAutoAcceptEligibleCount] = useState(0);
+    const [autoAcceptEligibleIds, setAutoAcceptEligibleIds] = useState([]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -387,12 +392,30 @@ const OptionsPage = () => {
                                                 name="autoAcceptAssetMovements"
                                                 value="enabled"
                                                 defaultChecked={(typeof window !== 'undefined' && localStorage.getItem('autoAcceptAssetMovements') === 'enabled')}
-                                                onChange={() => {
+                                                onChange={async () => {
+                                                    // When enabling, ask whether to accept already pending movements
+                                                    setShowAutoAcceptConfirm(true);
+                                                    setAutoAcceptLoading(true);
+                                                    setAutoAcceptEligibleCount(0);
+                                                    setAutoAcceptEligibleIds([]);
                                                     try {
-                                                        localStorage.setItem('autoAcceptAssetMovements', 'enabled');
-                                                        setMessage({ type: 'success', text: 'Preference saved' });
-                                                        setTimeout(() => setMessage({ type: '', text: '' }), 1500);
-                                                    } catch {}
+                                                        const rows = await movementApprovalService.getPendingAssetMovements();
+                                                        const eligible = (Array.isArray(rows) ? rows : []).filter((m) => {
+                                                            const r = String(m.movement_reason || '');
+                                                            return r === 'return_to_owner'
+                                                                || r === 'maintenance_step_return_to_owner'
+                                                                || r === 'maintenance_create'
+                                                                || r === 'Maintenance'
+                                                                || r.startsWith('maintenance_create_');
+                                                        });
+                                                        setAutoAcceptEligibleIds(eligible.map(m => m.asset_movement_id));
+                                                        setAutoAcceptEligibleCount(eligible.length);
+                                                    } catch {
+                                                        setAutoAcceptEligibleIds([]);
+                                                        setAutoAcceptEligibleCount(0);
+                                                    } finally {
+                                                        setAutoAcceptLoading(false);
+                                                    }
                                                 }}
                                             />
                                             <div>
@@ -406,6 +429,77 @@ const OptionsPage = () => {
                                 </div>
                                 {message.text && message.type === 'success' && (
                                     <div className="success-message">{message.text}</div>
+                                )}
+                                
+                                {showAutoAcceptConfirm && (
+                                    <div className="modal-overlay" onClick={() => !autoAcceptSubmitting && setShowAutoAcceptConfirm(false)}>
+                                        <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                            <div className="modal-header">
+                                                <h3 className="modal-title">Enable Auto-Accept</h3>
+                                                <button className="modal-close" onClick={() => !autoAcceptSubmitting && setShowAutoAcceptConfirm(false)}>
+                                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <div className="modal-body">
+                                                {autoAcceptLoading ? (
+                                                    <div style={{ color: 'var(--color-text-secondary)' }}>Loading pending movements...</div>
+                                                ) : (
+                                                    <>
+                                                        <p style={{ marginBottom: 'var(--space-4)' }}>
+                                                            Auto-accept is being enabled. There are {autoAcceptEligibleCount} eligible pending asset movements.
+                                                            Do you want to accept them now?
+                                                        </p>
+                                                    </>
+                                                )}
+                                            </div>
+                                            <div className="modal-footer">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary"
+                                                    onClick={() => {
+                                                        if (autoAcceptSubmitting) return;
+                                                        try {
+                                                            localStorage.setItem('autoAcceptAssetMovements', 'enabled');
+                                                            setMessage({ type: 'success', text: 'Auto-accept enabled' });
+                                                            setTimeout(() => setMessage({ type: '', text: '' }), 1500);
+                                                        } catch {}
+                                                        setShowAutoAcceptConfirm(false);
+                                                    }}
+                                                    disabled={autoAcceptSubmitting}
+                                                >
+                                                    Enable Only
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-primary"
+                                                    onClick={async () => {
+                                                        if (autoAcceptSubmitting) return;
+                                                        setAutoAcceptSubmitting(true);
+                                                        try {
+                                                            const tasks = (autoAcceptEligibleIds || []).map(id =>
+                                                                movementApprovalService.decideAssetMovement(id, 'accepted')
+                                                            );
+                                                            await Promise.allSettled(tasks);
+                                                            localStorage.setItem('autoAcceptAssetMovements', 'enabled');
+                                                            setMessage({ type: 'success', text: 'Auto-accept enabled and pending movements accepted' });
+                                                            setTimeout(() => setMessage({ type: '', text: '' }), 1500);
+                                                        } catch {
+                                                            setMessage({ type: 'error', text: 'Failed to accept pending movements' });
+                                                        } finally {
+                                                            setAutoAcceptSubmitting(false);
+                                                            setShowAutoAcceptConfirm(false);
+                                                        }
+                                                    }}
+                                                    disabled={autoAcceptLoading || autoAcceptSubmitting}
+                                                >
+                                                    Accept All Now
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 )}
                             </div>
                         )}

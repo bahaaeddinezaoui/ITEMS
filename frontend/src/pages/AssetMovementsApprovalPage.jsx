@@ -13,6 +13,7 @@ const AssetMovementsApprovalPage = () => {
     const [success, setSuccess] = useState('');
 
     const [pendingMoves, setPendingMoves] = useState([]);
+    const [autoAcceptProcessed, setAutoAcceptProcessed] = useState(false);
 
     const loadPending = async () => {
         setLoading(true);
@@ -39,15 +40,19 @@ const AssetMovementsApprovalPage = () => {
         if (!auto) return;
         if (!isAssetResponsible) return;
         if (!Array.isArray(pendingMoves) || pendingMoves.length === 0) return;
+        if (autoAcceptProcessed) return;
+        const eligible = pendingMoves;
+        if (eligible.length === 0) return;
         (async () => {
             try {
                 setSubmittingKey('auto');
                 setError('');
                 setSuccess('');
-                const tasks = pendingMoves.map(m => movementApprovalService.decideAssetMovement(m.asset_movement_id, 'accepted'));
+                const tasks = eligible.map(m => movementApprovalService.decideAssetMovement(m.asset_movement_id, 'accepted'));
                 await Promise.allSettled(tasks);
                 await loadPending();
                 setSuccess('All pending movements have been auto-accepted.');
+                setAutoAcceptProcessed(true);
             } catch (e) {
                 setError(e?.response?.data?.error || 'Failed to auto-accept movements');
             } finally {
@@ -118,6 +123,7 @@ const AssetMovementsApprovalPage = () => {
                                         <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Asset</th>
                                         <th style={{ padding: 'var(--space-3) var(--space-4)' }}>From Location</th>
                                         <th style={{ padding: 'var(--space-3) var(--space-4)' }}>To Location</th>
+                                        <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Reason</th>
                                         <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Date</th>
                                         <th style={{ padding: 'var(--space-3) var(--space-4)' }}>Status</th>
                                         <th style={{ textAlign: 'right', padding: 'var(--space-3) var(--space-4)' }}>Actions</th>
@@ -134,6 +140,7 @@ const AssetMovementsApprovalPage = () => {
                                                 <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.asset_id}</td>
                                                 <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.source_location_id}</td>
                                                 <td style={{ padding: 'var(--space-3) var(--space-4)' }}>#{m.destination_location_id}</td>
+                                                <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{String(m.movement_reason || '')}</td>
                                                 <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.movement_datetime ? String(m.movement_datetime) : ''}</td>
                                                 <td style={{ padding: 'var(--space-3) var(--space-4)' }}>{m.status}</td>
                                                 <td style={{ textAlign: 'right', display: 'flex', justifyContent: 'flex-end', padding: 'var(--space-3) var(--space-4)' }}>
