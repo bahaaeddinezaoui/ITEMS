@@ -68100,3 +68100,370 @@ Response Body: {"detail":"No AttributionOrder matches the given query."}
 [2026-03-29 21:41:04.691085] START GET /api/attribution-orders/
 [2026-03-29 21:41:04.714750] END   GET /api/company-asset-requests/ -> 200
 [2026-03-29 21:41:04.836846] END   GET /api/attribution-orders/ -> 200
+[2026-03-29 22:21:26.657183] START GET /api/asset-attribute-definitions/
+[2026-03-29 22:21:26.658369] START GET /api/asset-types/
+[2026-03-29 22:21:26.779724] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-29 22:21:26.785415] START GET /api/asset-attribute-definitions/
+[2026-03-29 22:21:26.832396] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-03-29 22:21:26.867878] END   GET /api/asset-types/ -> 200
+[2026-03-29 22:21:26.874788] START GET /api/asset-types/
+[2026-03-29 22:21:26.914011] END   GET /api/asset-types/ -> 200
+[2026-03-29 22:21:32.397076] START POST /api/auth/login/
+[2026-03-29 22:21:32.512332] END   POST /api/auth/login/ -> 200
+[2026-03-29 22:21:37.721236] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:21:37.727120] START GET /api/stock-item-types/
+[2026-03-29 22:21:37.786691] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:21:37.789934] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:21:37.800282] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:21:37.804081] START GET /api/stock-item-types/
+[2026-03-29 22:21:37.848909] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:21:37.949345] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:25:15.606988] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:25:15.676030] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:25:17.487326] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:25:17.548975] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:25:22.468934] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:25:22.518001] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:18.918089] START GET /api/stock-item-types/
+[2026-03-29 22:26:18.919827] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:18.971057] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:18.975115] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:18.979367] START GET /api/stock-item-types/
+[2026-03-29 22:26:18.981922] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:19.035380] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:19.035814] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:19.745805] START GET /api/stock-item-types/
+[2026-03-29 22:26:19.749418] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:19.799098] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:19.802338] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:19.809363] START GET /api/stock-item-types/
+[2026-03-29 22:26:19.812723] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:19.852037] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:19.963661] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:20.372866] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:20.519937] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:21.445587] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:21.486120] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:21.764866] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:21.915462] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:22.326085] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:22.378397] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:25.439469] START GET /api/consumable-types/
+[2026-03-29 22:26:25.450219] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:25.498903] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:25.502472] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:25.508488] START GET /api/consumable-types/
+[2026-03-29 22:26:25.512433] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:25.559020] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:25.670673] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:26.604074] START GET /api/stock-item-types/
+[2026-03-29 22:26:26.604580] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:26.650919] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:26.651138] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:26.659195] START GET /api/stock-item-types/
+[2026-03-29 22:26:26.659999] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:26.715557] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:26.823110] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:27.305349] START GET /api/consumable-types/
+[2026-03-29 22:26:27.306123] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:27.351590] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:27.356334] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:27.357607] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:27.361710] START GET /api/consumable-types/
+[2026-03-29 22:26:27.406822] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:27.407161] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:28.610781] START GET /api/stock-item-types/
+[2026-03-29 22:26:28.614279] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:28.660587] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:28.661589] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:28.668683] START GET /api/stock-item-types/
+[2026-03-29 22:26:28.669227] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:28.715415] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:28.821251] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:29.403222] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:29.450238] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:29.965245] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:30.011531] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:30.348471] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:30.411001] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:30.656007] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:30.803645] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:31.502726] START GET /api/consumable-types/
+[2026-03-29 22:26:31.506366] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:31.547241] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:31.553606] START GET /api/consumable-types/
+[2026-03-29 22:26:31.556783] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:31.562296] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:31.594226] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:31.599462] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:32.271866] START GET /api/consumable-types/
+[2026-03-29 22:26:32.275124] START GET /api/consumable-models/
+[2026-03-29 22:26:32.277593] START GET /api/consumable-brands/
+[2026-03-29 22:26:32.281082] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:32.328477] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:32.338157] END   GET /api/consumable-models/ -> 200
+[2026-03-29 22:26:32.342420] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:32.337892] START GET /api/consumable-types/
+[2026-03-29 22:26:32.346638] END   GET /api/consumable-brands/ -> 200
+[2026-03-29 22:26:32.351339] START GET /api/consumable-models/
+[2026-03-29 22:26:32.359823] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:32.360654] START GET /api/consumable-brands/
+[2026-03-29 22:26:32.395338] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:32.404012] END   GET /api/consumable-models/ -> 200
+[2026-03-29 22:26:32.410162] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:32.410248] END   GET /api/consumable-brands/ -> 200
+[2026-03-29 22:26:33.550541] START GET /api/consumable-types/
+[2026-03-29 22:26:33.552254] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:33.614607] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:33.615074] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:33.625607] START GET /api/consumable-types/
+[2026-03-29 22:26:33.628263] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:33.669845] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:33.670085] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:34.787510] START GET /api/stock-item-types/
+[2026-03-29 22:26:34.788042] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:34.835195] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:34.838077] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:34.841835] START GET /api/stock-item-types/
+[2026-03-29 22:26:34.844972] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:26:34.889224] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:26:34.986435] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:26:35.837395] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:26:36.002520] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:26:37.207257] START GET /api/consumable-types/
+[2026-03-29 22:26:37.207846] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:37.252613] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:37.259247] START GET /api/consumable-types/
+[2026-03-29 22:26:37.307844] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:37.369465] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:37.375748] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:37.420258] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:38.547465] START GET /api/consumable-types/
+[2026-03-29 22:26:38.553026] START GET /api/consumable-models/
+[2026-03-29 22:26:38.553770] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:38.554464] START GET /api/consumable-brands/
+[2026-03-29 22:26:38.610334] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:38.610610] END   GET /api/consumable-models/ -> 200
+[2026-03-29 22:26:38.611306] END   GET /api/consumable-brands/ -> 200
+[2026-03-29 22:26:38.619615] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:26:38.624702] START GET /api/consumable-types/
+[2026-03-29 22:26:38.625379] START GET /api/consumable-models/
+[2026-03-29 22:26:38.629851] START GET /api/consumable-brands/
+[2026-03-29 22:26:38.635557] START GET /api/consumable-attribute-definitions/
+[2026-03-29 22:26:38.678848] END   GET /api/consumable-models/ -> 200
+[2026-03-29 22:26:38.679394] END   GET /api/consumable-types/ -> 200
+[2026-03-29 22:26:38.686405] END   GET /api/consumable-brands/ -> 200
+[2026-03-29 22:26:38.687454] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-03-29 22:27:08.669211] START GET /api/stock-item-brands/
+[2026-03-29 22:27:08.673043] START GET /api/stock-item-types/
+[2026-03-29 22:27:08.673623] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:27:08.678068] START GET /api/stock-item-assignments/
+[2026-03-29 22:27:08.684722] START GET /api/persons/
+[2026-03-29 22:27:08.687815] START GET /api/locations/
+[2026-03-29 22:27:08.717687] END   GET /api/stock-item-brands/ -> 200
+[2026-03-29 22:27:08.734547] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:27:08.734414] START GET /api/stock-item-brands/
+[2026-03-29 22:27:08.739248] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-29 22:27:08.747592] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:27:08.750680] START GET /api/stock-item-assignments/
+[2026-03-29 22:27:08.789251] END   GET /api/stock-item-brands/ -> 200
+[2026-03-29 22:27:08.789537] END   GET /api/persons/ -> 200
+[2026-03-29 22:27:08.795502] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:27:08.798193] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-29 22:27:08.799193] START GET /api/persons/
+[2026-03-29 22:27:08.799870] END   GET /api/locations/ -> 200
+[2026-03-29 22:27:08.808502] START GET /api/locations/
+[2026-03-29 22:27:08.827819] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:27:08.832746] START GET /api/stock-item-types/
+[2026-03-29 22:27:08.845529] START GET /api/stock-item-models/
+[2026-03-29 22:27:08.847454] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:27:08.879671] END   GET /api/persons/ -> 200
+[2026-03-29 22:27:08.893262] END   GET /api/stock-item-models/ -> 200
+[2026-03-29 22:27:08.894158] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:27:08.895460] END   GET /api/locations/ -> 200
+[2026-03-29 22:27:08.911126] START GET /api/stock-items/
+[2026-03-29 22:27:08.984284] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:27:09.076198] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:27:11.337309] START GET /api/stock-item-attributes/
+[2026-03-29 22:27:11.386966] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:28:02.405092] START PUT /api/stock-items/1/
+[2026-03-29 22:28:02.470630] END   PUT /api/stock-items/1/ -> 403
+Response Body: {"error":"Only superusers can update stockitem"}
+[2026-03-29 22:28:14.311049] START GET /api/stock-item-attributes/
+[2026-03-29 22:28:14.360119] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:28:39.785765] START POST /api/stock-items/1/split/
+[2026-03-29 22:28:39.882520] END   POST /api/stock-items/1/split/ -> 201
+[2026-03-29 22:28:39.893938] START GET /api/stock-items/
+[2026-03-29 22:28:40.054771] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:28:45.484977] START GET /api/stock-item-attributes/
+[2026-03-29 22:28:45.536940] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:29:36.235787] START GET /api/stock-item-attributes/
+[2026-03-29 22:29:36.386694] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:29:40.365628] START GET /api/stock-item-attributes/
+[2026-03-29 22:29:40.415934] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:29:42.436400] START GET /api/stock-item-attributes/
+[2026-03-29 22:29:42.488058] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:29:44.965320] START GET /api/stock-item-attributes/
+[2026-03-29 22:29:45.017549] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:29:46.938283] START GET /api/stock-item-attributes/
+[2026-03-29 22:29:46.991112] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:29:50.902582] START GET /api/stock-item-attributes/
+[2026-03-29 22:29:50.956741] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:30:03.870445] START POST /api/stock-items/2/split/
+[2026-03-29 22:30:03.961553] END   POST /api/stock-items/2/split/ -> 201
+[2026-03-29 22:30:03.970418] START GET /api/stock-items/
+[2026-03-29 22:30:04.010359] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:30:04.026970] START GET /api/stock-item-attributes/
+[2026-03-29 22:30:04.071815] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:30:07.624001] START GET /api/stock-item-attributes/
+[2026-03-29 22:30:07.672945] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:30:10.669695] START GET /api/stock-item-attributes/
+[2026-03-29 22:30:10.718887] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:30:12.156820] START GET /api/stock-item-attributes/
+[2026-03-29 22:30:12.330398] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:31:47.056891] START GET /api/stock-item-attributes/
+[2026-03-29 22:31:47.107611] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:33:08.935452] START POST /api/stock-items/3/split/
+[2026-03-29 22:33:09.013394] END   POST /api/stock-items/3/split/ -> 201
+[2026-03-29 22:33:09.021918] START GET /api/stock-items/
+[2026-03-29 22:33:09.056921] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:33:17.066336] START GET /api/stock-item-attributes/
+[2026-03-29 22:33:17.183049] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:33:26.010185] START GET /api/stock-items/3/current-location/
+[2026-03-29 22:33:26.063445] END   GET /api/stock-items/3/current-location/ -> 200
+[2026-03-29 22:33:27.847782] START GET /api/stock-item-attributes/
+[2026-03-29 22:33:27.900918] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:33:33.488595] START GET /api/stock-item-attributes/
+[2026-03-29 22:33:33.537810] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:33:35.475404] START GET /api/stock-item-attributes/
+[2026-03-29 22:33:35.623105] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:33:37.757272] START GET /api/stock-item-attributes/
+[2026-03-29 22:33:37.808666] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:33:39.391247] START GET /api/stock-item-attributes/
+[2026-03-29 22:33:39.440741] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:33:41.149753] START GET /api/stock-item-attributes/
+[2026-03-29 22:33:41.201981] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:33:51.849530] START GET /api/stock-item-brands/
+[2026-03-29 22:33:51.850074] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:33:51.850994] START GET /api/locations/
+[2026-03-29 22:33:51.853272] START GET /api/persons/
+[2026-03-29 22:33:51.863330] START GET /api/stock-item-assignments/
+[2026-03-29 22:33:51.864037] START GET /api/stock-item-types/
+[2026-03-29 22:33:51.912523] END   GET /api/stock-item-brands/ -> 200
+[2026-03-29 22:33:51.918108] START GET /api/stock-item-brands/
+[2026-03-29 22:33:51.920625] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:33:51.929990] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-29 22:33:51.930034] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:33:51.930968] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:33:51.937219] START GET /api/stock-item-assignments/
+[2026-03-29 22:33:51.945063] END   GET /api/persons/ -> 200
+[2026-03-29 22:33:51.948357] START GET /api/stock-item-models/
+[2026-03-29 22:33:51.951674] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:33:51.955279] END   GET /api/locations/ -> 200
+[2026-03-29 22:33:51.955378] END   GET /api/stock-item-brands/ -> 200
+[2026-03-29 22:33:51.960393] START GET /api/persons/
+[2026-03-29 22:33:51.962348] START GET /api/locations/
+[2026-03-29 22:33:51.967827] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:33:51.973731] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-29 22:33:52.005565] END   GET /api/persons/ -> 200
+[2026-03-29 22:33:52.009468] END   GET /api/locations/ -> 200
+[2026-03-29 22:33:52.093701] END   GET /api/stock-item-models/ -> 200
+[2026-03-29 22:33:52.094203] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:33:52.118455] START GET /api/stock-items/
+[2026-03-29 22:33:52.149898] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:34:00.198161] START GET /api/stock-item-types/
+[2026-03-29 22:34:00.199424] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:34:00.200387] START GET /api/persons/
+[2026-03-29 22:34:00.199949] START GET /api/locations/
+[2026-03-29 22:34:00.198708] START GET /api/stock-item-brands/
+ts/
+[2026-03-29 22:34:00.254984] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:34:00.255153] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:34:00.270627] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:34:00.272330] START GET /api/stock-item-types/
+[2026-03-29 22:34:00.278686] END   GET /api/stock-item-brands/ -> 200
+[2026-03-29 22:34:00.283613] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-29 22:34:00.298094] START GET /api/stock-item-models/
+[2026-03-29 22:34:00.299954] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:34:00.320008] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:34:00.320053] END   GET /api/persons/ -> 200
+[2026-03-29 22:34:00.320175] END   GET /api/locations/ -> 200
+[2026-03-29 22:34:00.326733] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:34:00.330115] START GET /api/stock-item-brands/
+[2026-03-29 22:34:00.332313] START GET /api/stock-item-assignments/
+[2026-03-29 22:34:00.333062] START GET /api/persons/
+[2026-03-29 22:34:00.334764] START GET /api/locations/
+[2026-03-29 22:34:00.343945] END   GET /api/stock-item-models/ -> 200
+[2026-03-29 22:34:00.346930] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:34:00.360832] START GET /api/stock-items/
+[2026-03-29 22:34:00.371297] END   GET /api/stock-item-brands/ -> 200
+[2026-03-29 22:34:00.372985] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-29 22:34:00.410759] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:34:00.427175] END   GET /api/persons/ -> 200
+[2026-03-29 22:34:00.435192] END   GET /api/locations/ -> 200
+[2026-03-29 22:34:02.800375] START GET /api/stock-item-attributes/
+[2026-03-29 22:34:02.855486] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:34:11.541827] START POST /api/stock-items/1/split/
+[2026-03-29 22:34:11.732809] END   POST /api/stock-items/1/split/ -> 201
+[2026-03-29 22:34:11.744595] START GET /api/stock-items/
+[2026-03-29 22:34:11.798407] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:34:13.406128] START GET /api/stock-item-attributes/
+[2026-03-29 22:34:13.452456] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:36:43.387253] START GET /api/stock-item-types/
+[2026-03-29 22:36:43.387961] START GET /api/stock-item-brands/
+[2026-03-29 22:36:43.389544] START GET /api/locations/
+[2026-03-29 22:36:43.388473] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:36:43.392833] START GET /api/persons/
+[2026-03-29 22:36:43.394044] START GET /api/stock-item-assignments/
+[2026-03-29 22:36:43.557896] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:36:43.577158] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-29 22:36:43.577275] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:36:43.579066] END   GET /api/stock-item-brands/ -> 200
+[2026-03-29 22:36:43.589326] START GET /api/stock-item-types/
+[2026-03-29 22:36:43.605776] START GET /api/stock-item-models/
+[2026-03-29 22:36:43.619887] START GET /api/stock-item-type-attributes/
+[2026-03-29 22:36:43.622438] START GET /api/stock-item-assignments/
+[2026-03-29 22:36:43.634749] END   GET /api/persons/ -> 200
+[2026-03-29 22:36:43.639564] END   GET /api/locations/ -> 200
+[2026-03-29 22:36:43.643029] END   GET /api/stock-item-types/ -> 200
+[2026-03-29 22:36:43.643600] START GET /api/stock-item-attribute-definitions/
+[2026-03-29 22:36:43.647110] START GET /api/stock-item-brands/
+[2026-03-29 22:36:43.651045] START GET /api/persons/
+[2026-03-29 22:36:43.658683] END   GET /api/stock-item-models/ -> 200
+[2026-03-29 22:36:43.664367] START GET /api/locations/
+[2026-03-29 22:36:43.668775] END   GET /api/stock-item-type-attributes/ -> 200
+[2026-03-29 22:36:43.668858] END   GET /api/stock-item-assignments/ -> 200
+[2026-03-29 22:36:43.674987] START GET /api/stock-items/
+[2026-03-29 22:36:43.688057] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-03-29 22:36:43.690776] END   GET /api/stock-item-brands/ -> 200
+[2026-03-29 22:36:43.720310] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:36:43.721184] END   GET /api/persons/ -> 200
+[2026-03-29 22:36:43.736449] END   GET /api/locations/ -> 200
+[2026-03-29 22:36:45.076937] START GET /api/stock-item-attributes/
+[2026-03-29 22:36:45.130613] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:36:48.577286] START GET /api/stock-item-attributes/
+[2026-03-29 22:36:48.627202] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:36:51.450143] START GET /api/stock-item-attributes/
+[2026-03-29 22:36:51.501624] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:36:55.417536] START GET /api/stock-item-attributes/
+[2026-03-29 22:36:55.468508] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:37:08.980202] START POST /api/stock-items/1/split/
+[2026-03-29 22:37:09.091351] END   POST /api/stock-items/1/split/ -> 201
+[2026-03-29 22:37:09.100475] START GET /api/stock-items/
+[2026-03-29 22:37:09.150067] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:37:12.134396] START GET /api/stock-item-attributes/
+[2026-03-29 22:37:12.183974] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:37:16.230967] START GET /api/stock-item-attributes/
+[2026-03-29 22:37:16.283710] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:37:25.428984] START GET /api/stock-item-attributes/
+[2026-03-29 22:37:25.479804] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:37:39.304759] START POST /api/stock-items/1/split/
+[2026-03-29 22:37:39.389067] END   POST /api/stock-items/1/split/ -> 201
+[2026-03-29 22:37:39.399175] START GET /api/stock-items/
+[2026-03-29 22:37:39.453680] END   GET /api/stock-items/ -> 200
+[2026-03-29 22:37:39.475920] START GET /api/stock-item-attributes/
+[2026-03-29 22:37:39.525192] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:37:42.543130] START GET /api/stock-item-attributes/
+[2026-03-29 22:37:42.696068] END   GET /api/stock-item-attributes/ -> 200
+[2026-03-29 22:37:47.759100] START GET /api/stock-item-attributes/
+[2026-03-29 22:37:47.920591] END   GET /api/stock-item-attributes/ -> 200

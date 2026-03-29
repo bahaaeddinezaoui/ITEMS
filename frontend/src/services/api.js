@@ -1374,6 +1374,11 @@ export const stockItemService = {
         const response = await api.post(`stock-items/${id}/suggest-for-destruction/`);
         return response.data;
     },
+
+    split: async (id, data) => {
+        const response = await api.post(`stock-items/${id}/split/`, data);
+        return response.data;
+    },
 };
 
 // Consumable service
@@ -1414,6 +1419,11 @@ export const consumableService = {
 
     suggestForDestruction: async (id) => {
         const response = await api.post(`consumables/${id}/suggest-for-destruction/`);
+        return response.data;
+    },
+
+    split: async (id, data) => {
+        const response = await api.post(`consumables/${id}/split/`, data);
         return response.data;
     },
 };

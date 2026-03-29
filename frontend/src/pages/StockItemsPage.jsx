@@ -39,6 +39,7 @@ const StockItemsPage = () => {
     const [stockItemAttributes, setStockItemAttributes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [successToast, setSuccessToast] = useState('');
 
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [movingStockItem, setMovingStockItem] = useState(null);
@@ -46,6 +47,18 @@ const StockItemsPage = () => {
     const [moveLocationLabel, setMoveLocationLabel] = useState('');
     const [selectedMoveLocationId, setSelectedMoveLocationId] = useState('');
     const [moveSubmitting, setMoveSubmitting] = useState(false);
+    const [showSplitModal, setShowSplitModal] = useState(false);
+    const [splittingStockItem, setSplittingStockItem] = useState(null);
+    const [splitAttributeOptions, setSplitAttributeOptions] = useState([]);
+    const [splitSubmitting, setSplitSubmitting] = useState(false);
+    const [splitFormData, setSplitFormData] = useState({
+        attribute_definition_id: '',
+        split_value: '',
+        new_item_name: '',
+        new_item_inventory_number: '',
+        new_item_status: 'in_stock',
+        destination_location_id: '',
+    });
 
     const [showAssignForm, setShowAssignForm] = useState(false);
     const [assigningStockItem, setAssigningStockItem] = useState(null);
@@ -154,6 +167,14 @@ const StockItemsPage = () => {
         navigate(qs ? `${location.pathname}?${qs}` : location.pathname, { replace: true });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isInstancesMode, createParam, selectedStockItemModel, showStockItemForm]);
+
+    useEffect(() => {
+        if (!successToast) return;
+        const timer = setTimeout(() => {
+            setSuccessToast('');
+        }, 3500);
+        return () => clearTimeout(timer);
+    }, [successToast]);
 
     const fetchLocations = async () => {
         try {
@@ -675,6 +696,7 @@ const StockItemsPage = () => {
     const isMaintenanceChief = userAccount?.roles?.some(r => r.role_code === 'maintenance_chief') || isSuperuser;
     const canMoveStockItems = isStockConsumableResponsible;
     const canAssignStockItems = isStockConsumableResponsible || isExploitationChief;
+    const canSplitStockItems = isStockConsumableResponsible;
 
     const canSuggestStockItemForDestruction = isMaintenanceChief;
 
@@ -713,12 +735,65 @@ const StockItemsPage = () => {
         setShowMoveModal(true);
     };
 
+    const openSplitModal = async (item) => {
+        setSplittingStockItem(item);
+        setSplitFormData({
+            attribute_definition_id: '',
+            split_value: '',
+            new_item_name: item.stock_item_name || '',
+            new_item_inventory_number: '',
+            new_item_status: item.stock_item_status || 'in_stock',
+            destination_location_id: '',
+        });
+        setSplitAttributeOptions([]);
+        setShowSplitModal(true);
+        setError(null);
+        try {
+            const attrs = await stockItemAttributeValueService.getByStockItem(item.stock_item_id);
+            const options = (Array.isArray(attrs) ? attrs : [])
+                .map((attr) => {
+                    const definitionId = Number(attr.stock_item_attribute_definition);
+                    const definition = attr.definition || definitionLookup.get(definitionId);
+                    const dt = String(definition?.data_type || '').toLowerCase();
+                    const isNumeric = ['number', 'numeric', 'decimal', 'int', 'integer', 'float', 'double'].includes(dt);
+                    return {
+                        attr,
+                        definitionId,
+                        definition,
+                        isNumeric,
+                    };
+                })
+                .filter((x) => x.isNumeric && x.attr?.value_number != null);
+            setSplitAttributeOptions(options);
+            if (options.length > 0) {
+                setSplitFormData((prev) => ({ ...prev, attribute_definition_id: String(options[0].definitionId) }));
+            }
+        } catch (err) {
+            setError('Failed to load stock item attributes for split: ' + (err?.response?.data?.error || err.message));
+        }
+    };
+
     const closeMoveModal = () => {
         setShowMoveModal(false);
         setMovingStockItem(null);
         setMoveLocationId(null);
         setMoveLocationLabel('');
         setSelectedMoveLocationId('');
+    };
+
+    const closeSplitModal = () => {
+        if (splitSubmitting) return;
+        setShowSplitModal(false);
+        setSplittingStockItem(null);
+        setSplitAttributeOptions([]);
+        setSplitFormData({
+            attribute_definition_id: '',
+            split_value: '',
+            new_item_name: '',
+            new_item_inventory_number: '',
+            new_item_status: 'in_stock',
+            destination_location_id: '',
+        });
     };
 
     const submitMove = async (e) => {
@@ -738,6 +813,44 @@ const StockItemsPage = () => {
             setError('Failed to move stock item: ' + (err?.response?.data?.error || err.message));
         } finally {
             setMoveSubmitting(false);
+        }
+    };
+
+    const submitSplit = async (e) => {
+        e.preventDefault();
+        if (!splittingStockItem) return;
+        if (!splitFormData.attribute_definition_id) {
+            setError('Please choose a numeric attribute');
+            return;
+        }
+        if (!splitFormData.split_value || Number(splitFormData.split_value) <= 0) {
+            setError('Split value must be greater than 0');
+            return;
+        }
+        setSplitSubmitting(true);
+        setError(null);
+        try {
+            const payload = {
+                attribute_definition_id: Number(splitFormData.attribute_definition_id),
+                split_value: Number(splitFormData.split_value),
+                new_item_name: splitFormData.new_item_name || null,
+                new_item_inventory_number: splitFormData.new_item_inventory_number || null,
+                new_item_status: splitFormData.new_item_status || null,
+                destination_location_id: splitFormData.destination_location_id ? Number(splitFormData.destination_location_id) : null,
+            };
+            const result = await stockItemService.split(splittingStockItem.stock_item_id, payload);
+            if (selectedStockItemModel) {
+                await fetchStockItems(selectedStockItemModel.stock_item_model_id);
+            }
+            if (selectedStockItem?.stock_item_id === splittingStockItem.stock_item_id && result?.source_stock_item) {
+                setSelectedStockItem(result.source_stock_item);
+            }
+            closeSplitModal();
+            setSuccessToast(`Split done. Source remaining value: ${result?.source_remaining_value ?? '-'} • New item value: ${result?.new_item_value ?? '-'}`);
+        } catch (err) {
+            setError('Failed to split stock item: ' + (err?.response?.data?.error || err.message));
+        } finally {
+            setSplitSubmitting(false);
         }
     };
 
@@ -789,6 +902,24 @@ const StockItemsPage = () => {
                     border: '1px solid #fcc'
                 }}>
                     {error}
+                </div>
+            )}
+            {successToast && (
+                <div style={{
+                    position: 'fixed',
+                    top: '88px',
+                    right: '20px',
+                    zIndex: 2100,
+                    backgroundColor: '#dcfce7',
+                    color: '#166534',
+                    border: '1px solid #86efac',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '10px 14px',
+                    fontSize: 'var(--font-size-sm)',
+                    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.18)',
+                    maxWidth: '420px'
+                }}>
+                    {successToast}
                 </div>
             )}
 
@@ -1145,6 +1276,14 @@ const StockItemsPage = () => {
                                                                 Move
                                                             </button>
                                                         )}
+                                                        {canSplitStockItems && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); openSplitModal(item); }}
+                                                                style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#0ea5e9', cursor: 'pointer', fontWeight: '500' }}
+                                                            >
+                                                                Split
+                                                            </button>
+                                                        )}
                                                         {canAssignStockItems && (
                                                             (() => {
                                                                 const activeAssignment = activeAssignmentsByStockItem.get(item.stock_item_id);
@@ -1429,6 +1568,138 @@ const StockItemsPage = () => {
                                 })
                             )}
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {showSplitModal && splittingStockItem && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.75)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}>
+                    <div style={{
+                        width: '100%',
+                        maxWidth: 620,
+                        backgroundColor: 'var(--color-bg-primary)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius-md)',
+                        boxShadow: 'var(--shadow-lg)',
+                        padding: 'var(--space-4)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
+                                Split Stock Item: {splittingStockItem.stock_item_name || `Item ${splittingStockItem.stock_item_id}`}
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={closeSplitModal}
+                                style={{ border: 'none', background: 'none', color: 'var(--color-text-secondary)', cursor: splitSubmitting ? 'not-allowed' : 'pointer', fontSize: 18 }}
+                                disabled={splitSubmitting}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <form onSubmit={submitSplit}>
+                            <div style={{ marginBottom: 'var(--space-3)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>Numeric Attribute</label>
+                                <select
+                                    value={splitFormData.attribute_definition_id}
+                                    onChange={(e) => setSplitFormData((prev) => ({ ...prev, attribute_definition_id: e.target.value }))}
+                                    style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                    required
+                                >
+                                    {splitAttributeOptions.length === 0 && <option value="">No numeric attribute available</option>}
+                                    {splitAttributeOptions.map((x) => (
+                                        <option key={x.definitionId} value={x.definitionId}>
+                                            {(x.definition?.description || `Attribute ${x.definitionId}`)} (current: {String(x.attr.value_number)})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div style={{ marginBottom: 'var(--space-3)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>Split Value</label>
+                                <input
+                                    type="number"
+                                    step="0.000001"
+                                    min="0.000001"
+                                    value={splitFormData.split_value}
+                                    onChange={(e) => setSplitFormData((prev) => ({ ...prev, split_value: e.target.value }))}
+                                    style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                    required
+                                />
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>New Item Name</label>
+                                    <input
+                                        type="text"
+                                        value={splitFormData.new_item_name}
+                                        onChange={(e) => setSplitFormData((prev) => ({ ...prev, new_item_name: e.target.value }))}
+                                        style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>New Inventory Number</label>
+                                    <input
+                                        type="text"
+                                        value={splitFormData.new_item_inventory_number}
+                                        onChange={(e) => setSplitFormData((prev) => ({ ...prev, new_item_inventory_number: e.target.value }))}
+                                        style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>New Item Status</label>
+                                    <input
+                                        type="text"
+                                        value={splitFormData.new_item_status}
+                                        onChange={(e) => setSplitFormData((prev) => ({ ...prev, new_item_status: e.target.value }))}
+                                        style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>Destination Location</label>
+                                    <select
+                                        value={splitFormData.destination_location_id}
+                                        onChange={(e) => setSplitFormData((prev) => ({ ...prev, destination_location_id: e.target.value }))}
+                                        style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                    >
+                                        <option value="">Same as source location</option>
+                                        {locations.map((loc) => (
+                                            <option key={loc.location_id} value={loc.location_id}>
+                                                {loc.location_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                                <button
+                                    type="button"
+                                    onClick={closeSplitModal}
+                                    style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: 'var(--color-bg-tertiary)', color: 'var(--color-text)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: splitSubmitting ? 'not-allowed' : 'pointer' }}
+                                    disabled={splitSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    style={{ padding: 'var(--space-2) var(--space-4)', backgroundColor: '#0ea5e9', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: splitSubmitting ? 'not-allowed' : 'pointer' }}
+                                    disabled={splitSubmitting || splitAttributeOptions.length === 0}
+                                >
+                                    {splitSubmitting ? 'Splitting...' : 'Split'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

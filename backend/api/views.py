@@ -5274,6 +5274,180 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         _sync_stock_item_attribute_values(item)
         return Response(StockItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=["post"], url_path="split")
+    def split(self, request, pk=None):
+        denial = self._require_responsible_or_superuser(request, "split stock items")
+        if denial:
+            return denial
+
+        source_item = self.get_object()
+
+        raw_definition_id = request.data.get("attribute_definition_id")
+        raw_split_value = request.data.get("split_value")
+
+        try:
+            definition_id = int(raw_definition_id)
+        except (TypeError, ValueError):
+            return Response({"error": "attribute_definition_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            split_value = Decimal(str(raw_split_value))
+        except Exception:
+            return Response({"error": "split_value must be a valid number"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if split_value <= 0:
+            return Response({"error": "split_value must be greater than 0"}, status=status.HTTP_400_BAD_REQUEST)
+
+        definition = StockItemAttributeDefinition.objects.filter(
+            stock_item_attribute_definition_id=definition_id
+        ).first()
+        if not definition:
+            return Response({"error": "Invalid attribute_definition_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        data_type = (getattr(definition, "data_type", "") or "").strip().lower()
+        if data_type not in {"number", "numeric", "decimal", "int", "integer", "float", "double"}:
+            return Response({"error": "attribute_definition_id must reference a numeric attribute"}, status=status.HTTP_400_BAD_REQUEST)
+
+        source_attr = StockItemAttributeValue.objects.filter(
+            stock_item_id=source_item.stock_item_id,
+            stock_item_attribute_definition_id=definition_id,
+        ).first()
+        if not source_attr or source_attr.value_number is None:
+            return Response({"error": "Source stock item does not have a numeric value for this attribute"}, status=status.HTTP_400_BAD_REQUEST)
+
+        source_value = Decimal(str(source_attr.value_number))
+        if split_value >= source_value:
+            return Response({"error": "split_value must be strictly less than source attribute value"}, status=status.HTTP_400_BAD_REQUEST)
+
+        remaining_value = source_value - split_value
+
+        new_item_name = request.data.get("new_item_name")
+        new_item_inventory_number = request.data.get("new_item_inventory_number")
+        new_item_status = request.data.get("new_item_status") or source_item.stock_item_status
+        raw_destination_location_id = request.data.get("destination_location_id")
+
+        if new_item_name == "":
+            new_item_name = None
+        if new_item_inventory_number == "":
+            new_item_inventory_number = None
+        if new_item_status == "":
+            new_item_status = None
+
+        destination_location_id_int = None
+        if raw_destination_location_id not in (None, ""):
+            try:
+                destination_location_id_int = int(raw_destination_location_id)
+            except (TypeError, ValueError):
+                return Response({"error": "destination_location_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+            if not Location.objects.filter(location_id=destination_location_id_int).exists():
+                return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            last_item = StockItem.objects.order_by("-stock_item_id").first()
+            next_id = (last_item.stock_item_id + 1) if last_item else 1
+            new_item = StockItem.objects.create(
+                stock_item_id=next_id,
+                stock_item_model_id=source_item.stock_item_model_id,
+                stock_item_name=new_item_name or source_item.stock_item_name,
+                stock_item_inventory_number=new_item_inventory_number,
+                stock_item_status=new_item_status,
+                stock_item_consumable_destruction_certificate_id=None,
+            )
+            _sync_stock_item_attribute_values(new_item)
+
+            source_attributes = list(
+                StockItemAttributeValue.objects.filter(stock_item_id=source_item.stock_item_id)
+            )
+            with connection.cursor() as cursor:
+                for source_row in source_attributes:
+                    cursor.execute(
+                        """
+                        INSERT INTO public.stock_item_attribute_value
+                            (stock_item_id, stock_item_attribute_definition_id, value_string, value_bool, value_date, value_number)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (stock_item_id, stock_item_attribute_definition_id)
+                        DO UPDATE SET
+                            value_string = EXCLUDED.value_string,
+                            value_bool = EXCLUDED.value_bool,
+                            value_date = EXCLUDED.value_date,
+                            value_number = EXCLUDED.value_number
+                        """,
+                        [
+                            new_item.stock_item_id,
+                            source_row.stock_item_attribute_definition_id,
+                            source_row.value_string,
+                            source_row.value_bool,
+                            source_row.value_date,
+                            source_row.value_number,
+                        ],
+                    )
+
+                updated_count = StockItemAttributeValue.objects.filter(
+                    stock_item_id=source_item.stock_item_id,
+                    stock_item_attribute_definition_id=definition_id,
+                ).update(value_number=remaining_value)
+                if updated_count == 0:
+                    cursor.execute(
+                        """
+                        INSERT INTO public.stock_item_attribute_value
+                            (stock_item_id, stock_item_attribute_definition_id, value_number)
+                        VALUES (%s, %s, %s)
+                        ON CONFLICT (stock_item_id, stock_item_attribute_definition_id)
+                        DO UPDATE SET value_number = EXCLUDED.value_number
+                        """,
+                        [source_item.stock_item_id, definition_id, remaining_value],
+                    )
+
+                updated_new_count = StockItemAttributeValue.objects.filter(
+                    stock_item_id=new_item.stock_item_id,
+                    stock_item_attribute_definition_id=definition_id,
+                ).update(value_number=split_value)
+                if updated_new_count == 0:
+                    cursor.execute(
+                        """
+                        INSERT INTO public.stock_item_attribute_value
+                            (stock_item_id, stock_item_attribute_definition_id, value_number)
+                        VALUES (%s, %s, %s)
+                        ON CONFLICT (stock_item_id, stock_item_attribute_definition_id)
+                        DO UPDATE SET value_number = EXCLUDED.value_number
+                        """,
+                        [new_item.stock_item_id, definition_id, split_value],
+                    )
+
+            source_last_move = (
+                StockItemMovement.objects.filter(stock_item_id=source_item.stock_item_id)
+                .order_by("-stock_item_movement_id")
+                .first()
+            )
+            source_current_location_id = source_last_move.destination_location_id if source_last_move else None
+            final_location_id = destination_location_id_int or source_current_location_id
+            if final_location_id:
+                last_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+                next_move_id = (last_move.stock_item_movement_id + 1) if last_move else 1
+                StockItemMovement.objects.create(
+                    stock_item_movement_id=next_move_id,
+                    stock_item_id=new_item.stock_item_id,
+                    source_location_id=final_location_id,
+                    destination_location_id=final_location_id,
+                    maintenance_step_id=None,
+                    external_maintenance_step_id=None,
+                    movement_reason="manual_split",
+                    movement_datetime=timezone.now(),
+                )
+
+        source_item.refresh_from_db()
+        new_item.refresh_from_db()
+        return Response(
+            {
+                "source_stock_item": StockItemSerializer(source_item).data,
+                "new_stock_item": StockItemSerializer(new_item).data,
+                "source_remaining_value": str(remaining_value),
+                "new_item_value": str(split_value),
+                "attribute_definition_id": definition_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
     def update(self, request, *args, **kwargs):
         stock_item_status = request.data.get("stock_item_status")
         if isinstance(stock_item_status, str) and stock_item_status.strip().lower() == "suggested_for_destruction":
@@ -5847,6 +6021,184 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         item = Consumable.objects.create(consumable_id=next_id, **serializer.validated_data)
         _sync_consumable_attribute_values(item)
         return Response(ConsumableSerializer(item).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="split")
+    def split(self, request, pk=None):
+        denial = self._require_responsible_or_superuser(request, "split consumables")
+        if denial:
+            return denial
+
+        source_item = self.get_object()
+
+        raw_definition_id = request.data.get("attribute_definition_id")
+        raw_split_value = request.data.get("split_value")
+
+        try:
+            definition_id = int(raw_definition_id)
+        except (TypeError, ValueError):
+            return Response({"error": "attribute_definition_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            split_value = Decimal(str(raw_split_value))
+        except Exception:
+            return Response({"error": "split_value must be a valid number"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if split_value <= 0:
+            return Response({"error": "split_value must be greater than 0"}, status=status.HTTP_400_BAD_REQUEST)
+
+        definition = ConsumableAttributeDefinition.objects.filter(
+            consumable_attribute_definition_id=definition_id
+        ).first()
+        if not definition:
+            return Response({"error": "Invalid attribute_definition_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        data_type = (getattr(definition, "data_type", "") or "").strip().lower()
+        if data_type not in {"number", "numeric", "decimal", "int", "integer", "float", "double"}:
+            return Response({"error": "attribute_definition_id must reference a numeric attribute"}, status=status.HTTP_400_BAD_REQUEST)
+
+        source_attr = ConsumableAttributeValue.objects.filter(
+            consumable_id=source_item.consumable_id,
+            consumable_attribute_definition_id=definition_id,
+        ).first()
+        if not source_attr or source_attr.value_number is None:
+            return Response({"error": "Source consumable does not have a numeric value for this attribute"}, status=status.HTTP_400_BAD_REQUEST)
+
+        source_value = Decimal(str(source_attr.value_number))
+        if split_value >= source_value:
+            return Response({"error": "split_value must be strictly less than source attribute value"}, status=status.HTTP_400_BAD_REQUEST)
+
+        remaining_value = source_value - split_value
+
+        new_item_name = request.data.get("new_item_name")
+        new_item_inventory_number = request.data.get("new_item_inventory_number")
+        new_item_serial_number = request.data.get("new_item_serial_number")
+        new_item_status = request.data.get("new_item_status") or source_item.consumable_status
+        raw_destination_location_id = request.data.get("destination_location_id")
+
+        if new_item_name == "":
+            new_item_name = None
+        if new_item_inventory_number == "":
+            new_item_inventory_number = None
+        if new_item_serial_number == "":
+            new_item_serial_number = None
+        if new_item_status == "":
+            new_item_status = None
+
+        destination_location_id_int = None
+        if raw_destination_location_id not in (None, ""):
+            try:
+                destination_location_id_int = int(raw_destination_location_id)
+            except (TypeError, ValueError):
+                return Response({"error": "destination_location_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+            if not Location.objects.filter(location_id=destination_location_id_int).exists():
+                return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            last_item = Consumable.objects.order_by("-consumable_id").first()
+            next_id = (last_item.consumable_id + 1) if last_item else 1
+            new_item = Consumable.objects.create(
+                consumable_id=next_id,
+                consumable_model_id=source_item.consumable_model_id,
+                consumable_name=new_item_name or source_item.consumable_name,
+                consumable_inventory_number=new_item_inventory_number,
+                consumable_serial_number=new_item_serial_number,
+                consumable_status=new_item_status,
+                stock_item_consumable_destruction_certificate_id=None,
+            )
+            _sync_consumable_attribute_values(new_item)
+
+            source_attributes = list(
+                ConsumableAttributeValue.objects.filter(consumable_id=source_item.consumable_id)
+            )
+            with connection.cursor() as cursor:
+                for source_row in source_attributes:
+                    cursor.execute(
+                        """
+                        INSERT INTO public.consumable_attribute_value
+                            (consumable_id, consumable_attribute_definition_id, value_string, value_bool, value_date, value_number)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        ON CONFLICT (consumable_id, consumable_attribute_definition_id)
+                        DO UPDATE SET
+                            value_string = EXCLUDED.value_string,
+                            value_bool = EXCLUDED.value_bool,
+                            value_date = EXCLUDED.value_date,
+                            value_number = EXCLUDED.value_number
+                        """,
+                        [
+                            new_item.consumable_id,
+                            source_row.consumable_attribute_definition_id,
+                            source_row.value_string,
+                            source_row.value_bool,
+                            source_row.value_date,
+                            source_row.value_number,
+                        ],
+                    )
+
+                updated_count = ConsumableAttributeValue.objects.filter(
+                    consumable_id=source_item.consumable_id,
+                    consumable_attribute_definition_id=definition_id,
+                ).update(value_number=remaining_value)
+                if updated_count == 0:
+                    cursor.execute(
+                        """
+                        INSERT INTO public.consumable_attribute_value
+                            (consumable_id, consumable_attribute_definition_id, value_number)
+                        VALUES (%s, %s, %s)
+                        ON CONFLICT (consumable_id, consumable_attribute_definition_id)
+                        DO UPDATE SET value_number = EXCLUDED.value_number
+                        """,
+                        [source_item.consumable_id, definition_id, remaining_value],
+                    )
+
+                updated_new_count = ConsumableAttributeValue.objects.filter(
+                    consumable_id=new_item.consumable_id,
+                    consumable_attribute_definition_id=definition_id,
+                ).update(value_number=split_value)
+                if updated_new_count == 0:
+                    cursor.execute(
+                        """
+                        INSERT INTO public.consumable_attribute_value
+                            (consumable_id, consumable_attribute_definition_id, value_number)
+                        VALUES (%s, %s, %s)
+                        ON CONFLICT (consumable_id, consumable_attribute_definition_id)
+                        DO UPDATE SET value_number = EXCLUDED.value_number
+                        """,
+                        [new_item.consumable_id, definition_id, split_value],
+                    )
+
+            source_last_move = (
+                ConsumableMovement.objects.filter(consumable_id=source_item.consumable_id)
+                .order_by("-consumable_movement_id")
+                .first()
+            )
+            source_current_location_id = source_last_move.destination_location_id if source_last_move else None
+            final_location_id = destination_location_id_int or source_current_location_id
+            if final_location_id:
+                last_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+                next_move_id = (last_move.consumable_movement_id + 1) if last_move else 1
+                ConsumableMovement.objects.create(
+                    consumable_movement_id=next_move_id,
+                    consumable_id=new_item.consumable_id,
+                    source_location_id=final_location_id,
+                    destination_location_id=final_location_id,
+                    maintenance_step_id=None,
+                    external_maintenance_step_id=None,
+                    movement_reason="manual_split",
+                    movement_datetime=timezone.now(),
+                )
+
+        source_item.refresh_from_db()
+        new_item.refresh_from_db()
+        return Response(
+            {
+                "source_consumable": ConsumableSerializer(source_item).data,
+                "new_consumable": ConsumableSerializer(new_item).data,
+                "source_remaining_value": str(remaining_value),
+                "new_item_value": str(split_value),
+                "attribute_definition_id": definition_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
     def update(self, request, *args, **kwargs):
         consumable_status = request.data.get("consumable_status")
