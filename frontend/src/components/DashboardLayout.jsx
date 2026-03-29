@@ -351,20 +351,7 @@ const DashboardLayout = () => {
                                 </NavLink>
                             )}
 
-                            {isAssetResponsible && (
-                                <NavLink to="/dashboard/inventory-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M9 12h6" />
-                                        <path d="M9 16h6" />
-                                        <path d="M9 8h6" />
-                                        <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
-                                        <path d="M15 2v4h4" />
-                                        <circle cx="9" cy="9" r="2" />
-                                        <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                                    </svg>
-                                    Inventory Reports
-                                </NavLink>
-                            )}
+                            
 
                             {isStockConsumableResponsible && (
                                 <>
@@ -415,6 +402,18 @@ const DashboardLayout = () => {
                                 </svg>
                                 Maintenances
                             </NavLink>
+                            {isMaintenanceChief && (
+                                <NavLink to="/dashboard/asset-maintenance-history" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect x="3" y="4" width="18" height="16" rx="2" />
+                                        <path d="M8 2v4M16 2v4" />
+                                        <path d="M3 10h18" />
+                                        <path d="M8 14h8" />
+                                        <path d="M8 18h6" />
+                                    </svg>
+                                    Asset Maintenance History
+                                </NavLink>
+                            )}
                         </div>
                     )}
                 </nav>

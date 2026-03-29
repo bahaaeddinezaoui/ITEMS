@@ -48,7 +48,7 @@ import ExternalMaintenancesPage from './pages/ExternalMaintenancesPage';
 import AssetMaintenanceTimelinePage from './pages/AssetMaintenanceTimelinePage';
 import IncludedItemMovementsApprovalPage from './pages/IncludedItemMovementsApprovalPage';
 import AssetMovementsApprovalPage from './pages/AssetMovementsApprovalPage';
-import InventoryReportsPage from './pages/InventoryReportsPage';
+import AssetMaintenanceHistoryPage from './pages/AssetMaintenanceHistoryPage';
 import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import PurchaseOrderCreatePage from './pages/PurchaseOrderCreatePage';
 import PurchaseOrderDetailsPage from './pages/PurchaseOrderDetailsPage';
@@ -490,11 +490,13 @@ function App() {
                                 </RoleProtectedRoute>
                             }
                         />
+                        
+
                         <Route
-                            path="inventory-reports"
+                            path="asset-maintenance-history"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible']}>
-                                    <InventoryReportsPage />
+                                <RoleProtectedRoute allowedRoles={['maintenance_chief']}>
+                                    <AssetMaintenanceHistoryPage />
                                 </RoleProtectedRoute>
                             }
                         />
