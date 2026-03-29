@@ -34,6 +34,29 @@ const AssetMovementsApprovalPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAssetResponsible]);
 
+    useEffect(() => {
+        const auto = (typeof window !== 'undefined' && localStorage.getItem('autoAcceptAssetMovements') === 'enabled');
+        if (!auto) return;
+        if (!isAssetResponsible) return;
+        if (!Array.isArray(pendingMoves) || pendingMoves.length === 0) return;
+        (async () => {
+            try {
+                setSubmittingKey('auto');
+                setError('');
+                setSuccess('');
+                const tasks = pendingMoves.map(m => movementApprovalService.decideAssetMovement(m.asset_movement_id, 'accepted'));
+                await Promise.allSettled(tasks);
+                await loadPending();
+                setSuccess('All pending movements have been auto-accepted.');
+            } catch (e) {
+                setError(e?.response?.data?.error || 'Failed to auto-accept movements');
+            } finally {
+                setSubmittingKey(null);
+            }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pendingMoves, isAssetResponsible]);
+
     const handleDecision = async ({ id, decision }) => {
         const key = `${id}:${decision}`;
         setSubmittingKey(key);

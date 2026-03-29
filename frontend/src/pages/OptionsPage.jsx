@@ -10,6 +10,9 @@ const OptionsPage = () => {
     const isMaintenanceChief = useMemo(() => {
         return user?.roles?.some(r => r.role_code === 'maintenance_chief') || false;
     }, [user]);
+    const isAssetResponsible = useMemo(() => {
+        return user?.roles?.some(r => r.role_code === 'asset_responsible') || false;
+    }, [user]);
 
     const [activeSection, setActiveSection] = useState('security');
     const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -82,6 +85,7 @@ const OptionsPage = () => {
         { id: 'notifications', label: 'Notifications', icon: '🔔' },
         { id: 'appearance', label: 'Appearance', icon: '🎨' },
         ...(isSuperuser || isMaintenanceTech || isMaintenanceChief ? [{ id: 'maintenance', label: 'Maintenance', icon: '🧰' }] : []),
+        ...(isSuperuser || isAssetResponsible ? [{ id: 'asset', label: 'Asset', icon: '📦' }] : []),
     ];
 
     return (
@@ -345,6 +349,64 @@ const OptionsPage = () => {
                         {activeSection === 'general' && (
                             <div className="empty-state">
                                 <p className="empty-state-text">General settings will appear here.</p>
+                            </div>
+                        )}
+
+                        {activeSection === 'asset' && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 }}>
+                                <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>Asset Movements Approval</h3>
+                                    <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
+                                        Automatically accept pending asset movements (for asset responsible).
+                                    </p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="autoAcceptAssetMovements"
+                                                value="disabled"
+                                                defaultChecked={(typeof window !== 'undefined' && localStorage.getItem('autoAcceptAssetMovements') !== 'enabled')}
+                                                onChange={() => {
+                                                    try {
+                                                        localStorage.setItem('autoAcceptAssetMovements', 'disabled');
+                                                        setMessage({ type: 'success', text: 'Preference saved' });
+                                                        setTimeout(() => setMessage({ type: '', text: '' }), 1500);
+                                                    } catch {}
+                                                }}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Disabled</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Review and accept/reject movements manually.
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="autoAcceptAssetMovements"
+                                                value="enabled"
+                                                defaultChecked={(typeof window !== 'undefined' && localStorage.getItem('autoAcceptAssetMovements') === 'enabled')}
+                                                onChange={() => {
+                                                    try {
+                                                        localStorage.setItem('autoAcceptAssetMovements', 'enabled');
+                                                        setMessage({ type: 'success', text: 'Preference saved' });
+                                                        setTimeout(() => setMessage({ type: '', text: '' }), 1500);
+                                                    } catch {}
+                                                }}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Enabled</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Automatically accept all pending asset movements when loading approvals.
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                {message.text && message.type === 'success' && (
+                                    <div className="success-message">{message.text}</div>
+                                )}
                             </div>
                         )}
 
