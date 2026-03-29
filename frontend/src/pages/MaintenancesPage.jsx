@@ -22,6 +22,8 @@ const MaintenancesPage = () => {
 
     const [assetCurrentLocation, setAssetCurrentLocation] = useState(null);
     const [maintenanceLocations, setMaintenanceLocations] = useState([]);
+    const [allLocations, setAllLocations] = useState([]);
+    const [destinationMode, setDestinationMode] = useState('maintenance_room'); // 'maintenance_room' | 'asset_current' | 'other'
     const [selectedMaintenanceLocation, setSelectedMaintenanceLocation] = useState('');
     const [loadingAssetLocation, setLoadingAssetLocation] = useState(false);
 
@@ -99,7 +101,18 @@ const MaintenancesPage = () => {
         setCreateDescription('');
         setAssetCurrentLocation(null);
         setMaintenanceLocations([]);
+        setAllLocations([]);
         setSelectedMaintenanceLocation('');
+        try {
+            const saved = localStorage.getItem('maintenanceCreateDestinationMode');
+            if (saved && ['maintenance_room', 'asset_current', 'other'].includes(saved)) {
+                setDestinationMode(saved);
+            } else {
+                setDestinationMode('maintenance_room');
+            }
+        } catch {
+            setDestinationMode('maintenance_room');
+        }
         setShowCreateModal(true);
     };
 
@@ -130,6 +143,22 @@ const MaintenancesPage = () => {
         }
     };
 
+    const loadAllLocations = async () => {
+        try {
+            const locations = await locationService.getAll();
+            const filtered = Array.isArray(locations)
+                ? locations.filter((loc) => {
+                    const label = (loc?.location_type_label || '').toString().toLowerCase();
+                    return label !== 'external maintenance center';
+                })
+                : [];
+            setAllLocations(filtered);
+        } catch (err) {
+            console.error('Failed to fetch locations:', err);
+            setAllLocations([]);
+        }
+    };
+
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
         if (!selectedAsset) {
@@ -148,9 +177,21 @@ const MaintenancesPage = () => {
                 technician_person_id: selectedTechnician,
                 description: createDescription,
             };
-            if (assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation)) {
+            const mode = destinationMode;
+            if (mode === 'asset_current') {
+                // No destination move; maintenance occurs where the asset currently is
+            } else if (mode === 'maintenance_room') {
+                if (assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation)) {
+                    if (!selectedMaintenanceLocation) {
+                        setError('Please select the maintenance location to move the asset to');
+                        setSubmitting(false);
+                        return;
+                    }
+                    payload.destination_location_id = Number(selectedMaintenanceLocation);
+                }
+            } else if (mode === 'other') {
                 if (!selectedMaintenanceLocation) {
-                    setError('Please select the maintenance location to move the asset to');
+                    setError('Please select the destination location for maintenance');
                     setSubmitting(false);
                     return;
                 }
@@ -700,9 +741,18 @@ const MaintenancesPage = () => {
                                                 const location = data?.location || null;
                                                 setAssetCurrentLocation(location);
                                                 
-                                                // Always load maintenance locations when an asset is selected
-                                                // to ensure the list is ready if the current location isn't a maintenance room
-                                                await loadMaintenanceLocations();
+                                                if (destinationMode === 'maintenance_room') {
+                                                    await loadMaintenanceLocations();
+                                                    // If only one maintenance room exists and current is not maintenance room, preselect it
+                                                    setSelectedMaintenanceLocation(prev => {
+                                                        if (location && !isMaintenanceLocation(location) && Array.isArray(maintenanceLocations) && maintenanceLocations.length === 1) {
+                                                            return String(maintenanceLocations[0].location_id);
+                                                        }
+                                                        return prev;
+                                                    });
+                                                } else if (destinationMode === 'other') {
+                                                    await loadAllLocations();
+                                                }
                                             } catch (err) {
                                                 console.error(err);
                                                 setAssetCurrentLocation(null);
@@ -737,7 +787,7 @@ const MaintenancesPage = () => {
                                     </div>
                                 </div>
 
-                                {assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation) && (
+                                {destinationMode === 'maintenance_room' && assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation) && (
                                     <div className="form-group">
                                         <label className="form-label">Move asset to maintenance location</label>
                                         <select
@@ -747,6 +797,24 @@ const MaintenancesPage = () => {
                                         >
                                             <option value="">-- Select Maintenance Location --</option>
                                             {maintenanceLocations.map((r) => (
+                                                <option key={r.location_id} value={r.location_id}>
+                                                    {r.location_name}{r.location_type_label ? ` (${r.location_type_label})` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                                
+                                {destinationMode === 'other' && (
+                                    <div className="form-group">
+                                        <label className="form-label">Destination Location</label>
+                                        <select
+                                            className="form-input"
+                                            value={selectedMaintenanceLocation}
+                                            onChange={(e) => setSelectedMaintenanceLocation(e.target.value)}
+                                        >
+                                            <option value="">-- Select Location --</option>
+                                            {allLocations.map((r) => (
                                                 <option key={r.location_id} value={r.location_id}>
                                                     {r.location_name}{r.location_type_label ? ` (${r.location_type_label})` : ''}
                                                 </option>

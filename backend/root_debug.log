@@ -65016,3 +65016,87 @@ Response Body: {"detail":"Given token not valid for any token type","code":"toke
 [2026-03-29 08:15:58.357609] END   GET /api/problem-reports/ -> 200
 [2026-03-29 08:16:02.011320] START GET /api/locations/
 [2026-03-29 08:16:02.080817] END   GET /api/locations/ -> 200
+[2026-03-29 08:27:07.675671] START GET /api/problem-reports/
+[2026-03-29 08:27:07.680665] START GET /api/persons/
+[2026-03-29 08:27:07.862833] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:27:07.872336] START GET /api/problem-reports/
+[2026-03-29 08:27:07.894770] END   GET /api/persons/ -> 200
+[2026-03-29 08:27:07.901590] START GET /api/persons/
+[2026-03-29 08:27:07.959542] END   GET /api/persons/ -> 200
+[2026-03-29 08:27:07.981755] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:28:47.046495] START POST /api/auth/login/
+[2026-03-29 08:28:47.150797] END   POST /api/auth/login/ -> 200
+[2026-03-29 08:29:22.510091] START GET /api/problem-reports/
+[2026-03-29 08:29:22.512131] START GET /api/persons/
+[2026-03-29 08:29:22.586039] END   GET /api/persons/ -> 200
+[2026-03-29 08:29:22.598093] START GET /api/persons/
+[2026-03-29 08:29:22.631660] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:29:22.638150] START GET /api/problem-reports/
+[2026-03-29 08:29:22.653232] END   GET /api/persons/ -> 200
+[2026-03-29 08:29:22.743454] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:29:24.555006] START GET /api/locations/
+[2026-03-29 08:29:24.626478] END   GET /api/locations/ -> 200
+[2026-03-29 08:29:31.024282] START GET /api/problem-reports/
+[2026-03-29 08:29:31.029618] START GET /api/persons/
+[2026-03-29 08:29:31.138418] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:29:31.146043] START GET /api/problem-reports/
+[2026-03-29 08:29:31.194124] END   GET /api/persons/ -> 200
+[2026-03-29 08:29:31.205969] START GET /api/persons/
+[2026-03-29 08:29:31.258268] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:29:31.262370] END   GET /api/persons/ -> 200
+[2026-03-29 08:29:33.286281] START GET /api/locations/
+[2026-03-29 08:29:33.474748] END   GET /api/locations/ -> 200
+[2026-03-29 08:31:23.796255] START POST /api/auth/login/
+[2026-03-29 08:31:23.867002] END   POST /api/auth/login/ -> 200
+[2026-03-29 08:31:24.780570] START GET /api/problem-reports/
+[2026-03-29 08:31:24.796805] START GET /api/persons/
+[2026-03-29 08:31:24.855819] END   GET /api/persons/ -> 200
+[2026-03-29 08:31:24.873041] START GET /api/persons/
+[2026-03-29 08:31:24.912038] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:31:24.921106] START GET /api/problem-reports/
+[2026-03-29 08:31:25.032016] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:31:25.032455] END   GET /api/persons/ -> 200
+[2026-03-29 08:31:26.189568] START GET /api/locations/
+[2026-03-29 08:31:26.247863] END   GET /api/locations/ -> 200
+[2026-03-29 08:31:39.890532] START POST /api/auth/login/
+[2026-03-29 08:31:39.955059] END   POST /api/auth/login/ -> 200
+[2026-03-29 08:33:03.429132] START POST /api/auth/login/
+[2026-03-29 08:33:03.500176] END   POST /api/auth/login/ -> 200
+[2026-03-29 08:33:05.119410] START GET /api/problem-reports/
+[2026-03-29 08:33:05.125443] START GET /api/persons/
+[2026-03-29 08:33:05.180575] END   GET /api/persons/ -> 200
+[2026-03-29 08:33:05.189845] START GET /api/persons/
+[2026-03-29 08:33:05.225126] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:33:05.231709] START GET /api/problem-reports/
+[2026-03-29 08:33:05.246735] END   GET /api/persons/ -> 200
+[2026-03-29 08:33:05.330229] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:33:06.048118] START GET /api/assets/1/current-location/
+[2026-03-29 08:33:06.054430] START GET /api/locations/
+[2026-03-29 08:33:06.127791] END   GET /api/assets/1/current-location/ -> 200
+[2026-03-29 08:33:06.184931] END   GET /api/locations/ -> 200
+[2026-03-29 08:33:25.323323] START POST /api/auth/login/
+[2026-03-29 08:33:25.389515] END   POST /api/auth/login/ -> 200
+[2026-03-29 08:33:32.082032] START GET /api/persons/
+[2026-03-29 08:33:32.083138] START GET /api/problem-reports/
+[2026-03-29 08:33:32.140200] END   GET /api/persons/ -> 200
+[2026-03-29 08:33:32.150513] START GET /api/persons/
+[2026-03-29 08:33:32.197786] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:33:32.205819] START GET /api/problem-reports/
+[2026-03-29 08:33:32.210940] END   GET /api/persons/ -> 200
+[2026-03-29 08:33:32.310076] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:33:33.527986] START GET /api/assets/1/current-location/
+[2026-03-29 08:33:33.530557] START GET /api/locations/
+[2026-03-29 08:33:33.603439] END   GET /api/locations/ -> 200
+[2026-03-29 08:33:33.711965] END   GET /api/assets/1/current-location/ -> 200
+[2026-03-29 08:35:54.504609] START GET /api/problem-reports/
+[2026-03-29 08:35:54.505925] START GET /api/persons/
+[2026-03-29 08:35:54.574959] END   GET /api/persons/ -> 200
+[2026-03-29 08:35:54.583058] START GET /api/persons/
+[2026-03-29 08:35:54.597597] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:35:54.608425] START GET /api/problem-reports/
+[2026-03-29 08:35:54.647610] END   GET /api/persons/ -> 200
+[2026-03-29 08:35:54.802307] END   GET /api/problem-reports/ -> 200
+[2026-03-29 08:35:55.409106] START GET /api/assets/1/current-location/
+[2026-03-29 08:35:55.414436] START GET /api/locations/
+[2026-03-29 08:35:55.486404] END   GET /api/assets/1/current-location/ -> 200
+[2026-03-29 08:35:55.535197] END   GET /api/locations/ -> 200

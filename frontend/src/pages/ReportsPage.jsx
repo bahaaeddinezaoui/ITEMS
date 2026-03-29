@@ -18,6 +18,10 @@ const ReportsPage = () => {
     const [maintenanceLocations, setMaintenanceLocations] = useState([]);
     const [selectedMaintenanceLocationId, setSelectedMaintenanceLocationId] = useState('');
     const [loadingMaintenanceLocations, setLoadingMaintenanceLocations] = useState(false);
+    const [allLocations, setAllLocations] = useState([]);
+    const [loadingAllLocations, setLoadingAllLocations] = useState(false);
+    const [destinationMode, setDestinationMode] = useState('maintenance_room'); // 'maintenance_room' | 'asset_current' | 'other'
+    const [assetCurrentLocation, setAssetCurrentLocation] = useState(null);
 
     const [showAssetModal, setShowAssetModal] = useState(false);
     const [selectedAsset, setSelectedAsset] = useState(null);
@@ -70,7 +74,16 @@ const ReportsPage = () => {
         setSelectedReport(report);
         setSelectedTechnician('');
         setMaintenanceDescription(report?.owner_observation || '');
-        setSelectedMaintenanceLocationId('');
+        // Load user preference for destination mode
+        let mode = 'maintenance_room';
+        try {
+            const saved = localStorage.getItem('maintenanceCreateDestinationMode');
+            if (saved && ['maintenance_room', 'asset_current', 'other'].includes(saved)) {
+                mode = saved;
+            }
+        } catch {}
+        setDestinationMode(mode);
+        setSelectedMaintenanceLocationId(mode === 'asset_current' ? 'asset_current' : '');
         setShowCreateMaintenanceModal(true);
     };
 
@@ -86,12 +99,45 @@ const ReportsPage = () => {
                 setLoadingMaintenanceLocations(false);
             }
         };
+        const loadAllLocs = async () => {
+            try {
+                setLoadingAllLocations(true);
+                const locs = await locationService.getAll();
+                const filtered = Array.isArray(locs)
+                    ? locs.filter((loc) => {
+                        const label = (loc?.location_type_label || '').toString().toLowerCase();
+                        return label !== 'external maintenance center';
+                    })
+                    : [];
+                setAllLocations(filtered);
+            } catch {
+                setAllLocations([]);
+            } finally {
+                setLoadingAllLocations(false);
+            }
+        };
+        const loadAssetLoc = async () => {
+            if (!selectedReport?.item_type === 'asset') return;
+            try {
+                const data = await assetService.getCurrentLocation(selectedReport.item_id);
+                setAssetCurrentLocation(data?.location || null);
+            } catch {
+                setAssetCurrentLocation(null);
+            }
+        };
 
         if (!showCreateMaintenanceModal) return;
         if (selectedReport?.item_type !== 'asset') return;
 
-        loadMaintenanceLocations();
-    }, [showCreateMaintenanceModal, selectedReport]);
+        // Always load asset current location for display if needed
+        loadAssetLoc();
+
+        if (destinationMode === 'maintenance_room' || destinationMode === 'asset_current') {
+            loadMaintenanceLocations();
+        } else if (destinationMode === 'other') {
+            loadAllLocs();
+        }
+    }, [showCreateMaintenanceModal, selectedReport, destinationMode]);
 
     const openAssetDetails = async (report) => {
         if (report.item_type !== 'asset') return;
@@ -116,9 +162,13 @@ const ReportsPage = () => {
             return;
         }
 
-        if (selectedReport?.item_type === 'asset' && !selectedMaintenanceLocationId) {
-            setError('Please select the maintenance location to send the asset to');
-            return;
+        if (selectedReport?.item_type === 'asset') {
+            if (destinationMode === 'asset_current') {
+                // No destination required
+            } else if (!selectedMaintenanceLocationId) {
+                setError('Please select the maintenance location to send the asset to');
+                return;
+            }
         }
 
         try {
@@ -129,7 +179,9 @@ const ReportsPage = () => {
                 report_id: selectedReport.report_id,
                 technician_person_id: selectedTechnician,
                 description: maintenanceDescription,
-                destination_location_id: selectedMaintenanceLocationId ? Number(selectedMaintenanceLocationId) : null,
+                destination_location_id: (destinationMode === 'asset_current')
+                    ? null
+                    : (selectedMaintenanceLocationId ? Number(selectedMaintenanceLocationId) : null),
             });
             setShowCreateMaintenanceModal(false);
             setSelectedReport(null);
@@ -271,12 +323,26 @@ const ReportsPage = () => {
                                             className="form-input"
                                             value={selectedMaintenanceLocationId}
                                             onChange={(e) => setSelectedMaintenanceLocationId(e.target.value)}
-                                            disabled={loadingMaintenanceLocations}
+                                            disabled={(destinationMode === 'maintenance_room' || destinationMode === 'asset_current') ? loadingMaintenanceLocations : loadingAllLocations}
                                         >
-                                            <option value="">{loadingMaintenanceLocations ? '-- Loading Maintenance Locations --' : '-- Select Maintenance Location --'}</option>
-                                            {maintenanceLocations.map((r) => (
+                                            <option value="">
+                                                {(destinationMode === 'maintenance_room' || destinationMode === 'asset_current')
+                                                    ? (loadingMaintenanceLocations ? '-- Loading Maintenance Locations --' : '-- Select Maintenance Location --')
+                                                    : (loadingAllLocations ? '-- Loading Locations --' : '-- Select Location --')}
+                                            </option>
+                                            {destinationMode === 'asset_current' && (
+                                                <option value="asset_current">
+                                                    Asset current location {assetCurrentLocation ? `(${assetCurrentLocation.location_name})` : ''}
+                                                </option>
+                                            )}
+                                            {(destinationMode === 'maintenance_room' || destinationMode === 'asset_current') && maintenanceLocations.map((r) => (
                                                 <option key={r.location_id} value={String(r.location_id)}>
                                                     {r.location_name} (#{r.location_id})
+                                                </option>
+                                            ))}
+                                            {destinationMode === 'other' && allLocations.map((r) => (
+                                                <option key={r.location_id} value={String(r.location_id)}>
+                                                    {r.location_name}{r.location_type_label ? ` (${r.location_type_label})` : ''} (#{r.location_id})
                                                 </option>
                                             ))}
                                         </select>

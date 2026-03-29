@@ -1,7 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { authService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const OptionsPage = () => {
+    const { user, isSuperuser } = useAuth();
+    const isMaintenanceTech = useMemo(() => {
+        return user?.roles?.some(r => ['it_maintenance_technician', 'network_maintenance_technician'].includes(r.role_code)) || false;
+    }, [user]);
+    const isMaintenanceChief = useMemo(() => {
+        return user?.roles?.some(r => r.role_code === 'maintenance_chief') || false;
+    }, [user]);
+
     const [activeSection, setActiveSection] = useState('security');
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [formData, setFormData] = useState({
@@ -11,6 +20,7 @@ const OptionsPage = () => {
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [destMode, setDestMode] = useState('maintenance_room');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -18,6 +28,24 @@ const OptionsPage = () => {
             ...prev,
             [name]: value
         }));
+    };
+
+    useEffect(() => {
+        const saved = localStorage.getItem('maintenanceCreateDestinationMode');
+        if (saved && ['maintenance_room', 'asset_current', 'other'].includes(saved)) {
+            setDestMode(saved);
+        }
+    }, []);
+
+    const saveDestMode = (mode) => {
+        setDestMode(mode);
+        try {
+            localStorage.setItem('maintenanceCreateDestinationMode', mode);
+            setMessage({ type: 'success', text: 'Preference saved' });
+            setTimeout(() => setMessage({ type: '', text: '' }), 1500);
+        } catch {
+            // no-op
+        }
     };
 
     const handleSubmitPassword = async (e) => {
@@ -53,6 +81,7 @@ const OptionsPage = () => {
         { id: 'security', label: 'Security', icon: '🔒' },
         { id: 'notifications', label: 'Notifications', icon: '🔔' },
         { id: 'appearance', label: 'Appearance', icon: '🎨' },
+        ...(isSuperuser || isMaintenanceTech || isMaintenanceChief ? [{ id: 'maintenance', label: 'Maintenance', icon: '🧰' }] : []),
     ];
 
     return (
@@ -198,6 +227,67 @@ const OptionsPage = () => {
                                             </div>
                                         </form>
                                     </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeSection === 'maintenance' && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 }}>
+                                <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>Create Maintenance defaults</h3>
+                                    <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
+                                        Choose the default destination location when creating a maintenance.
+                                    </p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="destMode"
+                                                value="maintenance_room"
+                                                checked={destMode === 'maintenance_room'}
+                                                onChange={() => saveDestMode('maintenance_room')}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Maintenance room</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Move asset to a maintenance room. You will be asked to choose the room if needed.
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="destMode"
+                                                value="asset_current"
+                                                checked={destMode === 'asset_current'}
+                                                onChange={() => saveDestMode('asset_current')}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Asset current location</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Do not move the asset; perform maintenance where it currently resides.
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="destMode"
+                                                value="other"
+                                                checked={destMode === 'other'}
+                                                onChange={() => saveDestMode('other')}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Other location</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Choose any location (not limited to maintenance rooms).
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                {message.text && message.type === 'success' && (
+                                    <div className="success-message">{message.text}</div>
                                 )}
                             </div>
                         )}
