@@ -223,7 +223,7 @@ const LoginPage = () => {
             <div className="login-right">
                 <div className="feature-carousel">
                     <div className="feature-header">
-                        <h2>Why Choose ITEMS?</h2>
+                        <h2>Why Choose I.T.E.M.S?</h2>
                         <p>Discover the powerful features that make equipment management effortless.</p>
                     </div>
                     <div className="feature-ticker">

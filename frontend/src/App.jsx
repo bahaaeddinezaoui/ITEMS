@@ -32,6 +32,7 @@ import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
 import MyItemsPage from './pages/MyItemsPage';
 import OptionsPage from './pages/OptionsPage';
 import ReportsPage from './pages/ReportsPage';
+import AssetIncidentReportsPage from './pages/AssetIncidentReportsPage';
 import AttributionOrdersPage from './pages/AttributionOrdersPage';
 import AttributionOrderAssetIncludedItemsPage from './pages/AttributionOrderAssetIncludedItemsPage';
 import AttributionOrderAssetAccessoriesPage from './pages/AttributionOrderAssetAccessoriesPage';
@@ -355,6 +356,14 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['maintenance_chief', 'exploitation_chief', 'it_bureau_chief']}>
                                     <ReportsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="incident-reports"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['exploitation_chief', 'it_bureau_chief', 'protection_and_security_bureau_chief', 'school_headquarter']}>
+                                    <AssetIncidentReportsPage />
                                 </RoleProtectedRoute>
                             }
                         />

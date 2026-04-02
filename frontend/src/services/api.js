@@ -204,6 +204,26 @@ export const companyAssetRequestService = {
     },
 };
 
+export const assetIncidentReportService = {
+    getAll: async (params) => {
+        const response = await api.get('asset-incident-reports/', { params });
+        return response.data;
+    },
+
+    create: async (data) => {
+        const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+        const response = isFormData
+            ? await postForm('asset-incident-reports/', data)
+            : await api.post('asset-incident-reports/', data);
+        return response.data;
+    },
+
+    update: async (id, data) => {
+        const response = await api.patch(`asset-incident-reports/${id}/`, data);
+        return response.data;
+    },
+};
+
 // External Maintenance services
 export const externalMaintenanceProviderService = {
     getAll: async () => {

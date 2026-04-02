@@ -1434,3 +1434,80 @@ class CompanyAssetRequest(models.Model):
 
     def __str__(self):
         return f"Company Asset Request {self.company_asset_request_id}"
+
+
+class AssetIncidentReport(models.Model):
+    asset_incident_report_id = models.IntegerField(primary_key=True, db_column='asset_incident_report_id')
+    asset = models.ForeignKey(Asset, on_delete=models.DO_NOTHING, db_column='asset_id')
+    owner_person = models.ForeignKey(Person, on_delete=models.DO_NOTHING, db_column='owner_person_id', related_name='+')
+    school_headquarter_person = models.ForeignKey(
+        Person,
+        on_delete=models.DO_NOTHING,
+        db_column='school_headquarter_person_id',
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+    reason = models.CharField(max_length=32, db_column='reason')
+    owner_note = models.TextField(blank=True, null=True, db_column='owner_note')
+    digital_copy = models.TextField(blank=True, null=True, db_column='digital_copy')
+    is_signed_by_owner = models.BooleanField(default=False, db_column='is_signed_by_owner')
+    is_signed_by_it_bureau_chief = models.BooleanField(default=False, db_column='is_signed_by_it_bureau_chief')
+    is_signed_by_exploitation_chief = models.BooleanField(default=False, db_column='is_signed_by_exploitation_chief')
+    is_signed_by_protection_and_security_bureau_chief = models.BooleanField(
+        default=False,
+        db_column='is_signed_by_protection_and_security_bureau_chief',
+    )
+    is_signed_by_school_headquarter = models.BooleanField(default=False, db_column='is_signed_by_school_headquarter')
+    it_bureau_chief_note = models.TextField(blank=True, null=True, db_column='it_bureau_chief_note')
+    exploitation_chief_note = models.TextField(blank=True, null=True, db_column='exploitation_chief_note')
+    protection_and_security_bureau_chief_note = models.TextField(
+        blank=True,
+        null=True,
+        db_column='protection_and_security_bureau_chief_note',
+    )
+    school_headquarter_note = models.TextField(blank=True, null=True, db_column='school_headquarter_note')
+    report_datetime = models.DateTimeField(blank=True, null=True, db_column='report_datetime')
+    status = models.CharField(max_length=20, blank=True, null=True, db_column='status')
+    maintenance = models.ForeignKey(
+        Maintenance,
+        on_delete=models.DO_NOTHING,
+        db_column='maintenance_id',
+        null=True,
+        blank=True,
+        related_name='+',
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'asset_incident_report'
+
+
+class AssetIncidentReportStockItem(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id')
+    asset_incident_report = models.ForeignKey(
+        AssetIncidentReport,
+        on_delete=models.CASCADE,
+        db_column='asset_incident_report_id',
+        related_name='included_stock_items',
+    )
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id', related_name='+')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_incident_report_stock_item'
+
+
+class AssetIncidentReportConsumable(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id')
+    asset_incident_report = models.ForeignKey(
+        AssetIncidentReport,
+        on_delete=models.CASCADE,
+        db_column='asset_incident_report_id',
+        related_name='included_consumables',
+    )
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
+
+    class Meta:
+        managed = False
+        db_table = 'asset_incident_report_consumable'

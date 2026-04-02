@@ -78,6 +78,9 @@ from .models import (
     AssetDestructionCertificateAsset,
     AssetFailedExternalMaintenance,
     CompanyAssetRequest,
+    AssetIncidentReport,
+    AssetIncidentReportStockItem,
+    AssetIncidentReportConsumable,
     StockItemIsCompatibleWithAsset,
     ConsumableIsCompatibleWithAsset,
     AssetIsComposedOfStockItemHistory,
@@ -534,6 +537,7 @@ from .serializers import (
     ReceiptReportSerializer,
     AdministrativeCertificateSerializer,
     CompanyAssetRequestSerializer,
+    AssetIncidentReportSerializer,
     MaintenanceStepItemRequestSerializer,
     ExternalMaintenanceProviderSerializer,
     ExternalMaintenanceSerializer,
@@ -9795,6 +9799,228 @@ class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
 
         item = CompanyAssetRequest.objects.create(company_asset_request_id=next_id, **validated_data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
+
+
+class AssetIncidentReportViewSet(viewsets.ModelViewSet):
+    queryset = AssetIncidentReport.objects.select_related(
+        "asset",
+        "owner_person",
+        "school_headquarter_person",
+    ).all().order_by("-asset_incident_report_id")
+    serializer_class = AssetIncidentReportSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _role_codes(self, user_account):
+        if not user_account:
+            return set()
+        person = getattr(user_account, "person", None)
+        if not person:
+            return set()
+        return set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+
+    def _is_superuser_account(self, user_account):
+        if not user_account:
+            return False
+        is_super = getattr(user_account, "is_superuser", False)
+        if callable(is_super):
+            try:
+                is_super = is_super()
+            except Exception:
+                is_super = False
+        return bool(is_super)
+
+    def _has_access(self, user_account):
+        if self._is_superuser_account(user_account):
+            return True
+        role_codes = self._role_codes(user_account)
+        return (
+            ("exploitation_chief" in role_codes)
+            or ("it_bureau_chief" in role_codes)
+            or ("protection_and_security_bureau_chief" in role_codes)
+            or ("school_headquarter" in role_codes)
+        )
+
+    def _can_create_report(self, user_account):
+        if self._is_superuser_account(user_account):
+            return True
+        role_codes = self._role_codes(user_account)
+        return ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
+
+    def _editable_fields_for_user(self, user_account):
+        if self._is_superuser_account(user_account):
+            return {
+                "it_bureau_chief_note",
+                "is_signed_by_it_bureau_chief",
+                "exploitation_chief_note",
+                "is_signed_by_exploitation_chief",
+                "protection_and_security_bureau_chief_note",
+                "is_signed_by_protection_and_security_bureau_chief",
+                "school_headquarter_note",
+                "is_signed_by_school_headquarter",
+            }
+        role_codes = self._role_codes(user_account)
+        fields = set()
+        if "it_bureau_chief" in role_codes:
+            fields.update({"it_bureau_chief_note", "is_signed_by_it_bureau_chief"})
+        if "exploitation_chief" in role_codes:
+            fields.update({"exploitation_chief_note", "is_signed_by_exploitation_chief"})
+        if "protection_and_security_bureau_chief" in role_codes:
+            fields.update(
+                {
+                    "protection_and_security_bureau_chief_note",
+                    "is_signed_by_protection_and_security_bureau_chief",
+                }
+            )
+        if "school_headquarter" in role_codes:
+            fields.update({"school_headquarter_note", "is_signed_by_school_headquarter"})
+        return fields
+
+    def get_queryset(self):
+        request_user = getattr(self.request, "user", None)
+        if request_user and getattr(request_user, "is_authenticated", False):
+            user_account = request_user
+        else:
+            user_account = SuperuserWriteMixin()._get_user_account(self.request)
+        if not self._has_access(user_account):
+            return AssetIncidentReport.objects.none()
+        return self.queryset
+
+    def _parse_id_list(self, raw_value):
+        if raw_value is None:
+            return []
+        if isinstance(raw_value, (list, tuple)):
+            values = raw_value
+        elif isinstance(raw_value, str):
+            text = raw_value.strip()
+            if not text:
+                return []
+            try:
+                parsed = json.loads(text)
+                values = parsed if isinstance(parsed, list) else [parsed]
+            except Exception:
+                values = [x.strip() for x in text.split(",")]
+        else:
+            values = [raw_value]
+
+        output = []
+        for value in values:
+            try:
+                n = int(value)
+            except Exception:
+                continue
+            if n > 0 and n not in output:
+                output.append(n)
+        return output
+
+    def create(self, request, *args, **kwargs):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not self._can_create_report(user_account):
+            return Response(
+                {"error": "Only exploitation chief, IT bureau chief, or superusers can create incident reports"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        data = request.data.copy()
+        if "digital_copy" in request.FILES:
+            data.pop("digital_copy", None)
+
+        asset_id_raw = data.get("asset")
+        try:
+            asset_id = int(asset_id_raw)
+        except Exception:
+            return Response({"error": "asset is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not data.get("owner_person"):
+            assignment = (
+                AssetIsAssignedToPerson.objects.filter(asset_id=asset_id, is_active=True)
+                .order_by("-assignment_id")
+                .first()
+            )
+            if assignment:
+                data["owner_person"] = assignment.person_id
+            elif getattr(user_account, "person_id", None):
+                data["owner_person"] = user_account.person_id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = dict(serializer.validated_data)
+        if not validated_data.get("report_datetime"):
+            validated_data["report_datetime"] = timezone.now()
+        if not validated_data.get("status"):
+            validated_data["status"] = "draft"
+
+        stock_item_ids = self._parse_id_list(request.data.get("stock_item_ids"))
+        consumable_ids = self._parse_id_list(request.data.get("consumable_ids"))
+
+        last_item = AssetIncidentReport.objects.order_by("-asset_incident_report_id").first()
+        next_id = (last_item.asset_incident_report_id + 1) if last_item else 1
+
+        digital_copy = request.FILES.get("digital_copy")
+        if digital_copy:
+            rel_dir = os.path.join("incident_reports")
+            base_dir = os.path.join(str(settings.MEDIA_ROOT), rel_dir)
+            os.makedirs(base_dir, exist_ok=True)
+
+            rel_path = os.path.join(rel_dir, f"asset_incident_report_{next_id}.pdf")
+            abs_path = os.path.join(str(settings.MEDIA_ROOT), rel_path)
+            with open(abs_path, "wb") as f:
+                f.write(digital_copy.read())
+            validated_data["digital_copy"] = rel_path
+
+        try:
+            with transaction.atomic():
+                report = AssetIncidentReport.objects.create(
+                    asset_incident_report_id=next_id,
+                    **validated_data,
+                )
+                for stock_item_id in stock_item_ids:
+                    AssetIncidentReportStockItem.objects.create(
+                        asset_incident_report=report,
+                        stock_item_id=stock_item_id,
+                    )
+                for consumable_id in consumable_ids:
+                    AssetIncidentReportConsumable.objects.create(
+                        asset_incident_report=report,
+                        consumable_id=consumable_id,
+                    )
+        except IntegrityError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(self.get_serializer(report).data, status=status.HTTP_201_CREATED)
+
+    def partial_update(self, request, *args, **kwargs):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not self._has_access(user_account):
+            return Response(
+                {"error": "You are not allowed to review incident reports"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        editable_fields = self._editable_fields_for_user(user_account)
+        if not editable_fields:
+            return Response(
+                {"error": "You do not have any editable fields on incident reports"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        payload_keys = set(request.data.keys())
+        forbidden_keys = payload_keys - editable_fields
+        if forbidden_keys:
+            return Response(
+                {
+                    "error": "You can only update your own note/signature fields",
+                    "forbidden_fields": sorted(forbidden_keys),
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if not payload_keys:
+            return Response({"error": "No fields to update"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().partial_update(request, *args, **kwargs)
 
 
 class InventoryReportViewSet(viewsets.ViewSet):

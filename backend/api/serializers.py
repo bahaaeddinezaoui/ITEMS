@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -1112,6 +1112,83 @@ class CompanyAssetRequestSerializer(serializers.ModelSerializer):
             'digital_copy',
         ]
         read_only_fields = ['company_asset_request_id']
+
+
+class AssetIncidentReportStockItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssetIncidentReportStockItem
+        fields = ['id', 'asset_incident_report', 'stock_item']
+        read_only_fields = ['id']
+
+
+class AssetIncidentReportConsumableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssetIncidentReportConsumable
+        fields = ['id', 'asset_incident_report', 'consumable']
+        read_only_fields = ['id']
+
+
+class AssetIncidentReportSerializer(serializers.ModelSerializer):
+    asset_serial_number = serializers.CharField(source='asset.asset_serial_number', read_only=True)
+    asset_name = serializers.CharField(source='asset.asset_name', read_only=True)
+    owner_person_name = serializers.SerializerMethodField()
+    school_headquarter_person_name = serializers.SerializerMethodField()
+    stock_item_ids = serializers.SerializerMethodField()
+    consumable_ids = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssetIncidentReport
+        fields = [
+            'asset_incident_report_id',
+            'asset',
+            'asset_serial_number',
+            'asset_name',
+            'owner_person',
+            'owner_person_name',
+            'school_headquarter_person',
+            'school_headquarter_person_name',
+            'reason',
+            'owner_note',
+            'digital_copy',
+            'is_signed_by_owner',
+            'is_signed_by_it_bureau_chief',
+            'is_signed_by_exploitation_chief',
+            'is_signed_by_protection_and_security_bureau_chief',
+            'is_signed_by_school_headquarter',
+            'it_bureau_chief_note',
+            'exploitation_chief_note',
+            'protection_and_security_bureau_chief_note',
+            'school_headquarter_note',
+            'report_datetime',
+            'status',
+            'maintenance',
+            'stock_item_ids',
+            'consumable_ids',
+        ]
+        read_only_fields = ['asset_incident_report_id']
+        extra_kwargs = {
+            'owner_person': {'required': False, 'allow_null': True},
+            'school_headquarter_person': {'required': False, 'allow_null': True},
+            'maintenance': {'required': False, 'allow_null': True},
+        }
+
+    def get_owner_person_name(self, obj):
+        person = getattr(obj, 'owner_person', None)
+        if not person:
+            return None
+        return f"{person.first_name} {person.last_name}".strip()
+
+    def get_school_headquarter_person_name(self, obj):
+        person = getattr(obj, 'school_headquarter_person', None)
+        if not person:
+            return None
+        return f"{person.first_name} {person.last_name}".strip()
+
+    def get_stock_item_ids(self, obj):
+        return list(obj.included_stock_items.values_list('stock_item_id', flat=True))
+
+    def get_consumable_ids(self, obj):
+        return list(obj.included_consumables.values_list('consumable_id', flat=True))
 
 
 class ExternalMaintenanceProviderSerializer(serializers.ModelSerializer):

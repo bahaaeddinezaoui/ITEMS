@@ -205,6 +205,17 @@ const DashboardLayout = () => {
                                 </svg>
                                 Reports
                             </NavLink>
+                            {(isSuperuser || isExploitationChief || isItBureauChief || isProtectionSecurityBureauChief || isSchoolHeadquarter) && (
+                                <NavLink to="/dashboard/incident-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M3 3h18v18H3z" />
+                                        <path d="M7 7h10" />
+                                        <path d="M7 12h10" />
+                                        <path d="M7 17h6" />
+                                    </svg>
+                                    Incident Reports
+                                </NavLink>
+                            )}
                         </div>
                     )}
 
