@@ -1356,6 +1356,8 @@ const AssetsPage = () => {
                                                         <option value="maintenance">Maintenance</option>
                                                         <option value="failed">Failed</option>
                                                         <option value="lost">Lost</option>
+                                                        <option value="stolen">Stolen</option>
+                                                        <option value="irrecoverably_damaged">Irrecoverably Damaged</option>
                                                         <option value="destroyed">Destroyed</option>
                                                         <option value="inactive">Inactive</option>
                                                     </select>

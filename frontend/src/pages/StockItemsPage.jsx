@@ -1197,6 +1197,9 @@ const StockItemsPage = () => {
                                                         <option value="reserved">Reserved</option>
                                                         <option value="expired">Expired</option>
                                                         <option value="failed">Failed</option>
+                                                        <option value="lost">Lost</option>
+                                                        <option value="stolen">Stolen</option>
+                                                        <option value="irrecoverably_damaged">Irrecoverably Damaged</option>
                                                         <option value="destroyed">Destroyed</option>
                                                     </select>
                                                 </div>

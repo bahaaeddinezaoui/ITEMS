@@ -56,7 +56,8 @@ const DashboardLayout = () => {
     const isProtectionSecurityBureauChief = user?.roles?.some(role => role.role_code === 'protection_and_security_bureau_chief');
     const isSchoolHeadquarter = user?.roles?.some(role => role.role_code === 'school_headquarter');
     const canViewPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
-    const canViewReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
+    const canViewProblemReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
+    const canViewIncidentReports = isSuperuser || isExploitationChief || isItBureauChief || isProtectionSecurityBureauChief || isSchoolHeadquarter;
 
     useEffect(() => {
         if (!isUserMenuOpen) return;
@@ -193,19 +194,21 @@ const DashboardLayout = () => {
                         </NavLink>
                     </div>
 
-                    {canViewReports && (
+                    {(canViewProblemReports || canViewIncidentReports) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Reports</span>
-                            <NavLink to="/dashboard/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M3 3h18v18H3z" />
-                                    <path d="M7 7h10" />
-                                    <path d="M7 12h10" />
-                                    <path d="M7 17h6" />
-                                </svg>
-                                Reports
-                            </NavLink>
-                            {(isSuperuser || isExploitationChief || isItBureauChief || isProtectionSecurityBureauChief || isSchoolHeadquarter) && (
+                            {canViewProblemReports && (
+                                <NavLink to="/dashboard/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M3 3h18v18H3z" />
+                                        <path d="M7 7h10" />
+                                        <path d="M7 12h10" />
+                                        <path d="M7 17h6" />
+                                    </svg>
+                                    Reports
+                                </NavLink>
+                            )}
+                            {canViewIncidentReports && (
                                 <NavLink to="/dashboard/incident-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M3 3h18v18H3z" />

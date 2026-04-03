@@ -4396,6 +4396,31 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 pass
         return queryset
 
+    def _sync_composed_items_status_with_asset(self, asset):
+        if not asset:
+            return
+        target_status = getattr(asset, "asset_status", None)
+        if not target_status:
+            return
+
+        stock_item_ids = list(
+            AssetIsComposedOfStockItemHistory.objects.filter(
+                asset_id=asset.asset_id,
+                end_datetime__isnull=True,
+            ).values_list("stock_item_id", flat=True)
+        )
+        consumable_ids = list(
+            AssetIsComposedOfConsumableHistory.objects.filter(
+                asset_id=asset.asset_id,
+                end_datetime__isnull=True,
+            ).values_list("consumable_id", flat=True)
+        )
+
+        if stock_item_ids:
+            StockItem.objects.filter(stock_item_id__in=stock_item_ids).update(stock_item_status=target_status)
+        if consumable_ids:
+            Consumable.objects.filter(consumable_id__in=consumable_ids).update(consumable_status=target_status)
+
     def update(self, request, *args, **kwargs):
         asset_status = request.data.get("asset_status")
         if isinstance(asset_status, str) and asset_status.strip().lower() == "failed":
@@ -4413,7 +4438,10 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 {"error": "Asset status can only be set to destroyed by validating a destruction certificate."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        return super().update(request, *args, **kwargs)
+        response = super().update(request, *args, **kwargs)
+        if "asset_status" in request.data and response.status_code < 400:
+            self._sync_composed_items_status_with_asset(self.get_object())
+        return response
 
     def partial_update(self, request, *args, **kwargs):
         asset_status = request.data.get("asset_status")
@@ -4432,7 +4460,10 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 {"error": "Asset status can only be set to destroyed by validating a destruction certificate."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        return super().partial_update(request, *args, **kwargs)
+        response = super().partial_update(request, *args, **kwargs)
+        if "asset_status" in request.data and response.status_code < 400:
+            self._sync_composed_items_status_with_asset(self.get_object())
+        return response
 
     @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
     def suggest_for_destruction(self, request, pk=None):
@@ -9802,6 +9833,8 @@ class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
 
 
 class AssetIncidentReportViewSet(viewsets.ModelViewSet):
+    INCIDENT_REASON_STATUSES = {"stolen", "lost", "irrecoverably_damaged"}
+
     queryset = AssetIncidentReport.objects.select_related(
         "asset",
         "owner_person",
@@ -9912,6 +9945,11 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
                 output.append(n)
         return output
 
+    def _normalize_text_value(self, value):
+        if not isinstance(value, str):
+            return ""
+        return value.strip().lower()
+
     def create(self, request, *args, **kwargs):
         user_account = SuperuserWriteMixin()._get_user_account(request)
         if not user_account:
@@ -9951,8 +9989,33 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
         if not validated_data.get("status"):
             validated_data["status"] = "draft"
 
+        reason_status = self._normalize_text_value(validated_data.get("reason"))
+        report_status = self._normalize_text_value(validated_data.get("status"))
+        role_codes = self._role_codes(user_account)
+        should_apply_incident_status = (
+            ("exploitation_chief" in role_codes)
+            and (report_status == "submitted")
+            and (reason_status in self.INCIDENT_REASON_STATUSES)
+        )
+
         stock_item_ids = self._parse_id_list(request.data.get("stock_item_ids"))
         consumable_ids = self._parse_id_list(request.data.get("consumable_ids"))
+
+        current_stock_item_ids = list(
+            AssetIsComposedOfStockItemHistory.objects.filter(
+                asset_id=asset_id,
+                end_datetime__isnull=True,
+            ).values_list("stock_item_id", flat=True)
+        )
+        current_consumable_ids = list(
+            AssetIsComposedOfConsumableHistory.objects.filter(
+                asset_id=asset_id,
+                end_datetime__isnull=True,
+            ).values_list("consumable_id", flat=True)
+        )
+
+        stock_item_ids = list(dict.fromkeys([*stock_item_ids, *current_stock_item_ids]))
+        consumable_ids = list(dict.fromkeys([*consumable_ids, *current_consumable_ids]))
 
         last_item = AssetIncidentReport.objects.order_by("-asset_incident_report_id").first()
         next_id = (last_item.asset_incident_report_id + 1) if last_item else 1
@@ -9985,6 +10048,12 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
                         asset_incident_report=report,
                         consumable_id=consumable_id,
                     )
+                if should_apply_incident_status:
+                    Asset.objects.filter(asset_id=asset_id).update(asset_status=reason_status)
+                    if stock_item_ids:
+                        StockItem.objects.filter(stock_item_id__in=stock_item_ids).update(stock_item_status=reason_status)
+                    if consumable_ids:
+                        Consumable.objects.filter(consumable_id__in=consumable_ids).update(consumable_status=reason_status)
         except IntegrityError as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
