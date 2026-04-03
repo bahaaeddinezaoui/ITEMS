@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { authService, movementApprovalService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
+const INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY = 'incidentReportCompositionStatusStrategy';
+
 const OptionsPage = () => {
     const { user, isSuperuser } = useAuth();
     const isMaintenanceTech = useMemo(() => {
@@ -12,6 +14,9 @@ const OptionsPage = () => {
     }, [user]);
     const isAssetResponsible = useMemo(() => {
         return user?.roles?.some(r => r.role_code === 'asset_responsible') || false;
+    }, [user]);
+    const isItBureauChief = useMemo(() => {
+        return user?.roles?.some(r => r.role_code === 'it_bureau_chief') || false;
     }, [user]);
 
     const [activeSection, setActiveSection] = useState('security');
@@ -29,6 +34,7 @@ const OptionsPage = () => {
     const [autoAcceptSubmitting, setAutoAcceptSubmitting] = useState(false);
     const [autoAcceptEligibleCount, setAutoAcceptEligibleCount] = useState(0);
     const [autoAcceptEligibleIds, setAutoAcceptEligibleIds] = useState([]);
+    const [incidentCompositionStrategy, setIncidentCompositionStrategy] = useState('all');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -43,6 +49,10 @@ const OptionsPage = () => {
         if (saved && ['maintenance_room', 'asset_current', 'other'].includes(saved)) {
             setDestMode(saved);
         }
+        const savedIncidentStrategy = localStorage.getItem(INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY);
+        if (savedIncidentStrategy && ['all', 'exploitation_decides'].includes(savedIncidentStrategy)) {
+            setIncidentCompositionStrategy(savedIncidentStrategy);
+        }
     }, []);
 
     const saveDestMode = (mode) => {
@@ -53,6 +63,16 @@ const OptionsPage = () => {
             setTimeout(() => setMessage({ type: '', text: '' }), 1500);
         } catch {
             // no-op
+        }
+    };
+
+    const saveIncidentCompositionStrategy = (strategy) => {
+        setIncidentCompositionStrategy(strategy);
+        try {
+            localStorage.setItem(INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY, strategy);
+            setMessage({ type: 'success', text: 'Preference saved' });
+            setTimeout(() => setMessage({ type: '', text: '' }), 1500);
+        } catch {
         }
     };
 
@@ -91,6 +111,7 @@ const OptionsPage = () => {
         { id: 'appearance', label: 'Appearance', icon: '🎨' },
         ...(isSuperuser || isMaintenanceTech || isMaintenanceChief ? [{ id: 'maintenance', label: 'Maintenance', icon: '🧰' }] : []),
         ...(isSuperuser || isAssetResponsible ? [{ id: 'asset', label: 'Asset', icon: '📦' }] : []),
+        ...(isSuperuser || isItBureauChief ? [{ id: 'incident', label: 'Incident Reports', icon: '📝' }] : []),
     ];
 
     return (
@@ -500,6 +521,52 @@ const OptionsPage = () => {
                                             </div>
                                         </div>
                                     </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeSection === 'incident' && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 }}>
+                                <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>Incident report composition strategy</h3>
+                                    <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
+                                        Choose the default behavior for composing stock items and consumables when creating an incident report.
+                                    </p>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="incidentCompositionStrategy"
+                                                value="all"
+                                                checked={incidentCompositionStrategy === 'all'}
+                                                onChange={() => saveIncidentCompositionStrategy('all')}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Apply to all composing items</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Stock items and consumables composing the asset are all set to the asset status.
+                                                </div>
+                                            </div>
+                                        </label>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                            <input
+                                                type="radio"
+                                                name="incidentCompositionStrategy"
+                                                value="exploitation_decides"
+                                                checked={incidentCompositionStrategy === 'exploitation_decides'}
+                                                onChange={() => saveIncidentCompositionStrategy('exploitation_decides')}
+                                            />
+                                            <div>
+                                                <div style={{ fontWeight: 600 }}>Let exploitation chief decide per item</div>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    Exploitation chief chooses which composing items receive the incident status during review.
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                {message.text && message.type === 'success' && (
+                                    <div className="success-message">{message.text}</div>
                                 )}
                             </div>
                         )}

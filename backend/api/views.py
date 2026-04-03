@@ -9950,6 +9950,150 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
             return ""
         return value.strip().lower()
 
+    def _parse_bool_value(self, raw_value, default=False):
+        if isinstance(raw_value, bool):
+            return raw_value
+        if raw_value is None:
+            return default
+        text = str(raw_value).strip().lower()
+        if text in {"1", "true", "yes", "y", "on"}:
+            return True
+        if text in {"0", "false", "no", "n", "off"}:
+            return False
+        return default
+
+    def _current_composed_item_ids(self, asset_id):
+        stock_item_ids = list(
+            AssetIsComposedOfStockItemHistory.objects.filter(
+                asset_id=asset_id,
+                end_datetime__isnull=True,
+            ).values_list("stock_item_id", flat=True)
+        )
+        consumable_ids = list(
+            AssetIsComposedOfConsumableHistory.objects.filter(
+                asset_id=asset_id,
+                end_datetime__isnull=True,
+            ).values_list("consumable_id", flat=True)
+        )
+        return stock_item_ids, consumable_ids
+
+    def _filter_to_current_ids(self, requested_ids, current_ids):
+        current_set = set(current_ids)
+        return [item_id for item_id in requested_ids if item_id in current_set]
+
+    def _parse_status_map(self, raw_value, allowed_ids):
+        if raw_value is None:
+            return {}
+        data = raw_value
+        if isinstance(raw_value, str):
+            text = raw_value.strip()
+            if not text:
+                return {}
+            try:
+                data = json.loads(text)
+            except Exception:
+                return {}
+        if not isinstance(data, dict):
+            return {}
+
+        allowed_set = set(allowed_ids or [])
+        output = {}
+        for key, value in data.items():
+            try:
+                item_id = int(key)
+            except Exception:
+                continue
+            if item_id not in allowed_set:
+                continue
+            normalized_status = self._normalize_text_value(value)
+            if normalized_status in self.INCIDENT_REASON_STATUSES:
+                output[item_id] = normalized_status
+        return output
+
+    def _sync_report_item_links(self, report, stock_item_ids, consumable_ids):
+        stock_item_ids = list(dict.fromkeys(stock_item_ids or []))
+        consumable_ids = list(dict.fromkeys(consumable_ids or []))
+
+        AssetIncidentReportStockItem.objects.filter(asset_incident_report=report).exclude(
+            stock_item_id__in=stock_item_ids
+        ).delete()
+        existing_stock_item_ids = set(
+            AssetIncidentReportStockItem.objects.filter(asset_incident_report=report).values_list("stock_item_id", flat=True)
+        )
+        for stock_item_id in stock_item_ids:
+            if stock_item_id not in existing_stock_item_ids:
+                AssetIncidentReportStockItem.objects.create(
+                    asset_incident_report=report,
+                    stock_item_id=stock_item_id,
+                )
+
+        AssetIncidentReportConsumable.objects.filter(asset_incident_report=report).exclude(
+            consumable_id__in=consumable_ids
+        ).delete()
+        existing_consumable_ids = set(
+            AssetIncidentReportConsumable.objects.filter(asset_incident_report=report).values_list("consumable_id", flat=True)
+        )
+        for consumable_id in consumable_ids:
+            if consumable_id not in existing_consumable_ids:
+                AssetIncidentReportConsumable.objects.create(
+                    asset_incident_report=report,
+                    consumable_id=consumable_id,
+                )
+
+    def _apply_incident_status(
+        self,
+        report,
+        stock_item_ids,
+        consumable_ids,
+        stock_item_status_overrides=None,
+        consumable_status_overrides=None,
+    ):
+        reason_status = self._normalize_text_value(getattr(report, "reason", None))
+        if reason_status not in self.INCIDENT_REASON_STATUSES:
+            return
+        report_status = self._normalize_text_value(getattr(report, "status", None))
+        if report_status != "submitted":
+            return
+        Asset.objects.filter(asset_id=report.asset_id).update(asset_status=reason_status)
+        stock_item_status_overrides = stock_item_status_overrides or {}
+        consumable_status_overrides = consumable_status_overrides or {}
+
+        if stock_item_ids:
+            stock_item_ids = list(dict.fromkeys(stock_item_ids))
+            if stock_item_status_overrides:
+                remaining_ids = set(stock_item_ids)
+                by_status = {}
+                for item_id, item_status in stock_item_status_overrides.items():
+                    if item_id not in remaining_ids:
+                        continue
+                    by_status.setdefault(item_status, []).append(item_id)
+                    if item_id in remaining_ids:
+                        remaining_ids.remove(item_id)
+                for item_status, item_ids in by_status.items():
+                    StockItem.objects.filter(stock_item_id__in=item_ids).update(stock_item_status=item_status)
+                if remaining_ids:
+                    StockItem.objects.filter(stock_item_id__in=list(remaining_ids)).update(stock_item_status=reason_status)
+            else:
+                StockItem.objects.filter(stock_item_id__in=stock_item_ids).update(stock_item_status=reason_status)
+
+        if consumable_ids:
+            consumable_ids = list(dict.fromkeys(consumable_ids))
+            if consumable_status_overrides:
+                remaining_ids = set(consumable_ids)
+                by_status = {}
+                for item_id, item_status in consumable_status_overrides.items():
+                    if item_id not in remaining_ids:
+                        continue
+                    by_status.setdefault(item_status, []).append(item_id)
+                    if item_id in remaining_ids:
+                        remaining_ids.remove(item_id)
+                for item_status, item_ids in by_status.items():
+                    Consumable.objects.filter(consumable_id__in=item_ids).update(consumable_status=item_status)
+                if remaining_ids:
+                    Consumable.objects.filter(consumable_id__in=list(remaining_ids)).update(consumable_status=reason_status)
+            else:
+                Consumable.objects.filter(consumable_id__in=consumable_ids).update(consumable_status=reason_status)
+
     def create(self, request, *args, **kwargs):
         user_account = SuperuserWriteMixin()._get_user_account(request)
         if not user_account:
@@ -9963,6 +10107,11 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
         data = request.data.copy()
         if "digital_copy" in request.FILES:
             data.pop("digital_copy", None)
+        data.pop("stock_item_ids", None)
+        data.pop("consumable_ids", None)
+        data.pop("apply_status_to_all_composing_items", None)
+        data.pop("stock_item_statuses", None)
+        data.pop("consumable_statuses", None)
 
         asset_id_raw = data.get("asset")
         try:
@@ -9998,24 +10147,31 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
             and (reason_status in self.INCIDENT_REASON_STATUSES)
         )
 
-        stock_item_ids = self._parse_id_list(request.data.get("stock_item_ids"))
-        consumable_ids = self._parse_id_list(request.data.get("consumable_ids"))
-
-        current_stock_item_ids = list(
-            AssetIsComposedOfStockItemHistory.objects.filter(
-                asset_id=asset_id,
-                end_datetime__isnull=True,
-            ).values_list("stock_item_id", flat=True)
+        requested_stock_item_ids = self._parse_id_list(request.data.get("stock_item_ids"))
+        requested_consumable_ids = self._parse_id_list(request.data.get("consumable_ids"))
+        apply_status_to_all_composing_items = self._parse_bool_value(
+            request.data.get("apply_status_to_all_composing_items"),
+            default=True,
         )
-        current_consumable_ids = list(
-            AssetIsComposedOfConsumableHistory.objects.filter(
-                asset_id=asset_id,
-                end_datetime__isnull=True,
-            ).values_list("consumable_id", flat=True)
+        current_stock_item_ids, current_consumable_ids = self._current_composed_item_ids(asset_id)
+        selected_stock_item_ids = (
+            current_stock_item_ids
+            if apply_status_to_all_composing_items
+            else self._filter_to_current_ids(requested_stock_item_ids, current_stock_item_ids)
         )
-
-        stock_item_ids = list(dict.fromkeys([*stock_item_ids, *current_stock_item_ids]))
-        consumable_ids = list(dict.fromkeys([*consumable_ids, *current_consumable_ids]))
+        selected_consumable_ids = (
+            current_consumable_ids
+            if apply_status_to_all_composing_items
+            else self._filter_to_current_ids(requested_consumable_ids, current_consumable_ids)
+        )
+        stock_item_status_overrides = self._parse_status_map(
+            request.data.get("stock_item_statuses"),
+            selected_stock_item_ids,
+        )
+        consumable_status_overrides = self._parse_status_map(
+            request.data.get("consumable_statuses"),
+            selected_consumable_ids,
+        )
 
         last_item = AssetIncidentReport.objects.order_by("-asset_incident_report_id").first()
         next_id = (last_item.asset_incident_report_id + 1) if last_item else 1
@@ -10038,22 +10194,25 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
                     asset_incident_report_id=next_id,
                     **validated_data,
                 )
-                for stock_item_id in stock_item_ids:
-                    AssetIncidentReportStockItem.objects.create(
-                        asset_incident_report=report,
-                        stock_item_id=stock_item_id,
-                    )
-                for consumable_id in consumable_ids:
-                    AssetIncidentReportConsumable.objects.create(
-                        asset_incident_report=report,
-                        consumable_id=consumable_id,
-                    )
+                self._sync_report_item_links(
+                    report,
+                    selected_stock_item_ids,
+                    selected_consumable_ids,
+                )
                 if should_apply_incident_status:
-                    Asset.objects.filter(asset_id=asset_id).update(asset_status=reason_status)
-                    if stock_item_ids:
-                        StockItem.objects.filter(stock_item_id__in=stock_item_ids).update(stock_item_status=reason_status)
-                    if consumable_ids:
-                        Consumable.objects.filter(consumable_id__in=consumable_ids).update(consumable_status=reason_status)
+                    target_stock_item_ids = (
+                        current_stock_item_ids if apply_status_to_all_composing_items else selected_stock_item_ids
+                    )
+                    target_consumable_ids = (
+                        current_consumable_ids if apply_status_to_all_composing_items else selected_consumable_ids
+                    )
+                    self._apply_incident_status(
+                        report,
+                        target_stock_item_ids,
+                        target_consumable_ids,
+                        stock_item_status_overrides if not apply_status_to_all_composing_items else None,
+                        consumable_status_overrides if not apply_status_to_all_composing_items else None,
+                    )
         except IntegrityError as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -10069,6 +10228,8 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        role_codes = self._role_codes(user_account)
+        is_superuser = self._is_superuser_account(user_account)
         editable_fields = self._editable_fields_for_user(user_account)
         if not editable_fields:
             return Response(
@@ -10076,8 +10237,13 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        selection_fields = set()
+        if is_superuser or ("exploitation_chief" in role_codes):
+            selection_fields = {"stock_item_ids", "consumable_ids", "apply_status_to_all_composing_items"}
+
         payload_keys = set(request.data.keys())
-        forbidden_keys = payload_keys - editable_fields
+        allowed_fields = editable_fields | selection_fields
+        forbidden_keys = payload_keys - allowed_fields
         if forbidden_keys:
             return Response(
                 {
@@ -10088,8 +10254,64 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
             )
         if not payload_keys:
             return Response({"error": "No fields to update"}, status=status.HTTP_400_BAD_REQUEST)
+        report = self.get_object()
+        current_stock_item_ids, current_consumable_ids = self._current_composed_item_ids(report.asset_id)
+        existing_selected_stock_item_ids = list(
+            AssetIncidentReportStockItem.objects.filter(asset_incident_report=report).values_list("stock_item_id", flat=True)
+        )
+        existing_selected_consumable_ids = list(
+            AssetIncidentReportConsumable.objects.filter(asset_incident_report=report).values_list("consumable_id", flat=True)
+        )
 
-        return super().partial_update(request, *args, **kwargs)
+        apply_all_field_present = "apply_status_to_all_composing_items" in request.data
+        apply_status_to_all_composing_items = self._parse_bool_value(
+            request.data.get("apply_status_to_all_composing_items"),
+            default=False,
+        )
+        selected_stock_item_ids = existing_selected_stock_item_ids
+        selected_consumable_ids = existing_selected_consumable_ids
+
+        if apply_all_field_present and apply_status_to_all_composing_items:
+            selected_stock_item_ids = current_stock_item_ids
+            selected_consumable_ids = current_consumable_ids
+        else:
+            if "stock_item_ids" in request.data:
+                selected_stock_item_ids = self._filter_to_current_ids(
+                    self._parse_id_list(request.data.get("stock_item_ids")),
+                    current_stock_item_ids,
+                )
+            if "consumable_ids" in request.data:
+                selected_consumable_ids = self._filter_to_current_ids(
+                    self._parse_id_list(request.data.get("consumable_ids")),
+                    current_consumable_ids,
+                )
+
+        model_update_data = {k: request.data.get(k) for k in payload_keys if k in editable_fields}
+        with transaction.atomic():
+            self._sync_report_item_links(
+                report,
+                selected_stock_item_ids,
+                selected_consumable_ids,
+            )
+
+            if model_update_data:
+                serializer = self.get_serializer(report, data=model_update_data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                report = serializer.save()
+
+            if is_superuser or ("exploitation_chief" in role_codes):
+                should_apply_now = bool(getattr(report, "is_signed_by_exploitation_chief", False))
+                if should_apply_now:
+                    target_stock_item_ids = (
+                        current_stock_item_ids if apply_status_to_all_composing_items else selected_stock_item_ids
+                    )
+                    target_consumable_ids = (
+                        current_consumable_ids if apply_status_to_all_composing_items else selected_consumable_ids
+                    )
+                    self._apply_incident_status(report, target_stock_item_ids, target_consumable_ids)
+
+        report.refresh_from_db()
+        return Response(self.get_serializer(report).data, status=status.HTTP_200_OK)
 
 
 class InventoryReportViewSet(viewsets.ViewSet):

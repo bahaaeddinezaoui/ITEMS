@@ -8,6 +8,7 @@ const REASONS = [
     { value: 'lost', label: 'Lost' },
     { value: 'irrecoverably_damaged', label: 'Irrecoverably Damaged' },
 ];
+const INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY = 'incidentReportCompositionStatusStrategy';
 
 const REVIEW_ROLE_CONFIG = {
     it_bureau_chief: {
@@ -48,6 +49,7 @@ const AssetIncidentReportsPage = () => {
     );
     const canView = isSuperuser || REVIEW_ROLE_ORDER.some((roleCode) => roleCodes.includes(roleCode));
     const canCreate = isSuperuser || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
+    const isExploitationChief = isSuperuser || roleCodes.includes('exploitation_chief');
     const availableReviewRoles = useMemo(
         () => (isSuperuser ? REVIEW_ROLE_ORDER : REVIEW_ROLE_ORDER.filter((roleCode) => roleCodes.includes(roleCode))),
         [isSuperuser, roleCodes]
@@ -64,8 +66,19 @@ const AssetIncidentReportsPage = () => {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [reviewingReport, setReviewingReport] = useState(null);
     const [reviewRole, setReviewRole] = useState('');
-    const [reviewDraft, setReviewDraft] = useState({ note: '', signed: false });
+    const [reviewDraft, setReviewDraft] = useState({
+        note: '',
+        signed: false,
+        stock_item_ids: [],
+        consumable_ids: [],
+        apply_status_to_all_composing_items: true,
+    });
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [showItemStatusModal, setShowItemStatusModal] = useState(false);
+    const [itemStatusDraft, setItemStatusDraft] = useState({
+        stock_item_statuses: {},
+        consumable_statuses: {},
+    });
 
     const [form, setForm] = useState({
         asset: '',
@@ -73,8 +86,19 @@ const AssetIncidentReportsPage = () => {
         owner_note: '',
         is_signed_by_exploitation_chief: true,
         exploitation_chief_note: '',
+        apply_status_to_all_composing_items: true,
+        stock_item_ids: [],
+        consumable_ids: [],
         digital_copy: null,
     });
+
+    const applyStatusToAllByDefault = useMemo(() => {
+        try {
+            return localStorage.getItem(INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY) !== 'exploitation_decides';
+        } catch {
+            return true;
+        }
+    }, []);
 
     const loadData = async () => {
         setLoading(true);
@@ -116,6 +140,96 @@ const AssetIncidentReportsPage = () => {
         loadData();
     }, [canView]);
 
+    useEffect(() => {
+        setForm((prev) => ({
+            ...prev,
+            apply_status_to_all_composing_items: applyStatusToAllByDefault,
+            stock_item_ids: [],
+            consumable_ids: [],
+        }));
+    }, [applyStatusToAllByDefault]);
+
+    const resetCreateForm = () => {
+        setShowCreateForm(false);
+        setForm({
+            asset: '',
+            reason: 'stolen',
+            owner_note: '',
+            is_signed_by_exploitation_chief: true,
+            exploitation_chief_note: '',
+            apply_status_to_all_composing_items: applyStatusToAllByDefault,
+            stock_item_ids: [],
+            consumable_ids: [],
+            digital_copy: null,
+        });
+        setSerialSearch('');
+    };
+
+    const openItemStatusModal = () => {
+        const stockStatuses = {};
+        const consumableStatuses = {};
+        selectedAssetStockItems.forEach((item) => {
+            const itemId = Number(item?.stock_item_id);
+            if (!Number.isFinite(itemId) || itemId <= 0) return;
+            const currentStatus = String(item?.stock_item_status || '').trim().toLowerCase();
+            stockStatuses[itemId] = REASONS.some((r) => r.value === currentStatus) ? currentStatus : form.reason;
+        });
+        selectedAssetConsumables.forEach((item) => {
+            const itemId = Number(item?.consumable_id);
+            if (!Number.isFinite(itemId) || itemId <= 0) return;
+            const currentStatus = String(item?.consumable_status || '').trim().toLowerCase();
+            consumableStatuses[itemId] = REASONS.some((r) => r.value === currentStatus) ? currentStatus : form.reason;
+        });
+        setItemStatusDraft({
+            stock_item_statuses: stockStatuses,
+            consumable_statuses: consumableStatuses,
+        });
+        setShowItemStatusModal(true);
+    };
+
+    const submitCreateReport = async (statusOverrides = null) => {
+        setSubmitting(true);
+        try {
+            const selectedStockItemIds = statusOverrides
+                ? selectedAssetStockItemIds
+                : (form.apply_status_to_all_composing_items
+                    ? selectedAssetStockItemIds
+                    : (Array.isArray(form.stock_item_ids) ? form.stock_item_ids : []));
+            const selectedConsumableIds = statusOverrides
+                ? selectedAssetConsumableIds
+                : (form.apply_status_to_all_composing_items
+                    ? selectedAssetConsumableIds
+                    : (Array.isArray(form.consumable_ids) ? form.consumable_ids : []));
+            const payload = new FormData();
+            payload.append('asset', form.asset);
+            payload.append('reason', form.reason);
+            payload.append('owner_note', form.owner_note || '');
+            payload.append('status', 'submitted');
+            payload.append('is_signed_by_exploitation_chief', !!form.is_signed_by_exploitation_chief);
+            payload.append('exploitation_chief_note', form.exploitation_chief_note || '');
+            payload.append('apply_status_to_all_composing_items', statusOverrides ? false : !!form.apply_status_to_all_composing_items);
+            payload.append('stock_item_ids', JSON.stringify(selectedStockItemIds));
+            payload.append('consumable_ids', JSON.stringify(selectedConsumableIds));
+            if (statusOverrides) {
+                payload.append('stock_item_statuses', JSON.stringify(statusOverrides.stock_item_statuses || {}));
+                payload.append('consumable_statuses', JSON.stringify(statusOverrides.consumable_statuses || {}));
+            }
+            if (form.digital_copy) {
+                payload.append('digital_copy', form.digital_copy);
+            }
+
+            await assetIncidentReportService.create(payload);
+            await loadData();
+            setShowItemStatusModal(false);
+            resetCreateForm();
+            setSuccess('Incident report created successfully');
+        } catch (e) {
+            setError(e?.response?.data?.error || 'Failed to create incident report');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const filteredAssets = useMemo(() => {
         const query = serialSearch.trim().toLowerCase();
         if (!query) return assets.slice(0, 20);
@@ -129,15 +243,63 @@ const AssetIncidentReportsPage = () => {
         [assets, form.asset]
     );
 
+    const selectedAssetStockItems = useMemo(
+        () => (Array.isArray(selectedAsset?.stock_item_composition) ? selectedAsset.stock_item_composition : []),
+        [selectedAsset]
+    );
+    const selectedAssetConsumables = useMemo(
+        () => (Array.isArray(selectedAsset?.consumable_composition) ? selectedAsset.consumable_composition : []),
+        [selectedAsset]
+    );
+    const selectedAssetStockItemIds = useMemo(
+        () => selectedAssetStockItems.map((item) => Number(item?.stock_item_id)).filter((id) => Number.isFinite(id) && id > 0),
+        [selectedAssetStockItems]
+    );
+    const selectedAssetConsumableIds = useMemo(
+        () => selectedAssetConsumables.map((item) => Number(item?.consumable_id)).filter((id) => Number.isFinite(id) && id > 0),
+        [selectedAssetConsumables]
+    );
+    const reviewingAsset = useMemo(
+        () => assets.find((a) => Number(a?.asset_id) === Number(reviewingReport?.asset)),
+        [assets, reviewingReport]
+    );
+    const reviewingAssetStockItems = useMemo(
+        () => (Array.isArray(reviewingAsset?.stock_item_composition) ? reviewingAsset.stock_item_composition : []),
+        [reviewingAsset]
+    );
+    const reviewingAssetConsumables = useMemo(
+        () => (Array.isArray(reviewingAsset?.consumable_composition) ? reviewingAsset.consumable_composition : []),
+        [reviewingAsset]
+    );
+    const reviewingAssetStockItemIds = useMemo(
+        () => reviewingAssetStockItems.map((item) => Number(item?.stock_item_id)).filter((id) => Number.isFinite(id) && id > 0),
+        [reviewingAssetStockItems]
+    );
+    const reviewingAssetConsumableIds = useMemo(
+        () => reviewingAssetConsumables.map((item) => Number(item?.consumable_id)).filter((id) => Number.isFinite(id) && id > 0),
+        [reviewingAssetConsumables]
+    );
+
     useEffect(() => {
         if (!reviewingReport || !reviewRole) return;
         const roleConfig = REVIEW_ROLE_CONFIG[reviewRole];
         if (!roleConfig) return;
+        const reportStockItemIds = Array.isArray(reviewingReport?.stock_item_ids)
+            ? reviewingReport.stock_item_ids.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+            : [];
+        const reportConsumableIds = Array.isArray(reviewingReport?.consumable_ids)
+            ? reviewingReport.consumable_ids.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+            : [];
+        const matchesAllStock = reviewingAssetStockItemIds.every((id) => reportStockItemIds.includes(id));
+        const matchesAllConsumables = reviewingAssetConsumableIds.every((id) => reportConsumableIds.includes(id));
         setReviewDraft({
             note: reviewingReport?.[roleConfig.noteField] || '',
             signed: !!reviewingReport?.[roleConfig.signField],
+            stock_item_ids: reportStockItemIds,
+            consumable_ids: reportConsumableIds,
+            apply_status_to_all_composing_items: matchesAllStock && matchesAllConsumables,
         });
-    }, [reviewingReport, reviewRole]);
+    }, [reviewingReport, reviewRole, reviewingAssetStockItemIds, reviewingAssetConsumableIds]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -152,44 +314,29 @@ const AssetIncidentReportsPage = () => {
             return;
         }
 
-        setSubmitting(true);
-        try {
-            const payload = new FormData();
-            payload.append('asset', form.asset);
-            payload.append('reason', form.reason);
-            payload.append('owner_note', form.owner_note || '');
-            payload.append('status', 'submitted');
-            payload.append('is_signed_by_exploitation_chief', !!form.is_signed_by_exploitation_chief);
-            payload.append('exploitation_chief_note', form.exploitation_chief_note || '');
-            if (form.digital_copy) {
-                payload.append('digital_copy', form.digital_copy);
-            }
-
-            await assetIncidentReportService.create(payload);
-            await loadData();
-            setShowCreateForm(false);
-            setForm({
-                asset: '',
-                reason: 'stolen',
-                owner_note: '',
-                is_signed_by_exploitation_chief: true,
-                exploitation_chief_note: '',
-                digital_copy: null,
-            });
-            setSerialSearch('');
-            setSuccess('Incident report created successfully');
-        } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to create incident report');
-        } finally {
-            setSubmitting(false);
+        const shouldOpenItemDecisionModal = (
+            isExploitationChief
+            && !form.apply_status_to_all_composing_items
+            && (selectedAssetStockItemIds.length > 0 || selectedAssetConsumableIds.length > 0)
+        );
+        if (shouldOpenItemDecisionModal) {
+            openItemStatusModal();
+            return;
         }
+        await submitCreateReport();
     };
 
     const openReviewModal = (report) => {
         if (!Array.isArray(availableReviewRoles) || availableReviewRoles.length === 0) return;
         setReviewingReport(report);
         setReviewRole(availableReviewRoles[0]);
-        setReviewDraft({ note: '', signed: false });
+        setReviewDraft({
+            note: '',
+            signed: false,
+            stock_item_ids: [],
+            consumable_ids: [],
+            apply_status_to_all_composing_items: true,
+        });
         setError('');
         setSuccess('');
     };
@@ -197,7 +344,12 @@ const AssetIncidentReportsPage = () => {
     const closeReviewModal = () => {
         setReviewingReport(null);
         setReviewRole('');
-        setReviewDraft({ note: '', signed: false });
+        setReviewDraft({ note: '', signed: false, stock_item_ids: [], consumable_ids: [], apply_status_to_all_composing_items: true });
+    };
+
+    const submitItemStatusModal = async (e) => {
+        e.preventDefault();
+        await submitCreateReport(itemStatusDraft);
     };
 
     const submitRoleReview = async (e) => {
@@ -214,6 +366,11 @@ const AssetIncidentReportsPage = () => {
                 [roleConfig.noteField]: reviewDraft.note || '',
                 [roleConfig.signField]: !!reviewDraft.signed,
             };
+            if (reviewRole === 'exploitation_chief') {
+                payload.apply_status_to_all_composing_items = !!reviewDraft.apply_status_to_all_composing_items;
+                payload.stock_item_ids = Array.isArray(reviewDraft.stock_item_ids) ? reviewDraft.stock_item_ids : [];
+                payload.consumable_ids = Array.isArray(reviewDraft.consumable_ids) ? reviewDraft.consumable_ids : [];
+            }
             await assetIncidentReportService.update(reviewingReport.asset_incident_report_id, payload);
             await loadData();
             setSuccess(`${roleConfig.label} review saved`);
@@ -497,12 +654,204 @@ const AssetIncidentReportsPage = () => {
                                 </label>
                             </div>
 
+                            {reviewRole === 'exploitation_chief' && (
+                                <>
+                                    <div className="form-group">
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={!!reviewDraft.apply_status_to_all_composing_items}
+                                                onChange={(e) =>
+                                                    setReviewDraft((prev) => ({
+                                                        ...prev,
+                                                        apply_status_to_all_composing_items: e.target.checked,
+                                                        stock_item_ids: e.target.checked ? reviewingAssetStockItemIds : prev.stock_item_ids,
+                                                        consumable_ids: e.target.checked ? reviewingAssetConsumableIds : prev.consumable_ids,
+                                                    }))
+                                                }
+                                                disabled={reviewSubmitting}
+                                            />
+                                            <span>Apply asset status to all composing items</span>
+                                        </label>
+                                    </div>
+
+                                    {!reviewDraft.apply_status_to_all_composing_items && (
+                                        <div className="form-grid">
+                                            <div className="form-group">
+                                                <label className="form-label">Stock Items</label>
+                                                <div style={{ maxHeight: 180, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                                    {reviewingAssetStockItems.length === 0 ? (
+                                                        <div style={{ color: 'var(--color-text-secondary)' }}>No composing stock items.</div>
+                                                    ) : (
+                                                        reviewingAssetStockItems.map((item) => {
+                                                            const itemId = Number(item?.stock_item_id);
+                                                            const checked = Array.isArray(reviewDraft.stock_item_ids) && reviewDraft.stock_item_ids.includes(itemId);
+                                                            return (
+                                                                <label key={itemId} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={checked}
+                                                                        onChange={(e) =>
+                                                                            setReviewDraft((prev) => {
+                                                                                const current = Array.isArray(prev.stock_item_ids) ? prev.stock_item_ids : [];
+                                                                                const next = e.target.checked
+                                                                                    ? Array.from(new Set([...current, itemId]))
+                                                                                    : current.filter((id) => Number(id) !== itemId);
+                                                                                return { ...prev, stock_item_ids: next };
+                                                                            })
+                                                                        }
+                                                                        disabled={reviewSubmitting}
+                                                                    />
+                                                                    <span>#{itemId} - {item?.stock_item_name || 'Unnamed'}</span>
+                                                                </label>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="form-group">
+                                                <label className="form-label">Consumables</label>
+                                                <div style={{ maxHeight: 180, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                                    {reviewingAssetConsumables.length === 0 ? (
+                                                        <div style={{ color: 'var(--color-text-secondary)' }}>No composing consumables.</div>
+                                                    ) : (
+                                                        reviewingAssetConsumables.map((item) => {
+                                                            const itemId = Number(item?.consumable_id);
+                                                            const checked = Array.isArray(reviewDraft.consumable_ids) && reviewDraft.consumable_ids.includes(itemId);
+                                                            return (
+                                                                <label key={itemId} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={checked}
+                                                                        onChange={(e) =>
+                                                                            setReviewDraft((prev) => {
+                                                                                const current = Array.isArray(prev.consumable_ids) ? prev.consumable_ids : [];
+                                                                                const next = e.target.checked
+                                                                                    ? Array.from(new Set([...current, itemId]))
+                                                                                    : current.filter((id) => Number(id) !== itemId);
+                                                                                return { ...prev, consumable_ids: next };
+                                                                            })
+                                                                        }
+                                                                        disabled={reviewSubmitting}
+                                                                    />
+                                                                    <span>#{itemId} - {item?.consumable_name || 'Unnamed'}</span>
+                                                                </label>
+                                                            );
+                                                        })
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
                                 <button type="button" className="btn btn-secondary" onClick={closeReviewModal} disabled={reviewSubmitting}>
                                     Cancel
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={reviewSubmitting || !reviewRole}>
                                     {reviewSubmitting ? 'Saving...' : 'Save Review'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {showItemStatusModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h3 className="modal-title">Set status for each composing item</h3>
+                            <button
+                                type="button"
+                                className="modal-close"
+                                onClick={() => !submitting && setShowItemStatusModal(false)}
+                                disabled={submitting}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <form onSubmit={submitItemStatusModal} className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label">Stock Items</label>
+                                <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                    {selectedAssetStockItems.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No composing stock items.</div>
+                                    ) : (
+                                        selectedAssetStockItems.map((item) => {
+                                            const itemId = Number(item?.stock_item_id);
+                                            return (
+                                                <div key={itemId} style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                                                    <span>#{itemId} - {item?.stock_item_name || 'Unnamed'}</span>
+                                                    <select
+                                                        className="form-select"
+                                                        value={itemStatusDraft.stock_item_statuses?.[itemId] || form.reason}
+                                                        onChange={(e) =>
+                                                            setItemStatusDraft((prev) => ({
+                                                                ...prev,
+                                                                stock_item_statuses: {
+                                                                    ...(prev.stock_item_statuses || {}),
+                                                                    [itemId]: e.target.value,
+                                                                },
+                                                            }))
+                                                        }
+                                                        disabled={submitting}
+                                                    >
+                                                        {REASONS.map((reason) => (
+                                                            <option key={reason.value} value={reason.value}>{reason.label}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Consumables</label>
+                                <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                    {selectedAssetConsumables.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>No composing consumables.</div>
+                                    ) : (
+                                        selectedAssetConsumables.map((item) => {
+                                            const itemId = Number(item?.consumable_id);
+                                            return (
+                                                <div key={itemId} style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                                                    <span>#{itemId} - {item?.consumable_name || 'Unnamed'}</span>
+                                                    <select
+                                                        className="form-select"
+                                                        value={itemStatusDraft.consumable_statuses?.[itemId] || form.reason}
+                                                        onChange={(e) =>
+                                                            setItemStatusDraft((prev) => ({
+                                                                ...prev,
+                                                                consumable_statuses: {
+                                                                    ...(prev.consumable_statuses || {}),
+                                                                    [itemId]: e.target.value,
+                                                                },
+                                                            }))
+                                                        }
+                                                        disabled={submitting}
+                                                    >
+                                                        {REASONS.map((reason) => (
+                                                            <option key={reason.value} value={reason.value}>{reason.label}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowItemStatusModal(false)} disabled={submitting}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                                    {submitting ? 'Submitting...' : 'Submit Incident Report'}
                                 </button>
                             </div>
                         </form>
