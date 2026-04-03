@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { assetIncidentReportService, assetService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -47,7 +46,8 @@ const AssetIncidentReportsPage = () => {
         () => (Array.isArray(user?.roles) ? user.roles.map((r) => r.role_code).filter(Boolean) : []),
         [user]
     );
-    const canView = isSuperuser || REVIEW_ROLE_ORDER.some((roleCode) => roleCodes.includes(roleCode));
+    const myPersonId = Number(user?.person?.person_id);
+    const canView = !!user;
     const canCreate = isSuperuser || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
     const isExploitationChief = isSuperuser || roleCodes.includes('exploitation_chief');
     const availableReviewRoles = useMemo(
@@ -74,7 +74,13 @@ const AssetIncidentReportsPage = () => {
         apply_status_to_all_composing_items: true,
     });
     const [reviewSubmitting, setReviewSubmitting] = useState(false);
+    const [ownerSubmitting, setOwnerSubmitting] = useState(false);
     const [showItemStatusModal, setShowItemStatusModal] = useState(false);
+    const [ownerEditingReport, setOwnerEditingReport] = useState(null);
+    const [ownerDraft, setOwnerDraft] = useState({
+        owner_note: '',
+        is_signed_by_owner: false,
+    });
     const [itemStatusDraft, setItemStatusDraft] = useState({
         stock_item_statuses: {},
         consumable_statuses: {},
@@ -83,7 +89,6 @@ const AssetIncidentReportsPage = () => {
     const [form, setForm] = useState({
         asset: '',
         reason: 'stolen',
-        owner_note: '',
         is_signed_by_exploitation_chief: true,
         exploitation_chief_note: '',
         apply_status_to_all_composing_items: true,
@@ -104,9 +109,10 @@ const AssetIncidentReportsPage = () => {
         setLoading(true);
         setError('');
         setSuccess('');
+        const shouldLoadAssets = canCreate || availableReviewRoles.includes('exploitation_chief');
         const [reportResult, assetResult] = await Promise.allSettled([
             assetIncidentReportService.getAll(),
-            assetService.getAll(),
+            shouldLoadAssets ? assetService.getAll() : Promise.resolve([]),
         ]);
 
         if (reportResult.status === 'fulfilled') {
@@ -118,7 +124,9 @@ const AssetIncidentReportsPage = () => {
             setError(reportResult.reason?.response?.data?.error || 'Failed to load incident reports');
         }
 
-        if (assetResult.status === 'fulfilled') {
+        if (!shouldLoadAssets) {
+            setAssets([]);
+        } else if (assetResult.status === 'fulfilled') {
             const assetData = assetResult.value;
             const assetList = assetData?.results || assetData || [];
             setAssets(Array.isArray(assetList) ? assetList : []);
@@ -129,7 +137,7 @@ const AssetIncidentReportsPage = () => {
             }
         }
 
-        if (reportResult.status === 'fulfilled' && assetResult.status === 'fulfilled') {
+        if (reportResult.status === 'fulfilled' && (assetResult.status === 'fulfilled' || !shouldLoadAssets)) {
             setError('');
         }
         setLoading(false);
@@ -154,7 +162,6 @@ const AssetIncidentReportsPage = () => {
         setForm({
             asset: '',
             reason: 'stolen',
-            owner_note: '',
             is_signed_by_exploitation_chief: true,
             exploitation_chief_note: '',
             apply_status_to_all_composing_items: applyStatusToAllByDefault,
@@ -203,7 +210,6 @@ const AssetIncidentReportsPage = () => {
             const payload = new FormData();
             payload.append('asset', form.asset);
             payload.append('reason', form.reason);
-            payload.append('owner_note', form.owner_note || '');
             payload.append('status', 'submitted');
             payload.append('is_signed_by_exploitation_chief', !!form.is_signed_by_exploitation_chief);
             payload.append('exploitation_chief_note', form.exploitation_chief_note || '');
@@ -382,9 +388,47 @@ const AssetIncidentReportsPage = () => {
         }
     };
 
-    if (!canView) {
-        return <Navigate to="/dashboard" replace />;
-    }
+    const isOwnerOfReport = (report) => isSuperuser || Number(report?.owner_person) === myPersonId;
+
+    const openOwnerModal = (report) => {
+        if (!isOwnerOfReport(report)) return;
+        setOwnerEditingReport(report);
+        setOwnerDraft({
+            owner_note: report?.owner_note || '',
+            is_signed_by_owner: !!report?.is_signed_by_owner,
+        });
+        setError('');
+        setSuccess('');
+    };
+
+    const closeOwnerModal = () => {
+        setOwnerEditingReport(null);
+        setOwnerDraft({
+            owner_note: '',
+            is_signed_by_owner: false,
+        });
+    };
+
+    const submitOwnerReview = async (e) => {
+        e.preventDefault();
+        if (!ownerEditingReport) return;
+        setOwnerSubmitting(true);
+        setError('');
+        setSuccess('');
+        try {
+            await assetIncidentReportService.update(ownerEditingReport.asset_incident_report_id, {
+                owner_note: ownerDraft.owner_note || '',
+                is_signed_by_owner: !!ownerDraft.is_signed_by_owner,
+            });
+            await loadData();
+            setSuccess('Owner note saved');
+            closeOwnerModal();
+        } catch (e2) {
+            setError(e2?.response?.data?.error || 'Failed to save owner note');
+        } finally {
+            setOwnerSubmitting(false);
+        }
+    };
 
     if (loading) return <div className="loading">Loading...</div>;
 
@@ -393,7 +437,7 @@ const AssetIncidentReportsPage = () => {
             <div className="page-header">
                 <div>
                     <h1 className="page-title">Incident Reports</h1>
-                    <p className="page-subtitle">Consult incident reports and sign them with role-specific notes</p>
+                    <p className="page-subtitle">Consult incident reports, collect owner notes, and sign with role-specific notes</p>
                 </div>
                 {canCreate && (
                     <button
@@ -501,17 +545,6 @@ const AssetIncidentReportsPage = () => {
                             </div>
 
                             <div className="form-group">
-                                <label className="form-label">Owner Note</label>
-                                <textarea
-                                    className="form-textarea"
-                                    rows={4}
-                                    value={form.owner_note}
-                                    onChange={(e) => setForm((prev) => ({ ...prev, owner_note: e.target.value }))}
-                                    placeholder="Describe what happened according to the owner"
-                                />
-                            </div>
-
-                            <div className="form-group">
                                 <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                     <input
                                         type="checkbox"
@@ -554,17 +587,18 @@ const AssetIncidentReportsPage = () => {
                                 <th>Serial</th>
                                 <th>Reason</th>
                                 <th>Status</th>
+                                <th>Owner</th>
                                 <th>IT Chief</th>
                                 <th>Exploitation Chief</th>
                                 <th>Protection Chief</th>
                                 <th>School HQ</th>
-                                {availableReviewRoles.length > 0 && <th style={{ textAlign: 'right' }}>Actions</th>}
+                                {(availableReviewRoles.length > 0 || Number.isFinite(myPersonId)) && <th style={{ textAlign: 'right' }}>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {reports.length === 0 ? (
                                 <tr>
-                                    <td colSpan={availableReviewRoles.length > 0 ? 10 : 9} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
+                                    <td colSpan={(availableReviewRoles.length > 0 || Number.isFinite(myPersonId)) ? 11 : 10} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
                                         No incident reports found.
                                     </td>
                                 </tr>
@@ -576,19 +610,33 @@ const AssetIncidentReportsPage = () => {
                                         <td>{report.asset_serial_number || '-'}</td>
                                         <td>{report.reason || '-'}</td>
                                         <td>{report.status || '-'}</td>
+                                        <td>{report.is_signed_by_owner ? 'Signed' : 'Pending'}</td>
                                         <td>{report.is_signed_by_it_bureau_chief ? 'Signed' : 'Pending'}</td>
                                         <td>{report.is_signed_by_exploitation_chief ? 'Signed' : 'Pending'}</td>
                                         <td>{report.is_signed_by_protection_and_security_bureau_chief ? 'Signed' : 'Pending'}</td>
                                         <td>{report.is_signed_by_school_headquarter ? 'Signed' : 'Pending'}</td>
-                                        {availableReviewRoles.length > 0 && (
+                                        {(availableReviewRoles.length > 0 || Number.isFinite(myPersonId)) && (
                                             <td style={{ textAlign: 'right' }}>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-secondary"
-                                                    onClick={() => openReviewModal(report)}
-                                                >
-                                                    Review / Sign
-                                                </button>
+                                                <div style={{ display: 'inline-flex', gap: 'var(--space-2)' }}>
+                                                    {availableReviewRoles.length > 0 && (
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-secondary"
+                                                            onClick={() => openReviewModal(report)}
+                                                        >
+                                                            Review / Sign
+                                                        </button>
+                                                    )}
+                                                    {isOwnerOfReport(report) && (
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-primary"
+                                                            onClick={() => openOwnerModal(report)}
+                                                        >
+                                                            Owner Note
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         )}
                                     </tr>
@@ -852,6 +900,55 @@ const AssetIncidentReportsPage = () => {
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={submitting}>
                                     {submitting ? 'Submitting...' : 'Submit Incident Report'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {ownerEditingReport && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h3 className="modal-title">Owner Note - Incident Report #{ownerEditingReport.asset_incident_report_id}</h3>
+                            <button
+                                type="button"
+                                className="modal-close"
+                                onClick={closeOwnerModal}
+                                disabled={ownerSubmitting}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <form onSubmit={submitOwnerReview} className="modal-body">
+                            <div className="form-group">
+                                <label className="form-label">Owner Note</label>
+                                <textarea
+                                    className="form-textarea"
+                                    rows={5}
+                                    value={ownerDraft.owner_note}
+                                    onChange={(e) => setOwnerDraft((prev) => ({ ...prev, owner_note: e.target.value }))}
+                                    placeholder="Describe what happened according to you"
+                                    disabled={ownerSubmitting}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={!!ownerDraft.is_signed_by_owner}
+                                        onChange={(e) => setOwnerDraft((prev) => ({ ...prev, is_signed_by_owner: e.target.checked }))}
+                                        disabled={ownerSubmitting}
+                                    />
+                                    <span>I confirm and sign this owner note</span>
+                                </label>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
+                                <button type="button" className="btn btn-secondary" onClick={closeOwnerModal} disabled={ownerSubmitting}>
+                                    Cancel
+                                </button>
+                                <button type="submit" className="btn btn-primary" disabled={ownerSubmitting}>
+                                    {ownerSubmitting ? 'Saving...' : 'Save Owner Note'}
                                 </button>
                             </div>
                         </form>

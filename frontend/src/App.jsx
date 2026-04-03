@@ -361,11 +361,7 @@ function App() {
                         />
                         <Route
                             path="incident-reports"
-                            element={
-                                <RoleProtectedRoute allowedRoles={['exploitation_chief', 'it_bureau_chief', 'protection_and_security_bureau_chief', 'school_headquarter']}>
-                                    <AssetIncidentReportsPage />
-                                </RoleProtectedRoute>
-                            }
+                            element={<AssetIncidentReportsPage />}
                         />
 
                         <Route

@@ -57,7 +57,7 @@ const DashboardLayout = () => {
     const isSchoolHeadquarter = user?.roles?.some(role => role.role_code === 'school_headquarter');
     const canViewPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
     const canViewProblemReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
-    const canViewIncidentReports = isSuperuser || isExploitationChief || isItBureauChief || isProtectionSecurityBureauChief || isSchoolHeadquarter;
+    const canViewIncidentReports = isSuperuser || isExploitationChief || isItBureauChief || isProtectionSecurityBureauChief || isSchoolHeadquarter || !!user?.person?.person_id;
 
     useEffect(() => {
         if (!isUserMenuOpen) return;

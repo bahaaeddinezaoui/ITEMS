@@ -9873,6 +9873,14 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
             or ("school_headquarter" in role_codes)
         )
 
+    def _is_report_owner(self, user_account, report):
+        if not user_account or not report:
+            return False
+        person_id = getattr(user_account, "person_id", None)
+        if not person_id:
+            return False
+        return int(person_id) == int(getattr(report, "owner_person_id", 0))
+
     def _can_create_report(self, user_account):
         if self._is_superuser_account(user_account):
             return True
@@ -9882,6 +9890,8 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
     def _editable_fields_for_user(self, user_account):
         if self._is_superuser_account(user_account):
             return {
+                "owner_note",
+                "is_signed_by_owner",
                 "it_bureau_chief_note",
                 "is_signed_by_it_bureau_chief",
                 "exploitation_chief_note",
@@ -9914,9 +9924,14 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
             user_account = request_user
         else:
             user_account = SuperuserWriteMixin()._get_user_account(self.request)
-        if not self._has_access(user_account):
+        if not user_account:
             return AssetIncidentReport.objects.none()
-        return self.queryset
+        if self._is_superuser_account(user_account) or self._has_access(user_account):
+            return self.queryset
+        person_id = getattr(user_account, "person_id", None)
+        if person_id:
+            return self.queryset.filter(owner_person_id=person_id)
+        return AssetIncidentReport.objects.none()
 
     def _parse_id_list(self, raw_value):
         if raw_value is None:
@@ -10112,6 +10127,8 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
         data.pop("apply_status_to_all_composing_items", None)
         data.pop("stock_item_statuses", None)
         data.pop("consumable_statuses", None)
+        data["owner_note"] = ""
+        data["is_signed_by_owner"] = False
 
         asset_id_raw = data.get("asset")
         try:
@@ -10222,7 +10239,9 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
         user_account = SuperuserWriteMixin()._get_user_account(request)
         if not user_account:
             return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
-        if not self._has_access(user_account):
+        report = self.get_object()
+        is_report_owner = self._is_report_owner(user_account, report)
+        if not self._has_access(user_account) and not is_report_owner and not self._is_superuser_account(user_account):
             return Response(
                 {"error": "You are not allowed to review incident reports"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -10230,7 +10249,10 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
 
         role_codes = self._role_codes(user_account)
         is_superuser = self._is_superuser_account(user_account)
-        editable_fields = self._editable_fields_for_user(user_account)
+        editable_fields = set()
+        if is_superuser or is_report_owner:
+            editable_fields.update({"owner_note", "is_signed_by_owner"})
+        editable_fields.update(self._editable_fields_for_user(user_account))
         if not editable_fields:
             return Response(
                 {"error": "You do not have any editable fields on incident reports"},
@@ -10254,7 +10276,6 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
             )
         if not payload_keys:
             return Response({"error": "No fields to update"}, status=status.HTTP_400_BAD_REQUEST)
-        report = self.get_object()
         current_stock_item_ids, current_consumable_ids = self._current_composed_item_ids(report.asset_id)
         existing_selected_stock_item_ids = list(
             AssetIncidentReportStockItem.objects.filter(asset_incident_report=report).values_list("stock_item_id", flat=True)
