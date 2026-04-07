@@ -876,11 +876,11 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_location_id:
-            return Response({"error": "Cannot infer asset current location (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
-
-        source_location = last_move.destination_location
-        if source_location.location_id == destination_location.location_id:
+        if last_move and last_move.destination_location_id:
+            source_location = last_move.destination_location
+        else:
+            source_location = destination_location
+        if last_move and source_location.location_id == destination_location.location_id:
             return Response({"error": "Asset is already in this location"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
@@ -1043,15 +1043,14 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
             if not _is_maintenance_location(destination_location):
                 return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
-            if not current_location:
-                return Response({"error": "Cannot infer asset current location (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
+            source_location = current_location or destination_location
 
             last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
             next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
             AssetMovement.objects.create(
                 asset_movement_id=next_asset_move_id,
                 asset=asset,
-                source_location=current_location,
+                source_location=source_location,
                 destination_location=destination_location,
                 maintenance_step=None,
                 external_maintenance_step_id=None,
@@ -1060,7 +1059,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             )
             _cascade_move_composed_items(
                 asset_id=asset.asset_id,
-                source_location_id=current_location.location_id,
+                source_location_id=source_location.location_id,
                 destination_location_id=destination_location.location_id,
                 movement_reason="maintenance_create",
                 movement_datetime=timezone.now(),
@@ -2052,10 +2051,10 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
                 .order_by("-stock_item_movement_id")
                 .first()
             )
-            if not last_move:
-                return Response({"error": "Cannot infer stock item current location (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
-
-            source_location = last_move.destination_location
+            if last_move:
+                source_location = last_move.destination_location
+            else:
+                source_location = destination_location
             last_move_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
             next_move_id = (last_move_global.stock_item_movement_id + 1) if last_move_global else 1
 
@@ -2083,10 +2082,10 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
                 .order_by("-consumable_movement_id")
                 .first()
             )
-            if not last_move:
-                return Response({"error": "Cannot infer consumable current location (no movement history)"}, status=status.HTTP_400_BAD_REQUEST)
-
-            source_location = last_move.destination_location
+            if last_move:
+                source_location = last_move.destination_location
+            else:
+                source_location = destination_location
             last_move_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
             next_move_id = (last_move_global.consumable_movement_id + 1) if last_move_global else 1
 
@@ -2901,11 +2900,11 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_location_id:
-            return Response(
-                {"error": "Cannot infer asset current location (no movement history)"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        source_location_id = (
+            last_move.destination_location_id
+            if last_move and last_move.destination_location_id
+            else destination_location_id_int
+        )
 
         last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
         next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
@@ -2915,7 +2914,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             AssetMovement.objects.create(
                 asset_movement_id=next_asset_move_id,
                 asset_id=asset_id,
-                source_location_id=last_move.destination_location_id,
+                source_location_id=source_location_id,
                 destination_location_id=destination_location_id_int,
                 maintenance_step_id=None,
                 external_maintenance_step_id=None,
@@ -2924,7 +2923,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             )
             _cascade_move_composed_items(
                 asset_id=asset_id,
-                source_location_id=last_move.destination_location_id,
+                source_location_id=source_location_id,
                 destination_location_id=destination_location_id_int,
                 movement_reason="Sent to external maintenance provider",
                 movement_datetime=now,
@@ -3131,13 +3130,13 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             .order_by("-asset_movement_id")
             .first()
         )
-        if not last_move or not last_move.destination_location_id:
-            return Response(
-                {"error": "Cannot infer asset current location (no movement history)"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        source_location_id = (
+            last_move.destination_location_id
+            if last_move and last_move.destination_location_id
+            else destination_location_id_int
+        )
 
-        if last_move.destination_location_id == destination_location_id_int:
+        if last_move and last_move.destination_location_id == destination_location_id_int:
             return Response({"error": "Asset is already in this location"}, status=status.HTTP_400_BAD_REQUEST)
 
         last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
@@ -3155,7 +3154,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             AssetMovement.objects.create(
                 asset_movement_id=next_asset_move_id,
                 asset_id=asset_id,
-                source_location_id=last_move.destination_location_id,
+                source_location_id=source_location_id,
                 destination_location_id=destination_location_id_int,
                 maintenance_step_id=None,
                 external_maintenance_step_id=external_step_id,
@@ -3164,7 +3163,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             )
             _cascade_move_composed_items(
                 asset_id=asset_id,
-                source_location_id=last_move.destination_location_id,
+                source_location_id=source_location_id,
                 destination_location_id=destination_location_id_int,
                 movement_reason="Received by company from external maintenance",
                 movement_datetime=now,
@@ -3884,10 +3883,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 elif last_move_any:
                     source_location = last_move_any.destination_location
                 else:
-                    return Response(
-                        {"error": f"Cannot infer stock item current location (no movement history) for stock_item_id={stock_item_id_int}"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                    source_location = destination_location
 
                 StockItemMovement.objects.create(
                     stock_item_movement_id=next_stock_move_id,
@@ -3923,10 +3919,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 elif last_move_any:
                     source_location = last_move_any.destination_location
                 else:
-                    return Response(
-                        {"error": f"Cannot infer consumable current location (no movement history) for consumable_id={consumable_id_int}"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                    source_location = destination_location
 
                 ConsumableMovement.objects.create(
                     consumable_movement_id=next_consumable_move_id,
@@ -3978,12 +3971,30 @@ class ProblemReportViewSet(viewsets.ViewSet):
 
             if not already_exists:
                 if not current_location:
-                    return Response(
-                        {"error": "Cannot infer asset current location (no movement history)"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
+                    if not destination_location_id:
+                        return Response(
+                            {
+                                "error": "Asset is not in a maintenance location. destination_location_id is required to request moving the asset to a maintenance location.",
+                                "current_location": None,
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
 
-                if not _is_maintenance_location(current_location):
+                    try:
+                        destination_location_id_int = int(destination_location_id)
+                    except (TypeError, ValueError):
+                        return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id_int).first()
+                    if not destination_location:
+                        return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
+
+                    if not _is_maintenance_location(destination_location):
+                        return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    dest_location_id = destination_location.location_id
+                    source_location_id = dest_location_id
+                elif not _is_maintenance_location(current_location):
                     if not destination_location_id:
                         return Response(
                             {
@@ -4006,15 +4017,17 @@ class ProblemReportViewSet(viewsets.ViewSet):
                         return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
 
                     dest_location_id = destination_location.location_id
+                    source_location_id = current_location.location_id
                 else:
                     dest_location_id = current_location.location_id
+                    source_location_id = current_location.location_id
 
                 last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
                 next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
                 AssetMovement.objects.create(
                     asset_movement_id=next_asset_move_id,
                     asset_id=asset_id,
-                    source_location_id=current_location.location_id,
+                    source_location_id=source_location_id,
                     destination_location_id=dest_location_id,
                     maintenance_step_id=None,
                     external_maintenance_step_id=None,
