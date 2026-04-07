@@ -56,7 +56,9 @@ from .models import (
     PersonReportsProblemOnConsumable,
     PersonReportsProblemOnStockItem,
     PersonRoleMapping,
+    Role,
     Position,
+    PositionRoleMapping,
     Location,
     LocationType,
     StockItem,
@@ -518,6 +520,8 @@ from .serializers import (
     PersonSerializer,
     PersonReportsProblemOnAssetSerializer,
     PositionSerializer,
+    PositionRoleMappingSerializer,
+    RoleSerializer,
     LocationSerializer,
     LocationTypeSerializer,
     StockItemAttributeDefinitionSerializer,
@@ -1248,6 +1252,92 @@ class AdminResetUserPasswordView(APIView):
         target.save(update_fields=["password_hash", "password_last_changed_datetime", "failed_login_attempts"])
 
         return Response({"message": "Password reset successfully", "username": username}, status=status.HTTP_200_OK)
+
+
+class UserAccountCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        actor = SuperuserWriteMixin()._get_user_account(request)
+        if not actor:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not actor.is_superuser():
+            return Response({"error": "Only superusers can create user accounts"}, status=status.HTTP_403_FORBIDDEN)
+
+        person_id = request.data.get("person_id")
+        username = (request.data.get("username") or "").strip()
+        password = request.data.get("password")
+        account_status = (request.data.get("account_status") or "active").strip() or "active"
+        role_code = (request.data.get("role_code") or "").strip()
+
+        if not person_id or not username or not password:
+            return Response(
+                {"error": "person_id, username and password are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            person = Person.objects.get(person_id=int(person_id))
+        except (ValueError, TypeError, Person.DoesNotExist):
+            return Response({"error": "Invalid person_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if UserAccount.objects.filter(username=username).exists():
+            return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        if UserAccount.objects.filter(person=person).exists():
+            return Response({"error": "This person already has an account"}, status=status.HTTP_400_BAD_REQUEST)
+
+        role = None
+        if role_code:
+            role = Role.objects.filter(role_code=role_code).order_by("role_id").first()
+            if not role:
+                return Response({"error": f"Role not found for role_code '{role_code}'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            last_user = UserAccount.objects.order_by("-user_id").first()
+            next_user_id = (last_user.user_id + 1) if last_user else 1
+            now_ts = timezone.now()
+
+            with transaction.atomic():
+                account = UserAccount.objects.create(
+                    user_id=next_user_id,
+                    person=person,
+                    username=username,
+                    password_hash=hash_password(password),
+                    created_at_datetime=now_ts,
+                    disabled_at_datetime=now_ts,
+                    last_login=now_ts,
+                    account_status=account_status,
+                    failed_login_attempts=0,
+                    password_last_changed_datetime=now_ts,
+                    created_by_user_id=getattr(actor, "user_id", None),
+                    modified_by_user_id=getattr(actor, "user_id", None),
+                    modified_at_datetime=now_ts,
+                )
+
+                if role is not None:
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            """
+                            INSERT INTO person_role_mapping (role_id, person_id)
+                            VALUES (%s, %s)
+                            ON CONFLICT (role_id, person_id) DO NOTHING
+                            """,
+                            [role.role_id, person.person_id],
+                        )
+
+            return Response(
+                {
+                    "user_id": account.user_id,
+                    "username": account.username,
+                    "person_id": person.person_id,
+                    "account_status": account.account_status,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except ValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError as exc:
+            return Response({"error": f"Could not create account due to a data conflict: {exc}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MaintenanceStepViewSet(viewsets.ModelViewSet):
@@ -6945,6 +7035,33 @@ class PositionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_position.position_id + 1) if last_position else 1
         position = Position.objects.create(position_id=next_id, **serializer.validated_data)
         return Response(PositionSerializer(position).data, status=status.HTTP_201_CREATED)
+
+
+class RoleViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Role.objects.all().order_by("role_id")
+    serializer_class = RoleSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class PositionRoleMappingViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = PositionRoleMapping.objects.select_related("position", "role").all().order_by("position_id", "role_id")
+    serializer_class = PositionRoleMappingSerializer
+    lookup_field = "pk"
+    lookup_value_regex = r"[0-9]+-[0-9]+"
+
+    def _parse_lookup_pair(self):
+        raw = self.kwargs.get(self.lookup_field)
+        if not raw or "-" not in raw:
+            raise ValidationError({"error": "Invalid mapping id. Expected format: <position_id>-<role_id>"})
+        left, right = raw.split("-", 1)
+        try:
+            return int(left), int(right)
+        except (TypeError, ValueError):
+            raise ValidationError({"error": "Invalid mapping id. position_id and role_id must be integers"})
+
+    def get_object(self):
+        position_id, role_id = self._parse_lookup_pair()
+        return self.get_queryset().get(position_id=position_id, role_id=role_id)
 
 
 # Organizational Structure ViewSets

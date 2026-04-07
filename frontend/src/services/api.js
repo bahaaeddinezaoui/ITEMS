@@ -1260,6 +1260,29 @@ export const positionService = {
     },
 };
 
+export const roleService = {
+    getAll: async () => {
+        const response = await api.get('roles/');
+        return response.data;
+    },
+};
+
+export const positionRoleMappingService = {
+    getAll: async () => {
+        const response = await api.get('position-role-mappings/');
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('position-role-mappings/', data);
+        return response.data;
+    },
+
+    delete: async (positionId, roleId) => {
+        await api.delete(`position-role-mappings/${positionId}-${roleId}/`);
+    },
+};
+
 // Organizational Structure service
 export const organizationalStructureService = {
     getAll: async () => {

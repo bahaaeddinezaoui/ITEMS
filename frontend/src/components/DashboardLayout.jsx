@@ -179,6 +179,18 @@ const DashboardLayout = () => {
                                     </svg>
                                     Positions
                                 </NavLink>
+
+                                <NavLink to="/dashboard/position-role-mappings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M8 7h8" />
+                                        <path d="M8 12h8" />
+                                        <path d="M8 17h8" />
+                                        <circle cx="4" cy="7" r="1.5" />
+                                        <circle cx="20" cy="12" r="1.5" />
+                                        <circle cx="4" cy="17" r="1.5" />
+                                    </svg>
+                                    Position-Role Links
+                                </NavLink>
                             </div>
                         </>
                     )}

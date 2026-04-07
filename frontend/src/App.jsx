@@ -28,6 +28,7 @@ import ConsumablesAttributeDefinitionsPage from './pages/ConsumablesAttributeDef
 import ConsumableInstanceCreatePage from './pages/ConsumableInstanceCreatePage';
 import LocationsPage from './pages/LocationsPage';
 import PositionsPage from './pages/PositionsPage';
+import PositionRoleMappingsPage from './pages/PositionRoleMappingsPage';
 import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
 import MyItemsPage from './pages/MyItemsPage';
 import MySubmittedReportsPage from './pages/MySubmittedReportsPage';
@@ -397,6 +398,14 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={[]}>
                                     <PositionsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="position-role-mappings"
+                            element={
+                                <RoleProtectedRoute allowedRoles={[]}>
+                                    <PositionRoleMappingsPage />
                                 </RoleProtectedRoute>
                             }
                         />

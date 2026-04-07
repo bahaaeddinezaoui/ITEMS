@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, Position, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable
+from django.utils import timezone
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, Position, PositionRoleMapping, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -221,6 +222,36 @@ class PositionSerializer(serializers.ModelSerializer):
         model = Position
         fields = ['position_id', 'position_code', 'position_label', 'description']
         read_only_fields = ['position_id']
+
+
+class PositionRoleMappingSerializer(serializers.ModelSerializer):
+    """Serializer for PositionRoleMapping model"""
+    position = serializers.PrimaryKeyRelatedField(queryset=Position.objects.all())
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all())
+    position_label = serializers.CharField(source='position.position_label', read_only=True)
+    role_code = serializers.CharField(source='role.role_code', read_only=True)
+    role_label = serializers.CharField(source='role.role_label', read_only=True)
+
+    class Meta:
+        model = PositionRoleMapping
+        fields = ['position', 'position_label', 'role', 'role_code', 'role_label', 'created_at', 'source']
+        read_only_fields = ['created_at']
+
+    def create(self, validated_data):
+        instance = PositionRoleMapping()
+        position = validated_data.get('position')
+        role = validated_data.get('role')
+        instance.position_id = position.pk if hasattr(position, 'pk') else position
+        instance.role_id = role.pk if hasattr(role, 'pk') else role
+        instance.created_at = timezone.now()
+        instance.source = validated_data.get('source') or 'manual'
+        instance.save(force_insert=True)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.source = validated_data.get('source', instance.source)
+        instance.save()
+        return instance
 
 
 class OrganizationalStructureSerializer(serializers.ModelSerializer):

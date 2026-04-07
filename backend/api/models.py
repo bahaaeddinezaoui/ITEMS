@@ -322,6 +322,19 @@ class Position(models.Model):
         return self.position_label
 
 
+class PositionRoleMapping(models.Model):
+    """Maps to position_role_mapping table"""
+    position = models.ForeignKey(Position, on_delete=models.CASCADE, db_column='position_id', primary_key=True)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, db_column='role_id')
+    created_at = models.DateTimeField(db_column='created_at')
+    source = models.CharField(max_length=32, db_column='source')
+
+    class Meta:
+        managed = False
+        db_table = 'position_role_mapping'
+        unique_together = (('position', 'role'),)
+
+
 class OrganizationalStructure(models.Model):
     """Maps to organizational_structure table"""
     organizational_structure_id = models.AutoField(primary_key=True, db_column='organizational_structure_id')

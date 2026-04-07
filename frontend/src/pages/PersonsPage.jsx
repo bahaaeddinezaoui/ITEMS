@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { authService, personService, userAccountService } from '../services/api';
+import { authService, personService, roleService, userAccountService } from '../services/api';
 
 const PersonsPage = () => {
     const [persons, setPersons] = useState([]);
@@ -23,9 +23,11 @@ const PersonsPage = () => {
     });
     const [submitting, setSubmitting] = useState(false);
     const [submittingAccount, setSubmittingAccount] = useState(false);
+    const [roles, setRoles] = useState([]);
 
     useEffect(() => {
         loadPersons();
+        loadRoles();
     }, []);
 
     const loadPersons = async () => {
@@ -37,6 +39,15 @@ const PersonsPage = () => {
             setError('Failed to load persons');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadRoles = async () => {
+        try {
+            const data = await roleService.getAll();
+            setRoles(Array.isArray(data) ? data : []);
+        } catch {
+            setRoles([]);
         }
     };
 
@@ -109,8 +120,12 @@ const PersonsPage = () => {
             });
             setShowAccountModal(false);
             setSelectedPersonForAccount(null);
-        } catch {
-            setError('Failed to create account');
+        } catch (err) {
+            const msg =
+                err?.response?.data?.error ||
+                err?.response?.data?.detail ||
+                'Failed to create account';
+            setError(msg);
         } finally {
             setSubmittingAccount(false);
         }
@@ -372,16 +387,21 @@ const PersonsPage = () => {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="role_code" className="form-label">Role Code (optional)</label>
-                                        <input
-                                            type="text"
+                                        <label htmlFor="role_code" className="form-label">Role (optional)</label>
+                                        <select
                                             id="role_code"
                                             name="role_code"
                                             className="form-input"
                                             value={accountFormData.role_code}
                                             onChange={handleAccountInputChange}
-                                            placeholder="e.g. maintenance_chief"
-                                        />
+                                        >
+                                            <option value="">No role</option>
+                                            {roles.map((role) => (
+                                                <option key={role.role_id} value={role.role_code}>
+                                                    {role.role_label} ({role.role_code})
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
                             </div>
