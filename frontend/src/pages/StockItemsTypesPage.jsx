@@ -363,16 +363,26 @@ const StockItemsTypesPage = () => {
                                             }}>
                                                 <Tag size={20} />
                                             </div>
-                                            {isSuperuser && (
+                                            <div style={{ display: 'flex', gap: 'var(--space-1)' }}>
                                                 <button 
                                                     className="btn btn-secondary" 
-                                                    style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px', color: 'var(--color-error)' }}
-                                                    onClick={(e) => { e.stopPropagation(); handleDeleteType(type.stock_item_type_id); }}
-                                                    title="Delete Type"
+                                                    style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px' }}
+                                                    onClick={(e) => { e.stopPropagation(); goToModels(type); }}
+                                                    title="View Models"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <LayoutGrid size={16} />
                                                 </button>
-                                            )}
+                                                {isSuperuser && (
+                                                    <button 
+                                                        className="btn btn-secondary" 
+                                                        style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px', color: 'var(--color-error)' }}
+                                                        onClick={(e) => { e.stopPropagation(); handleDeleteType(type.stock_item_type_id); }}
+                                                        title="Delete Type"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                         
                                         <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
