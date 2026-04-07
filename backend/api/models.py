@@ -327,7 +327,6 @@ class PositionRoleMapping(models.Model):
     position = models.ForeignKey(Position, on_delete=models.CASCADE, db_column='position_id', primary_key=True)
     role = models.ForeignKey(Role, on_delete=models.CASCADE, db_column='role_id')
     created_at = models.DateTimeField(db_column='created_at')
-    source = models.CharField(max_length=32, db_column='source')
 
     class Meta:
         managed = False

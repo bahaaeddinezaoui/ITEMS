@@ -7,6 +7,8 @@ const ReportsPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [reports, setReports] = useState([]);
+    const [query, setQuery] = useState('');
+    const [typeFilter, setTypeFilter] = useState('');
 
     const [technicians, setTechnicians] = useState([]);
     const [showCreateMaintenanceModal, setShowCreateMaintenanceModal] = useState(false);
@@ -36,6 +38,63 @@ const ReportsPage = () => {
         if (isSuperuser) return true;
         return user?.roles?.some((r) => r.role_code === 'maintenance_chief' || r.role_code === 'it_bureau_chief') || false;
     }, [isSuperuser, user]);
+
+    const filteredReports = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        const list = Array.isArray(reports) ? reports : [];
+        const filtered = list.filter((r) => {
+            if (typeFilter && r.item_type !== typeFilter) return false;
+            if (!q) return true;
+            const dtText = r.report_datetime ? new Date(r.report_datetime).toLocaleString() : '';
+            const haystack = [
+                String(r.report_id ?? ''),
+                String(r.item_type ?? ''),
+                String(r.item_id ?? ''),
+                String(r.person_name ?? ''),
+                String(r.person_id ?? ''),
+                String(r.owner_observation ?? ''),
+                String(dtText ?? ''),
+            ]
+                .join(' ')
+                .toLowerCase();
+            return haystack.includes(q);
+        });
+        filtered.sort((a, b) => {
+            const ad = a?.report_datetime ? new Date(a.report_datetime).getTime() : 0;
+            const bd = b?.report_datetime ? new Date(b.report_datetime).getTime() : 0;
+            return bd - ad;
+        });
+        return filtered;
+    }, [reports, query, typeFilter]);
+
+    const formatRelativeTime = (iso) => {
+        if (!iso) return '';
+        const ts = new Date(iso).getTime();
+        if (Number.isNaN(ts)) return '';
+        const diff = Date.now() - ts;
+        const mins = Math.round(diff / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return `${mins}m`;
+        const hours = Math.round(mins / 60);
+        if (hours < 24) return `${hours}h`;
+        const days = Math.round(hours / 24);
+        if (days < 14) return `${days}d`;
+        return new Date(iso).toLocaleDateString();
+    };
+
+    const chipStyle = {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        padding: '0.15rem 0.5rem',
+        borderRadius: '999px',
+        border: '1px solid var(--color-border)',
+        background: 'var(--color-bg-card)',
+        color: 'var(--color-text-secondary)',
+        fontSize: '0.8rem',
+        lineHeight: 1.6,
+        whiteSpace: 'nowrap',
+    };
 
     const loadReports = async () => {
         try {
@@ -242,70 +301,138 @@ const ReportsPage = () => {
             )}
 
             <div className="card">
-                <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>All Reports</h2>
-                    <button className="btn btn-secondary" onClick={loadReports} disabled={loading}>
-                        Refresh
-                    </button>
+                <div
+                    className="card-header"
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 'var(--space-4)',
+                        flexWrap: 'wrap',
+                    }}
+                >
+                    <div style={{ display: 'grid', gap: '0.25rem' }}>
+                        <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>All reports</h2>
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                            {filteredReports.length} shown
+                            {typeFilter ? ` • ${typeFilter.replace('_', ' ')}` : ''}
+                            {query.trim() ? ' • search applied' : ''}
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <input
+                            className="form-input"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search reports…"
+                            style={{ width: 320, maxWidth: '100%' }}
+                        />
+                        <select
+                            className="form-input"
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value)}
+                            style={{ width: 180 }}
+                            aria-label="Filter by type"
+                        >
+                            <option value="">All types</option>
+                            <option value="asset">Asset</option>
+                            <option value="stock_item">Stock item</option>
+                            <option value="consumable">Consumable</option>
+                        </select>
+                        <button className="btn btn-secondary" onClick={loadReports} disabled={loading}>
+                            Refresh
+                        </button>
+                    </div>
                 </div>
 
-                <div className="table-container">
+                <div style={{ padding: 'var(--space-4)' }}>
                     {loading ? (
                         <div className="empty-state">
                             <div className="loading-spinner" style={{ margin: '0 auto' }} />
                             <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>Loading...</p>
                         </div>
-                    ) : reports.length === 0 ? (
+                    ) : filteredReports.length === 0 ? (
                         <div className="empty-state">
-                            <h3 className="empty-state-title">No reports</h3>
-                            <p className="empty-state-text">No problem reports have been submitted yet.</p>
+                            <h3 className="empty-state-title">No results</h3>
+                            <p className="empty-state-text">Try adjusting filters or search.</p>
                         </div>
                     ) : (
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Report ID</th>
-                                    <th>Type</th>
-                                    <th>Item ID</th>
-                                    <th>Person</th>
-                                    <th>Date</th>
-                                    <th>Observation</th>
-                                    {canCreateMaintenance && <th>Actions</th>}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {reports.map((r) => (
-                                    <tr key={`${r.item_type}-${r.report_id}`}>
-                                        <td>{r.report_id}</td>
-                                        <td>{r.item_type}</td>
-                                        <td>
-                                            {r.item_type === 'asset' ? (
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                                gap: 'var(--space-4)',
+                            }}
+                        >
+                            {filteredReports.map((r) => {
+                                const typeLabel = (r?.item_type || '').replace('_', ' ');
+                                const rel = formatRelativeTime(r?.report_datetime);
+                                const abs = r?.report_datetime ? new Date(r.report_datetime).toLocaleString() : '-';
+                                const who = r?.person_name || r?.person_id || '—';
+                                const observation = (r?.owner_observation || '').trim() || '—';
+
+                                return (
+                                    <div
+                                        key={`${r.item_type}-${r.report_id}`}
+                                        className="card"
+                                        style={{
+                                            padding: 'var(--space-4)',
+                                            background: 'var(--color-bg-card)',
+                                            border: '1px solid var(--color-border)',
+                                            boxShadow: 'var(--shadow-sm)',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                                <span style={{ ...chipStyle, borderColor: 'rgba(99, 102, 241, 0.35)', color: 'var(--color-text-primary)' }}>
+                                                    {typeLabel || 'item'}
+                                                </span>
+                                                <span style={chipStyle}>#{r?.report_id}</span>
+                                                <span style={chipStyle}>
+                                                    {r?.item_type === 'asset' ? 'asset' : typeLabel} #{r?.item_id}
+                                                </span>
+                                            </div>
+
+                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', whiteSpace: 'nowrap' }} title={abs}>
+                                                {rel || abs}
+                                            </div>
+                                        </div>
+
+                                        <div style={{ marginTop: '0.75rem', color: 'var(--color-text-primary)', fontWeight: 600, lineHeight: 1.35 }}>
+                                            {observation.length > 120 ? `${observation.slice(0, 120)}…` : observation}
+                                        </div>
+
+                                        <div style={{ marginTop: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.92rem' }}>
+                                            <span style={{ color: 'var(--color-text-muted)' }}>by</span> {who}
+                                        </div>
+
+                                        <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+                                            {r?.item_type === 'asset' && (
                                                 <button
                                                     className="btn btn-secondary"
-                                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
-                                            onClick={() => openAssetDetails(r)}
-                                            disabled={loadingAsset}
+                                                    onClick={() => openAssetDetails(r)}
+                                                    disabled={loadingAsset}
+                                                    style={{ padding: '0.5rem 0.75rem' }}
                                                 >
-                                                    {r.item_id}
+                                                    View asset
                                                 </button>
-                                            ) : (
-                                                r.item_id
                                             )}
-                                        </td>
-                                        <td>{r.person_name || r.person_id}</td>
-                                        <td>{r.report_datetime ? new Date(r.report_datetime).toLocaleString() : '-'}</td>
-                                        <td>{r.owner_observation}</td>
-                                        {canCreateMaintenance && (
-                                            <td>
-                                                <button className="btn btn-secondary" onClick={() => openCreateMaintenance(r)}>
+
+                                            {canCreateMaintenance && (
+                                                <button className="btn btn-primary" onClick={() => openCreateMaintenance(r)} style={{ padding: '0.5rem 0.75rem' }}>
                                                     Create maintenance
                                                 </button>
-                                            </td>
-                                        )}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                            )}
+
+                                            <div style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.85rem' }} title={abs}>
+                                                {abs}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     )}
                 </div>
             </div>
@@ -420,7 +547,41 @@ const ReportsPage = () => {
                 <div className="modal-overlay" onClick={() => setShowAssetModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3 className="modal-title">Asset Details</h3>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                <h3 className="modal-title" style={{ margin: 0 }}>
+                                    {selectedAsset.asset_name || 'Asset'}
+                                </h3>
+                                <span
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        padding: '0.15rem 0.55rem',
+                                        borderRadius: '999px',
+                                        border: '1px solid var(--color-border)',
+                                        background: 'var(--color-bg-card)',
+                                        color: 'var(--color-text-secondary)',
+                                        fontSize: '0.85rem',
+                                    }}
+                                >
+                                    #{selectedAsset.asset_id}
+                                </span>
+                                {selectedAsset.asset_status && (
+                                    <span
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            padding: '0.15rem 0.55rem',
+                                            borderRadius: '999px',
+                                            border: '1px solid rgba(99, 102, 241, 0.35)',
+                                            background: 'rgba(99, 102, 241, 0.12)',
+                                            color: 'var(--color-text-primary)',
+                                            fontSize: '0.85rem',
+                                        }}
+                                    >
+                                        {selectedAsset.asset_status}
+                                    </span>
+                                )}
+                            </div>
                             <button className="modal-close" onClick={() => setShowAssetModal(false)}>
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -430,33 +591,48 @@ const ReportsPage = () => {
                         </div>
 
                         <div className="modal-body">
-                            <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                                    gap: 'var(--space-4)',
+                                }}
+                            >
                                 <div>
-                                    <strong>Asset ID:</strong> {selectedAsset.asset_id}
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Type</div>
+                                    <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                                        {selectedAsset.asset_type_label || '-'}
+                                    </div>
                                 </div>
                                 <div>
-                                    <strong>Name:</strong> {selectedAsset.asset_name || '-'}
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Model</div>
+                                    <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                                        {selectedAsset.asset_model_name || selectedAsset.asset_model || '-'}
+                                    </div>
                                 </div>
                                 <div>
-                                    <strong>Serial Number:</strong> {selectedAsset.asset_serial_number || '-'}
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Brand</div>
+                                    <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                                        {selectedAsset.brand_name || '-'}
+                                    </div>
                                 </div>
                                 <div>
-                                    <strong>Inventory Number:</strong> {selectedAsset.asset_inventory_number || '-'}
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Service tag</div>
+                                    <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                                        {selectedAsset.asset_service_tag || '-'}
+                                    </div>
                                 </div>
                                 <div>
-                                    <strong>Service Tag:</strong> {selectedAsset.asset_service_tag || '-'}
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Serial</div>
+                                    <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                                        {selectedAsset.asset_serial_number || '-'}
+                                    </div>
                                 </div>
                                 <div>
-                                    <strong>Status:</strong> {selectedAsset.asset_status || '-'}
-                                </div>
-                                <div>
-                                    <strong>Model:</strong> {selectedAsset.asset_model_name || selectedAsset.asset_model || '-'}
-                                </div>
-                                <div>
-                                    <strong>Brand:</strong> {selectedAsset.brand_name || '-'}
-                                </div>
-                                <div>
-                                    <strong>Type:</strong> {selectedAsset.asset_type_label || '-'}
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Inventory</div>
+                                    <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                                        {selectedAsset.asset_inventory_number || '-'}
+                                    </div>
                                 </div>
                             </div>
                         </div>

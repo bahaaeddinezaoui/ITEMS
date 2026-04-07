@@ -234,7 +234,7 @@ class PositionRoleMappingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PositionRoleMapping
-        fields = ['position', 'position_label', 'role', 'role_code', 'role_label', 'created_at', 'source']
+        fields = ['position', 'position_label', 'role', 'role_code', 'role_label', 'created_at']
         read_only_fields = ['created_at']
 
     def create(self, validated_data):
@@ -244,12 +244,10 @@ class PositionRoleMappingSerializer(serializers.ModelSerializer):
         instance.position_id = position.pk if hasattr(position, 'pk') else position
         instance.role_id = role.pk if hasattr(role, 'pk') else role
         instance.created_at = timezone.now()
-        instance.source = validated_data.get('source') or 'manual'
         instance.save(force_insert=True)
         return instance
 
     def update(self, instance, validated_data):
-        instance.source = validated_data.get('source', instance.source)
         instance.save()
         return instance
 

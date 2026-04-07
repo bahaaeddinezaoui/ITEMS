@@ -62,6 +62,9 @@ const AssetIncidentReportsPage = () => {
 
     const [assets, setAssets] = useState([]);
     const [reports, setReports] = useState([]);
+    const [reportQuery, setReportQuery] = useState('');
+    const [reasonFilter, setReasonFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
     const [serialSearch, setSerialSearch] = useState('');
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [reviewingReport, setReviewingReport] = useState(null);
@@ -243,6 +246,68 @@ const AssetIncidentReportsPage = () => {
             .filter((a) => ((a?.asset_serial_number || '').toString().toLowerCase().includes(query)))
             .slice(0, 30);
     }, [assets, serialSearch]);
+
+    const statusOptions = useMemo(() => {
+        const set = new Set();
+        (Array.isArray(reports) ? reports : []).forEach((r) => {
+            const s = (r?.status || '').toString().trim();
+            if (s) set.add(s);
+        });
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }, [reports]);
+
+    const filteredReports = useMemo(() => {
+        const q = reportQuery.trim().toLowerCase();
+        const list = Array.isArray(reports) ? reports.slice() : [];
+        const filtered = list.filter((r) => {
+            if (reasonFilter && String(r?.reason || '') !== reasonFilter) return false;
+            if (statusFilter && String(r?.status || '') !== statusFilter) return false;
+            if (!q) return true;
+            const haystack = [
+                String(r?.asset_incident_report_id ?? ''),
+                String(r?.asset_name ?? ''),
+                String(r?.asset ?? ''),
+                String(r?.asset_serial_number ?? ''),
+                String(r?.reason ?? ''),
+                String(r?.status ?? ''),
+                String(r?.owner_note ?? ''),
+                String(r?.exploitation_chief_note ?? ''),
+                String(r?.it_bureau_chief_note ?? ''),
+                String(r?.protection_and_security_bureau_chief_note ?? ''),
+                String(r?.school_headquarter_note ?? ''),
+            ]
+                .join(' ')
+                .toLowerCase();
+            return haystack.includes(q);
+        });
+        filtered.sort((a, b) => Number(b?.asset_incident_report_id || 0) - Number(a?.asset_incident_report_id || 0));
+        return filtered;
+    }, [reports, reportQuery, reasonFilter, statusFilter]);
+
+    const chipStyle = {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        padding: '0.15rem 0.5rem',
+        borderRadius: '999px',
+        border: '1px solid var(--color-border)',
+        background: 'var(--color-bg-card)',
+        color: 'var(--color-text-secondary)',
+        fontSize: '0.8rem',
+        lineHeight: 1.6,
+        whiteSpace: 'nowrap',
+    };
+
+    const signChip = (label, signed) => {
+        const dot = signed ? 'var(--color-success)' : 'var(--color-warning)';
+        const text = signed ? 'Signed' : 'Pending';
+        return (
+            <span style={chipStyle} title={`${label}: ${text}`}>
+                <span style={{ width: 8, height: 8, borderRadius: 999, background: dot, display: 'inline-block' }} />
+                <span style={{ color: 'var(--color-text-muted)' }}>{label}</span>
+            </span>
+        );
+    };
 
     const selectedAsset = useMemo(
         () => assets.find((a) => Number(a?.asset_id) === Number(form.asset)),
@@ -575,75 +640,151 @@ const AssetIncidentReportsPage = () => {
             )}
 
             <div className="card">
-                <div className="card-header">
-                    <h2 className="card-title">All Incident Reports</h2>
+                <div
+                    className="card-header"
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 'var(--space-4)',
+                        flexWrap: 'wrap',
+                    }}
+                >
+                    <div style={{ display: 'grid', gap: '0.25rem' }}>
+                        <h2 className="card-title" style={{ margin: 0 }}>All incident reports</h2>
+                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
+                            {filteredReports.length} shown
+                            {reasonFilter ? ` • ${REASONS.find((r) => r.value === reasonFilter)?.label || reasonFilter}` : ''}
+                            {statusFilter ? ` • ${statusFilter}` : ''}
+                            {reportQuery.trim() ? ' • search applied' : ''}
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <input
+                            className="form-input"
+                            value={reportQuery}
+                            onChange={(e) => setReportQuery(e.target.value)}
+                            placeholder="Search incident reports…"
+                            style={{ width: 320, maxWidth: '100%' }}
+                        />
+                        <select
+                            className="form-input"
+                            value={reasonFilter}
+                            onChange={(e) => setReasonFilter(e.target.value)}
+                            style={{ width: 190 }}
+                            aria-label="Filter by reason"
+                        >
+                            <option value="">All reasons</option>
+                            {REASONS.map((r) => (
+                                <option key={r.value} value={r.value}>
+                                    {r.label}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            className="form-input"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            style={{ width: 170 }}
+                            aria-label="Filter by status"
+                        >
+                            <option value="">All status</option>
+                            {statusOptions.map((s) => (
+                                <option key={s} value={s}>
+                                    {s}
+                                </option>
+                            ))}
+                        </select>
+                        <button type="button" className="btn btn-secondary" onClick={loadData} disabled={loading || submitting || reviewSubmitting || ownerSubmitting}>
+                            Refresh
+                        </button>
+                    </div>
                 </div>
-                <div className="table-container">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Asset</th>
-                                <th>Serial</th>
-                                <th>Reason</th>
-                                <th>Status</th>
-                                <th>Owner</th>
-                                <th>IT Chief</th>
-                                <th>Exploitation Chief</th>
-                                <th>Protection Chief</th>
-                                <th>School HQ</th>
-                                {(availableReviewRoles.length > 0 || Number.isFinite(myPersonId)) && <th style={{ textAlign: 'right' }}>Actions</th>}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {reports.length === 0 ? (
-                                <tr>
-                                    <td colSpan={(availableReviewRoles.length > 0 || Number.isFinite(myPersonId)) ? 11 : 10} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
-                                        No incident reports found.
-                                    </td>
-                                </tr>
-                            ) : (
-                                reports.map((report) => (
-                                    <tr key={report.asset_incident_report_id}>
-                                        <td>{report.asset_incident_report_id}</td>
-                                        <td>{report.asset_name || `Asset #${report.asset}`}</td>
-                                        <td>{report.asset_serial_number || '-'}</td>
-                                        <td>{report.reason || '-'}</td>
-                                        <td>{report.status || '-'}</td>
-                                        <td>{report.is_signed_by_owner ? 'Signed' : 'Pending'}</td>
-                                        <td>{report.is_signed_by_it_bureau_chief ? 'Signed' : 'Pending'}</td>
-                                        <td>{report.is_signed_by_exploitation_chief ? 'Signed' : 'Pending'}</td>
-                                        <td>{report.is_signed_by_protection_and_security_bureau_chief ? 'Signed' : 'Pending'}</td>
-                                        <td>{report.is_signed_by_school_headquarter ? 'Signed' : 'Pending'}</td>
-                                        {(availableReviewRoles.length > 0 || Number.isFinite(myPersonId)) && (
-                                            <td style={{ textAlign: 'right' }}>
-                                                <div style={{ display: 'inline-flex', gap: 'var(--space-2)' }}>
-                                                    {availableReviewRoles.length > 0 && (
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-secondary"
-                                                            onClick={() => openReviewModal(report)}
-                                                        >
-                                                            Review / Sign
-                                                        </button>
-                                                    )}
-                                                    {isOwnerOfReport(report) && (
-                                                        <button
-                                                            type="button"
-                                                            className="btn btn-primary"
-                                                            onClick={() => openOwnerModal(report)}
-                                                        >
-                                                            Owner Note
-                                                        </button>
-                                                    )}
+
+                <div style={{ padding: 'var(--space-4)' }}>
+                    {filteredReports.length === 0 ? (
+                        <div className="empty-state">
+                            <h3 className="empty-state-title">No results</h3>
+                            <p className="empty-state-text">Try adjusting filters or search.</p>
+                        </div>
+                    ) : (
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+                                gap: 'var(--space-4)',
+                            }}
+                        >
+                            {filteredReports.map((report) => {
+                                const assetTitle = report.asset_name || `Asset #${report.asset}`;
+                                const serial = report.asset_serial_number || '-';
+                                const reasonLabel = REASONS.find((r) => r.value === report.reason)?.label || report.reason || '-';
+                                const status = report.status || '-';
+
+                                return (
+                                    <div
+                                        key={report.asset_incident_report_id}
+                                        className="card"
+                                        style={{
+                                            padding: 'var(--space-4)',
+                                            background: 'var(--color-bg-card)',
+                                            border: '1px solid var(--color-border)',
+                                            boxShadow: 'var(--shadow-sm)',
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
+                                            <div style={{ minWidth: 0 }}>
+                                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                                    <span style={{ ...chipStyle, borderColor: 'rgba(99, 102, 241, 0.35)', color: 'var(--color-text-primary)' }}>
+                                                        incident
+                                                    </span>
+                                                    <span style={chipStyle}>#{report.asset_incident_report_id}</span>
+                                                    <span style={chipStyle}>asset #{report.asset}</span>
                                                 </div>
-                                            </td>
-                                        )}
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+
+                                                <div style={{ marginTop: '0.6rem', color: 'var(--color-text-primary)', fontWeight: 700, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    {assetTitle}
+                                                </div>
+                                                <div style={{ marginTop: '0.25rem', color: 'var(--color-text-secondary)', fontSize: '0.92rem' }}>
+                                                    <span style={{ color: 'var(--color-text-muted)' }}>serial</span> {serial}
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: 'grid', gap: '0.5rem', justifyItems: 'end' }}>
+                                                <span style={{ ...chipStyle, color: 'var(--color-text-primary)' }}>{reasonLabel}</span>
+                                                <span style={chipStyle}>{status}</span>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                            {signChip('Owner', !!report.is_signed_by_owner)}
+                                            {signChip('IT', !!report.is_signed_by_it_bureau_chief)}
+                                            {signChip('Exploit', !!report.is_signed_by_exploitation_chief)}
+                                            {signChip('Protect', !!report.is_signed_by_protection_and_security_bureau_chief)}
+                                            {signChip('HQ', !!report.is_signed_by_school_headquarter)}
+                                        </div>
+
+                                        <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
+                                            {availableReviewRoles.length > 0 && (
+                                                <button type="button" className="btn btn-secondary" onClick={() => openReviewModal(report)}>
+                                                    Review / Sign
+                                                </button>
+                                            )}
+                                            {isOwnerOfReport(report) && (
+                                                <button type="button" className="btn btn-primary" onClick={() => openOwnerModal(report)}>
+                                                    Owner note
+                                                </button>
+                                            )}
+                                            <div style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
+                                                {report.asset_serial_number ? `SN ${report.asset_serial_number}` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
 

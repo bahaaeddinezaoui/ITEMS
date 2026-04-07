@@ -70713,3 +70713,201 @@ Response Body: {"error":"Only maintenance technicians can request return"}
 [2026-04-07 20:45:31.512461] END   GET /api/assets/3/current-location/ -> 200
 [2026-04-07 20:45:56.922011] START POST /api/problem-reports/create-maintenance/
 [2026-04-07 20:45:57.046652] END   POST /api/problem-reports/create-maintenance/ -> 201
+[2026-04-07 20:48:11.006126] START GET /api/problem-reports/
+[2026-04-07 20:48:11.008748] START GET /api/persons/
+[2026-04-07 20:48:11.010154] START GET /api/persons/
+[2026-04-07 20:48:11.012011] START GET /api/persons/
+[2026-04-07 20:48:11.058048] END   GET /api/persons/ -> 200
+[2026-04-07 20:48:11.058782] END   GET /api/problem-reports/ -> 200
+[2026-04-07 20:48:11.058879] END   GET /api/persons/ -> 200
+[2026-04-07 20:48:11.059541] END   GET /api/persons/ -> 200
+[2026-04-07 20:56:11.426805] START GET /api/problem-reports/
+[2026-04-07 20:56:11.427966] START GET /api/persons/
+[2026-04-07 20:56:11.428903] START GET /api/persons/
+[2026-04-07 20:56:11.440133] START GET /api/persons/
+[2026-04-07 20:56:11.512721] END   GET /api/persons/ -> 200
+[2026-04-07 20:56:11.515847] END   GET /api/persons/ -> 200
+[2026-04-07 20:56:11.517685] END   GET /api/persons/ -> 200
+[2026-04-07 20:56:11.526410] END   GET /api/problem-reports/ -> 200
+[2026-04-07 20:56:11.529036] START GET /api/persons/
+[2026-04-07 20:56:11.531299] START GET /api/persons/
+[2026-04-07 20:56:11.534338] START GET /api/persons/
+[2026-04-07 20:56:11.536540] START GET /api/problem-reports/
+[2026-04-07 20:56:11.587771] END   GET /api/persons/ -> 200
+[2026-04-07 20:56:11.594271] END   GET /api/persons/ -> 200
+[2026-04-07 20:56:11.594963] END   GET /api/persons/ -> 200
+[2026-04-07 20:56:11.716417] END   GET /api/problem-reports/ -> 200
+[2026-04-07 20:56:15.823732] START GET /api/assets/3/
+[2026-04-07 20:56:15.894414] END   GET /api/assets/3/ -> 200
+[2026-04-07 20:57:53.414833] START GET /api/problem-reports/mine/
+[2026-04-07 20:57:53.468146] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-07 20:57:53.475566] START GET /api/problem-reports/mine/
+[2026-04-07 20:57:53.534640] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-07 20:57:55.165918] START GET /api/my-items/
+[2026-04-07 20:57:55.246954] END   GET /api/my-items/ -> 200
+[2026-04-07 20:57:55.255090] START GET /api/my-items/
+[2026-04-07 20:57:55.330322] END   GET /api/my-items/ -> 200
+[2026-04-07 20:58:05.527677] START GET /api/problem-reports/
+[2026-04-07 20:58:05.528044] START GET /api/persons/
+[2026-04-07 20:58:05.532148] START GET /api/persons/
+[2026-04-07 20:58:05.533024] START GET /api/persons/
+[2026-04-07 20:58:05.598911] END   GET /api/persons/ -> 200
+[2026-04-07 20:58:05.599428] END   GET /api/persons/ -> 200
+[2026-04-07 20:58:05.599608] END   GET /api/problem-reports/ -> 200
+[2026-04-07 20:58:05.610785] START GET /api/persons/
+[2026-04-07 20:58:05.612826] START GET /api/persons/
+[2026-04-07 20:58:05.618252] START GET /api/problem-reports/
+[2026-04-07 20:58:05.676541] END   GET /api/persons/ -> 200
+[2026-04-07 20:58:05.676693] END   GET /api/persons/ -> 200
+[2026-04-07 20:58:05.686079] END   GET /api/problem-reports/ -> 200
+[2026-04-07 20:58:05.696846] END   GET /api/persons/ -> 200
+[2026-04-07 20:58:05.702073] START GET /api/persons/
+[2026-04-07 20:58:05.752339] END   GET /api/persons/ -> 200
+[2026-04-07 20:58:06.659233] START GET /api/asset-incident-reports/
+[2026-04-07 20:58:06.729651] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-07 20:58:06.737232] START GET /api/asset-incident-reports/
+[2026-04-07 20:58:06.801658] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-07 20:59:27.079166] START GET /api/asset-incident-reports/
+[2026-04-07 20:59:27.132181] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-07 20:59:46.134761] START GET /api/asset-incident-reports/
+[2026-04-07 20:59:46.189994] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-07 20:59:47.957543] START GET /api/asset-incident-reports/
+[2026-04-07 20:59:48.020999] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-07 20:59:48.029388] START GET /api/asset-incident-reports/
+[2026-04-07 20:59:48.100413] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-07 20:59:51.336290] START GET /api/persons/
+[2026-04-07 20:59:51.335833] START GET /api/maintenances/
+[2026-04-07 20:59:51.337596] START GET /api/persons/
+[2026-04-07 20:59:51.341494] START GET /api/assets/
+[2026-04-07 20:59:51.399223] END   GET /api/persons/ -> 200
+[2026-04-07 20:59:51.407267] START GET /api/persons/
+[2026-04-07 20:59:51.412328] END   GET /api/assets/ -> 200
+[2026-04-07 20:59:51.415795] END   GET /api/maintenances/ -> 200
+[2026-04-07 20:59:51.419626] START GET /api/assets/
+[2026-04-07 20:59:51.422610] START GET /api/maintenances/
+[2026-04-07 20:59:51.467957] END   GET /api/persons/ -> 200
+[2026-04-07 20:59:51.479256] END   GET /api/assets/ -> 200
+[2026-04-07 20:59:51.488217] END   GET /api/persons/ -> 200
+[2026-04-07 20:59:51.488778] END   GET /api/maintenances/ -> 200
+[2026-04-07 20:59:51.493535] START GET /api/persons/
+[2026-04-07 20:59:51.542788] END   GET /api/persons/ -> 200
+[2026-04-07 20:59:59.555802] START GET /api/assets/
+[2026-04-07 20:59:59.602944] END   GET /api/assets/ -> 200
+[2026-04-07 20:59:59.608066] START GET /api/assets/
+[2026-04-07 20:59:59.768121] END   GET /api/assets/ -> 200
+[2026-04-07 21:00:04.359756] START GET /api/maintenances/
+[2026-04-07 21:00:04.411875] END   GET /api/maintenances/ -> 200
+[2026-04-07 21:00:04.421398] START GET /api/maintenance-steps/
+[2026-04-07 21:00:04.423876] START GET /api/maintenance-steps/
+[2026-04-07 21:00:04.473804] END   GET /api/maintenance-steps/ -> 200
+[2026-04-07 21:00:04.559407] END   GET /api/maintenance-steps/ -> 200
+[2026-04-07 21:00:07.232903] START GET /api/problem-reports/mine/
+[2026-04-07 21:00:07.280018] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-07 21:00:07.284916] START GET /api/problem-reports/mine/
+[2026-04-07 21:00:07.337745] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-07 21:00:07.924673] START GET /api/problem-reports/
+[2026-04-07 21:00:07.929058] START GET /api/persons/
+[2026-04-07 21:00:07.933502] START GET /api/persons/
+[2026-04-07 21:00:07.934578] START GET /api/persons/
+[2026-04-07 21:00:07.988659] END   GET /api/persons/ -> 200
+[2026-04-07 21:00:07.989267] END   GET /api/persons/ -> 200
+[2026-04-07 21:00:07.989344] END   GET /api/persons/ -> 200
+[2026-04-07 21:00:07.997540] START GET /api/persons/
+[2026-04-07 21:00:07.997945] START GET /api/persons/
+[2026-04-07 21:00:08.000246] START GET /api/persons/
+[2026-04-07 21:00:08.044299] END   GET /api/persons/ -> 200
+[2026-04-07 21:00:08.044680] END   GET /api/persons/ -> 200
+[2026-04-07 21:00:08.052469] END   GET /api/persons/ -> 200
+[2026-04-07 21:00:08.085198] END   GET /api/problem-reports/ -> 200
+[2026-04-07 21:00:08.092542] START GET /api/problem-reports/
+[2026-04-07 21:00:08.150567] END   GET /api/problem-reports/ -> 200
+[2026-04-07 21:00:43.759293] START POST /api/auth/login/
+[2026-04-07 21:00:43.835490] END   POST /api/auth/login/ -> 200
+[2026-04-07 21:00:46.714288] START GET /api/positions/
+[2026-04-07 21:00:46.715894] START GET /api/roles/
+[2026-04-07 21:00:46.724303] START GET /api/position-role-mappings/
+[2026-04-07 21:00:46.782870] END   GET /api/positions/ -> 200
+[2026-04-07 21:00:46.786847] END   GET /api/roles/ -> 200
+[2026-04-07 21:00:46.794754] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:00:46.799849] START GET /api/positions/
+[2026-04-07 21:00:46.801025] START GET /api/roles/
+[2026-04-07 21:00:46.807954] START GET /api/position-role-mappings/
+[2026-04-07 21:00:46.853495] END   GET /api/positions/ -> 200
+[2026-04-07 21:00:46.853604] END   GET /api/roles/ -> 200
+[2026-04-07 21:00:46.875453] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:01:59.108943] START GET /api/positions/
+[2026-04-07 21:01:59.109763] START GET /api/roles/
+[2026-04-07 21:01:59.112320] START GET /api/position-role-mappings/
+[2026-04-07 21:01:59.148559] END   GET /api/positions/ -> 200
+[2026-04-07 21:01:59.151835] END   GET /api/roles/ -> 200
+[2026-04-07 21:01:59.155681] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:02:11.543633] START GET /api/positions/
+[2026-04-07 21:02:11.545316] START GET /api/roles/
+[2026-04-07 21:02:11.551828] START GET /api/position-role-mappings/
+[2026-04-07 21:02:11.605015] END   GET /api/positions/ -> 200
+[2026-04-07 21:02:11.612116] END   GET /api/roles/ -> 200
+[2026-04-07 21:02:11.617476] START GET /api/positions/
+[2026-04-07 21:02:11.624018] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:02:11.625450] START GET /api/roles/
+[2026-04-07 21:02:11.635889] START GET /api/position-role-mappings/
+[2026-04-07 21:02:11.680447] END   GET /api/roles/ -> 200
+[2026-04-07 21:02:11.688360] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:02:11.783627] END   GET /api/positions/ -> 200
+[2026-04-07 21:03:10.668207] START GET /api/positions/
+[2026-04-07 21:03:10.668748] START GET /api/roles/
+[2026-04-07 21:03:10.674607] START GET /api/position-role-mappings/
+[2026-04-07 21:03:10.728423] END   GET /api/positions/ -> 200
+[2026-04-07 21:03:10.737272] START GET /api/positions/
+[2026-04-07 21:03:10.745126] END   GET /api/roles/ -> 200
+[2026-04-07 21:03:10.752829] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:03:10.760173] START GET /api/roles/
+[2026-04-07 21:03:10.771673] START GET /api/position-role-mappings/
+[2026-04-07 21:03:10.796022] END   GET /api/positions/ -> 200
+[2026-04-07 21:03:10.818935] END   GET /api/roles/ -> 200
+[2026-04-07 21:03:10.821402] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:03:22.923711] START GET /api/positions/
+[2026-04-07 21:03:23.008896] END   GET /api/positions/ -> 200
+[2026-04-07 21:03:23.018581] START GET /api/positions/
+[2026-04-07 21:03:23.075029] END   GET /api/positions/ -> 200
+[2026-04-07 21:03:23.735871] START GET /api/roles/
+[2026-04-07 21:03:23.735286] START GET /api/positions/
+[2026-04-07 21:03:23.737238] START GET /api/position-role-mappings/
+[2026-04-07 21:03:23.791238] END   GET /api/roles/ -> 200
+[2026-04-07 21:03:23.797080] END   GET /api/positions/ -> 200
+[2026-04-07 21:03:23.798745] START GET /api/roles/
+[2026-04-07 21:03:23.801832] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:03:23.811426] START GET /api/positions/
+[2026-04-07 21:03:23.813179] START GET /api/position-role-mappings/
+[2026-04-07 21:03:23.847318] END   GET /api/roles/ -> 200
+[2026-04-07 21:03:23.859770] END   GET /api/positions/ -> 200
+[2026-04-07 21:03:23.871166] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:04:26.104384] START GET /api/positions/
+[2026-04-07 21:04:26.105480] START GET /api/roles/
+[2026-04-07 21:04:26.107833] START GET /api/position-role-mappings/
+[2026-04-07 21:04:26.164161] END   GET /api/roles/ -> 200
+[2026-04-07 21:04:26.164233] END   GET /api/positions/ -> 200
+[2026-04-07 21:04:26.177735] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:04:53.658470] START GET /api/positions/
+[2026-04-07 21:04:53.659358] START GET /api/roles/
+[2026-04-07 21:04:53.676297] START GET /api/position-role-mappings/
+[2026-04-07 21:04:53.756460] END   GET /api/roles/ -> 200
+[2026-04-07 21:04:53.770831] START GET /api/roles/
+[2026-04-07 21:04:53.771345] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:04:53.787836] START GET /api/position-role-mappings/
+[2026-04-07 21:04:53.835071] END   GET /api/positions/ -> 200
+[2026-04-07 21:04:53.843829] START GET /api/positions/
+[2026-04-07 21:04:53.863647] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:04:53.939908] END   GET /api/roles/ -> 200
+[2026-04-07 21:04:53.998930] END   GET /api/positions/ -> 200
+[2026-04-07 21:04:54.562537] START GET /api/roles/
+[2026-04-07 21:04:54.561977] START GET /api/positions/
+[2026-04-07 21:04:54.567629] START GET /api/position-role-mappings/
+[2026-04-07 21:04:54.629702] END   GET /api/roles/ -> 200
+[2026-04-07 21:04:54.634864] END   GET /api/positions/ -> 200
+[2026-04-07 21:04:54.636941] START GET /api/roles/
+[2026-04-07 21:04:54.643048] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:04:54.644269] START GET /api/positions/
+[2026-04-07 21:04:54.650630] START GET /api/position-role-mappings/
+[2026-04-07 21:04:54.694694] END   GET /api/roles/ -> 200
+[2026-04-07 21:04:54.700681] END   GET /api/positions/ -> 200
+[2026-04-07 21:04:54.710951] END   GET /api/position-role-mappings/ -> 200
