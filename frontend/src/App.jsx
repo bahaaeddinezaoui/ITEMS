@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
@@ -107,6 +108,16 @@ function App() {
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
+                    {/* Landing */}
+                    <Route
+                        path="/"
+                        element={
+                            <PublicRoute>
+                                <LandingPage />
+                            </PublicRoute>
+                        }
+                    />
+
                     {/* Public Routes */}
                     <Route
                         path="/login"
@@ -642,8 +653,6 @@ function App() {
                         />
                     </Route>
 
-                    {/* Redirect root to login */}
-                    <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </BrowserRouter>

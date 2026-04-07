@@ -70479,3 +70479,21 @@ Response Body: {"error":"Could not create account due to a data conflict"}
 [2026-04-07 16:15:51.711440] END   GET /api/problem-reports/mine/ -> 200
 [2026-04-07 16:15:51.718859] START GET /api/problem-reports/mine/
 [2026-04-07 16:15:51.768938] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-07 20:33:26.347056] START POST /api/auth/login/
+[2026-04-07 20:33:26.653159] END   POST /api/auth/login/ -> 200
+[2026-04-07 20:33:27.765323] START GET /api/problem-reports/
+[2026-04-07 20:33:27.784121] START GET /api/persons/
+[2026-04-07 20:33:27.788297] START GET /api/persons/
+[2026-04-07 20:33:27.789242] START GET /api/persons/
+[2026-04-07 20:33:27.865470] END   GET /api/problem-reports/ -> 200
+[2026-04-07 20:33:27.870421] END   GET /api/persons/ -> 200
+[2026-04-07 20:33:27.871288] END   GET /api/persons/ -> 200
+[2026-04-07 20:33:27.871650] END   GET /api/persons/ -> 200
+[2026-04-07 20:33:27.895419] START GET /api/persons/
+[2026-04-07 20:33:27.897284] START GET /api/problem-reports/
+[2026-04-07 20:33:27.896280] START GET /api/persons/
+[2026-04-07 20:33:27.899548] START GET /api/persons/
+[2026-04-07 20:33:27.967339] END   GET /api/persons/ -> 200
+[2026-04-07 20:33:27.976437] END   GET /api/persons/ -> 200
+[2026-04-07 20:33:27.977102] END   GET /api/persons/ -> 200
+[2026-04-07 20:33:27.979370] END   GET /api/problem-reports/ -> 200
