@@ -86,7 +86,7 @@ const ReportsPage = () => {
         setError('');
         setSelectedReport(report);
         setSelectedTechnician('');
-        setMaintenanceDescription(report?.owner_observation || '');
+        setMaintenanceDescription('');
         // Load user preference for destination mode
         let mode = 'maintenance_room';
         try {
@@ -172,6 +172,10 @@ const ReportsPage = () => {
         if (!selectedReport) return;
         if (!selectedTechnician) {
             setError('Please select a technician');
+            return;
+        }
+        if (!maintenanceDescription.trim()) {
+            setError('Please enter a maintenance description');
             return;
         }
 
@@ -323,7 +327,7 @@ const ReportsPage = () => {
                             <div className="modal-body">
                                 <div className="form-group">
                                     <label className="form-label">Report</label>
-                                    <div className="form-input" style={{ backgroundColor: '#f5f5f5' }}>
+                                    <div className="form-input">
                                         #{selectedReport?.report_id} ({selectedReport?.item_type} #{selectedReport?.item_id})
                                     </div>
                                 </div>
@@ -380,13 +384,21 @@ const ReportsPage = () => {
                                 </div>
 
                                 <div className="form-group">
-                                    <label htmlFor="description" className="form-label">Description</label>
+                                    <label className="form-label">Owner observation</label>
+                                    <div className="form-input" style={{ whiteSpace: 'pre-wrap' }}>
+                                        {selectedReport?.owner_observation || '-'}
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label htmlFor="description" className="form-label">Maintenance description</label>
                                     <textarea
                                         id="description"
                                         className="form-input"
                                         rows={4}
                                         value={maintenanceDescription}
                                         onChange={(e) => setMaintenanceDescription(e.target.value)}
+                                        placeholder="Describe the maintenance action plan / diagnosis..."
                                     />
                                 </div>
                             </div>

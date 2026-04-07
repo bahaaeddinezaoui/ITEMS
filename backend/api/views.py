@@ -3906,6 +3906,17 @@ class ProblemReportViewSet(viewsets.ViewSet):
             return Response({"error": "report_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         if not technician_person_id:
             return Response({"error": "technician_person_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if description is None or not str(description).strip():
+            return Response(
+                {"error": "description is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        description = str(description).strip()
+        if len(description) > 256:
+            return Response(
+                {"error": "description must be at most 256 characters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         technician = Person.objects.filter(person_id=technician_person_id).first()
         if not technician:
@@ -4133,7 +4144,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 performed_by_person=technician,
                 approved_by_maintenance_chief=user_account.person,
                 maintenance_status="pending",
-                description=description or report.owner_observation,
+                description=description,
                 start_datetime=None,
                 end_datetime=None,
                 asset_id=report.asset_id,
