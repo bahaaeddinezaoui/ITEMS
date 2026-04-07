@@ -70911,3 +70911,59 @@ Response Body: {"error":"Only maintenance technicians can request return"}
 [2026-04-07 21:04:54.694694] END   GET /api/roles/ -> 200
 [2026-04-07 21:04:54.700681] END   GET /api/positions/ -> 200
 [2026-04-07 21:04:54.710951] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:44:09.197048] START GET /api/positions/
+[2026-04-07 21:44:09.197944] START GET /api/roles/
+[2026-04-07 21:44:09.199461] START GET /api/position-role-mappings/
+[2026-04-07 21:44:09.323667] END   GET /api/roles/ -> 200
+[2026-04-07 21:44:09.329220] END   GET /api/positions/ -> 200
+[2026-04-07 21:44:09.342172] START GET /api/roles/
+[2026-04-07 21:44:09.343390] START GET /api/positions/
+[2026-04-07 21:44:09.363862] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:44:09.372713] START GET /api/position-role-mappings/
+[2026-04-07 21:44:09.404179] END   GET /api/roles/ -> 200
+[2026-04-07 21:44:09.404608] END   GET /api/positions/ -> 200
+[2026-04-07 21:44:09.417090] END   GET /api/position-role-mappings/ -> 200
+[2026-04-07 21:44:38.197286] START POST /api/auth/login/
+[2026-04-07 21:44:38.270395] END   POST /api/auth/login/ -> 200
+[2026-04-07 21:44:41.132647] START GET /api/maintenances/
+[2026-04-07 21:44:41.133415] START GET /api/persons/
+[2026-04-07 21:44:41.135471] START GET /api/persons/
+[2026-04-07 21:44:41.139880] START GET /api/assets/
+[2026-04-07 21:44:41.210061] END   GET /api/persons/ -> 200
+[2026-04-07 21:44:41.212475] END   GET /api/persons/ -> 200
+[2026-04-07 21:44:41.222946] END   GET /api/assets/ -> 200
+[2026-04-07 21:44:41.222552] START GET /api/persons/
+[2026-04-07 21:44:41.225205] START GET /api/persons/
+[2026-04-07 21:44:41.236297] START GET /api/assets/
+[2026-04-07 21:44:41.279477] END   GET /api/persons/ -> 200
+[2026-04-07 21:44:41.294620] END   GET /api/persons/ -> 200
+[2026-04-07 21:44:41.311103] END   GET /api/assets/ -> 200
+[2026-04-07 21:44:41.314958] END   GET /api/maintenances/ -> 200
+[2026-04-07 21:44:41.320752] START GET /api/maintenances/
+[2026-04-07 21:44:41.388901] END   GET /api/maintenances/ -> 200
+[2026-04-07 21:52:21.367718] START GET /api/maintenances/
+[2026-04-07 21:52:21.369688] START GET /api/persons/
+[2026-04-07 21:52:21.371501] START GET /api/persons/
+[2026-04-07 21:52:21.374311] START GET /api/assets/
+[2026-04-07 21:52:21.453519] END   GET /api/persons/ -> 200
+[2026-04-07 21:52:21.454591] END   GET /api/persons/ -> 200
+[2026-04-07 21:52:21.463178] START GET /api/persons/
+[2026-04-07 21:52:21.464031] END   GET /api/assets/ -> 200
+[2026-04-07 21:52:21.465241] START GET /api/persons/
+[2026-04-07 21:52:21.470295] START GET /api/assets/
+[2026-04-07 21:52:21.482199] END   GET /api/maintenances/ -> 200
+[2026-04-07 21:52:21.486478] START GET /api/maintenances/
+[2026-04-07 21:52:21.508195] END   GET /api/persons/ -> 200
+[2026-04-07 21:52:21.515754] END   GET /api/assets/ -> 200
+[2026-04-07 21:52:21.539606] END   GET /api/maintenances/ -> 200
+[2026-04-07 21:52:21.599164] END   GET /api/persons/ -> 200
+[2026-04-07 21:53:55.954600] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:53:56.133219] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 21:53:56.141675] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:53:56.202123] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 21:54:01.591442] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:54:01.650831] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 21:54:01.656675] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:54:01.706729] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 21:54:02.561258] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:54:02.621217] END   GET /api/maintenances/technician-stats/ -> 200

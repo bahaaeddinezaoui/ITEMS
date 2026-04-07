@@ -658,6 +658,64 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = Maintenance.objects.all().order_by("maintenance_id")
     serializer_class = MaintenanceSerializer
 
+    @action(detail=False, methods=["get"], url_path="technician-stats")
+    def technician_stats(self, request):
+        user_account = self._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
+            return Response({"error": "Unauthorized access to statistics"}, status=status.HTTP_403_FORBIDDEN)
+
+        from django.db.models import Count, Case, When, IntegerField
+        
+        # Calculate basic stats grouping by technician
+        # Note: performed_by_person__first_name etc might be inaccessible if the person has no UserAccount, 
+        # but here we use models.Person fields directly (Maintenance has performed_by_person FK to Person).
+        stats = Maintenance.objects.values(
+            'performed_by_person_id',
+            'performed_by_person__first_name',
+            'performed_by_person__last_name'
+        ).annotate(
+            total_maintenances=Count('maintenance_id'),
+            successful_maintenances=Count(Case(When(is_successful=True, then=1), output_field=IntegerField())),
+            failed_maintenances=Count(Case(When(is_successful=False, then=1), output_field=IntegerField())),
+            pending_maintenances=Count(Case(When(end_datetime__isnull=True, then=1), output_field=IntegerField())),
+            completed_maintenances=Count(Case(When(end_datetime__isnull=False, then=1), output_field=IntegerField())),
+        ).order_by('-total_maintenances')
+
+        # Convert to list and calculate duration stats
+        stats_list = list(stats)
+        
+        for entry in stats_list:
+            if entry['completed_maintenances'] > 0:
+                entry['success_rate'] = round((entry['successful_maintenances'] / entry['completed_maintenances']) * 100, 2)
+            else:
+                entry['success_rate'] = 0
+                
+            # Quick avg duration calculation
+            maintenances = Maintenance.objects.filter(
+                performed_by_person_id=entry['performed_by_person_id'],
+                start_datetime__isnull=False,
+                end_datetime__isnull=False
+            )
+            
+            durations_hours = []
+            for m in maintenances:
+                if m.end_datetime and m.start_datetime:
+                    diff = m.end_datetime - m.start_datetime
+                    durations_hours.append(diff.total_seconds() / 3600.0)
+            
+            if durations_hours:
+                entry['avg_duration_hours'] = round(sum(durations_hours) / len(durations_hours), 2)
+            else:
+                entry['avg_duration_hours'] = 0
+
+        return Response(stats_list, status=status.HTTP_200_OK)
+
     def get_queryset(self):
         qs = (
             Maintenance.objects.select_related(

@@ -449,6 +449,16 @@ const DashboardLayout = () => {
                                     Asset Maintenance History
                                 </NavLink>
                             )}
+                            {(isMaintenanceChief || isItBureauChief || isSuperuser) && (
+                                <NavLink to="/dashboard/maintenance-stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M18 20V10" />
+                                        <path d="M12 20V4" />
+                                        <path d="M6 20v-6" />
+                                    </svg>
+                                    Maintenance Stats
+                                </NavLink>
+                            )}
                         </div>
                     )}
                 </nav>

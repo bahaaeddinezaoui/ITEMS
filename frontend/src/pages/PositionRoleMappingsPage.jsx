@@ -10,6 +10,7 @@ const PositionRoleMappingsPage = () => {
     const [error, setError] = useState('');
     const [form, setForm] = useState({ position: '', role: '' });
     const [query, setQuery] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
@@ -78,7 +79,8 @@ const PositionRoleMappingsPage = () => {
                 position: Number(form.position),
                 role: Number(form.role),
             });
-            setForm((prev) => ({ ...prev, role: '' }));
+            setForm({ position: '', role: '' });
+            setIsModalOpen(false);
             await fetchData();
         } catch (err) {
             setError(err?.response?.data?.error || err.message || 'Failed to create link');
@@ -121,59 +123,6 @@ const PositionRoleMappingsPage = () => {
 
             {error && <div className="error-message">{error}</div>}
 
-            <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
-                <div className="card-header">
-                    <div style={{ display: 'grid', gap: '0.25rem' }}>
-                        <h2 className="card-title" style={{ margin: 0 }}>Create link</h2>
-                        <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
-                            Choose a position, then add one or more roles.
-                        </div>
-                    </div>
-                </div>
-                <div className="card-body">
-                    <form onSubmit={handleCreate} className="form" style={{ maxWidth: 980 }}>
-                        <div className="form-grid" style={{ gridTemplateColumns: '2fr 2fr', alignItems: 'end' }}>
-                            <div className="form-group" style={{ marginBottom: 0 }}>
-                            <select
-                                className="form-select"
-                                value={form.position}
-                                onChange={(e) => setForm((prev) => ({ ...prev, position: e.target.value }))}
-                                required
-                            >
-                                <option value="">Position…</option>
-                                {availablePositions.map((p) => (
-                                    <option key={p.position_id} value={p.position_id}>
-                                        {p.position_label} ({p.position_code})
-                                    </option>
-                                ))}
-                            </select>
-                            </div>
-                            <div className="form-group" style={{ marginBottom: 0 }}>
-                            <select
-                                className="form-select"
-                                value={form.role}
-                                onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
-                                required
-                            >
-                                <option value="">Role…</option>
-                                {roles.map((r) => (
-                                    <option key={r.role_id} value={r.role_id}>
-                                        {r.role_label} ({r.role_code})
-                                    </option>
-                                ))}
-                            </select>
-                            </div>
-                        </div>
-
-                        <div className="form-actions" style={{ marginTop: 'var(--space-4)' }}>
-                            <button type="submit" className="btn btn-primary" disabled={saving}>
-                                {saving ? 'Saving...' : 'Add'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
             <div className="card">
                 <div
                     className="card-header"
@@ -201,6 +150,9 @@ const PositionRoleMappingsPage = () => {
                         />
                         <button type="button" className="btn btn-secondary" onClick={fetchData} disabled={loading}>
                             Refresh
+                        </button>
+                        <button type="button" className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+                            Add Link
                         </button>
                     </div>
                 </div>
@@ -278,6 +230,64 @@ const PositionRoleMappingsPage = () => {
                     )}
                 </div>
             </div>
+
+            {isModalOpen && (
+                <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
+                        <div className="modal-header">
+                            <h2 className="modal-title">Create link</h2>
+                            <button className="modal-close" onClick={() => setIsModalOpen(false)}>&times;</button>
+                        </div>
+                        <div className="modal-body">
+                            <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+                                Choose a position, then add one or more roles.
+                            </p>
+                            <form id="create-link-form" onSubmit={handleCreate} className="form">
+                                <div className="form-group">
+                                    <label className="form-label">Position</label>
+                                    <select
+                                        className="form-select"
+                                        value={form.position}
+                                        onChange={(e) => setForm((prev) => ({ ...prev, position: e.target.value }))}
+                                        required
+                                    >
+                                        <option value="">Position…</option>
+                                        {availablePositions.map((p) => (
+                                            <option key={p.position_id} value={p.position_id}>
+                                                {p.position_label} ({p.position_code})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Role</label>
+                                    <select
+                                        className="form-select"
+                                        value={form.role}
+                                        onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value }))}
+                                        required
+                                    >
+                                        <option value="">Role…</option>
+                                        {roles.map((r) => (
+                                            <option key={r.role_id} value={r.role_id}>
+                                                {r.role_label} ({r.role_code})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
+                                Cancel
+                            </button>
+                            <button type="submit" form="create-link-form" className="btn btn-primary" disabled={saving}>
+                                {saving ? 'Saving...' : 'Add'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
