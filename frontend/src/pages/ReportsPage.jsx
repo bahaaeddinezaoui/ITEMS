@@ -58,8 +58,21 @@ const ReportsPage = () => {
     useEffect(() => {
         const loadTechnicians = async () => {
             try {
-                const data = await personService.getAll({ role: 'maintenance_technician' });
-                setTechnicians(Array.isArray(data) ? data : []);
+                const [itTechs, networkTechs, legacyTechs] = await Promise.all([
+                    personService.getAll({ role: 'it_maintenance_technician' }),
+                    personService.getAll({ role: 'network_maintenance_technician' }),
+                    personService.getAll({ role: 'maintenance_technician' }),
+                ]);
+                const merged = [...(Array.isArray(itTechs) ? itTechs : [])];
+                [networkTechs, legacyTechs].forEach((group) => {
+                    if (!Array.isArray(group)) return;
+                    group.forEach((tech) => {
+                        if (!merged.some((existing) => existing.person_id === tech.person_id)) {
+                            merged.push(tech);
+                        }
+                    });
+                });
+                setTechnicians(merged);
             } catch {
                 setTechnicians([]);
             }

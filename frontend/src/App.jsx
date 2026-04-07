@@ -30,6 +30,7 @@ import LocationsPage from './pages/LocationsPage';
 import PositionsPage from './pages/PositionsPage';
 import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
 import MyItemsPage from './pages/MyItemsPage';
+import MySubmittedReportsPage from './pages/MySubmittedReportsPage';
 import OptionsPage from './pages/OptionsPage';
 import ReportsPage from './pages/ReportsPage';
 import AssetIncidentReportsPage from './pages/AssetIncidentReportsPage';
@@ -348,6 +349,7 @@ function App() {
                             }
                         />
                         <Route path="my-items" element={<MyItemsPage />} />
+                        <Route path="my-reports" element={<MySubmittedReportsPage />} />
                         <Route path="my-items/assets/:assetId/maintenance-timeline" element={<AssetMaintenanceTimelinePage />} />
                         <Route path="options" element={<OptionsPage />} />
 

@@ -356,6 +356,10 @@ export const problemReportService = {
         const response = await api.get('problem-reports/');
         return response.data;
     },
+    getMine: async () => {
+        const response = await api.get('problem-reports/mine/');
+        return response.data;
+    },
     create: async (data) => {
         const response = await api.post('problem-reports/', data);
         return response.data;

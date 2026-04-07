@@ -163,7 +163,7 @@ const MyItemsPage = () => {
                 owner_observation: reportObservation.trim(),
                 included_stock_item_ids: selectedStockItems,
                 included_consumable_ids: selectedConsumables,
-                destination_location_id: destinationLocationId || null,
+                destination_location_id: hasIncludedItems ? (destinationLocationId || null) : null,
             });
             setShowReportModal(false);
             setReportTarget(null);

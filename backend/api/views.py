@@ -3454,6 +3454,17 @@ class MyItemsView(APIView):
 class ProblemReportViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
+    def _normalize_report(self, item_type, report):
+        return {
+            "item_type": item_type,
+            "report_id": report.report_id,
+            "item_id": getattr(report, item_type).pk if getattr(report, item_type, None) else None,
+            "person_id": report.person_id if hasattr(report, "person_id") else report.person.person_id,
+            "person_name": f"{report.person.first_name} {report.person.last_name}",
+            "report_datetime": report.report_datetime,
+            "owner_observation": report.owner_observation,
+        }
+
     @action(detail=False, methods=["get"], url_path="eligible-items")
     def eligible_items(self, request):
         user_account = SuperuserWriteMixin()._get_user_account(request)
@@ -3572,19 +3583,25 @@ class ProblemReportViewSet(viewsets.ViewSet):
         stock_reports = PersonReportsProblemOnStockItem.objects.all().order_by("-report_datetime")
         consumable_reports = PersonReportsProblemOnConsumable.objects.all().order_by("-report_datetime")
 
-        def normalize(item_type, report):
-            return {
-                "item_type": item_type,
-                "report_id": report.report_id,
-                "item_id": getattr(report, item_type).pk if getattr(report, item_type, None) else None,
-                "person_id": report.person_id if hasattr(report, "person_id") else report.person.person_id,
-                "person_name": f"{report.person.first_name} {report.person.last_name}",
-                "report_datetime": report.report_datetime,
-                "owner_observation": report.owner_observation,
-            }
+        data = [self._normalize_report("asset", r) for r in asset_reports] + [self._normalize_report("stock_item", r) for r in stock_reports] + [
+            self._normalize_report("consumable", r) for r in consumable_reports
+        ]
+        data.sort(key=lambda x: x.get("report_datetime") or timezone.now(), reverse=True)
+        return Response(data)
 
-        data = [normalize("asset", r) for r in asset_reports] + [normalize("stock_item", r) for r in stock_reports] + [
-            normalize("consumable", r) for r in consumable_reports
+    @action(detail=False, methods=["get"], url_path="mine")
+    def mine(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person_id = user_account.person.person_id
+        asset_reports = PersonReportsProblemOnAsset.objects.filter(person_id=person_id).order_by("-report_datetime")
+        stock_reports = PersonReportsProblemOnStockItem.objects.filter(person_id=person_id).order_by("-report_datetime")
+        consumable_reports = PersonReportsProblemOnConsumable.objects.filter(person_id=person_id).order_by("-report_datetime")
+
+        data = [self._normalize_report("asset", r) for r in asset_reports] + [self._normalize_report("stock_item", r) for r in stock_reports] + [
+            self._normalize_report("consumable", r) for r in consumable_reports
         ]
         data.sort(key=lambda x: x.get("report_datetime") or timezone.now(), reverse=True)
         return Response(data)
@@ -3640,15 +3657,9 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Asset owners can report a problem, but they must not be able to request moving the asset.
-            # Asset movement requests are only initiated when a maintenance chief creates maintenance.
-            if destination_location_id and not (included_stock_item_ids or included_consumable_ids):
-                return Response(
-                    {
-                        "error": "You cannot request moving the asset from a problem report. The maintenance chief must create a maintenance for this asset to initiate an asset movement request.",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            has_included_items = bool(included_stock_item_ids or included_consumable_ids)
+            if not has_included_items:
+                destination_location_id = None
 
             try:
                 included_stock_item_ids = [int(x) for x in (included_stock_item_ids or [])]
@@ -3656,7 +3667,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
             except (TypeError, ValueError):
                 return Response({"error": "Invalid included item ids"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if (included_stock_item_ids or included_consumable_ids) and not destination_location_id:
+            if has_included_items and not destination_location_id:
                 return Response({"error": "destination_location_id is required when including items"}, status=status.HTTP_400_BAD_REQUEST)
 
             destination_location = None
@@ -3665,7 +3676,7 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     destination_location_id_int = int(destination_location_id)
                 except (TypeError, ValueError):
                     destination_location = None
-            if (included_stock_item_ids or included_consumable_ids) and destination_location_id:
+            if has_included_items and destination_location_id:
                 destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id).first()
                 if not destination_location:
                     return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
