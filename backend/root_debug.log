@@ -70967,3 +70967,56 @@ Response Body: {"error":"Only maintenance technicians can request return"}
 [2026-04-07 21:54:01.706729] END   GET /api/maintenances/technician-stats/ -> 200
 [2026-04-07 21:54:02.561258] START GET /api/maintenances/technician-stats/
 [2026-04-07 21:54:02.621217] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 21:59:55.904523] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:59:55.973671] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 21:59:56.820909] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:59:56.886048] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 21:59:58.234717] START GET /api/maintenances/
+[2026-04-07 21:59:58.235638] START GET /api/persons/
+[2026-04-07 21:59:58.244990] START GET /api/persons/
+[2026-04-07 21:59:58.246391] START GET /api/assets/
+[2026-04-07 21:59:58.336638] END   GET /api/persons/ -> 200
+[2026-04-07 21:59:58.339423] END   GET /api/persons/ -> 200
+[2026-04-07 21:59:58.355019] START GET /api/persons/
+[2026-04-07 21:59:58.358334] END   GET /api/assets/ -> 200
+[2026-04-07 21:59:58.357886] START GET /api/persons/
+[2026-04-07 21:59:58.366948] END   GET /api/maintenances/ -> 200
+[2026-04-07 21:59:58.378091] START GET /api/assets/
+[2026-04-07 21:59:58.382795] START GET /api/maintenances/
+[2026-04-07 21:59:58.416355] END   GET /api/persons/ -> 200
+[2026-04-07 21:59:58.443460] END   GET /api/assets/ -> 200
+[2026-04-07 21:59:58.449047] END   GET /api/maintenances/ -> 200
+[2026-04-07 21:59:58.534122] END   GET /api/persons/ -> 200
+[2026-04-07 21:59:58.888888] START GET /api/assets/
+[2026-04-07 21:59:58.956473] END   GET /api/assets/ -> 200
+[2026-04-07 21:59:58.964378] START GET /api/assets/
+[2026-04-07 21:59:59.083323] END   GET /api/assets/ -> 200
+[2026-04-07 21:59:59.404218] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:59:59.577358] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 21:59:59.584044] START GET /api/maintenances/technician-stats/
+[2026-04-07 21:59:59.647921] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 22:04:07.366801] START GET /api/maintenances/technician-stats/
+[2026-04-07 22:04:07.497271] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 22:04:07.503143] START GET /api/maintenances/technician-stats/
+[2026-04-07 22:04:07.556486] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-07 22:10:04.820564] START POST /api/auth/login/
+[2026-04-07 22:10:04.880415] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-04-07 22:10:15.659853] START POST /api/auth/login/
+[2026-04-07 22:10:15.722140] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-04-07 22:10:18.165351] START POST /api/auth/login/
+[2026-04-07 22:10:18.218115] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-04-07 22:10:18.697378] START POST /api/auth/login/
+[2026-04-07 22:10:18.757235] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-04-07 22:10:22.605422] START POST /api/auth/login/
+[2026-04-07 22:10:22.669966] END   POST /api/auth/login/ -> 401
+Response Body: {"error":"Invalid credentials"}
+[2026-04-07 22:10:27.530333] START POST /api/auth/login/
+[2026-04-07 22:10:27.754525] END   POST /api/auth/login/ -> 200
+[2026-04-07 22:10:30.948821] START GET /api/maintenances/my-stats/
+[2026-04-07 22:10:31.013411] END   GET /api/maintenances/my-stats/ -> 200
+[2026-04-07 22:10:31.021630] START GET /api/maintenances/my-stats/
+[2026-04-07 22:10:31.194354] END   GET /api/maintenances/my-stats/ -> 200

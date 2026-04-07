@@ -1492,6 +1492,11 @@ export const maintenanceService = {
         return response.data;
     },
 
+    getMyMaintenanceStats: async () => {
+        const response = await api.get('maintenances/my-stats/');
+        return response.data;
+    },
+
     create: async (maintenanceData) => {
         const response = await api.post('maintenances/', maintenanceData);
         return response.data;

@@ -63,6 +63,7 @@ import PurchaseOrderMoveItemsPage from './pages/PurchaseOrderMoveItemsPage';
 import LocationInventoryPage from './pages/LocationInventoryPage';
 import StockConsumablesInventoryPage from './pages/StockConsumablesInventoryPage';
 import MaintenanceStatsPage from './pages/MaintenanceStatsPage';
+import MyMaintenanceStatsPage from './pages/MyMaintenanceStatsPage';
 import './index.css';
 
 // Protected route wrapper
@@ -534,6 +535,15 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['maintenance_chief', 'it_bureau_chief']}>
                                     <MaintenanceStatsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="my-maintenance-stats"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['it_maintenance_technician', 'network_maintenance_technician']}>
+                                    <MyMaintenanceStatsPage />
                                 </RoleProtectedRoute>
                             }
                         />

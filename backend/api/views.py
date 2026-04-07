@@ -716,6 +716,57 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         return Response(stats_list, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=["get"], url_path="my-stats")
+    def my_stats(self, request):
+        user_account = self._get_user_account(request)
+        if not user_account or not user_account.person:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = user_account.person
+        from django.db.models import Count, Case, When, IntegerField
+        from django.db.models.functions import TruncMonth
+
+        # Overall summary stats
+        summary = Maintenance.objects.filter(performed_by_person=person).aggregate(
+            total_maintenances=Count('maintenance_id'),
+            successful_maintenances=Count(Case(When(is_successful=True, then=1), output_field=IntegerField())),
+            failed_maintenances=Count(Case(When(is_successful=False, then=1), output_field=IntegerField())),
+            pending_maintenances=Count(Case(When(end_datetime__isnull=True, then=1), output_field=IntegerField())),
+            completed_maintenances=Count(Case(When(end_datetime__isnull=False, then=1), output_field=IntegerField())),
+        )
+
+        completed = summary['completed_maintenances'] or 0
+        summary['success_rate'] = round((summary['successful_maintenances'] / completed) * 100, 1) if completed > 0 else 0
+        
+        # Monthly trend (last 6 months)
+        from django.utils import timezone
+        import datetime
+        six_months_ago = timezone.now() - datetime.timedelta(days=180)
+        
+        monthly_stats = Maintenance.objects.filter(
+            performed_by_person=person,
+            start_datetime__gte=six_months_ago
+        ).annotate(
+            month=TruncMonth('start_datetime')
+        ).values('month').annotate(
+            count=Count('maintenance_id'),
+            successful=Count(Case(When(is_successful=True, then=1), output_field=IntegerField()))
+        ).order_by('month')
+
+        # Average duration
+        maintenances = Maintenance.objects.filter(
+            performed_by_person=person,
+            start_datetime__isnull=False,
+            end_datetime__isnull=False
+        )
+        durations = [(m.end_datetime - m.start_datetime).total_seconds() / 3600.0 for m in maintenances if m.end_datetime and m.start_datetime]
+        summary['avg_duration_hours'] = round(sum(durations) / len(durations), 1) if durations else 0
+
+        return Response({
+            "summary": summary,
+            "monthly_trend": list(monthly_stats)
+        }, status=status.HTTP_200_OK)
+
     def get_queryset(self):
         qs = (
             Maintenance.objects.select_related(
