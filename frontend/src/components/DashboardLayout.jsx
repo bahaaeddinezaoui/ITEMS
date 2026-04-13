@@ -56,8 +56,8 @@ const DashboardLayout = () => {
     const isProtectionSecurityBureauChief = user?.roles?.some(role => role.role_code === 'protection_and_security_bureau_chief');
     const isSchoolHeadquarter = user?.roles?.some(role => role.role_code === 'school_headquarter');
     const canViewPurchaseOrders = isStockConsumableResponsible || isExploitationChief || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
-    const canViewProblemReports = isSuperuser || isMaintenanceChief || isExploitationChief || isItBureauChief;
-    const canViewIncidentReports = isSuperuser || isExploitationChief || isItBureauChief || isProtectionSecurityBureauChief || isSchoolHeadquarter || !!user?.person?.person_id;
+    const canViewProblemReports = isSuperuser || isMaintenanceChief || isItBureauChief;
+    const canViewIncidentReports = isSuperuser || isItBureauChief || isProtectionSecurityBureauChief || isSchoolHeadquarter || !!user?.person?.person_id;
 
     useEffect(() => {
         if (!isUserMenuOpen) return;
@@ -427,7 +427,7 @@ const DashboardLayout = () => {
                     )}
 
                     {(isSuperuser || user?.roles?.some(r =>
-                        ['maintenance_chief', 'it_maintenance_technician', 'exploitation_chief', 'it_bureau_chief', 'network_maintenance_technician'].includes(r.role_code)
+                        ['maintenance_chief', 'it_maintenance_technician', 'it_bureau_chief', 'network_maintenance_technician'].includes(r.role_code)
                     )) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Maintenance</span>

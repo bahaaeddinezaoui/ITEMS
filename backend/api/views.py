@@ -791,10 +791,10 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes or "it_bureau_chief" in role_codes:
+        if "maintenance_chief" in role_codes or "it_bureau_chief" in role_codes:
             return qs
 
-        if "asset_responsible" in role_codes or "exploitation_chief" in role_codes:
+        if "asset_responsible" in role_codes:
             # Asset responsible should be able to see maintenances that are awaiting their approval
             # via a pending maintenance-create asset movement request.
             pending_moves = list(
@@ -897,7 +897,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes or "it_bureau_chief" in role_codes:
+            if "maintenance_chief" in role_codes or "it_bureau_chief" in role_codes:
                 is_allowed = True
             elif getattr(maintenance, "performed_by_person_id", None) == getattr(person, "person_id", None):
                 is_allowed = True
