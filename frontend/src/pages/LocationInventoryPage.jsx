@@ -26,35 +26,46 @@ const LocationInventoryPage = () => {
 
     // Status options based on item type
     const statusOptions = useMemo(() => {
+        const commonOptions = [
+            { value: 'in_stock', label: 'In Stock' },
+            { value: 'not_delivered_to_company', label: 'Not Delivered to Company' },
+            { value: 'suggested_for_destruction', label: 'Suggested for Destruction' },
+            { value: 'destroyed', label: 'Destroyed' },
+            { value: 'failed', label: 'Failed' },
+            { value: 'stolen', label: 'Stolen' },
+            { value: 'lost', label: 'Lost' },
+            { value: 'irrecoverably_damaged', label: 'Irrecoverably Damaged' },
+        ];
+
         if (itemTypeFilter === 'asset') {
-            return [
-                { value: 'in_stock', label: 'In Stock' },
-                { value: 'not_delivered_to_company', label: 'Not Delivered to Company' },
-                { value: 'suggested_for_destruction', label: 'Suggested for Destruction' },
-                { value: 'destroyed', label: 'Destroyed' },
-                { value: 'failed', label: 'Failed' },
-            ];
-        } else if (itemTypeFilter === 'stock_item') {
-            return [
-                { value: 'in_stock', label: 'In Stock' },
-                { value: 'Included with Asset', label: 'Included with Asset' },
-                { value: 'not_delivered_to_company', label: 'Not Delivered to Company' },
-                { value: 'suggested_for_destruction', label: 'Suggested for Destruction' },
-                { value: 'destroyed', label: 'Destroyed' },
-                { value: 'failed', label: 'Failed' },
-            ];
-        } else if (itemTypeFilter === 'consumable') {
-            return [
-                { value: 'in_stock', label: 'In Stock' },
-                { value: 'Included with Asset', label: 'Included with Asset' },
-                { value: 'not_delivered_to_company', label: 'Not Delivered to Company' },
-                { value: 'suggested_for_destruction', label: 'Suggested for Destruction' },
-                { value: 'destroyed', label: 'Destroyed' },
-                { value: 'failed', label: 'Failed' },
-            ];
+            return commonOptions;
         }
-        return [];
+        
+        // Stock Items and Consumables can also be 'Included with Asset'
+        return [
+            ...commonOptions,
+            { value: 'Included with Asset', label: 'Included with Asset' },
+        ];
     }, [itemTypeFilter]);
+
+    const formatStatusLabel = (value) => {
+        if (!value) return '';
+        if (value === 'Included with Asset') return value;
+        return value
+            .split('_')
+            .map(p => p ? p.charAt(0).toUpperCase() + p.slice(1) : p)
+            .join(' ');
+    };
+
+    const getStatusBadge = (status) => {
+        if (!status) return 'badge-info';
+        const s = status.toLowerCase();
+        if (s === 'in_stock') return 'badge-success';
+        if (s === 'suggested_for_destruction') return 'badge-warning';
+        if (s === 'destroyed' || s === 'failed' || s === 'stolen' || s === 'lost' || s === 'irrecoverably_damaged') return 'badge-error';
+        if (s === 'not_delivered_to_company' || s === 'included with asset') return 'badge-info';
+        return 'badge-info';
+    };
 
     // Fetch inventory data
     const fetchInventory = async () => {
@@ -123,15 +134,6 @@ const LocationInventoryPage = () => {
             (item.location_name && item.location_name.toLowerCase().includes(query))
         );
     }, [inventoryData, searchQuery]);
-
-    const formatStatusLabel = (value) => {
-        if (!value) return '';
-        return value
-            .split('_')
-            .map(p => p ? p.charAt(0).toUpperCase() + p.slice(1) : p)
-            .join(' ');
-    };
-
     const getItemTypeIcon = (itemType) => {
         switch (itemType) {
             case 'asset':
@@ -143,16 +145,6 @@ const LocationInventoryPage = () => {
             default:
                 return '📋';
         }
-    };
-
-    const getStatusBadge = (status) => {
-        if (!status) return 'badge-info';
-        const s = status.toLowerCase();
-        if (s === 'in_stock') return 'badge-success';
-        if (s === 'suggested_for_destruction') return 'badge-warning';
-        if (s === 'destroyed' || s === 'failed') return 'badge-error';
-        if (s === 'not_delivered_to_company' || s === 'included with asset') return 'badge-info';
-        return 'badge-info';
     };
 
     return (

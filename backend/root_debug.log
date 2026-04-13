@@ -71878,3 +71878,39 @@ Response Body: {"error":"Not allowed"}
 [2026-04-13 21:14:14.928960] END   GET /api/location-inventory/ -> 200
 [2026-04-13 21:14:14.941433] END   GET /api/locations/ -> 200
 [2026-04-13 21:14:14.977926] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:15:42.127473] START GET /api/problem-reports/mine/
+[2026-04-13 21:15:42.194797] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-13 21:15:42.201370] START GET /api/problem-reports/mine/
+[2026-04-13 21:15:42.255817] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-13 21:16:09.205167] START POST /api/auth/login/
+[2026-04-13 21:16:09.269855] END   POST /api/auth/login/ -> 200
+[2026-04-13 21:16:10.306438] START GET /api/location-inventory/
+[2026-04-13 21:16:10.310601] START GET /api/locations/
+[2026-04-13 21:16:10.394943] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:16:10.404621] START GET /api/location-inventory/
+[2026-04-13 21:16:10.411186] END   GET /api/locations/ -> 200
+[2026-04-13 21:16:10.416822] START GET /api/locations/
+[2026-04-13 21:16:10.488842] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:16:10.503855] END   GET /api/locations/ -> 200
+[2026-04-13 21:16:12.824937] START GET /api/location-inventory/
+[2026-04-13 21:16:12.881693] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:16:14.905386] START GET /api/location-inventory/
+[2026-04-13 21:16:14.960259] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:16:17.435459] START GET /api/location-inventory/
+[2026-04-13 21:16:17.498504] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:34:32.606434] START GET /api/locations/
+[2026-04-13 21:34:32.628527] START GET /api/location-inventory/
+[2026-04-13 21:34:32.702649] END   GET /api/locations/ -> 200
+[2026-04-13 21:34:32.708084] START GET /api/locations/
+[2026-04-13 21:34:32.714953] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:34:32.718741] START GET /api/location-inventory/
+[2026-04-13 21:34:32.753421] END   GET /api/locations/ -> 200
+[2026-04-13 21:34:32.770518] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:34:47.906160] START GET /api/locations/
+[2026-04-13 21:34:47.909650] START GET /api/location-inventory/
+[2026-04-13 21:34:48.001728] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:34:48.014774] START GET /api/location-inventory/
+[2026-04-13 21:34:48.020825] END   GET /api/locations/ -> 200
+[2026-04-13 21:34:48.026945] START GET /api/locations/
+[2026-04-13 21:34:48.101084] END   GET /api/location-inventory/ -> 200
+[2026-04-13 21:34:48.122966] END   GET /api/locations/ -> 200
