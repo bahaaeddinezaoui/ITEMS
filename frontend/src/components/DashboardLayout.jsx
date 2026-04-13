@@ -243,11 +243,11 @@ const DashboardLayout = () => {
                         </div>
                     )}
 
-                    {(isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter) && (
+                    {(isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isMaintenanceChief || isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
                         <div className="nav-section">
                             <span className="nav-section-title">Inventory</span>
 
-                            {(isAssetResponsible || isExploitationChief || isItBureauChief) && (
+                            {(isAssetResponsible || isExploitationChief || isItBureauChief || isMaintenanceChief || isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
                                 <NavLink to="/dashboard/location-inventory" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />

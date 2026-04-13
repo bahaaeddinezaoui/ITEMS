@@ -16,6 +16,7 @@ from .models import (
     Location,
     StockItem,
     StockItemMovement,
+    PersonRoleMapping,
 )
 
 
@@ -53,6 +54,20 @@ class LocationInventoryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        user = getattr(request, "user", None)
+        person = getattr(user, "person", None)
+        is_superuser = getattr(user, "is_superuser", False)
+        
+        role_codes = set()
+        if person:
+            role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+
+        has_full_access = is_superuser or ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
+        has_maintenance_access = ("maintenance_chief" in role_codes) or ("it_maintenance_technician" in role_codes) or ("network_maintenance_technician" in role_codes)
+
+        if not has_full_access and not has_maintenance_access:
+            return Response({"error": "Forbidden"}, status=403)
+
         item_type = (request.query_params.get("item_type") or "").strip()
         status = (request.query_params.get("status") or "").strip()
         location_id_raw = (request.query_params.get("location_id") or "").strip()
@@ -63,6 +78,17 @@ class LocationInventoryView(APIView):
                 location_id = int(location_id_raw)
             except (TypeError, ValueError):
                 return Response({"error": "Invalid location_id"}, status=400)
+
+        allowed_location_ids = None
+        if not has_full_access and has_maintenance_access:
+            allowed_location_ids = list(Location.objects.filter(location_type__location_type_label="Maintenance Room").values_list("location_id", flat=True))
+            if not allowed_location_ids:
+                allowed_location_ids = [-1]
+            
+            if location_id is not None:
+                if location_id not in allowed_location_ids:
+                    return Response({"error": "Forbidden location"}, status=403)
+                allowed_location_ids = [location_id]
 
         # Subqueries to get current location from latest movement
         asset_loc_sq = Subquery(
@@ -92,6 +118,8 @@ class LocationInventoryView(APIView):
                 qs = qs.filter(asset_status=status)
             if location_id is not None:
                 qs = qs.filter(current_location_id=location_id)
+            elif allowed_location_ids is not None:
+                qs = qs.filter(current_location_id__in=allowed_location_ids)
 
             for a in qs:
                 loc = None
@@ -127,6 +155,8 @@ class LocationInventoryView(APIView):
                 qs = qs.filter(stock_item_status=status)
             if location_id is not None:
                 qs = qs.filter(current_location_id=location_id)
+            elif allowed_location_ids is not None:
+                qs = qs.filter(current_location_id__in=allowed_location_ids)
 
             for s in qs:
                 loc = None
@@ -162,6 +192,8 @@ class LocationInventoryView(APIView):
                 qs = qs.filter(consumable_status=status)
             if location_id is not None:
                 qs = qs.filter(current_location_id=location_id)
+            elif allowed_location_ids is not None:
+                qs = qs.filter(current_location_id__in=allowed_location_ids)
 
             for c in qs:
                 loc = None

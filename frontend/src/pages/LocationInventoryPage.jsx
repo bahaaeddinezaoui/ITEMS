@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { locationInventoryService, locationService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const LocationInventoryPage = () => {
     const navigate = useNavigate();
@@ -8,6 +9,14 @@ const LocationInventoryPage = () => {
     const [error, setError] = useState(null);
     const [inventoryData, setInventoryData] = useState(null);
     const [locations, setLocations] = useState([]);
+    const { user, isSuperuser } = useAuth();
+    
+    const roleCodes = useMemo(() => {
+        if (!user || !user.roles) return [];
+        return user.roles.map(r => typeof r === 'string' ? r : r.role_code).filter(Boolean);
+    }, [user]);
+    const hasFullAccess = isSuperuser || roleCodes.includes('asset_responsible') || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
+    const hasMaintenanceAccess = roleCodes.includes('maintenance_chief') || roleCodes.includes('it_maintenance_technician') || roleCodes.includes('network_maintenance_technician');
     
     // Filter states
     const [itemTypeFilter, setItemTypeFilter] = useState(''); // 'asset', 'stock_item', 'consumable', or ''
@@ -71,15 +80,26 @@ const LocationInventoryPage = () => {
     const fetchLocations = async () => {
         try {
             const data = await locationService.getAll();
-            setLocations(data);
+            if (!hasFullAccess && hasMaintenanceAccess) {
+                const filtered = data.filter(loc => loc.location_type_label === 'Maintenance Room');
+                setLocations(filtered);
+                // Pre-select first maintenance room if nothing selected
+                if (filtered.length > 0 && !locationFilter) {
+                    setLocationFilter(filtered[0].location_id.toString());
+                }
+            } else {
+                setLocations(data);
+            }
         } catch (err) {
             console.error('Error fetching locations:', err);
         }
     };
 
     useEffect(() => {
-        fetchLocations();
-    }, []);
+        if (roleCodes.length > 0 || isSuperuser) {
+            fetchLocations();
+        }
+    }, [hasFullAccess, hasMaintenanceAccess, isSuperuser, roleCodes]);
 
     useEffect(() => {
         fetchInventory();
@@ -193,7 +213,7 @@ const LocationInventoryPage = () => {
                         onChange={(e) => setLocationFilter(e.target.value)}
                         className="form-input"
                     >
-                        <option value="">All Locations</option>
+                        {hasFullAccess ? <option value="">All Locations</option> : (locations.length > 1 ? <option value="">All Maintenance Rooms</option> : null)}
                         {locations.map(loc => (
                             <option key={loc.location_id} value={loc.location_id}>
                                 {loc.location_name}

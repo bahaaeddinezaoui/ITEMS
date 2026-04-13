@@ -383,7 +383,7 @@ function App() {
                         <Route
                             path="location-inventory"
                             element={
-                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief', 'it_bureau_chief', 'maintenance_chief', 'it_maintenance_technician', 'network_maintenance_technician']}>
                                     <LocationInventoryPage />
                                 </RoleProtectedRoute>
                             }
