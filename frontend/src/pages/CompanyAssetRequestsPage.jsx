@@ -13,7 +13,7 @@ const REQUEST_SIGNATURE_FIELDS = [
 const CompanyAssetRequestsPage = () => {
     const { user } = useAuth();
 
-    const isAssetResponsible = user?.roles?.some(role => role.role_code === 'asset_responsible' || role.role_code === 'it_bureau_chief');
+    const isAssetResponsible = user?.roles?.some(role => role.role_code === 'asset_responsible' || role.role_code === 'exploitation_chief' || role.role_code === 'it_bureau_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);

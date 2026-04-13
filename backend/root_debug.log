@@ -71020,3 +71020,605 @@ Response Body: {"error":"Invalid credentials"}
 [2026-04-07 22:10:31.013411] END   GET /api/maintenances/my-stats/ -> 200
 [2026-04-07 22:10:31.021630] START GET /api/maintenances/my-stats/
 [2026-04-07 22:10:31.194354] END   GET /api/maintenances/my-stats/ -> 200
+[2026-04-13 20:00:27.096053] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:00:27.097868] START GET /api/assets/
+[2026-04-13 20:00:27.173485] END   GET /api/assets/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-13 20:00:27.174556] END   GET /api/asset-destruction-certificates/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-13 20:00:27.193055] START GET /api/assets/
+[2026-04-13 20:00:27.194674] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:00:27.196435] END   GET /api/assets/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-13 20:00:27.200616] END   GET /api/asset-destruction-certificates/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-13 20:00:32.482474] START POST /api/auth/login/
+[2026-04-13 20:00:32.606697] END   POST /api/auth/login/ -> 200
+[2026-04-13 20:15:50.153059] START GET /api/asset-incident-reports/
+[2026-04-13 20:15:50.154085] START GET /api/assets/
+[2026-04-13 20:15:50.327289] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-13 20:15:50.340414] START GET /api/asset-incident-reports/
+[2026-04-13 20:15:50.401505] END   GET /api/assets/ -> 200
+[2026-04-13 20:15:50.413168] START GET /api/assets/
+[2026-04-13 20:15:50.450317] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-13 20:15:50.490575] END   GET /api/assets/ -> 200
+[2026-04-13 20:15:50.978276] START GET /api/problem-reports/mine/
+[2026-04-13 20:15:51.105975] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-13 20:15:51.157143] START GET /api/problem-reports/mine/
+[2026-04-13 20:15:51.223135] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-13 20:15:51.591207] START GET /api/my-items/
+[2026-04-13 20:15:51.659697] END   GET /api/my-items/ -> 200
+[2026-04-13 20:15:51.666757] START GET /api/my-items/
+[2026-04-13 20:15:51.723526] END   GET /api/my-items/ -> 200
+[2026-04-13 20:15:53.478276] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:15:53.483493] START GET /api/assets/
+[2026-04-13 20:15:53.558363] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:15:53.569162] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:15:53.587057] END   GET /api/assets/ -> 200
+[2026-04-13 20:15:53.597756] START GET /api/assets/
+[2026-04-13 20:15:53.640056] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:15:53.674464] END   GET /api/assets/ -> 200
+[2026-04-13 20:22:30.922521] START GET /api/external-maintenances/
+[2026-04-13 20:22:30.979879] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:22:30.988367] START GET /api/external-maintenances/
+[2026-04-13 20:22:31.036219] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:22:31.971914] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:22:31.973042] START GET /api/assets/
+[2026-04-13 20:22:32.019673] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:22:32.027035] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:22:32.068357] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:22:32.149273] END   GET /api/assets/ -> 200
+[2026-04-13 20:22:32.154950] START GET /api/assets/
+[2026-04-13 20:22:32.220551] END   GET /api/assets/ -> 200
+[2026-04-13 20:22:33.142703] START GET /api/external-maintenances/
+[2026-04-13 20:22:33.198674] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:22:33.204375] START GET /api/external-maintenances/
+[2026-04-13 20:22:33.259333] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:22:34.324405] START GET /api/locations/
+[2026-04-13 20:22:34.328080] START GET /api/location-inventory/
+[2026-04-13 20:22:34.430068] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:22:34.439529] START GET /api/location-inventory/
+[2026-04-13 20:22:34.442106] END   GET /api/locations/ -> 200
+[2026-04-13 20:22:34.447621] START GET /api/locations/
+[2026-04-13 20:22:34.521885] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:22:34.532044] END   GET /api/locations/ -> 200
+[2026-04-13 20:22:36.709224] START GET /api/external-maintenances/
+[2026-04-13 20:22:36.757163] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:22:36.763323] START GET /api/external-maintenances/
+[2026-04-13 20:22:36.809858] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:22:42.151694] START GET /api/locations/
+[2026-04-13 20:22:42.155932] START GET /api/location-inventory/
+[2026-04-13 20:22:42.229292] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:22:42.239459] START GET /api/location-inventory/
+[2026-04-13 20:22:42.244707] END   GET /api/locations/ -> 200
+[2026-04-13 20:22:42.250502] START GET /api/locations/
+[2026-04-13 20:22:42.313024] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:22:42.331083] END   GET /api/locations/ -> 200
+[2026-04-13 20:22:45.914037] START GET /api/problem-reports/
+[2026-04-13 20:22:45.971635] END   GET /api/problem-reports/ -> 200
+[2026-04-13 20:22:45.977339] START GET /api/problem-reports/
+[2026-04-13 20:22:46.033033] END   GET /api/problem-reports/ -> 200
+[2026-04-13 20:22:46.603577] START GET /api/my-items/
+[2026-04-13 20:22:46.667074] END   GET /api/my-items/ -> 200
+[2026-04-13 20:22:46.674190] START GET /api/my-items/
+[2026-04-13 20:22:46.743265] END   GET /api/my-items/ -> 200
+[2026-04-13 20:22:47.173671] START GET /api/problem-reports/mine/
+[2026-04-13 20:22:47.222751] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-13 20:22:47.229267] START GET /api/problem-reports/mine/
+[2026-04-13 20:22:47.277950] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-13 20:22:48.267282] START GET /api/locations/
+[2026-04-13 20:22:48.268676] START GET /api/location-inventory/
+[2026-04-13 20:22:48.353508] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:22:48.364028] START GET /api/location-inventory/
+[2026-04-13 20:22:48.366895] END   GET /api/locations/ -> 200
+[2026-04-13 20:22:48.373139] START GET /api/locations/
+[2026-04-13 20:22:48.444066] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:22:48.561788] END   GET /api/locations/ -> 200
+[2026-04-13 20:22:49.155269] START GET /api/asset-types/
+[2026-04-13 20:22:49.155746] START GET /api/asset-attribute-definitions/
+[2026-04-13 20:22:49.205894] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:22:49.206866] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-13 20:22:49.213572] START GET /api/asset-types/
+[2026-04-13 20:22:49.214351] START GET /api/asset-attribute-definitions/
+[2026-04-13 20:22:49.260762] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:22:49.266358] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-13 20:23:19.284244] START GET /api/stock-item-types/
+[2026-04-13 20:23:19.287169] START GET /api/stock-item-attribute-definitions/
+[2026-04-13 20:23:19.328850] END   GET /api/stock-item-types/ -> 200
+[2026-04-13 20:23:19.335186] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-13 20:23:19.335785] START GET /api/stock-item-types/
+[2026-04-13 20:23:19.340447] START GET /api/stock-item-attribute-definitions/
+[2026-04-13 20:23:19.378621] END   GET /api/stock-item-types/ -> 200
+[2026-04-13 20:23:19.389092] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-13 20:23:20.055644] START GET /api/consumable-types/
+[2026-04-13 20:23:20.056994] START GET /api/consumable-attribute-definitions/
+[2026-04-13 20:23:20.111239] END   GET /api/consumable-types/ -> 200
+[2026-04-13 20:23:20.113043] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-13 20:23:20.119500] START GET /api/consumable-types/
+[2026-04-13 20:23:20.120172] START GET /api/consumable-attribute-definitions/
+[2026-04-13 20:23:20.165490] END   GET /api/consumable-types/ -> 200
+[2026-04-13 20:23:20.166017] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-13 20:23:20.438874] START GET /api/asset-types/
+[2026-04-13 20:23:20.447001] START GET /api/warehouses/
+[2026-04-13 20:23:20.447896] START GET /api/attribution-orders/
+[2026-04-13 20:23:20.495116] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:23:20.495682] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:23:20.502221] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:23:20.502117] START GET /api/warehouses/
+[2026-04-13 20:23:20.503047] START GET /api/asset-types/
+[2026-04-13 20:23:20.507957] START GET /api/attribution-orders/
+[2026-04-13 20:23:20.543644] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:23:20.550425] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:23:20.551661] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:23:30.689995] START GET /api/warehouses/
+[2026-04-13 20:23:30.690430] START GET /api/asset-types/
+[2026-04-13 20:23:30.694371] START GET /api/attribution-orders/
+[2026-04-13 20:23:30.755819] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:23:30.756028] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:23:30.765111] START GET /api/warehouses/
+[2026-04-13 20:23:30.768655] START GET /api/attribution-orders/
+[2026-04-13 20:23:30.812772] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:23:30.814998] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:23:30.847715] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:23:30.855259] START GET /api/asset-types/
+[2026-04-13 20:23:30.900072] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:23:31.433706] START GET /api/consumable-types/
+[2026-04-13 20:23:31.434899] START GET /api/consumable-attribute-definitions/
+[2026-04-13 20:23:31.490755] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-13 20:23:31.491054] END   GET /api/consumable-types/ -> 200
+[2026-04-13 20:23:31.500297] START GET /api/consumable-attribute-definitions/
+[2026-04-13 20:23:31.501371] START GET /api/consumable-types/
+[2026-04-13 20:23:31.547123] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-13 20:23:31.547308] END   GET /api/consumable-types/ -> 200
+[2026-04-13 20:23:42.090281] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-04-13 20:23:42.091032] START GET /api/stock-items/
+[2026-04-13 20:23:42.096162] START GET /api/consumables/
+[2026-04-13 20:23:42.143363] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-04-13 20:23:42.148707] END   GET /api/stock-items/ -> 200
+[2026-04-13 20:23:42.150567] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-04-13 20:23:42.153781] END   GET /api/consumables/ -> 200
+[2026-04-13 20:23:42.154477] START GET /api/stock-items/
+[2026-04-13 20:23:42.159549] START GET /api/consumables/
+[2026-04-13 20:23:42.193837] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-04-13 20:23:42.199821] END   GET /api/stock-items/ -> 200
+[2026-04-13 20:23:42.206099] END   GET /api/consumables/ -> 200
+[2026-04-13 20:23:42.984441] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:23:42.986346] START GET /api/assets/
+[2026-04-13 20:23:43.042414] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:23:43.054013] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:23:43.063863] END   GET /api/assets/ -> 200
+[2026-04-13 20:23:43.072000] START GET /api/assets/
+[2026-04-13 20:23:43.098546] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:23:43.138226] END   GET /api/assets/ -> 200
+[2026-04-13 20:23:43.935409] START GET /api/external-maintenances/
+[2026-04-13 20:23:43.991252] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:23:43.998325] START GET /api/external-maintenances/
+[2026-04-13 20:23:44.047509] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:24:00.873032] START GET /api/locations/
+[2026-04-13 20:24:00.873948] START GET /api/location-inventory/
+[2026-04-13 20:24:00.967439] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:24:00.980422] START GET /api/location-inventory/
+[2026-04-13 20:24:00.990603] END   GET /api/locations/ -> 200
+[2026-04-13 20:24:00.997221] START GET /api/locations/
+[2026-04-13 20:24:01.061056] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:24:01.088956] END   GET /api/locations/ -> 200
+[2026-04-13 20:30:50.122475] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:30:50.164979] END   GET /api/asset-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:30:50.175526] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:30:50.218592] END   GET /api/asset-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:30:50.845454] START GET /api/locations/
+[2026-04-13 20:30:50.847897] START GET /api/location-inventory/
+[2026-04-13 20:30:50.932864] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:30:50.942498] END   GET /api/locations/ -> 200
+[2026-04-13 20:30:50.944389] START GET /api/location-inventory/
+[2026-04-13 20:30:50.948770] START GET /api/locations/
+[2026-04-13 20:30:51.011511] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:30:51.018562] END   GET /api/locations/ -> 200
+[2026-04-13 20:30:51.443650] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:30:51.445819] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:30:51.489730] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:30:51.490292] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:30:51.496401] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:30:51.499111] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:30:51.542282] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:30:51.545095] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:30:52.069191] START GET /api/external-maintenances/
+[2026-04-13 20:30:52.117900] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:30:52.125895] START GET /api/external-maintenances/
+[2026-04-13 20:30:52.180733] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:30:52.680927] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:30:52.681768] START GET /api/assets/
+[2026-04-13 20:30:52.732603] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:30:52.738741] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:30:52.749544] END   GET /api/assets/ -> 200
+[2026-04-13 20:30:52.758647] START GET /api/assets/
+[2026-04-13 20:30:52.795956] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:30:52.826172] END   GET /api/assets/ -> 200
+[2026-04-13 20:30:54.057823] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-04-13 20:30:54.058483] START GET /api/stock-items/
+[2026-04-13 20:30:54.060811] START GET /api/consumables/
+[2026-04-13 20:30:54.101442] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-04-13 20:30:54.108245] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-04-13 20:30:54.109398] END   GET /api/stock-items/ -> 200
+[2026-04-13 20:30:54.109492] END   GET /api/consumables/ -> 200
+[2026-04-13 20:30:54.120353] START GET /api/stock-items/
+[2026-04-13 20:30:54.121355] START GET /api/consumables/
+[2026-04-13 20:30:54.154453] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-04-13 20:30:54.165910] END   GET /api/stock-items/ -> 200
+[2026-04-13 20:30:54.168313] END   GET /api/consumables/ -> 200
+[2026-04-13 20:30:54.886658] START GET /api/company-asset-requests/
+[2026-04-13 20:30:54.890890] START GET /api/attribution-orders/
+[2026-04-13 20:30:54.930283] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:30:54.936272] START GET /api/attribution-orders/
+[2026-04-13 20:30:54.977382] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:30:55.040708] END   GET /api/company-asset-requests/ -> 200
+[2026-04-13 20:30:55.047431] START GET /api/company-asset-requests/
+[2026-04-13 20:30:55.092284] END   GET /api/company-asset-requests/ -> 200
+[2026-04-13 20:30:55.789882] START GET /api/warehouses/
+[2026-04-13 20:30:55.790976] START GET /api/asset-types/
+[2026-04-13 20:30:55.792564] START GET /api/attribution-orders/
+[2026-04-13 20:30:55.846719] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:30:55.851295] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:30:55.853079] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:30:55.855597] START GET /api/warehouses/
+[2026-04-13 20:30:55.861051] START GET /api/asset-types/
+[2026-04-13 20:30:55.862005] START GET /api/attribution-orders/
+[2026-04-13 20:30:55.900349] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:30:55.913187] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:30:55.913833] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:30:57.099876] START GET /api/consumable-types/
+[2026-04-13 20:30:57.101908] START GET /api/consumable-attribute-definitions/
+[2026-04-13 20:30:57.150978] END   GET /api/consumable-types/ -> 200
+[2026-04-13 20:30:57.151775] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-13 20:30:57.159236] START GET /api/consumable-types/
+[2026-04-13 20:30:57.159903] START GET /api/consumable-attribute-definitions/
+[2026-04-13 20:30:57.206656] END   GET /api/consumable-types/ -> 200
+[2026-04-13 20:30:57.212551] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-13 20:30:58.073297] START GET /api/stock-item-types/
+[2026-04-13 20:30:58.078003] START GET /api/stock-item-attribute-definitions/
+[2026-04-13 20:30:58.124800] END   GET /api/stock-item-types/ -> 200
+[2026-04-13 20:30:58.128396] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-13 20:30:58.133104] START GET /api/stock-item-types/
+[2026-04-13 20:30:58.137585] START GET /api/stock-item-attribute-definitions/
+[2026-04-13 20:30:58.182096] END   GET /api/stock-item-types/ -> 200
+[2026-04-13 20:30:58.289641] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-13 20:30:58.722317] START GET /api/company-asset-requests/
+[2026-04-13 20:30:58.723228] START GET /api/attribution-orders/
+[2026-04-13 20:30:58.774747] END   GET /api/company-asset-requests/ -> 200
+[2026-04-13 20:30:58.778371] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:30:58.784621] START GET /api/company-asset-requests/
+[2026-04-13 20:30:58.787033] START GET /api/attribution-orders/
+[2026-04-13 20:30:58.831845] END   GET /api/company-asset-requests/ -> 200
+[2026-04-13 20:30:58.834110] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:31:01.077563] START GET /api/locations/
+[2026-04-13 20:31:01.082127] START GET /api/location-inventory/
+[2026-04-13 20:31:01.160503] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:31:01.170754] START GET /api/location-inventory/
+[2026-04-13 20:31:01.181735] END   GET /api/locations/ -> 200
+[2026-04-13 20:31:01.187712] START GET /api/locations/
+[2026-04-13 20:31:01.239916] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:31:01.368900] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:05.782081] START GET /api/my-items/
+[2026-04-13 20:32:05.851754] END   GET /api/my-items/ -> 200
+[2026-04-13 20:32:05.859668] START GET /api/my-items/
+[2026-04-13 20:32:05.928136] END   GET /api/my-items/ -> 200
+[2026-04-13 20:32:06.551641] START GET /api/asset-incident-reports/
+[2026-04-13 20:32:06.553367] START GET /api/assets/
+[2026-04-13 20:32:06.635264] END   GET /api/assets/ -> 200
+[2026-04-13 20:32:06.646019] START GET /api/assets/
+[2026-04-13 20:32:06.653523] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-13 20:32:06.663360] START GET /api/asset-incident-reports/
+[2026-04-13 20:32:06.727349] END   GET /api/assets/ -> 200
+[2026-04-13 20:32:06.750866] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-13 20:32:07.195895] START GET /api/locations/
+[2026-04-13 20:32:07.197019] START GET /api/location-inventory/
+[2026-04-13 20:32:07.278044] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:32:07.289678] START GET /api/location-inventory/
+[2026-04-13 20:32:07.292456] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:07.299175] START GET /api/locations/
+[2026-04-13 20:32:07.366646] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:32:07.392118] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:08.419276] START GET /api/asset-types/
+[2026-04-13 20:32:08.428017] START GET /api/asset-attribute-definitions/
+[2026-04-13 20:32:08.464268] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:32:08.470310] START GET /api/asset-types/
+[2026-04-13 20:32:08.472552] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-13 20:32:08.477654] START GET /api/asset-attribute-definitions/
+[2026-04-13 20:32:08.516274] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:32:08.525033] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-13 20:32:08.936463] START GET /api/purchase-orders/
+[2026-04-13 20:32:08.987344] END   GET /api/purchase-orders/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:08.994700] START GET /api/purchase-orders/
+[2026-04-13 20:32:09.046709] END   GET /api/purchase-orders/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:09.403504] START GET /api/stock-item-types/
+[2026-04-13 20:32:09.408803] START GET /api/stock-item-attribute-definitions/
+[2026-04-13 20:32:09.443129] END   GET /api/stock-item-types/ -> 200
+[2026-04-13 20:32:09.444165] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-13 20:32:09.448967] START GET /api/stock-item-types/
+[2026-04-13 20:32:09.450952] START GET /api/stock-item-attribute-definitions/
+[2026-04-13 20:32:09.487443] END   GET /api/stock-item-types/ -> 200
+[2026-04-13 20:32:09.487659] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-13 20:32:10.029915] START GET /api/consumable-types/
+[2026-04-13 20:32:10.030460] START GET /api/consumable-attribute-definitions/
+[2026-04-13 20:32:10.079021] END   GET /api/consumable-types/ -> 200
+[2026-04-13 20:32:10.079149] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-13 20:32:10.085902] START GET /api/consumable-types/
+[2026-04-13 20:32:10.089825] START GET /api/consumable-attribute-definitions/
+[2026-04-13 20:32:10.130686] END   GET /api/consumable-types/ -> 200
+[2026-04-13 20:32:10.137644] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-13 20:32:11.025408] START GET /api/warehouses/
+[2026-04-13 20:32:11.026398] START GET /api/asset-types/
+[2026-04-13 20:32:11.038826] START GET /api/attribution-orders/
+[2026-04-13 20:32:11.092273] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:32:11.099055] START GET /api/attribution-orders/
+[2026-04-13 20:32:11.189603] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:32:11.190439] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:32:11.196686] START GET /api/warehouses/
+[2026-04-13 20:32:11.197535] START GET /api/asset-types/
+[2026-04-13 20:32:11.246764] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:32:11.249918] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:32:11.256637] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:32:11.427013] START GET /api/company-asset-requests/
+[2026-04-13 20:32:11.430845] START GET /api/attribution-orders/
+[2026-04-13 20:32:11.476426] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:32:11.492369] START GET /api/attribution-orders/
+[2026-04-13 20:32:11.542550] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:32:11.581126] END   GET /api/company-asset-requests/ -> 200
+[2026-04-13 20:32:11.586981] START GET /api/company-asset-requests/
+[2026-04-13 20:32:11.626683] END   GET /api/company-asset-requests/ -> 200
+[2026-04-13 20:32:12.249406] START GET /api/attribution-orders/
+[2026-04-13 20:32:12.249040] START GET /api/warehouses/
+[2026-04-13 20:32:12.250021] START GET /api/administrative-certificates/
+[2026-04-13 20:32:12.304504] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:32:12.310556] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:32:12.314036] END   GET /api/administrative-certificates/ -> 200
+[2026-04-13 20:32:12.321328] START GET /api/attribution-orders/
+[2026-04-13 20:32:12.326221] START GET /api/warehouses/
+[2026-04-13 20:32:12.327383] START GET /api/administrative-certificates/
+[2026-04-13 20:32:12.367296] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:32:12.375324] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:32:12.379117] END   GET /api/administrative-certificates/ -> 200
+[2026-04-13 20:32:13.357461] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-04-13 20:32:13.358448] START GET /api/stock-items/
+[2026-04-13 20:32:13.360101] START GET /api/consumables/
+[2026-04-13 20:32:13.415644] END   GET /api/stock-items/ -> 200
+[2026-04-13 20:32:13.418642] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-04-13 20:32:13.422622] END   GET /api/consumables/ -> 200
+[2026-04-13 20:32:13.427767] START GET /api/stock-items/
+[2026-04-13 20:32:13.428677] START GET /api/stock-item-consumable-destruction-certificates/
+[2026-04-13 20:32:13.433567] START GET /api/consumables/
+[2026-04-13 20:32:13.485660] END   GET /api/stock-items/ -> 200
+[2026-04-13 20:32:13.488934] END   GET /api/stock-item-consumable-destruction-certificates/ -> 200
+[2026-04-13 20:32:13.586755] END   GET /api/consumables/ -> 200
+[2026-04-13 20:32:13.765670] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:32:13.767293] START GET /api/assets/
+[2026-04-13 20:32:13.818823] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:32:13.825712] START GET /api/asset-destruction-certificates/
+[2026-04-13 20:32:13.836886] END   GET /api/assets/ -> 200
+[2026-04-13 20:32:13.846043] START GET /api/assets/
+[2026-04-13 20:32:13.869735] END   GET /api/asset-destruction-certificates/ -> 200
+[2026-04-13 20:32:13.914681] END   GET /api/assets/ -> 200
+[2026-04-13 20:32:14.716476] START GET /api/external-maintenances/
+[2026-04-13 20:32:14.765785] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:32:14.772793] START GET /api/external-maintenances/
+[2026-04-13 20:32:14.818546] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:32:15.250224] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:32:15.300797] END   GET /api/asset-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:15.308823] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:32:15.358874] END   GET /api/asset-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:15.899595] START GET /api/external-maintenances/
+[2026-04-13 20:32:15.950173] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:32:15.957904] START GET /api/external-maintenances/
+[2026-04-13 20:32:16.111010] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:32:17.265207] START GET /api/locations/
+[2026-04-13 20:32:17.267481] START GET /api/location-inventory/
+[2026-04-13 20:32:17.349336] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:17.357387] START GET /api/locations/
+[2026-04-13 20:32:17.556743] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:32:17.567261] START GET /api/location-inventory/
+[2026-04-13 20:32:17.575249] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:17.644998] END   GET /api/location-inventory/ -> 200
+[2026-04-13 20:32:19.103886] START GET /api/locations/
+[2026-04-13 20:32:19.108848] START GET /api/maintenance-step-item-requests/
+[2026-04-13 20:32:19.157889] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-04-13 20:32:19.168241] START GET /api/maintenance-step-item-requests/
+[2026-04-13 20:32:19.185040] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:19.191664] START GET /api/locations/
+[2026-04-13 20:32:19.212890] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-04-13 20:32:19.266493] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:19.792146] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:32:19.793108] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:32:19.840280] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:19.843399] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:19.848963] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:32:19.853751] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:32:19.902368] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:20.007229] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:25.483546] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:32:25.484473] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:32:25.537067] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:25.543622] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:25.544524] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:32:25.549099] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:32:25.589580] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:25.701342] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:52.477145] START POST /api/auth/login/
+[2026-04-13 20:32:52.554160] END   POST /api/auth/login/ -> 200
+[2026-04-13 20:32:55.742883] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:32:55.744100] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:32:55.802694] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:55.802919] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:55.812879] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:32:55.813948] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:32:55.869438] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:55.870035] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:56.623553] START GET /api/maintenance-step-item-requests/
+[2026-04-13 20:32:56.624485] START GET /api/locations/
+[2026-04-13 20:32:56.688228] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-04-13 20:32:56.694556] START GET /api/maintenance-step-item-requests/
+[2026-04-13 20:32:56.724111] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:56.731060] START GET /api/locations/
+[2026-04-13 20:32:56.810224] END   GET /api/locations/ -> 200
+[2026-04-13 20:32:56.858017] END   GET /api/maintenance-step-item-requests/ -> 200
+[2026-04-13 20:32:57.230290] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:32:57.234606] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:32:57.286698] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:57.287362] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:57.295052] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:32:57.295938] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:32:57.347286] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:32:57.349863] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:33:05.209600] START POST /api/auth/login/
+[2026-04-13 20:33:05.271001] END   POST /api/auth/login/ -> 200
+[2026-04-13 20:33:07.414675] START GET /api/warehouses/
+[2026-04-13 20:33:07.417010] START GET /api/asset-types/
+[2026-04-13 20:33:07.418989] START GET /api/attribution-orders/
+[2026-04-13 20:33:07.458936] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:33:07.466504] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:33:07.467222] START GET /api/warehouses/
+[2026-04-13 20:33:07.468339] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:33:07.479289] START GET /api/asset-types/
+[2026-04-13 20:33:07.481138] START GET /api/attribution-orders/
+[2026-04-13 20:33:07.514927] END   GET /api/warehouses/ -> 200
+[2026-04-13 20:33:07.527293] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:33:07.528196] END   GET /api/asset-types/ -> 200
+[2026-04-13 20:33:08.002816] START GET /api/company-asset-requests/
+[2026-04-13 20:33:08.007952] START GET /api/attribution-orders/
+[2026-04-13 20:33:08.044037] END   GET /api/company-asset-requests/ -> 200
+[2026-04-13 20:33:08.048648] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:33:08.049962] START GET /api/company-asset-requests/
+[2026-04-13 20:33:08.053813] START GET /api/attribution-orders/
+[2026-04-13 20:33:08.095730] END   GET /api/company-asset-requests/ -> 200
+[2026-04-13 20:33:08.098009] END   GET /api/attribution-orders/ -> 200
+[2026-04-13 20:33:09.059028] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:33:09.116435] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:33:09.122607] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:33:09.180020] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:33:10.877445] START GET /api/external-maintenances/
+[2026-04-13 20:33:10.923409] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:33:10.929220] START GET /api/external-maintenances/
+[2026-04-13 20:33:10.970577] END   GET /api/external-maintenances/ -> 200
+[2026-04-13 20:33:11.351390] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:33:11.395583] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:33:11.402778] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:33:11.448627] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:33:23.265458] START POST /api/auth/login/
+[2026-04-13 20:33:23.328106] END   POST /api/auth/login/ -> 200
+[2026-04-13 20:33:44.106711] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:33:44.109371] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:33:44.164023] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:33:44.171110] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:33:44.219562] END   GET /api/consumable-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:33:44.257100] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:33:44.264996] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:33:44.314259] END   GET /api/stock-item-movements-approval/pending/ -> 403
+Response Body: {"error":"Not allowed"}
+[2026-04-13 20:42:46.049278] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:42:46.051701] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:42:46.204914] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:42:46.205154] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:42:46.215483] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:42:46.218486] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:42:46.274530] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:42:46.277188] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:42:47.473178] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:42:47.476587] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:42:47.533675] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:42:47.534917] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:42:47.538669] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:42:47.541837] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:42:47.580039] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:42:47.587344] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:42:58.259746] START POST /api/auth/login/
+[2026-04-13 20:42:58.341160] END   POST /api/auth/login/ -> 200
+[2026-04-13 20:42:59.623948] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:42:59.669768] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:42:59.675392] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:42:59.728967] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:01.460736] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:01.528072] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:01.533555] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:01.588268] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:02.084209] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:02.136792] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:02.144111] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:02.199404] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:02.553173] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:02.605038] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:02.611359] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:02.656292] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:03.199170] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:03.258248] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:06.825023] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:07.002116] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:07.006788] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:07.167502] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:07.341471] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:07.395242] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:07.401521] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:43:07.453740] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:43:25.600472] START POST /api/auth/login/
+[2026-04-13 20:43:25.656764] END   POST /api/auth/login/ -> 200
+[2026-04-13 20:43:28.046532] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:43:28.048050] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:43:28.109790] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:43:28.112318] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:43:28.118150] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:43:28.119207] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:43:28.171502] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:43:28.172335] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:43:31.799841] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:43:31.801705] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:43:31.860489] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:43:31.966107] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:43:53.837391] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:43:53.839135] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:43:53.944356] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:43:53.954609] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:43:54.012299] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:43:54.057139] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:43:54.065841] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:43:54.220333] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:44:27.802333] START POST /api/auth/login/
+[2026-04-13 20:44:27.889026] END   POST /api/auth/login/ -> 200
+[2026-04-13 20:44:30.128976] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:44:30.184797] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:44:30.189689] START GET /api/asset-movements-approval/pending/
+[2026-04-13 20:44:30.234579] END   GET /api/asset-movements-approval/pending/ -> 200
+[2026-04-13 20:44:31.760700] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:44:31.762508] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:44:31.821768] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:44:31.822599] END   GET /api/consumable-movements-approval/pending/ -> 200
+[2026-04-13 20:44:31.830295] START GET /api/stock-item-movements-approval/pending/
+[2026-04-13 20:44:31.832827] START GET /api/consumable-movements-approval/pending/
+[2026-04-13 20:44:31.877318] END   GET /api/stock-item-movements-approval/pending/ -> 200
+[2026-04-13 20:44:31.878806] END   GET /api/consumable-movements-approval/pending/ -> 200

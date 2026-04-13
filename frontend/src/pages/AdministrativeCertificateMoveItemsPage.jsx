@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext';
 const AdministrativeCertificateMoveItemsPage = () => {
     const { user } = useAuth();
     const isAssetResponsible = user?.roles?.some(
-        (role) => role.role_code === 'asset_responsible' || role.role_code === 'it_bureau_chief'
+        (role) => role.role_code === 'asset_responsible' || role.role_code === 'exploitation_chief' || role.role_code === 'it_bureau_chief'
     );
 
     const { certificateId } = useParams();

@@ -816,7 +816,7 @@ const AssetsPage = () => {
 
     const userAccount = authService.getUser();
     const isSuperuser = userAccount?.is_superuser;
-    const isAssetResponsible = userAccount?.roles?.some(r => r.role_code === 'asset_responsible') || isSuperuser;
+    const isAssetResponsible = userAccount?.roles?.some(r => r.role_code === 'asset_responsible' || r.role_code === 'exploitation_chief' || r.role_code === 'it_bureau_chief');
     const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
     const isMaintenanceChief = userAccount?.roles?.some(r => r.role_code === 'maintenance_chief') || isSuperuser;
     const canMoveAssets = isAssetResponsible || isExploitationChief;

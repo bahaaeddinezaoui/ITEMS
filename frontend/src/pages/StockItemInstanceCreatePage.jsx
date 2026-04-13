@@ -8,7 +8,7 @@ const StockItemInstanceCreatePage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible');
+    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const modelIdParam = searchParams.get('modelId');
     const qtyParam = searchParams.get('qty');

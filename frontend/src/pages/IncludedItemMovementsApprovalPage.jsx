@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 
 const IncludedItemMovementsApprovalPage = () => {
     const { user } = useAuth();
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible');
+    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
     const [submittingKey, setSubmittingKey] = useState(null);

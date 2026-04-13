@@ -786,7 +786,7 @@ const ConsumablesPage = () => {
 
     const userAccount = authService.getUser();
     const isSuperuser = userAccount?.is_superuser;
-    const isStockConsumableResponsible = userAccount?.roles?.some(r => r.role_code === 'stock_consumable_responsible') || isSuperuser;
+    const isStockConsumableResponsible = userAccount?.roles?.some(r => r.role_code === 'stock_consumable_responsible' || r.role_code === 'exploitation_chief') || isSuperuser;
     const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
     const isMaintenanceChief = userAccount?.roles?.some(r => r.role_code === 'maintenance_chief') || isSuperuser;
     const canMoveConsumables = isStockConsumableResponsible;

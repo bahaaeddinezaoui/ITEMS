@@ -794,7 +794,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if "maintenance_chief" in role_codes or "exploitation_chief" in role_codes or "it_bureau_chief" in role_codes:
             return qs
 
-        if "asset_responsible" in role_codes:
+        if "asset_responsible" in role_codes or "exploitation_chief" in role_codes:
             # Asset responsible should be able to see maintenances that are awaiting their approval
             # via a pending maintenance-create asset movement request.
             pending_moves = list(
@@ -2522,7 +2522,7 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes) or ("exploitation_chief" in role_codes):
             return qs
 
         return MaintenanceStepItemRequest.objects.none()
@@ -2535,7 +2535,7 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes) or ("exploitation_chief" in role_codes):
             return user_account.person, None
 
         return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
@@ -3037,7 +3037,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("it_bureau_chief" not in role_codes):
+        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
             return Response(
                 {"error": "Only asset responsible can send to external maintenance provider"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -3243,7 +3243,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("it_bureau_chief" not in role_codes):
+        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
             return Response(
                 {"error": "Only asset responsible can confirm receipt by maintenance provider"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -3288,7 +3288,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("it_bureau_chief" not in role_codes):
+        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
             return Response(
                 {"error": "Only asset responsible can confirm asset received by company"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -3391,7 +3391,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("it_bureau_chief" not in role_codes):
+        if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
             return Response(
                 {"error": "Only asset responsible can confirm asset sent to company"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -3443,13 +3443,13 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({"error": "Invalid target_type"}, status=status.HTTP_400_BAD_REQUEST)
 
         if target_type == "asset":
-            if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("it_bureau_chief" not in role_codes):
+            if (not user_account.is_superuser()) and ("asset_responsible" not in role_codes) and ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
                 return Response(
                     {"error": "Only asset responsible can mark asset as failed"},
                     status=status.HTTP_403_FORBIDDEN,
                 )
         else:
-            if (not user_account.is_superuser()) and ("stock_consumable_responsible" not in role_codes):
+            if (not user_account.is_superuser()) and ("stock_consumable_responsible" not in role_codes) and ("exploitation_chief" not in role_codes):
                 return Response(
                     {"error": "Only stock items and consumables responsible can mark items as failed"},
                     status=status.HTTP_403_FORBIDDEN,
@@ -5522,7 +5522,7 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
         role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
-        if "stock_consumable_responsible" in role_codes or "it_bureau_chief" in role_codes:
+        if "stock_consumable_responsible" in role_codes or "exploitation_chief" in role_codes or "it_bureau_chief" in role_codes:
             return None
 
         return Response(
@@ -6270,7 +6270,7 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
         role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
-        if "stock_consumable_responsible" in role_codes or "it_bureau_chief" in role_codes:
+        if "stock_consumable_responsible" in role_codes or "exploitation_chief" in role_codes or "it_bureau_chief" in role_codes:
             return None
 
         return Response(
@@ -7591,7 +7591,7 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes) or ("exploitation_chief" in role_codes):
             return user_account, None
 
         return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
@@ -7681,7 +7681,7 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes) or ("exploitation_chief" in role_codes):
             return user_account, None
 
         return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
@@ -7774,7 +7774,7 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if user_account.is_superuser() or ("asset_responsible" in role_codes) or ("it_bureau_chief" in role_codes):
+        if user_account.is_superuser() or ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes):
             return user_account, None
 
         return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
@@ -7852,6 +7852,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
         )
         allowed = {
             "stock_consumable_responsible",
+            "exploitation_chief",
             "director_admin_support",
             "protection_and_security_bureau_chief",
             "school_headquarter",
@@ -7870,7 +7871,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes) or ("exploitation_chief" in role_codes):
             return user_account, None
 
         return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
@@ -7885,6 +7886,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
         )
         allowed = {
             "stock_consumable_responsible",
+            "exploitation_chief",
             "director_admin_support",
             "protection_and_security_bureau_chief",
             "school_headquarter",
@@ -9240,7 +9242,7 @@ class BackorderReportViewSet(viewsets.ViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
-        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes):
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes) or ("exploitation_chief" in role_codes):
             return user_account, None
 
         return None, Response({"error": "Not allowed"}, status=status.HTTP_403_FORBIDDEN)
@@ -9907,7 +9909,7 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            if ("asset_responsible" not in role_codes) and ("it_bureau_chief" not in role_codes):
+            if ("asset_responsible" not in role_codes) and ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
                 return AdministrativeCertificate.objects.none()
 
             queryset = AdministrativeCertificate.objects.all().order_by("administrative_certificate_id")
@@ -9980,7 +9982,7 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            allowed = ("asset_responsible" in role_codes) or ("it_bureau_chief" in role_codes)
+            allowed = ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
 
         if not allowed:
             return Response(
@@ -10038,7 +10040,7 @@ class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        if ("asset_responsible" not in role_codes) and ("it_bureau_chief" not in role_codes):
+        if ("asset_responsible" not in role_codes) and ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
             return CompanyAssetRequest.objects.none()
 
         return self.queryset
@@ -10057,7 +10059,7 @@ class CompanyAssetRequestViewSet(viewsets.ModelViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            allowed = ("asset_responsible" in role_codes) or ("it_bureau_chief" in role_codes)
+            allowed = ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes) or ("it_bureau_chief" in role_codes)
 
         if not allowed:
             return Response(
@@ -10615,7 +10617,7 @@ class InventoryReportViewSet(viewsets.ViewSet):
             role_codes = set(
                 PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
             )
-            allowed = "asset_responsible" in role_codes
+            allowed = ("asset_responsible" in role_codes) or ("exploitation_chief" in role_codes)
 
         if not allowed:
             return Response(

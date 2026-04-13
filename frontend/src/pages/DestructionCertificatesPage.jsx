@@ -16,7 +16,7 @@ const DestructionCertificatesPage = () => {
 
     const isExploitationChief = isSuperuser || roleCodes.includes('exploitation_chief');
     const isItBureauChief = isSuperuser || roleCodes.includes('it_bureau_chief');
-    const isStockConsumableResponsible = isSuperuser || roleCodes.includes('stock_consumable_responsible');
+    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const canView = isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible;
     const canCreate = isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible;

@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 
 const AssetMovementsApprovalPage = () => {
     const { user } = useAuth();
-    const isAssetResponsible = user?.roles?.some((role) => role.role_code === 'asset_responsible' || role.role_code === 'it_bureau_chief');
+    const isAssetResponsible = user?.roles?.some((role) => role.role_code === 'asset_responsible' || role.role_code === 'exploitation_chief' || role.role_code === 'it_bureau_chief');
 
     const [loading, setLoading] = useState(true);
     const [submittingKey, setSubmittingKey] = useState(null);

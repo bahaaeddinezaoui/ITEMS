@@ -15,7 +15,7 @@ const PurchaseOrderCreatePage = () => {
 
     const DRAFT_KEY = 'purchase_order_create_draft_v1';
 
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible');
+    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');

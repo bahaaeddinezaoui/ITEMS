@@ -28,7 +28,7 @@ import { useAuth } from '../context/AuthContext';
 const PurchaseOrdersPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible');
+    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
     const isItBureauChief = user?.roles?.some((role) => role.role_code === 'it_bureau_chief');
     const isDirectorAdminSupport = user?.roles?.some((role) => role.role_code === 'director_admin_support');
     const isProtectionSecurityBureauChief = user?.roles?.some((role) => role.role_code === 'protection_and_security_bureau_chief');
