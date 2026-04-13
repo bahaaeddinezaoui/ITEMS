@@ -1523,3 +1523,31 @@ class AssetIncidentReportConsumable(models.Model):
     class Meta:
         managed = False
         db_table = 'asset_incident_report_consumable'
+
+
+class AuthenticationLog(models.Model):
+    log_id = models.AutoField(primary_key=True, db_column='log_id')
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, db_column='user_id')
+    attempted_username = models.CharField(max_length=50, db_column='attempted_username', blank=True, null=True)
+    event_type = models.CharField(max_length=24, db_column='event_type', blank=True, null=True)
+    ip_address = models.CharField(max_length=45, db_column='ip_address', blank=True, null=True)
+    event_timestamp = models.DateTimeField(db_column='event_timestamp', blank=True, null=True)
+    failure_reason = models.CharField(max_length=60, db_column='failure_reason', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'authentication_log'
+
+
+class UserSession(models.Model):
+    session_id = models.AutoField(primary_key=True, db_column='session_id')
+    user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, db_column='user_id')
+    ip_address = models.CharField(max_length=45, db_column='ip_address')
+    user_agent = models.CharField(max_length=255, db_column='user_agent', blank=True, null=True)
+    login_datetime = models.DateTimeField(db_column='login_datetime')
+    last_activity = models.DateTimeField(db_column='last_activity')
+    logout_datetime = models.DateTimeField(db_column='logout_datetime', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'user_session'

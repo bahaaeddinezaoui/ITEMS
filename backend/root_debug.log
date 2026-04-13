@@ -71914,3 +71914,285 @@ Response Body: {"error":"Not allowed"}
 [2026-04-13 21:34:48.026945] START GET /api/locations/
 [2026-04-13 21:34:48.101084] END   GET /api/location-inventory/ -> 200
 [2026-04-13 21:34:48.122966] END   GET /api/locations/ -> 200
+[2026-04-13 21:36:01.536750] START GET /api/my-items/
+[2026-04-13 21:36:01.754964] END   GET /api/my-items/ -> 200
+[2026-04-13 21:36:01.762987] START GET /api/my-items/
+[2026-04-13 21:36:01.829882] END   GET /api/my-items/ -> 200
+[2026-04-13 21:50:06.348227] START GET /api/my-items/
+[2026-04-13 21:50:06.409846] END   GET /api/my-items/ -> 200
+[2026-04-13 21:50:06.413542] START GET /api/my-items/
+[2026-04-13 21:50:06.455079] END   GET /api/my-items/ -> 200
+[2026-04-13 21:50:12.809079] START GET /api/user-sessions/
+[2026-04-13 21:50:12.809558] START GET /api/auth-logs/
+[2026-04-13 21:50:12.859848] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:50:12.859985] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:50:12.870107] START GET /api/auth-logs/
+[2026-04-13 21:50:12.874816] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:50:12.874549] START GET /api/user-sessions/
+[2026-04-13 21:50:12.876926] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:50:18.477926] START GET /api/user-sessions/
+[2026-04-13 21:50:18.478757] START GET /api/auth-logs/
+[2026-04-13 21:50:18.480222] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:50:18.482045] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:50:18.506195] START GET /api/user-sessions/
+[2026-04-13 21:50:18.507742] START GET /api/auth-logs/
+[2026-04-13 21:50:18.510122] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:50:18.511536] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:14.717321] START GET /api/auth-logs/
+[2026-04-13 21:51:14.721848] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:14.721568] START GET /api/user-sessions/
+[2026-04-13 21:51:14.723573] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:14.731809] START GET /api/auth-logs/
+[2026-04-13 21:51:14.733612] START GET /api/user-sessions/
+[2026-04-13 21:51:14.736749] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:14.741044] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:17.514276] START GET /api/user-sessions/
+[2026-04-13 21:51:17.516748] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:17.515341] START GET /api/auth-logs/
+[2026-04-13 21:51:17.519172] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:17.528493] START GET /api/auth-logs/
+[2026-04-13 21:51:17.529264] START GET /api/user-sessions/
+[2026-04-13 21:51:17.532523] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:17.536285] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:18.468587] START GET /api/user-sessions/
+[2026-04-13 21:51:18.471830] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:18.471707] START GET /api/auth-logs/
+[2026-04-13 21:51:18.475995] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:18.482564] START GET /api/user-sessions/
+[2026-04-13 21:51:18.487000] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:51:18.486756] START GET /api/auth-logs/
+[2026-04-13 21:51:18.489550] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:57:56.626813] START GET /api/user-sessions/
+[2026-04-13 21:57:56.628225] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:57:56.630486] START GET /api/auth-logs/
+[2026-04-13 21:57:56.631445] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:57:56.638324] START GET /api/user-sessions/
+[2026-04-13 21:57:56.640036] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:57:56.643378] START GET /api/auth-logs/
+[2026-04-13 21:57:56.644436] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:13.755719] START GET /api/user-sessions/
+[2026-04-13 21:59:13.758724] START GET /api/auth-logs/
+[2026-04-13 21:59:13.759339] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:13.761702] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:13.771880] START GET /api/user-sessions/
+[2026-04-13 21:59:13.774986] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:13.775954] START GET /api/auth-logs/
+[2026-04-13 21:59:13.780388] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:27.693483] START GET /api/user-sessions/
+[2026-04-13 21:59:27.696651] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:27.696384] START GET /api/auth-logs/
+[2026-04-13 21:59:27.699708] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:27.706408] START GET /api/user-sessions/
+[2026-04-13 21:59:27.711472] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:27.712522] START GET /api/auth-logs/
+[2026-04-13 21:59:27.716601] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:58.101349] START GET /api/user-sessions/
+[2026-04-13 21:59:58.105765] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:58.105493] START GET /api/auth-logs/
+[2026-04-13 21:59:58.110691] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:58.130552] START GET /api/user-sessions/
+[2026-04-13 21:59:58.132759] START GET /api/auth-logs/
+[2026-04-13 21:59:58.138156] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 21:59:58.141727] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:02.874522] START GET /api/user-sessions/
+[2026-04-13 22:00:02.877636] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:02.877473] START GET /api/auth-logs/
+[2026-04-13 22:00:02.879510] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:02.889424] START GET /api/user-sessions/
+[2026-04-13 22:00:02.890986] START GET /api/auth-logs/
+[2026-04-13 22:00:02.894587] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:02.898256] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:04.088334] START GET /api/user-sessions/
+[2026-04-13 22:00:04.089501] START GET /api/auth-logs/
+[2026-04-13 22:00:04.095812] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:04.096895] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:04.105196] START GET /api/user-sessions/
+[2026-04-13 22:00:04.110195] END   GET /api/user-sessions/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:04.110043] START GET /api/auth-logs/
+[2026-04-13 22:00:04.115428] END   GET /api/auth-logs/ -> 401
+Response Body: {"detail":"Authentication credentials were not provided."}
+[2026-04-13 22:00:15.598437] START GET /api/user-sessions/
+[2026-04-13 22:00:15.601923] START GET /api/auth-logs/
+[2026-04-13 22:00:15.645245] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:00:15.650788] START GET /api/auth-logs/
+[2026-04-13 22:00:15.680427] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:00:15.748725] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:00:15.752993] START GET /api/user-sessions/
+[2026-04-13 22:00:15.783624] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:00:48.164430] START GET /api/user-sessions/
+[2026-04-13 22:00:48.166100] START GET /api/auth-logs/
+[2026-04-13 22:00:48.219859] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:00:48.226655] START GET /api/user-sessions/
+[2026-04-13 22:00:48.270117] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:00:48.326949] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:00:48.332048] START GET /api/auth-logs/
+[2026-04-13 22:00:48.370079] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:00:56.206975] START GET /api/user-sessions/
+[2026-04-13 22:00:56.208221] START GET /api/auth-logs/
+[2026-04-13 22:00:56.258602] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:00:56.260587] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:01:04.266742] START POST /api/auth/login/
+[2026-04-13 22:01:04.549910] END   POST /api/auth/login/ -> 500
+Response Body: DataError at /api/auth/login/
+value too long for type character varying(60)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\DLLs
+[2026-04-13 22:01:05.792499] START POST /api/auth/login/
+[2026-04-13 22:01:05.925335] END   POST /api/auth/login/ -> 500
+Response Body: DataError at /api/auth/login/
+value too long for type character varying(60)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\DLLs
+[2026-04-13 22:01:07.028389] START POST /api/auth/login/
+[2026-04-13 22:01:07.158040] END   POST /api/auth/login/ -> 500
+Response Body: DataError at /api/auth/login/
+value too long for type character varying(60)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\DLLs
+[2026-04-13 22:01:12.724891] START POST /api/auth/login/
+[2026-04-13 22:01:12.839718] END   POST /api/auth/login/ -> 500
+Response Body: DataError at /api/auth/login/
+value too long for type character varying(60)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\DLLs
+[2026-04-13 22:01:21.306733] START POST /api/auth/login/
+[2026-04-13 22:01:21.418698] END   POST /api/auth/login/ -> 500
+Response Body: DataError at /api/auth/login/
+value too long for type character varying(60)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\DLLs
+[2026-04-13 22:01:36.177298] START POST /api/auth/login/
+[2026-04-13 22:01:36.293319] END   POST /api/auth/login/ -> 500
+Response Body: DataError at /api/auth/login/
+value too long for type character varying(60)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\DLLs
+[2026-04-13 22:01:36.930640] START POST /api/auth/login/
+[2026-04-13 22:01:37.141685] END   POST /api/auth/login/ -> 500
+Response Body: DataError at /api/auth/login/
+value too long for type character varying(60)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\DLLs
+[2026-04-13 22:01:55.660910] START POST /api/auth/login/
+[2026-04-13 22:01:55.738074] END   POST /api/auth/login/ -> 500
+Response Body: DataError at /api/auth/login/
+value too long for type character varying(60)
+
+
+Request Method: POST
+Request URL: http://localhost:8000/api/auth/login/
+Django Version: 6.0.2
+Python Executable: D:\Mine\Equipment Management System\backend\venv\Scripts\python.exe
+Python Version: 3.14.3
+Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\python314.zip', 'C:\\Users\\BVHVDDIN\\AppData\\Local\\Programs\\Python\\Python314\\DLLs
+[2026-04-13 22:05:18.352686] START POST /api/auth/login/
+[2026-04-13 22:05:18.472770] END   POST /api/auth/login/ -> 200
+[2026-04-13 22:05:24.633251] START GET /api/user-sessions/
+[2026-04-13 22:05:24.635004] START GET /api/auth-logs/
+[2026-04-13 22:05:24.728338] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:05:24.729685] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:05:24.736031] START GET /api/user-sessions/
+[2026-04-13 22:05:24.738224] START GET /api/auth-logs/
+[2026-04-13 22:05:24.787806] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:05:24.788006] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:05:38.062492] START GET /api/user-sessions/
+[2026-04-13 22:05:38.065716] START GET /api/auth-logs/
+[2026-04-13 22:05:38.127748] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:05:38.127850] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:05:47.467438] START GET /api/auth-logs/
+[2026-04-13 22:05:47.472557] START GET /api/user-sessions/
+[2026-04-13 22:05:47.529606] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:05:47.536982] START GET /api/user-sessions/
+[2026-04-13 22:05:47.591548] END   GET /api/user-sessions/ -> 200
+[2026-04-13 22:05:47.617039] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:05:47.622788] START GET /api/auth-logs/
+[2026-04-13 22:05:47.674457] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:05:50.387765] START GET /api/user-sessions/
+[2026-04-13 22:05:50.392083] START GET /api/auth-logs/
+[2026-04-13 22:05:50.458376] END   GET /api/auth-logs/ -> 200
+[2026-04-13 22:05:50.539667] END   GET /api/user-sessions/ -> 200

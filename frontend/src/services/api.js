@@ -1838,4 +1838,22 @@ export const inventoryReportService = {
     },
 };
 
+export const userSessionService = {
+    getAll: async () => {
+        const response = await api.get('user-sessions/');
+        return response.data;
+    },
+    terminate: async (sessionId) => {
+        const response = await api.post(`user-sessions/${sessionId}/terminate/`);
+        return response.data;
+    },
+};
+
+export const authenticationLogService = {
+    getAll: async () => {
+        const response = await api.get('auth-logs/');
+        return response.data;
+    },
+};
+
 export default api;

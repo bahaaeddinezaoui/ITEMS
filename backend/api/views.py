@@ -71,6 +71,8 @@ from .models import (
     StockItemType,
     StockItemTypeAttribute,
     UserAccount,
+    AuthenticationLog,
+    UserSession,
     Warehouse,
     AttributionOrder,
     ReceiptReport,
@@ -543,6 +545,8 @@ from .serializers import (
     CompanyAssetRequestSerializer,
     AssetIncidentReportSerializer,
     MaintenanceStepItemRequestSerializer,
+    AuthenticationLogSerializer,
+    UserSessionSerializer,
     ExternalMaintenanceProviderSerializer,
     ExternalMaintenanceSerializer,
     ExternalMaintenanceStepSerializer,
@@ -4270,6 +4274,15 @@ class ProblemReportViewSet(viewsets.ViewSet):
             )
 
         return Response(MaintenanceSerializer(maintenance).data, status=status.HTTP_201_CREATED)
+def get_client_ip(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(",")[0]
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+    return ip
+
+
 class LoginView(APIView):
     """Handle user authentication."""
 
@@ -4299,6 +4312,19 @@ class LoginView(APIView):
                 f.write(f"Password mismatch for user: {username}\n")
             user.failed_login_attempts += 1
             user.save(update_fields=["failed_login_attempts"])
+            
+            # Log failure
+            last_log = AuthenticationLog.objects.order_by("-log_id").first()
+            next_log_id = (last_log.log_id + 1) if last_log else 1
+            AuthenticationLog.objects.create(
+                log_id=next_log_id,
+                user=user,
+                attempted_username=username[:50],
+                event_type="LOGIN_FAILURE",
+                ip_address=get_client_ip(request),
+                event_timestamp=timezone.now(),
+                failure_reason="Invalid Password"
+            )
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if user.account_status != "active":
@@ -4308,10 +4334,35 @@ class LoginView(APIView):
         user.failed_login_attempts = 0
         user.save(update_fields=["last_login", "failed_login_attempts"])
 
+        # Log success
+        last_log = AuthenticationLog.objects.order_by("-log_id").first()
+        next_log_id = (last_log.log_id + 1) if last_log else 1
+        AuthenticationLog.objects.create(
+            log_id=next_log_id,
+            user=user,
+            attempted_username=username[:50],
+            event_type="LOGIN_SUCCESS",
+            ip_address=get_client_ip(request),
+            event_timestamp=timezone.now(),
+        )
+
+        # Create session
+        last_sess = UserSession.objects.order_by("-session_id").first()
+        next_sess_id = (last_sess.session_id + 1) if last_sess else 1
+        user_session = UserSession.objects.create(
+            session_id=next_sess_id,
+            user=user,
+            ip_address=get_client_ip(request),
+            user_agent=request.META.get("HTTP_USER_AGENT", "")[:60],
+            login_datetime=timezone.now(),
+            last_activity=timezone.now(),
+        )
+
         refresh = RefreshToken()
         refresh["user_id"] = user.user_id
         refresh["username"] = user.username
         refresh["is_superuser"] = user.is_superuser()
+        refresh["session_id"] = user_session.session_id
 
         return Response(
             {
@@ -4320,6 +4371,54 @@ class LoginView(APIView):
                 "user": UserProfileSerializer(user).data,
             }
         )
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        session_id = request.auth.get("session_id")
+        if session_id:
+            UserSession.objects.filter(session_id=session_id).update(logout_datetime=timezone.now())
+
+            last_log = AuthenticationLog.objects.order_by("-log_id").first()
+            next_log_id = (last_log.log_id + 1) if last_log else 1
+            AuthenticationLog.objects.create(
+                log_id=next_log_id,
+                user=request.user,
+                event_type="LOGOUT",
+                ip_address=get_client_ip(request),
+                event_timestamp=timezone.now(),
+            )
+
+        return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+
+class UserSessionViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSessionSerializer
+
+    def get_queryset(self):
+        return UserSession.objects.filter(user=self.request.user, logout_datetime__isnull=True).order_by(
+            "-login_datetime"
+        )
+
+    @action(detail=True, methods=["post"])
+    def terminate(self, request, pk=None):
+        session = self.get_object()
+        if session.user_id != request.user.user_id:
+            return Response({"error": "Unauthorized"}, status=status.HTTP_403_FORBIDDEN)
+        session.logout_datetime = timezone.now()
+        session.save()
+        return Response({"status": "session terminated"})
+
+
+class AuthenticationLogViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AuthenticationLogSerializer
+
+    def get_queryset(self):
+        return AuthenticationLog.objects.filter(user=self.request.user).order_by("-event_timestamp")
 
 
 class PersonViewSet(viewsets.ModelViewSet):

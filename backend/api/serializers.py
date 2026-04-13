@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, Position, PositionRoleMapping, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, Position, PositionRoleMapping, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable, AuthenticationLog, UserSession
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -1154,6 +1154,28 @@ class AssetIncidentReportConsumableSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssetIncidentReportConsumable
         fields = ['id', 'asset_incident_report', 'consumable']
+
+
+class AuthenticationLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AuthenticationLog
+        fields = ['log_id', 'user', 'attempted_username', 'event_type', 'ip_address', 'event_timestamp', 'failure_reason']
+
+
+class UserSessionSerializer(serializers.ModelSerializer):
+    is_current = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserSession
+        fields = ['session_id', 'user', 'ip_address', 'user_agent', 'login_datetime', 'last_activity', 'logout_datetime', 'is_current']
+
+    def get_is_current(self, obj):
+        request = self.context.get('request')
+        if not request:
+            return False
+        # We'll store session_id in the token and put it in request.session_id via middleware
+        current_session_id = getattr(request, 'session_id', None)
+        return obj.session_id == current_session_id
         read_only_fields = ['id']
 
 

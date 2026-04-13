@@ -522,6 +522,18 @@ const DashboardLayout = () => {
                                 >
                                     Profile
                                 </button>
+                                <button
+                                    type="button"
+                                    className="user-menu-item"
+                                    role="menuitem"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsUserMenuOpen(false);
+                                        navigate('/dashboard/options');
+                                    }}
+                                >
+                                    Security
+                                </button>
                             </div>
                         )}
                         <button
