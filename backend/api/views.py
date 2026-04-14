@@ -521,6 +521,8 @@ from .serializers import (
     OrganizationalStructureSerializer,
     PersonSerializer,
     PersonReportsProblemOnAssetSerializer,
+    PersonReportsProblemOnStockItemSerializer,
+    PersonReportsProblemOnConsumableSerializer,
     PositionSerializer,
     PositionRoleMappingSerializer,
     RoleSerializer,
@@ -4908,6 +4910,9 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         asset.refresh_from_db()
         return Response(self.get_serializer(asset).data, status=status.HTTP_200_OK)
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         # Debug: log incoming data

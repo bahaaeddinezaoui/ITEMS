@@ -72196,3 +72196,2717 @@ Python Path: ['D:\\Mine\\Equipment Management System\\backend', 'C:\\Users\\BVHV
 [2026-04-13 22:05:50.392083] START GET /api/auth-logs/
 [2026-04-13 22:05:50.458376] END   GET /api/auth-logs/ -> 200
 [2026-04-13 22:05:50.539667] END   GET /api/user-sessions/ -> 200
+[2026-04-14 09:51:09.205421] START POST /api/auth/login/
+[2026-04-14 09:51:09.390190] END   POST /api/auth/login/ -> 200
+[2026-04-14 09:51:10.638890] START GET /api/asset-incident-reports/
+[2026-04-14 09:51:10.736824] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-14 09:51:10.744340] START GET /api/asset-incident-reports/
+[2026-04-14 09:51:10.913739] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-14 09:51:11.513255] START GET /api/locations/
+[2026-04-14 09:51:11.518125] START GET /api/location-inventory/
+[2026-04-14 09:51:11.616736] END   GET /api/location-inventory/ -> 200
+[2026-04-14 09:51:11.626136] END   GET /api/locations/ -> 200
+[2026-04-14 09:51:11.632582] START GET /api/location-inventory/
+[2026-04-14 09:51:11.637978] START GET /api/locations/
+[2026-04-14 09:51:11.738263] END   GET /api/location-inventory/ -> 200
+[2026-04-14 09:51:11.744595] END   GET /api/locations/ -> 200
+[2026-04-14 09:51:15.103730] START GET /api/asset-types/
+[2026-04-14 09:51:15.105742] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:51:15.156428] END   GET /api/asset-types/ -> 200
+[2026-04-14 09:51:15.160227] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:51:15.168014] START GET /api/asset-types/
+[2026-04-14 09:51:15.169784] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:51:15.226215] END   GET /api/asset-types/ -> 200
+[2026-04-14 09:51:15.229603] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:51:17.284972] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:51:17.337098] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:51:17.345254] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:51:17.397151] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:51:41.088181] START POST /api/asset-attribute-definitions/
+[2026-04-14 09:51:41.141787] END   POST /api/asset-attribute-definitions/ -> 403
+Response Body: {"error":"Only superusers can create asset attribute definitions"}
+[2026-04-14 09:51:56.095991] START POST /api/auth/login/
+[2026-04-14 09:51:56.163291] END   POST /api/auth/login/ -> 200
+[2026-04-14 09:52:05.133098] START GET /api/asset-types/
+[2026-04-14 09:52:05.135335] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:05.184229] END   GET /api/asset-types/ -> 200
+[2026-04-14 09:52:05.190359] START GET /api/asset-types/
+[2026-04-14 09:52:05.193020] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:52:05.200382] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:05.245278] END   GET /api/asset-types/ -> 200
+[2026-04-14 09:52:05.250838] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:52:06.166552] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:06.323242] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:52:06.328652] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:06.376898] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:52:21.660326] START POST /api/asset-attribute-definitions/
+[2026-04-14 09:52:21.718350] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 09:52:21.729885] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:21.779036] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:52:28.075906] START POST /api/asset-attribute-definitions/
+[2026-04-14 09:52:28.131533] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 09:52:28.142855] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:28.192087] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:52:35.856789] START DELETE /api/asset-attribute-definitions/6/
+[2026-04-14 09:52:35.935736] END   DELETE /api/asset-attribute-definitions/6/ -> 204
+[2026-04-14 09:52:35.946511] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:36.000168] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:52:45.657978] START POST /api/asset-attribute-definitions/
+[2026-04-14 09:52:45.720031] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 09:52:45.729341] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:45.778218] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:52:53.642329] START POST /api/asset-attribute-definitions/
+[2026-04-14 09:52:53.709905] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 09:52:53.720241] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:52:53.769032] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:53:06.748169] START POST /api/asset-attribute-definitions/
+[2026-04-14 09:53:06.811544] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 09:53:06.821751] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:53:06.870880] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:53:27.611539] START POST /api/asset-attribute-definitions/
+[2026-04-14 09:53:27.674805] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 09:53:27.684228] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:53:27.733793] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:53:39.418444] START POST /api/asset-attribute-definitions/
+[2026-04-14 09:53:39.481662] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 09:53:39.491714] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:53:39.542641] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:53:45.391324] START GET /api/asset-types/
+[2026-04-14 09:53:45.394008] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:53:45.448725] END   GET /api/asset-types/ -> 200
+[2026-04-14 09:53:45.449973] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:53:45.458178] START GET /api/asset-types/
+[2026-04-14 09:53:45.462049] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:53:45.511184] END   GET /api/asset-types/ -> 200
+[2026-04-14 09:53:45.513969] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:55:09.789105] START GET /api/stock-item-types/
+[2026-04-14 09:55:09.790056] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 09:55:09.873301] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 09:55:09.882193] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 09:55:09.933027] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 09:55:09.951595] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 09:55:09.957568] START GET /api/stock-item-types/
+[2026-04-14 09:55:10.009141] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 09:55:54.567431] START GET /api/consumable-attribute-definitions/
+[2026-04-14 09:55:54.624015] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-14 09:55:54.626590] END   GET /api/consumable-types/ -> 200
+[2026-04-14 09:55:54.632318] START GET /api/consumable-attribute-definitions/
+[2026-04-14 09:55:54.636186] START GET /api/consumable-types/
+[2026-04-14 09:55:54.682826] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-14 09:55:54.686712] END   GET /api/consumable-types/ -> 200
+[2026-04-14 09:56:42.076417] START GET /api/asset-types/
+[2026-04-14 09:56:42.080428] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:56:42.132287] END   GET /api/asset-types/ -> 200
+[2026-04-14 09:56:42.135260] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:56:42.140218] START GET /api/asset-types/
+[2026-04-14 09:56:42.141275] START GET /api/asset-attribute-definitions/
+[2026-04-14 09:56:42.192712] END   GET /api/asset-types/ -> 200
+[2026-04-14 09:56:42.195608] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 09:56:44.163504] START GET /api/asset-type-attributes/
+[2026-04-14 09:56:44.226923] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 09:56:57.041278] START POST /api/asset-type-attributes/
+[2026-04-14 09:56:57.174446] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 09:56:57.183555] START GET /api/asset-type-attributes/
+[2026-04-14 09:56:57.348632] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 09:57:04.626273] START POST /api/asset-type-attributes/
+[2026-04-14 09:57:04.729557] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 09:57:04.742171] START GET /api/asset-type-attributes/
+[2026-04-14 09:57:04.800740] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 09:57:09.592371] START POST /api/asset-type-attributes/
+[2026-04-14 09:57:09.697066] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 09:57:09.707762] START GET /api/asset-type-attributes/
+[2026-04-14 09:57:09.879142] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 09:57:17.106179] START POST /api/asset-type-attributes/
+[2026-04-14 09:57:17.326942] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 09:57:17.336838] START GET /api/asset-type-attributes/
+[2026-04-14 09:57:17.396407] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 09:57:22.258128] START POST /api/asset-type-attributes/
+[2026-04-14 09:57:22.351063] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 09:57:22.359240] START GET /api/asset-type-attributes/
+[2026-04-14 09:57:22.411557] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 09:57:26.109136] START POST /api/asset-type-attributes/
+[2026-04-14 09:57:26.216054] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 09:57:26.227063] START GET /api/asset-type-attributes/
+[2026-04-14 09:57:26.280254] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 09:57:30.897276] START POST /api/asset-type-attributes/
+[2026-04-14 09:57:31.003138] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 09:57:31.013149] START GET /api/asset-type-attributes/
+[2026-04-14 09:57:31.063473] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 09:57:33.689896] START POST /api/asset-type-attributes/
+[2026-04-14 09:57:33.797557] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 09:57:33.808245] START GET /api/asset-type-attributes/
+[2026-04-14 09:57:33.863308] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:01:56.638801] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:01:56.805926] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:01:56.812758] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:01:56.862035] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:04.105713] START POST /api/asset-attribute-definitions/
+[2026-04-14 10:02:04.170824] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 10:02:04.180061] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:02:04.232353] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:06.204779] START GET /api/asset-types/
+[2026-04-14 10:02:06.207421] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:02:06.269574] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:06.276166] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:02:06.329562] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:06.351332] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:02:06.358887] START GET /api/asset-types/
+[2026-04-14 10:02:06.412222] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:02:10.083734] START GET /api/asset-type-attributes/
+[2026-04-14 10:02:10.140738] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:02:19.303826] START POST /api/asset-type-attributes/
+[2026-04-14 10:02:19.415293] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:02:19.428651] START GET /api/asset-type-attributes/
+[2026-04-14 10:02:19.486201] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:02:24.922198] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:02:24.973238] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:24.979482] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:02:25.029170] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:35.498351] START POST /api/asset-attribute-definitions/
+[2026-04-14 10:02:35.563728] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 10:02:35.573373] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:02:35.625825] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:37.172944] START GET /api/asset-types/
+[2026-04-14 10:02:37.175543] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:02:37.224408] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:02:37.228217] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:37.231661] START GET /api/asset-types/
+[2026-04-14 10:02:37.236516] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:02:37.284593] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:02:37.291625] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:02:38.373119] START GET /api/asset-type-attributes/
+[2026-04-14 10:02:38.433853] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:02:44.649566] START POST /api/asset-type-attributes/
+[2026-04-14 10:02:44.759911] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:02:44.772056] START GET /api/asset-type-attributes/
+[2026-04-14 10:02:44.833195] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:02:50.425664] START GET /api/asset-type-attributes/
+[2026-04-14 10:02:50.480812] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:02:57.004835] START POST /api/asset-type-attributes/
+[2026-04-14 10:02:57.185628] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:02:57.194075] START GET /api/asset-type-attributes/
+[2026-04-14 10:02:57.246375] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:01.245539] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:01.324949] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:01.334809] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:01.494502] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:04.645496] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:04.725869] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:04.736694] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:04.791580] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:08.246081] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:08.312950] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:08.322262] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:08.376235] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:11.577327] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:11.654552] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:11.665373] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:11.712617] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:13.917205] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:13.980932] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:13.993922] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:14.046933] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:16.144289] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:16.218046] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:16.227726] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:16.280858] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:19.479131] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:19.544776] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:19.553773] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:19.604046] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:21.998547] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:22.169494] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:22.177523] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:22.227946] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:24.353946] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:24.408451] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:24.416127] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:24.456046] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:27.027486] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:27.095144] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:27.105744] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:27.159296] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:29.894785] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:29.975986] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:29.986542] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:30.151617] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:33.043414] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:33.095678] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:39.734454] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:39.802380] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:39.812232] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:39.861448] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:42.963462] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:43.043263] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:43.052292] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:43.103761] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:45.627453] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:45.709060] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:45.720027] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:45.878714] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:52.230869] START POST /api/asset-type-attributes/
+[2026-04-14 10:03:52.303896] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:03:52.314564] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:52.360114] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:03:59.756630] START GET /api/asset-type-attributes/
+[2026-04-14 10:03:59.827807] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:03.224504] START POST /api/asset-type-attributes/
+[2026-04-14 10:04:03.286056] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:04:03.296575] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:03.345153] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:06.061403] START POST /api/asset-type-attributes/
+[2026-04-14 10:04:06.125678] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:04:06.135877] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:06.183695] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:08.694763] START POST /api/asset-type-attributes/
+[2026-04-14 10:04:08.888203] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:04:08.899246] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:08.950614] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:14.197315] START POST /api/asset-type-attributes/
+[2026-04-14 10:04:14.272023] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:04:14.281496] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:14.440264] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:17.594551] START POST /api/asset-type-attributes/
+[2026-04-14 10:04:17.773438] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:04:17.782084] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:17.833523] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:23.597057] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:23.646547] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:26.698571] START POST /api/asset-type-attributes/
+[2026-04-14 10:04:26.775919] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:04:26.786151] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:26.840221] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:43.164378] START POST /api/asset-type-attributes/
+[2026-04-14 10:04:43.244493] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:04:43.254422] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:43.308218] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:04:47.683704] START POST /api/asset-type-attributes/
+[2026-04-14 10:04:47.752644] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:04:47.762562] START GET /api/asset-type-attributes/
+[2026-04-14 10:04:47.815932] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:03.148445] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:03.207930] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:03.217164] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:03.270470] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:08.672716] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:08.746739] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:08.757479] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:08.815813] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:11.940700] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:12.004338] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:12.012737] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:12.064187] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:17.708885] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:17.783529] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:17.794863] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:17.964598] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:22.111346] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:22.170759] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:22.178458] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:22.229400] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:25.517966] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:25.585922] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:25.595024] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:25.648713] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:29.014912] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:29.080994] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:29.091104] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:29.149341] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:31.260101] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:31.328582] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:35.459979] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:35.635212] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:35.644730] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:35.698995] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:38.324211] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:38.494457] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:38.503659] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:38.552513] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:41.045057] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:41.110542] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:41.119675] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:41.171065] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:47.963275] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:48.032911] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:49.005672] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:49.063890] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:49.795766] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:49.849857] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:53.676507] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:53.757933] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:53.767485] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:53.927434] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:05:56.684808] START POST /api/asset-type-attributes/
+[2026-04-14 10:05:56.763483] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:05:56.774458] START GET /api/asset-type-attributes/
+[2026-04-14 10:05:56.925473] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:00.069378] START POST /api/asset-type-attributes/
+[2026-04-14 10:06:00.135037] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:06:00.146312] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:00.199438] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:00.917634] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:00.969947] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:04.885304] START POST /api/asset-type-attributes/
+[2026-04-14 10:06:05.066751] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:06:05.078656] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:05.130862] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:07.895207] START POST /api/asset-type-attributes/
+[2026-04-14 10:06:08.083010] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:06:08.092317] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:08.142942] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:10.591678] START POST /api/asset-type-attributes/
+[2026-04-14 10:06:10.662842] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:06:10.672737] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:10.729222] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:12.108225] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:12.176340] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:12.652839] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:12.708437] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:13.612518] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:13.784695] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:14.191454] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:14.258662] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:15.029597] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:15.084567] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:15.836526] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:15.893721] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:16.284609] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:16.350635] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:25.236359] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:25.403672] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:30.668072] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:30.735286] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:06:32.035779] START GET /api/asset-type-attributes/
+[2026-04-14 10:06:32.092248] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:08:24.124981] START GET /api/asset-type-attributes/
+[2026-04-14 10:08:24.193294] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:08:24.795206] START GET /api/asset-type-attributes/
+[2026-04-14 10:08:24.851678] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:08:27.921673] START GET /api/asset-type-attributes/
+[2026-04-14 10:08:27.981334] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:08:58.812813] START POST /api/asset-types/
+[2026-04-14 10:08:58.888563] END   POST /api/asset-types/ -> 201
+[2026-04-14 10:08:58.901412] START GET /api/asset-types/
+[2026-04-14 10:08:58.952335] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:09:00.525202] START GET /api/asset-type-attributes/
+[2026-04-14 10:09:00.581737] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:09:07.772570] START POST /api/asset-type-attributes/
+[2026-04-14 10:09:07.838417] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:09:07.848192] START GET /api/asset-type-attributes/
+[2026-04-14 10:09:07.903373] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:09:10.930162] START POST /api/asset-type-attributes/
+[2026-04-14 10:09:10.990759] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:09:11.000334] START GET /api/asset-type-attributes/
+[2026-04-14 10:09:11.037264] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:09:13.932867] START POST /api/asset-type-attributes/
+[2026-04-14 10:09:14.000948] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 10:09:14.013202] START GET /api/asset-type-attributes/
+[2026-04-14 10:09:14.066761] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:09:54.299504] START GET /api/asset-types/9/
+[2026-04-14 10:09:54.304628] START GET /api/asset-models/
+[2026-04-14 10:09:54.306595] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:09:54.309443] START GET /api/asset-brands/
+[2026-04-14 10:09:54.401478] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:09:54.401761] END   GET /api/asset-types/9/ -> 200
+[2026-04-14 10:09:54.403314] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:09:54.411573] START GET /api/asset-types/9/
+[2026-04-14 10:09:54.411130] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:09:54.412159] START GET /api/asset-models/
+[2026-04-14 10:09:54.429502] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:09:54.434741] START GET /api/asset-brands/
+[2026-04-14 10:09:54.459271] END   GET /api/asset-types/9/ -> 200
+[2026-04-14 10:09:54.462533] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:09:54.468971] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:09:54.482277] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:09:55.451075] START GET /api/asset-types/
+[2026-04-14 10:09:55.454647] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:09:55.518880] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:09:55.519662] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:09:55.528762] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:09:55.529714] START GET /api/asset-types/
+[2026-04-14 10:09:55.587464] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:09:55.588197] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:09:57.684277] START GET /api/asset-type-attributes/
+[2026-04-14 10:09:57.751681] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:00.453301] START GET /api/asset-type-attributes/
+[2026-04-14 10:10:00.518942] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:00.836595] START GET /api/asset-type-attributes/
+[2026-04-14 10:10:00.892794] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:04.243027] START GET /api/asset-type-attributes/
+[2026-04-14 10:10:04.307625] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:04.611626] START GET /api/asset-type-attributes/
+[2026-04-14 10:10:04.673794] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:06.660114] START GET /api/asset-type-attributes/
+[2026-04-14 10:10:06.720551] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:08.885010] START GET /api/asset-type-attributes/
+[2026-04-14 10:10:08.949802] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:13.147762] START GET /api/asset-type-attributes/
+[2026-04-14 10:10:13.216747] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:13.847149] START GET /api/asset-types/1/
+[2026-04-14 10:10:13.848220] START GET /api/asset-models/
+[2026-04-14 10:10:13.849595] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:10:13.857097] START GET /api/asset-brands/
+[2026-04-14 10:10:13.920447] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:10:13.921838] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:10:13.922645] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:10:13.926284] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:10:13.937042] START GET /api/asset-models/
+[2026-04-14 10:10:13.938224] START GET /api/asset-types/1/
+[2026-04-14 10:10:13.937436] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:10:13.940181] START GET /api/asset-brands/
+[2026-04-14 10:10:13.993798] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:10:13.995233] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:10:13.997931] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:10:14.099418] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:10:15.960268] START GET /api/asset-types/
+[2026-04-14 10:10:15.962641] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:10:16.016485] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:10:16.023626] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:10:16.110944] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:10:16.116602] START GET /api/asset-types/
+[2026-04-14 10:10:16.163233] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:10:16.185592] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:10:17.668974] START GET /api/asset-type-attributes/
+[2026-04-14 10:10:17.735510] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:10:18.643757] START GET /api/asset-types/3/
+[2026-04-14 10:10:18.647128] START GET /api/asset-models/
+[2026-04-14 10:10:18.650577] START GET /api/asset-brands/
+[2026-04-14 10:10:18.647789] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:10:18.706240] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:10:18.708485] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:10:18.714128] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:10:18.718391] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:10:18.726035] START GET /api/asset-types/3/
+[2026-04-14 10:10:18.730201] START GET /api/asset-models/
+[2026-04-14 10:10:18.731594] START GET /api/asset-brands/
+[2026-04-14 10:10:18.732363] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:10:18.774664] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:10:18.787718] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:10:18.787860] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:10:18.788007] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:12:17.486880] START POST /api/asset-models/
+[2026-04-14 10:12:17.566482] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:12:17.578243] START GET /api/asset-types/3/
+[2026-04-14 10:12:17.582651] START GET /api/asset-models/
+[2026-04-14 10:12:17.636629] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:12:17.642020] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:12:34.237754] START POST /api/asset-models/
+[2026-04-14 10:12:34.315208] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:12:34.326151] START GET /api/asset-models/
+[2026-04-14 10:12:34.327320] START GET /api/asset-types/3/
+[2026-04-14 10:12:34.389201] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:12:34.389425] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:12:46.377810] START POST /api/asset-models/
+[2026-04-14 10:12:46.456849] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:12:46.465401] START GET /api/asset-types/3/
+[2026-04-14 10:12:46.466421] START GET /api/asset-models/
+[2026-04-14 10:12:46.521183] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:12:46.523516] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:13:00.629868] START POST /api/asset-models/
+[2026-04-14 10:13:00.711921] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:13:00.720904] START GET /api/asset-types/3/
+[2026-04-14 10:13:00.723102] START GET /api/asset-models/
+[2026-04-14 10:13:00.770648] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:13:00.774470] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:13:19.444513] START POST /api/asset-models/
+[2026-04-14 10:13:19.548552] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:13:19.562384] START GET /api/asset-types/3/
+[2026-04-14 10:13:19.564105] START GET /api/asset-models/
+[2026-04-14 10:13:19.631139] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:13:19.739232] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:13:34.269627] START POST /api/asset-models/
+[2026-04-14 10:13:34.344886] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:13:34.353302] START GET /api/asset-types/3/
+[2026-04-14 10:13:34.355162] START GET /api/asset-models/
+[2026-04-14 10:13:34.400776] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:13:34.409189] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:13:38.657477] START POST /api/asset-models/
+[2026-04-14 10:13:38.738099] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:13:38.747725] START GET /api/asset-types/3/
+[2026-04-14 10:13:38.750162] START GET /api/asset-models/
+[2026-04-14 10:13:38.799314] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:13:38.804051] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:13:48.212146] START POST /api/asset-models/
+[2026-04-14 10:13:48.289823] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:13:48.298925] START GET /api/asset-models/
+[2026-04-14 10:13:48.301860] START GET /api/asset-types/3/
+[2026-04-14 10:13:48.357397] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:13:48.358023] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:13:56.520471] START POST /api/asset-models/
+[2026-04-14 10:13:56.594603] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:13:56.603280] START GET /api/asset-types/3/
+[2026-04-14 10:13:56.605722] START GET /api/asset-models/
+[2026-04-14 10:13:56.659771] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:13:56.767599] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:14:07.870683] START POST /api/asset-models/
+[2026-04-14 10:14:07.952214] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:14:07.961574] START GET /api/asset-types/3/
+[2026-04-14 10:14:07.965021] START GET /api/asset-models/
+[2026-04-14 10:14:08.013232] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:14:08.131594] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:14:23.825399] START POST /api/asset-models/
+[2026-04-14 10:14:23.905464] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:14:23.915893] START GET /api/asset-types/3/
+[2026-04-14 10:14:23.916763] START GET /api/asset-models/
+[2026-04-14 10:14:23.968526] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:14:23.973341] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:14:32.169406] START GET /api/asset-types/
+[2026-04-14 10:14:32.170860] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:14:32.240112] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:14:32.240881] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:14:32.249141] START GET /api/asset-types/
+[2026-04-14 10:14:32.251247] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:14:32.300330] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:14:32.301717] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:14:33.204278] START GET /api/asset-type-attributes/
+[2026-04-14 10:14:33.269486] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:14:34.043928] START GET /api/asset-types/1/
+[2026-04-14 10:14:34.045545] START GET /api/asset-models/
+[2026-04-14 10:14:34.048674] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:14:34.051560] START GET /api/asset-brands/
+[2026-04-14 10:14:34.111881] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:14:34.112790] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:14:34.113610] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:14:34.117926] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:14:34.123816] START GET /api/asset-models/
+[2026-04-14 10:14:34.124363] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:14:34.125179] START GET /api/asset-types/1/
+[2026-04-14 10:14:34.126572] START GET /api/asset-brands/
+[2026-04-14 10:14:34.178213] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:14:34.180061] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:14:34.187106] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:14:34.187187] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:17:56.089997] START GET /api/asset-types/
+[2026-04-14 10:17:56.092488] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:17:56.159921] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:17:56.160667] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:17:56.168254] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:17:56.169744] START GET /api/asset-types/
+[2026-04-14 10:17:56.218358] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:17:56.222382] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:17:57.709421] START GET /api/asset-type-attributes/
+[2026-04-14 10:17:57.765353] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:17:58.431753] START GET /api/asset-type-attributes/
+[2026-04-14 10:17:58.491798] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:17:59.446924] START GET /api/asset-types/1/
+[2026-04-14 10:17:59.447692] START GET /api/asset-models/
+[2026-04-14 10:17:59.448649] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:17:59.457771] START GET /api/asset-brands/
+[2026-04-14 10:17:59.506859] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:17:59.516479] START GET /api/asset-types/1/
+[2026-04-14 10:17:59.525784] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:17:59.526063] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:17:59.526463] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:17:59.543316] START GET /api/asset-models/
+[2026-04-14 10:17:59.545394] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:17:59.550037] START GET /api/asset-brands/
+[2026-04-14 10:17:59.581639] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:17:59.605932] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:17:59.606112] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:17:59.718275] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:18:23.486537] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:18:23.486087] START GET /api/asset-types/
+[2026-04-14 10:18:23.533045] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:18:23.540160] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:18:23.586196] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:18:23.645613] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:18:23.652763] START GET /api/asset-types/
+[2026-04-14 10:18:23.807017] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:18:24.828788] START GET /api/asset-type-attributes/
+[2026-04-14 10:18:24.882358] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:18:26.293680] START GET /api/asset-types/1/
+[2026-04-14 10:18:26.294633] START GET /api/asset-models/
+[2026-04-14 10:18:26.294260] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:18:26.296741] START GET /api/asset-brands/
+[2026-04-14 10:18:26.365255] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:18:26.365485] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:18:26.368516] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:18:26.378973] START GET /api/asset-models/
+[2026-04-14 10:18:26.379930] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:18:26.385859] START GET /api/asset-brands/
+[2026-04-14 10:18:26.438590] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:18:26.440075] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:18:26.447058] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:18:26.453324] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:18:26.461092] START GET /api/asset-types/1/
+[2026-04-14 10:18:26.510383] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:18:30.632407] START GET /api/asset-types/
+[2026-04-14 10:18:30.636292] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:18:30.681161] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:18:30.686309] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:18:30.687637] START GET /api/asset-types/
+[2026-04-14 10:18:30.694855] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:18:30.736023] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:18:30.744333] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:18:31.898230] START GET /api/asset-type-attributes/
+[2026-04-14 10:18:31.961581] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:18:32.530484] START GET /api/asset-types/3/
+[2026-04-14 10:18:32.535834] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:18:32.537594] START GET /api/asset-brands/
+[2026-04-14 10:18:32.543943] START GET /api/asset-models/
+[2026-04-14 10:18:32.585198] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:18:32.592260] START GET /api/asset-types/3/
+[2026-04-14 10:18:32.601802] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:18:32.604513] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:18:32.613114] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:18:32.615009] START GET /api/asset-brands/
+[2026-04-14 10:18:32.617091] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:18:32.623522] START GET /api/asset-models/
+[2026-04-14 10:18:32.674813] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:18:32.675575] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:18:32.760448] END   GET /api/asset-types/3/ -> 200
+[2026-04-14 10:18:32.773493] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:19:16.527544] START GET /api/asset-types/
+[2026-04-14 10:19:16.528069] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:19:16.584762] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:19:16.585054] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:19:16.592998] START GET /api/asset-types/
+[2026-04-14 10:19:16.594090] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:19:16.649392] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:19:16.744756] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:19:17.475410] START GET /api/asset-type-attributes/
+[2026-04-14 10:19:17.541104] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:19:18.174414] START GET /api/asset-types/1/
+[2026-04-14 10:19:18.178934] START GET /api/asset-models/
+[2026-04-14 10:19:18.180653] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:19:18.186773] START GET /api/asset-brands/
+[2026-04-14 10:19:18.234573] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:19:18.237182] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:19:18.237365] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:19:18.240343] START GET /api/asset-types/1/
+[2026-04-14 10:19:18.244097] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:19:18.244834] START GET /api/asset-brands/
+[2026-04-14 10:19:18.292391] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 10:19:18.294688] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:19:18.296368] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:19:18.340899] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:19:18.347711] START GET /api/asset-models/
+[2026-04-14 10:19:18.511925] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:21:27.174161] START GET /api/asset-types/
+[2026-04-14 10:21:27.175400] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:21:27.235390] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:21:27.235824] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:21:27.246484] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:21:27.248605] START GET /api/asset-types/
+[2026-04-14 10:21:27.300882] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:21:27.303396] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:21:47.038548] START GET /api/asset-types/
+[2026-04-14 10:21:47.042201] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:21:47.091619] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:21:47.095805] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:21:47.100283] START GET /api/asset-types/
+[2026-04-14 10:21:47.102883] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:21:47.146617] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:21:47.150557] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:21:52.805654] START GET /api/asset-type-attributes/
+[2026-04-14 10:21:52.864777] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:21:53.873590] START GET /api/asset-models/
+[2026-04-14 10:21:53.874817] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:21:53.872284] START GET /api/asset-types/5/
+[2026-04-14 10:21:53.882351] START GET /api/asset-brands/
+[2026-04-14 10:21:53.940069] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:21:53.941225] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:21:53.950963] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:21:53.953064] START GET /api/asset-models/
+[2026-04-14 10:21:53.954368] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:21:53.954332] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:21:53.959537] START GET /api/asset-brands/
+[2026-04-14 10:21:53.963177] START GET /api/asset-types/5/
+[2026-04-14 10:21:54.025182] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:21:54.025373] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:21:54.026026] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:21:54.029322] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:22:55.133435] START POST /api/asset-models/
+[2026-04-14 10:22:55.214628] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:22:55.225833] START GET /api/asset-types/5/
+[2026-04-14 10:22:55.230151] START GET /api/asset-models/
+[2026-04-14 10:22:55.282133] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:22:55.287867] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:26:20.215598] START GET /api/asset-types/
+[2026-04-14 10:26:20.220350] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:26:20.269615] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:26:20.272702] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:26:20.277297] START GET /api/asset-types/
+[2026-04-14 10:26:20.282315] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:26:20.334304] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:26:20.434859] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:26:23.271446] START GET /api/asset-models/
+[2026-04-14 10:26:23.273501] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:26:23.272368] START GET /api/asset-types/5/
+[2026-04-14 10:26:23.282157] START GET /api/asset-brands/
+[2026-04-14 10:26:23.329372] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:26:23.336345] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:26:23.337199] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:26:23.340503] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:26:23.352128] START GET /api/asset-types/5/
+[2026-04-14 10:26:23.352475] START GET /api/asset-models/
+[2026-04-14 10:26:23.351651] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:26:23.353827] START GET /api/asset-brands/
+[2026-04-14 10:26:23.414394] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:26:23.423704] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:26:23.423921] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:26:23.432206] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:28:56.030775] START GET /api/asset-types/5/
+[2026-04-14 10:28:56.031415] START GET /api/asset-models/
+[2026-04-14 10:28:56.037092] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:28:56.041710] START GET /api/asset-brands/
+[2026-04-14 10:28:56.133371] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:28:56.140035] START GET /api/asset-models/
+[2026-04-14 10:28:56.171003] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:28:56.173837] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:28:56.179567] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:28:56.182913] START GET /api/asset-brands/
+[2026-04-14 10:28:56.192930] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:28:56.193218] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:28:56.199958] START GET /api/asset-types/5/
+[2026-04-14 10:28:56.230308] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:28:56.249660] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:28:56.342850] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:28:56.839778] START GET /api/asset-types/
+[2026-04-14 10:28:56.841073] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:28:56.896594] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:28:56.900745] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:28:56.905188] START GET /api/asset-types/
+[2026-04-14 10:28:56.909236] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:28:56.956223] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:28:56.960997] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:29:01.521521] START GET /api/asset-models/
+[2026-04-14 10:29:01.521142] START GET /api/asset-types/5/
+[2026-04-14 10:29:01.522005] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:29:01.525614] START GET /api/asset-brands/
+[2026-04-14 10:29:01.594901] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:29:01.599630] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:29:01.600062] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:29:01.601140] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:29:01.615820] START GET /api/asset-models/
+[2026-04-14 10:29:01.616403] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:29:01.623121] START GET /api/asset-brands/
+[2026-04-14 10:29:01.624310] START GET /api/asset-types/5/
+[2026-04-14 10:29:01.691005] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:29:01.691147] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:29:01.691736] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:29:01.694371] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:29:15.338119] START POST /api/asset-models/
+[2026-04-14 10:29:15.422180] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:29:15.434607] START GET /api/asset-types/5/
+[2026-04-14 10:29:15.436320] START GET /api/asset-models/
+[2026-04-14 10:29:15.488579] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:29:15.493356] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:29:26.322181] START POST /api/asset-models/
+[2026-04-14 10:29:26.508233] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:29:26.518223] START GET /api/asset-types/5/
+[2026-04-14 10:29:26.522211] START GET /api/asset-models/
+[2026-04-14 10:29:26.571092] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:29:26.578753] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:29:35.054093] START POST /api/asset-models/
+[2026-04-14 10:29:35.129736] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:29:35.138525] START GET /api/asset-types/5/
+[2026-04-14 10:29:35.141055] START GET /api/asset-models/
+[2026-04-14 10:29:35.201863] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:29:35.202665] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:30:24.059699] START POST /api/asset-models/
+[2026-04-14 10:30:24.130805] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:30:24.140901] START GET /api/asset-types/5/
+[2026-04-14 10:30:24.144210] START GET /api/asset-models/
+[2026-04-14 10:30:24.198844] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:30:24.301495] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:30:38.198066] START POST /api/asset-models/
+[2026-04-14 10:30:38.268914] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:30:38.279934] START GET /api/asset-types/5/
+[2026-04-14 10:30:38.281815] START GET /api/asset-models/
+[2026-04-14 10:30:38.336203] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:30:38.343035] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:31:16.782669] START GET /api/asset-types/5/
+[2026-04-14 10:31:16.784395] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:31:16.783549] START GET /api/asset-models/
+[2026-04-14 10:31:16.792710] START GET /api/asset-brands/
+[2026-04-14 10:31:16.862721] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:31:16.862917] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:31:16.863051] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:31:16.877737] START GET /api/asset-brands/
+[2026-04-14 10:31:16.878170] START GET /api/asset-types/5/
+[2026-04-14 10:31:16.878809] START GET /api/asset-models/
+[2026-04-14 10:31:16.931858] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:31:16.936492] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:31:16.944804] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:31:16.949165] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:31:16.953533] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:31:17.000738] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:31:31.036292] START POST /api/asset-models/
+[2026-04-14 10:31:31.110981] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:31:31.120064] START GET /api/asset-models/
+[2026-04-14 10:31:31.120845] START GET /api/asset-types/5/
+[2026-04-14 10:31:31.179391] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:31:31.179995] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:31:33.200071] START GET /api/asset-types/
+[2026-04-14 10:31:33.204601] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:31:33.250930] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:31:33.252893] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:31:33.258831] START GET /api/asset-types/
+[2026-04-14 10:31:33.260418] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:31:33.313768] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:31:33.314126] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:32:01.924452] START GET /api/asset-types/4/
+[2026-04-14 10:32:01.932051] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:32:01.933457] START GET /api/asset-brands/
+[2026-04-14 10:32:01.976032] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:32:01.986931] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:32:01.987535] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:32:01.988856] START GET /api/asset-types/4/
+[2026-04-14 10:32:01.995562] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:32:01.995399] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:32:01.993067] START GET /api/asset-models/
+[2026-04-14 10:32:02.007275] START GET /api/asset-brands/
+[2026-04-14 10:32:02.036697] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:32:02.044984] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:32:02.046892] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:32:02.054238] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:32:11.130969] START POST /api/asset-models/
+[2026-04-14 10:32:11.202542] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:32:11.211089] START GET /api/asset-types/4/
+[2026-04-14 10:32:11.212357] START GET /api/asset-models/
+[2026-04-14 10:32:11.273268] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:32:11.379786] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:32:22.038555] START POST /api/asset-models/
+[2026-04-14 10:32:22.112116] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:32:22.121397] START GET /api/asset-types/4/
+[2026-04-14 10:32:22.122341] START GET /api/asset-models/
+[2026-04-14 10:32:22.171354] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:32:22.294619] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:32:31.183804] START POST /api/asset-models/
+[2026-04-14 10:32:31.257848] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:32:31.272682] START GET /api/asset-types/4/
+[2026-04-14 10:32:31.276219] START GET /api/asset-models/
+[2026-04-14 10:32:31.323679] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:32:31.436667] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:32:44.725877] START POST /api/asset-models/
+[2026-04-14 10:32:44.792062] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:32:44.800565] START GET /api/asset-types/4/
+[2026-04-14 10:32:44.801557] START GET /api/asset-models/
+[2026-04-14 10:32:44.857584] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:32:44.860804] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:33:45.547344] START POST /api/asset-models/
+[2026-04-14 10:33:45.619937] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:33:45.629269] START GET /api/asset-types/4/
+[2026-04-14 10:33:45.632088] START GET /api/asset-models/
+[2026-04-14 10:33:45.679882] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:33:45.685346] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:34:02.522495] START POST /api/asset-models/
+[2026-04-14 10:34:02.595732] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:34:02.605500] START GET /api/asset-types/4/
+[2026-04-14 10:34:02.606616] START GET /api/asset-models/
+[2026-04-14 10:34:02.655287] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:34:02.663311] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:34:40.634173] START POST /api/asset-models/
+[2026-04-14 10:34:40.705286] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:34:40.714000] START GET /api/asset-types/4/
+[2026-04-14 10:34:40.714573] START GET /api/asset-models/
+[2026-04-14 10:34:40.766598] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:34:40.774118] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:35:13.120856] START GET /api/asset-types/
+[2026-04-14 10:35:13.121224] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:35:13.187040] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:35:13.187420] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:35:13.197004] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:35:13.197763] START GET /api/asset-types/
+[2026-04-14 10:35:13.250365] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:35:13.251146] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:35:16.383444] START GET /api/asset-type-attributes/
+[2026-04-14 10:35:16.440532] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 10:35:17.258895] START GET /api/asset-types/5/
+[2026-04-14 10:35:17.260138] START GET /api/asset-models/
+[2026-04-14 10:35:17.261280] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:35:17.263291] START GET /api/asset-brands/
+[2026-04-14 10:35:17.328176] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:35:17.328369] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:35:17.331512] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:35:17.338224] START GET /api/asset-models/
+[2026-04-14 10:35:17.339041] START GET /api/asset-types/5/
+[2026-04-14 10:35:17.342599] START GET /api/asset-brands/
+[2026-04-14 10:35:17.400369] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:35:17.400542] END   GET /api/asset-types/5/ -> 200
+[2026-04-14 10:35:17.402831] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:35:17.423240] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:35:17.428787] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:35:17.478876] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:35:30.168763] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:35:30.170088] START GET /api/asset-types/
+[2026-04-14 10:35:30.222242] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:35:30.224885] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:35:30.231327] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:35:30.232235] START GET /api/asset-types/
+[2026-04-14 10:35:30.284650] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:35:30.392212] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:35:32.309627] START GET /api/asset-types/4/
+[2026-04-14 10:35:32.311451] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:35:32.310477] START GET /api/asset-models/
+[2026-04-14 10:35:32.316060] START GET /api/asset-brands/
+[2026-04-14 10:35:32.370748] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:35:32.377623] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:35:32.380552] START GET /api/asset-types/4/
+[2026-04-14 10:35:32.387224] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:35:32.387467] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:35:32.387963] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:35:32.393558] START GET /api/asset-models/
+[2026-04-14 10:35:32.394032] START GET /api/asset-brands/
+[2026-04-14 10:35:32.428591] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:35:32.440126] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:35:32.530746] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:35:32.540847] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:37:48.027501] START POST /api/asset-models/
+[2026-04-14 10:37:48.097163] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:37:48.106370] START GET /api/asset-types/4/
+[2026-04-14 10:37:48.106898] START GET /api/asset-models/
+[2026-04-14 10:37:48.163435] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:37:48.163661] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:38:06.795692] START POST /api/asset-models/
+[2026-04-14 10:38:06.867759] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:38:06.875948] START GET /api/asset-types/4/
+[2026-04-14 10:38:06.876731] START GET /api/asset-models/
+[2026-04-14 10:38:06.927053] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:38:06.931502] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:39:16.691479] START GET /api/asset-types/
+[2026-04-14 10:39:16.692210] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:39:16.746972] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:39:16.755203] START GET /api/asset-types/
+[2026-04-14 10:39:16.810130] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:39:16.852526] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:39:16.858826] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:39:17.041170] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:39:21.728505] START GET /api/asset-models/
+[2026-04-14 10:39:21.729351] START GET /api/asset-types/4/
+[2026-04-14 10:39:21.733633] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:39:21.736536] START GET /api/asset-brands/
+[2026-04-14 10:39:21.787713] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:39:21.796382] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:39:21.801504] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:39:21.801954] START GET /api/asset-models/
+[2026-04-14 10:39:21.804723] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:39:21.805592] START GET /api/asset-types/4/
+[2026-04-14 10:39:21.812722] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:39:21.816510] START GET /api/asset-brands/
+[2026-04-14 10:39:21.869899] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:39:21.870309] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:39:21.875066] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:39:47.860592] START POST /api/asset-models/
+[2026-04-14 10:39:47.926508] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:39:47.935267] START GET /api/asset-types/4/
+[2026-04-14 10:39:47.936328] START GET /api/asset-models/
+[2026-04-14 10:39:47.990102] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:39:47.995187] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:41:38.149460] START GET /api/asset-types/
+[2026-04-14 10:41:38.150351] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:41:38.200702] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:41:38.206777] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:41:38.208363] START GET /api/asset-types/
+[2026-04-14 10:41:38.212682] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:41:38.258217] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:41:38.261528] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:41:43.063760] START GET /api/asset-types/4/
+[2026-04-14 10:41:43.064669] START GET /api/asset-models/
+[2026-04-14 10:41:43.067514] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:41:43.072004] START GET /api/asset-brands/
+[2026-04-14 10:41:43.116195] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:41:43.122935] START GET /api/asset-types/4/
+[2026-04-14 10:41:43.133124] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:41:43.136815] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:41:43.137016] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:41:43.146266] START GET /api/asset-models/
+[2026-04-14 10:41:43.147156] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:41:43.152988] START GET /api/asset-brands/
+[2026-04-14 10:41:43.174899] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:41:43.209608] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:41:43.210997] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:41:43.216468] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:42:12.762547] START POST /api/asset-models/
+[2026-04-14 10:42:12.827598] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:42:12.836637] START GET /api/asset-types/4/
+[2026-04-14 10:42:12.838305] START GET /api/asset-models/
+[2026-04-14 10:42:12.889736] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:42:12.900959] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:43:02.582550] START GET /api/asset-types/4/
+[2026-04-14 10:43:02.583396] START GET /api/asset-models/
+[2026-04-14 10:43:02.584381] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:43:02.590114] START GET /api/asset-brands/
+[2026-04-14 10:43:02.647206] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:43:02.652956] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:43:02.657631] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:43:02.655799] START GET /api/asset-types/4/
+[2026-04-14 10:43:02.664826] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:43:02.665983] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:43:02.671622] START GET /api/asset-models/
+[2026-04-14 10:43:02.675296] START GET /api/asset-brands/
+[2026-04-14 10:43:02.711705] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:43:02.717775] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:43:02.729986] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:43:02.730093] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:43:20.777848] START POST /api/asset-models/
+[2026-04-14 10:43:20.844323] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:43:20.854351] START GET /api/asset-types/4/
+[2026-04-14 10:43:20.855314] START GET /api/asset-models/
+[2026-04-14 10:43:20.911328] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:43:20.915947] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:43:40.567251] START POST /api/asset-models/
+[2026-04-14 10:43:40.638362] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:43:40.647185] START GET /api/asset-types/4/
+[2026-04-14 10:43:40.648570] START GET /api/asset-models/
+[2026-04-14 10:43:40.706118] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:43:40.805175] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:43:57.471282] START POST /api/asset-models/
+[2026-04-14 10:43:57.542584] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:43:57.552374] START GET /api/asset-types/4/
+[2026-04-14 10:43:57.555580] START GET /api/asset-models/
+[2026-04-14 10:43:57.605391] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:43:57.610552] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:44:07.623390] START POST /api/asset-models/
+[2026-04-14 10:44:07.701042] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:44:07.717617] START GET /api/asset-types/4/
+[2026-04-14 10:44:07.719306] START GET /api/asset-models/
+[2026-04-14 10:44:07.776122] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:44:07.883031] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:44:15.464167] START POST /api/asset-models/
+[2026-04-14 10:44:15.530178] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:44:15.538910] START GET /api/asset-types/4/
+[2026-04-14 10:44:15.541602] START GET /api/asset-models/
+[2026-04-14 10:44:15.593801] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:44:15.598905] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:44:28.808130] START POST /api/asset-models/
+[2026-04-14 10:44:28.987997] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:44:29.001132] START GET /api/asset-types/4/
+[2026-04-14 10:44:29.003023] START GET /api/asset-models/
+[2026-04-14 10:44:29.062330] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:44:29.163705] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:44:40.469261] START POST /api/asset-models/
+[2026-04-14 10:44:40.537970] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:44:40.550211] START GET /api/asset-types/4/
+[2026-04-14 10:44:40.554158] START GET /api/asset-models/
+[2026-04-14 10:44:40.595173] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:44:40.616329] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:44:50.182252] START GET /api/asset-types/4/
+[2026-04-14 10:44:50.182780] START GET /api/asset-models/
+[2026-04-14 10:44:50.187302] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:44:50.190847] START GET /api/asset-brands/
+[2026-04-14 10:44:50.244327] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:44:50.254363] START GET /api/asset-types/4/
+[2026-04-14 10:44:50.264372] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:44:50.264576] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:44:50.264629] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:44:50.275924] START GET /api/asset-models/
+[2026-04-14 10:44:50.276632] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:44:50.279526] START GET /api/asset-brands/
+[2026-04-14 10:44:50.311726] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:44:50.329267] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:44:50.336538] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:44:50.340387] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:45:03.317371] START POST /api/asset-models/
+[2026-04-14 10:45:03.383225] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:45:03.391663] START GET /api/asset-types/4/
+[2026-04-14 10:45:03.392413] START GET /api/asset-models/
+[2026-04-14 10:45:03.450933] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:45:03.451118] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:45:14.142231] START POST /api/asset-models/
+[2026-04-14 10:45:14.211885] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:45:14.221259] START GET /api/asset-types/4/
+[2026-04-14 10:45:14.224838] START GET /api/asset-models/
+[2026-04-14 10:45:14.277479] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:45:14.282779] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:45:32.574581] START POST /api/asset-models/
+[2026-04-14 10:45:32.645639] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:45:32.656728] START GET /api/asset-types/4/
+[2026-04-14 10:45:32.658391] START GET /api/asset-models/
+[2026-04-14 10:45:32.713307] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:45:32.721629] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:45:45.064120] START POST /api/asset-models/
+[2026-04-14 10:45:45.137726] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:45:45.147854] START GET /api/asset-types/4/
+[2026-04-14 10:45:45.149018] START GET /api/asset-models/
+[2026-04-14 10:45:45.204934] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:45:45.209205] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:46:08.964891] START POST /api/asset-models/
+[2026-04-14 10:46:09.036178] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:46:09.046240] START GET /api/asset-types/4/
+[2026-04-14 10:46:09.047700] START GET /api/asset-models/
+[2026-04-14 10:46:09.104423] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:46:09.111418] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:46:21.502487] START POST /api/asset-models/
+[2026-04-14 10:46:21.571912] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:46:21.582500] START GET /api/asset-types/4/
+[2026-04-14 10:46:21.586214] START GET /api/asset-models/
+[2026-04-14 10:46:21.634142] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:46:21.639673] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:46:37.615140] START POST /api/asset-models/
+[2026-04-14 10:46:37.684171] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:46:37.695712] START GET /api/asset-models/
+[2026-04-14 10:46:37.697299] START GET /api/asset-types/4/
+[2026-04-14 10:46:37.754704] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:46:37.757212] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:47:08.550649] START GET /api/asset-types/4/
+[2026-04-14 10:47:08.553616] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:47:08.553060] START GET /api/asset-models/
+[2026-04-14 10:47:08.556627] START GET /api/asset-brands/
+[2026-04-14 10:47:08.628970] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:47:08.638402] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:47:08.639072] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:47:08.639760] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:47:08.649771] START GET /api/asset-brands/
+[2026-04-14 10:47:08.651460] START GET /api/asset-models/
+[2026-04-14 10:47:08.702967] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:47:08.704196] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:47:08.711262] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:47:08.716388] START GET /api/asset-types/4/
+[2026-04-14 10:47:08.758932] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:47:08.787260] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:47:22.037311] START POST /api/asset-models/
+[2026-04-14 10:47:22.087544] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:47:22.098760] START GET /api/asset-types/4/
+[2026-04-14 10:47:22.099761] START GET /api/asset-models/
+[2026-04-14 10:47:22.152819] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:47:22.159812] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:47:57.130685] START GET /api/asset-types/4/
+[2026-04-14 10:47:57.132447] START GET /api/asset-models/
+[2026-04-14 10:47:57.135161] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:47:57.138832] START GET /api/asset-brands/
+[2026-04-14 10:47:57.207930] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:47:57.214547] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:47:57.215286] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:47:57.216870] START GET /api/asset-types/4/
+[2026-04-14 10:47:57.221777] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:47:57.226975] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:47:57.227573] START GET /api/asset-models/
+[2026-04-14 10:47:57.233705] START GET /api/asset-brands/
+[2026-04-14 10:47:57.269664] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:47:57.270829] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:47:57.287774] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:47:57.288211] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:48:08.702971] START POST /api/asset-models/
+[2026-04-14 10:48:08.771938] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:48:08.781300] START GET /api/asset-models/
+[2026-04-14 10:48:08.782149] START GET /api/asset-types/4/
+[2026-04-14 10:48:08.837015] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:48:08.946386] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 10:48:15.656983] START GET /api/asset-types/
+[2026-04-14 10:48:15.658062] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:48:15.716201] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:48:15.718356] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:48:15.724763] START GET /api/asset-types/
+[2026-04-14 10:48:15.727187] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:48:15.774241] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:48:15.778141] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:48:17.712257] START GET /api/asset-types/2/
+[2026-04-14 10:48:17.713263] START GET /api/asset-models/
+[2026-04-14 10:48:17.714116] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:48:17.725892] START GET /api/asset-brands/
+[2026-04-14 10:48:17.772974] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:48:17.780033] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:48:17.784082] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:48:17.783725] START GET /api/asset-models/
+[2026-04-14 10:48:17.790405] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:48:17.792922] START GET /api/asset-brands/
+[2026-04-14 10:48:17.843570] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:48:17.847277] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:48:17.851585] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:48:17.863053] END   GET /api/asset-types/2/ -> 200
+[2026-04-14 10:48:17.870902] START GET /api/asset-types/2/
+[2026-04-14 10:48:17.916638] END   GET /api/asset-types/2/ -> 200
+[2026-04-14 10:48:27.331431] START POST /api/asset-models/
+[2026-04-14 10:48:27.411034] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:48:27.422116] START GET /api/asset-types/2/
+[2026-04-14 10:48:27.424404] START GET /api/asset-models/
+[2026-04-14 10:48:27.472013] END   GET /api/asset-types/2/ -> 200
+[2026-04-14 10:48:27.479566] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:48:45.764936] START POST /api/asset-models/
+[2026-04-14 10:48:45.843474] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:48:45.855108] START GET /api/asset-types/2/
+[2026-04-14 10:48:45.856090] START GET /api/asset-models/
+[2026-04-14 10:48:45.908086] END   GET /api/asset-types/2/ -> 200
+[2026-04-14 10:48:45.913574] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:49:34.939869] START GET /api/asset-types/
+[2026-04-14 10:49:34.942360] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:49:35.001724] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:49:35.002555] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:49:35.010314] START GET /api/asset-types/
+[2026-04-14 10:49:35.012109] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:49:35.058543] END   GET /api/asset-types/ -> 200
+[2026-04-14 10:49:35.062925] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:50:51.944966] START GET /api/asset-types/8/
+[2026-04-14 10:50:51.946392] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:50:51.945771] START GET /api/asset-models/
+[2026-04-14 10:50:51.950616] START GET /api/asset-brands/
+[2026-04-14 10:50:52.022379] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 10:50:52.023999] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:50:52.026185] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:50:52.026926] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:50:52.035887] START GET /api/asset-types/8/
+[2026-04-14 10:50:52.035585] START GET /api/asset-models/
+[2026-04-14 10:50:52.036613] START GET /api/asset-brands/
+[2026-04-14 10:50:52.037779] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:50:52.090402] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 10:50:52.095176] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:50:52.097023] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:50:52.184297] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:51:39.292729] START GET /api/asset-types/8/
+[2026-04-14 10:51:39.293385] START GET /api/asset-models/
+[2026-04-14 10:51:39.298061] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:51:39.302582] START GET /api/asset-brands/
+[2026-04-14 10:51:39.373832] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:51:39.374098] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:51:39.374223] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:51:39.384687] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:51:39.385307] START GET /api/asset-models/
+[2026-04-14 10:51:39.388304] START GET /api/asset-brands/
+[2026-04-14 10:51:39.447169] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:51:39.447274] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:51:39.447503] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:51:39.458000] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 10:51:39.462196] START GET /api/asset-types/8/
+[2026-04-14 10:51:39.615069] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 10:51:55.082510] START POST /api/asset-models/
+[2026-04-14 10:51:55.142583] END   POST /api/asset-models/ -> 201
+[2026-04-14 10:51:55.151438] START GET /api/asset-types/8/
+[2026-04-14 10:51:55.152342] START GET /api/asset-models/
+[2026-04-14 10:51:55.202631] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 10:51:55.207034] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:52:46.001148] START GET /api/asset-types/8/
+[2026-04-14 10:52:46.001660] START GET /api/asset-models/
+[2026-04-14 10:52:46.003994] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:52:46.006457] START GET /api/asset-brands/
+[2026-04-14 10:52:46.073915] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 10:52:46.080872] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:52:46.081265] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:52:46.082436] START GET /api/asset-types/8/
+[2026-04-14 10:52:46.089154] START GET /api/asset-attribute-definitions/
+[2026-04-14 10:52:46.092102] START GET /api/asset-models/
+[2026-04-14 10:52:46.126965] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 10:52:46.137124] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 10:52:46.142128] END   GET /api/asset-models/ -> 200
+[2026-04-14 10:52:46.173003] END   GET /api/asset-brands/ -> 200
+[2026-04-14 10:52:46.178958] START GET /api/asset-brands/
+[2026-04-14 10:52:46.235100] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:02:22.892550] START GET /api/asset-types/
+[2026-04-14 11:02:22.894104] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:02:22.953156] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:02:22.953237] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:02:22.962466] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:02:22.963497] START GET /api/asset-types/
+[2026-04-14 11:02:23.023126] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:02:23.023681] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:02:25.807879] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:02:25.805819] START GET /api/asset-models/
+[2026-04-14 11:02:25.806657] START GET /api/asset-types/8/
+[2026-04-14 11:02:25.813118] START GET /api/asset-brands/
+[2026-04-14 11:02:25.869384] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:02:25.877194] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:02:25.881982] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:02:25.890987] START GET /api/asset-brands/
+[2026-04-14 11:02:25.932948] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:02:25.977876] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:02:25.981517] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:02:25.985271] START GET /api/asset-types/8/
+[2026-04-14 11:02:25.988836] START GET /api/asset-models/
+[2026-04-14 11:02:26.034035] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:02:26.038922] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:02:26.062625] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:02:39.774671] START GET /api/asset-models/
+[2026-04-14 11:02:39.773939] START GET /api/asset-types/8/
+[2026-04-14 11:02:39.778179] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:02:39.783387] START GET /api/asset-brands/
+[2026-04-14 11:02:39.843704] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:02:39.851064] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:02:39.854426] START GET /api/asset-models/
+[2026-04-14 11:02:39.857201] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:02:39.878151] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:02:39.879699] START GET /api/asset-types/8/
+[2026-04-14 11:02:39.884923] START GET /api/asset-brands/
+[2026-04-14 11:02:39.887937] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:02:39.928429] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:02:39.932401] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:02:39.937451] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:02:39.938446] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:02:47.047045] START GET /api/asset-types/8/
+[2026-04-14 11:02:47.048713] START GET /api/asset-models/
+[2026-04-14 11:02:47.050765] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:02:47.051751] START GET /api/asset-brands/
+[2026-04-14 11:02:47.107866] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:02:47.115041] START GET /api/asset-types/8/
+[2026-04-14 11:02:47.117622] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:02:47.145065] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:02:47.150124] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:02:47.152397] START GET /api/asset-models/
+[2026-04-14 11:02:47.156201] START GET /api/asset-brands/
+[2026-04-14 11:02:47.157335] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:02:47.197167] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:02:47.211246] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:02:47.217135] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:02:47.323263] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:03:01.988200] START POST /api/asset-models/
+[2026-04-14 11:03:02.059780] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:03:02.069703] START GET /api/asset-types/8/
+[2026-04-14 11:03:02.070735] START GET /api/asset-models/
+[2026-04-14 11:03:02.126354] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:03:02.228416] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:03:20.293541] START POST /api/asset-models/
+[2026-04-14 11:03:20.366546] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:03:20.375383] START GET /api/asset-types/8/
+[2026-04-14 11:03:20.376581] START GET /api/asset-models/
+[2026-04-14 11:03:20.425400] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:03:20.533777] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:03:40.407681] START POST /api/asset-models/
+[2026-04-14 11:03:40.482322] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:03:40.492554] START GET /api/asset-types/8/
+[2026-04-14 11:03:40.493204] START GET /api/asset-models/
+[2026-04-14 11:03:40.587114] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:03:40.650456] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:04:09.725616] START POST /api/asset-models/
+[2026-04-14 11:04:09.912566] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:04:09.921766] START GET /api/asset-types/8/
+[2026-04-14 11:04:09.922902] START GET /api/asset-models/
+[2026-04-14 11:04:09.977861] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:04:10.083571] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:04:24.596496] START POST /api/asset-models/
+[2026-04-14 11:04:24.667182] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:04:24.676374] START GET /api/asset-types/8/
+[2026-04-14 11:04:24.679469] START GET /api/asset-models/
+[2026-04-14 11:04:24.728764] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:04:24.806729] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:04:46.397271] START POST /api/asset-models/
+[2026-04-14 11:04:46.471605] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:04:46.482355] START GET /api/asset-types/8/
+[2026-04-14 11:04:46.485860] START GET /api/asset-models/
+[2026-04-14 11:04:46.532042] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:04:46.648431] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:05:57.716653] START GET /api/asset-types/8/
+[2026-04-14 11:05:57.724432] START GET /api/asset-models/
+[2026-04-14 11:05:57.726457] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:05:57.730596] START GET /api/asset-brands/
+[2026-04-14 11:05:57.779634] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:05:57.785861] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:05:57.786611] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:05:57.787782] START GET /api/asset-types/8/
+[2026-04-14 11:05:57.795281] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:05:57.796655] START GET /api/asset-models/
+[2026-04-14 11:05:57.799991] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:05:57.803238] START GET /api/asset-brands/
+[2026-04-14 11:05:57.847683] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:05:57.858732] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:05:57.858872] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:05:57.859381] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:06:34.084597] START GET /api/asset-types/8/
+[2026-04-14 11:06:34.085545] START GET /api/asset-models/
+[2026-04-14 11:06:34.089450] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:06:34.348574] START GET /api/asset-brands/
+[2026-04-14 11:06:34.363937] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:06:34.367741] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:06:34.369901] START GET /api/asset-types/8/
+[2026-04-14 11:06:34.373544] START GET /api/asset-models/
+[2026-04-14 11:06:34.409138] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:06:34.409219] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:06:34.416242] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:06:34.419302] START GET /api/asset-brands/
+[2026-04-14 11:06:34.425822] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:06:34.436161] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:06:34.469114] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:06:34.475520] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:06:47.726551] START POST /api/asset-models/
+[2026-04-14 11:06:47.915568] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:06:47.926223] START GET /api/asset-types/8/
+[2026-04-14 11:06:47.929854] START GET /api/asset-models/
+[2026-04-14 11:06:47.983633] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:06:48.083868] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:08:08.937435] START GET /api/asset-models/
+[2026-04-14 11:08:08.939881] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:08:08.938357] START GET /api/asset-types/8/
+[2026-04-14 11:08:08.949559] START GET /api/asset-brands/
+[2026-04-14 11:08:09.016949] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:08:09.020331] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:08:09.020475] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:08:09.023360] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:08:09.032526] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:08:09.033137] START GET /api/asset-models/
+[2026-04-14 11:08:09.035675] START GET /api/asset-types/8/
+[2026-04-14 11:08:09.038322] START GET /api/asset-brands/
+[2026-04-14 11:08:09.094120] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:08:09.095353] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:08:09.104170] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:08:09.106797] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:08:17.677297] START POST /api/asset-models/
+[2026-04-14 11:08:17.748932] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:08:17.759763] START GET /api/asset-types/8/
+[2026-04-14 11:08:17.761003] START GET /api/asset-models/
+[2026-04-14 11:08:17.821714] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:08:17.821790] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:09:00.569242] START POST /api/asset-models/
+[2026-04-14 11:09:00.634474] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:09:00.643813] START GET /api/asset-types/8/
+[2026-04-14 11:09:00.645095] START GET /api/asset-models/
+[2026-04-14 11:09:00.699866] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:09:00.706423] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:11:36.903705] START GET /api/asset-types/8/
+[2026-04-14 11:11:36.906949] START GET /api/asset-models/
+[2026-04-14 11:11:36.911834] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:11:36.914206] START GET /api/asset-brands/
+[2026-04-14 11:11:36.972835] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:11:36.982504] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:11:36.984087] START GET /api/asset-types/8/
+[2026-04-14 11:11:36.988721] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:11:36.990138] START GET /api/asset-models/
+[2026-04-14 11:11:36.994128] START GET /api/asset-brands/
+[2026-04-14 11:11:37.036715] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:11:37.046082] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:11:37.046272] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:11:37.061769] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:11:37.068652] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:11:37.113395] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:11:44.068337] START POST /api/asset-models/
+[2026-04-14 11:11:44.142766] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:11:44.151962] START GET /api/asset-types/8/
+[2026-04-14 11:11:44.156071] START GET /api/asset-models/
+[2026-04-14 11:11:44.204833] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:11:44.214249] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:11:46.267983] START GET /api/asset-types/
+[2026-04-14 11:11:46.269157] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:11:46.324725] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:11:46.324898] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:11:46.334106] START GET /api/asset-types/
+[2026-04-14 11:11:46.336659] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:11:46.488344] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:11:46.496277] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:12:19.337114] START GET /api/asset-type-attributes/
+[2026-04-14 11:12:19.394496] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:12:20.200770] START GET /api/asset-types/8/
+[2026-04-14 11:12:20.202704] START GET /api/asset-models/
+[2026-04-14 11:12:20.208845] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:12:20.210818] START GET /api/asset-brands/
+[2026-04-14 11:12:20.279772] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:12:20.279975] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:12:20.280190] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:12:20.287370] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:12:20.296006] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:12:20.297081] START GET /api/asset-types/8/
+[2026-04-14 11:12:20.303426] START GET /api/asset-models/
+[2026-04-14 11:12:20.304503] START GET /api/asset-brands/
+[2026-04-14 11:12:20.350631] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:12:20.354653] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:12:20.367442] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:12:20.367567] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:13:15.746799] START POST /api/asset-models/
+[2026-04-14 11:13:15.925200] END   POST /api/asset-models/ -> 201
+[2026-04-14 11:13:15.934693] START GET /api/asset-models/
+[2026-04-14 11:13:15.937992] START GET /api/asset-types/8/
+[2026-04-14 11:13:15.985295] END   GET /api/asset-types/8/ -> 200
+[2026-04-14 11:13:16.088651] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:13:17.683600] START GET /api/asset-types/
+[2026-04-14 11:13:17.687451] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:13:17.751968] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:13:17.755320] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:13:17.765933] START GET /api/asset-types/
+[2026-04-14 11:13:17.767366] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:13:17.817422] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:13:17.818060] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:25:20.866475] START GET /api/asset-type-attributes/
+[2026-04-14 11:25:21.005257] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:25:23.756596] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:25:23.809138] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:25:23.815712] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:25:23.867261] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:25:32.602477] START POST /api/asset-attribute-definitions/
+[2026-04-14 11:25:32.665439] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 11:25:32.675409] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:25:32.727175] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:25:34.747753] START GET /api/asset-types/
+[2026-04-14 11:25:34.751438] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:25:34.803418] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:25:34.805799] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:25:34.808720] START GET /api/asset-types/
+[2026-04-14 11:25:34.812126] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:25:34.861944] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:25:34.967732] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:25:35.973926] START GET /api/asset-type-attributes/
+[2026-04-14 11:25:36.036067] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:25:41.165975] START POST /api/asset-type-attributes/
+[2026-04-14 11:25:41.251745] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 11:25:41.261860] START GET /api/asset-type-attributes/
+[2026-04-14 11:25:41.321636] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:25:59.335287] START GET /api/asset-types/
+[2026-04-14 11:25:59.338226] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:25:59.389195] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:25:59.399396] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:25:59.400336] START GET /api/asset-types/
+[2026-04-14 11:25:59.405950] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:25:59.456567] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:25:59.464040] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:09.601311] START GET /api/asset-types/1/
+[2026-04-14 11:27:09.602277] START GET /api/asset-models/
+[2026-04-14 11:27:09.607492] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:27:09.613315] START GET /api/asset-brands/
+[2026-04-14 11:27:09.662092] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 11:27:09.680173] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:09.683754] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:27:09.683409] START GET /api/asset-types/1/
+[2026-04-14 11:27:09.688430] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:27:09.693883] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:27:09.699453] START GET /api/asset-models/
+[2026-04-14 11:27:09.704357] START GET /api/asset-brands/
+[2026-04-14 11:27:09.750264] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 11:27:09.751551] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:09.765372] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:27:09.766896] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:27:11.691813] START GET /api/asset-types/
+[2026-04-14 11:27:11.696255] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:27:11.746443] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:27:11.748530] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:11.755763] START GET /api/asset-types/
+[2026-04-14 11:27:11.756746] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:27:11.804341] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:27:11.808301] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:21.009514] START GET /api/asset-models/
+[2026-04-14 11:27:21.009046] START GET /api/asset-types/1/
+[2026-04-14 11:27:21.013728] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:27:21.017005] START GET /api/asset-brands/
+[2026-04-14 11:27:21.073208] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:27:21.073396] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 11:27:21.083513] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:21.084720] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:27:21.084689] START GET /api/asset-models/
+[2026-04-14 11:27:21.090656] START GET /api/asset-types/1/
+[2026-04-14 11:27:21.092362] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:27:21.097489] START GET /api/asset-brands/
+[2026-04-14 11:27:21.134008] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:27:21.142618] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:21.146131] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:27:21.246495] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 11:27:22.155966] START GET /api/asset-types/
+[2026-04-14 11:27:22.158122] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:27:22.210967] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:27:22.213350] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:22.217382] START GET /api/asset-types/
+[2026-04-14 11:27:22.220778] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:27:22.270267] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:27:22.272645] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:27:22.691821] START GET /api/asset-type-attributes/
+[2026-04-14 11:27:22.742381] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:27:50.996474] START GET /api/stock-item-types/
+[2026-04-14 11:27:50.997614] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 11:27:51.058776] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 11:27:51.063193] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 11:27:51.065931] START GET /api/stock-item-types/
+[2026-04-14 11:27:51.069121] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 11:27:51.123827] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 11:27:51.124216] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 11:28:11.039674] START GET /api/asset-types/
+[2026-04-14 11:28:11.042065] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:11.097910] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:11.098086] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:11.106726] START GET /api/asset-types/
+[2026-04-14 11:28:11.108456] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:11.164834] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:11.268289] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:29.867143] START GET /api/stock-item-types/
+[2026-04-14 11:28:29.871062] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 11:28:29.925070] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 11:28:29.925461] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 11:28:29.936867] START GET /api/stock-item-types/
+[2026-04-14 11:28:29.939632] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 11:28:29.994051] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 11:28:30.096066] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 11:28:51.548491] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:51.549543] START GET /api/asset-types/
+[2026-04-14 11:28:51.607816] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:51.613439] START GET /api/asset-types/
+[2026-04-14 11:28:51.663238] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:51.669997] START GET /api/asset-types/
+[2026-04-14 11:28:51.717647] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:51.720073] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:51.727197] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:51.729176] START GET /api/asset-types/
+[2026-04-14 11:28:51.778690] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:51.784047] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:51.785458] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:51.836127] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:51.842224] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:51.892801] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:55.053000] START GET /api/stock-item-types/
+[2026-04-14 11:28:55.053951] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 11:28:55.113232] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 11:28:55.121405] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 11:28:55.122049] START GET /api/stock-item-types/
+[2026-04-14 11:28:55.128884] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 11:28:55.174907] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 11:28:55.289099] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 11:28:55.604535] START GET /api/asset-types/
+[2026-04-14 11:28:55.609195] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:55.661854] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:55.666530] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:55.667128] START GET /api/asset-types/
+[2026-04-14 11:28:55.671154] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:55.720049] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:55.725905] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:57.540630] START GET /api/asset-types/1/
+[2026-04-14 11:28:57.544541] START GET /api/asset-models/
+[2026-04-14 11:28:57.546314] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:57.549012] START GET /api/asset-brands/
+[2026-04-14 11:28:57.601912] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 11:28:57.611791] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:57.612000] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:28:57.618908] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:28:57.621244] START GET /api/asset-types/1/
+[2026-04-14 11:28:57.626524] START GET /api/asset-models/
+[2026-04-14 11:28:57.630770] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:57.635287] START GET /api/asset-brands/
+[2026-04-14 11:28:57.676514] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 11:28:57.680761] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:57.684733] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:28:57.686829] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:28:58.803195] START GET /api/asset-types/
+[2026-04-14 11:28:58.804631] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:58.857711] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:58.858224] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:58.864330] START GET /api/asset-types/
+[2026-04-14 11:28:58.865591] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:28:58.921988] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:28:59.013072] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:28:59.714174] START GET /api/asset-type-attributes/
+[2026-04-14 11:28:59.772391] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:33:53.488327] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:33:53.647076] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:33:53.652389] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:33:53.697971] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:34:08.785349] START POST /api/asset-attribute-definitions/
+[2026-04-14 11:34:08.845302] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 11:34:08.856223] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:34:08.908769] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:34:10.772357] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:34:10.778124] START GET /api/asset-types/
+[2026-04-14 11:34:10.831673] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:34:10.838568] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:34:10.887054] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:34:10.937240] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:34:10.947200] START GET /api/asset-types/
+[2026-04-14 11:34:10.994266] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:34:12.357914] START GET /api/asset-types/1/
+[2026-04-14 11:34:12.361626] START GET /api/asset-models/
+[2026-04-14 11:34:12.363446] START GET /api/asset-brands/
+[2026-04-14 11:34:12.367704] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:34:12.410667] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 11:34:12.418074] START GET /api/asset-types/1/
+[2026-04-14 11:34:12.426639] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:34:12.427947] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:34:12.432926] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:34:12.435239] START GET /api/asset-models/
+[2026-04-14 11:34:12.438266] START GET /api/asset-brands/
+[2026-04-14 11:34:12.441862] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:34:12.463180] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 11:34:12.486844] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:34:12.490372] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:34:12.495749] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:34:16.478171] START GET /api/asset-types/
+[2026-04-14 11:34:16.478579] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:34:16.537904] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:34:16.544319] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:34:16.591177] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:34:16.627368] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:34:16.632514] START GET /api/asset-types/
+[2026-04-14 11:34:16.686526] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:34:17.758962] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:17.808663] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:21.761439] START POST /api/asset-type-attributes/
+[2026-04-14 11:34:21.925335] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 11:34:21.933869] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:21.988234] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:23.510351] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:23.568679] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:26.962632] START POST /api/asset-type-attributes/
+[2026-04-14 11:34:27.057231] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 11:34:27.068406] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:27.120459] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:30.631964] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:30.679934] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:34.792663] START POST /api/asset-type-attributes/
+[2026-04-14 11:34:34.860707] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 11:34:34.869703] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:34.925310] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:39.887063] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:39.944720] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:40.897365] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:40.950887] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:46.019547] START POST /api/asset-type-attributes/
+[2026-04-14 11:34:46.214585] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 11:34:46.225622] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:46.281131] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:34:56.754960] START GET /api/asset-type-attributes/
+[2026-04-14 11:34:56.810978] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:35:03.114914] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:35:03.169258] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:35:03.176159] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:35:03.222064] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:35:14.242415] START POST /api/asset-attribute-definitions/
+[2026-04-14 11:35:14.303069] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 11:35:14.310954] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:35:14.360498] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:35:15.884241] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:35:15.883795] START GET /api/asset-types/
+[2026-04-14 11:35:15.950141] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:35:15.958363] START GET /api/asset-types/
+[2026-04-14 11:35:16.038840] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:35:16.047430] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:35:16.102413] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:35:16.108625] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:35:17.992983] START GET /api/asset-type-attributes/
+[2026-04-14 11:35:18.055047] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:35:23.983092] START POST /api/asset-type-attributes/
+[2026-04-14 11:35:24.050367] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 11:35:24.059835] START GET /api/asset-type-attributes/
+[2026-04-14 11:35:24.116092] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:35:40.977672] START GET /api/asset-type-attributes/
+[2026-04-14 11:35:41.151462] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:37:11.976471] START GET /api/asset-type-attributes/
+[2026-04-14 11:37:12.036812] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:37:12.400800] START GET /api/asset-type-attributes/
+[2026-04-14 11:37:12.461861] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:37:13.392034] START GET /api/asset-type-attributes/
+[2026-04-14 11:37:13.453098] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:37:17.233181] START GET /api/asset-type-attributes/
+[2026-04-14 11:37:17.288587] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:37:21.640638] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:21.703724] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:21.711910] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:21.763460] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:33.601578] START POST /api/asset-attribute-definitions/
+[2026-04-14 11:37:33.660640] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 11:37:33.669225] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:33.708212] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:37.363048] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:37.365582] START GET /api/asset-types/
+[2026-04-14 11:37:37.423352] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:37.423533] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:37:37.432127] START GET /api/asset-types/
+[2026-04-14 11:37:37.435247] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:37.481817] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:37:37.485425] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:42.847369] START GET /api/asset-models/
+[2026-04-14 11:37:42.846210] START GET /api/asset-types/4/
+[2026-04-14 11:37:42.847909] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:42.849863] START GET /api/asset-brands/
+[2026-04-14 11:37:42.901582] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 11:37:42.916238] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:37:42.923121] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:42.923894] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:37:42.923607] START GET /api/asset-types/4/
+[2026-04-14 11:37:42.925598] START GET /api/asset-models/
+[2026-04-14 11:37:42.931358] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:42.934396] START GET /api/asset-brands/
+[2026-04-14 11:37:42.976040] END   GET /api/asset-types/4/ -> 200
+[2026-04-14 11:37:42.989564] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:42.989737] END   GET /api/asset-models/ -> 200
+[2026-04-14 11:37:42.992363] END   GET /api/asset-brands/ -> 200
+[2026-04-14 11:37:45.344916] START GET /api/asset-types/
+[2026-04-14 11:37:45.348209] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:45.399234] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:37:45.399878] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:45.407800] START GET /api/asset-types/
+[2026-04-14 11:37:45.409983] START GET /api/asset-attribute-definitions/
+[2026-04-14 11:37:45.461522] END   GET /api/asset-types/ -> 200
+[2026-04-14 11:37:45.465384] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 11:37:47.316652] START GET /api/asset-type-attributes/
+[2026-04-14 11:37:47.372986] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 11:37:54.225874] START POST /api/asset-type-attributes/
+[2026-04-14 11:37:54.408662] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 11:37:54.420145] START GET /api/asset-type-attributes/
+[2026-04-14 11:37:54.473485] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 12:02:35.976717] START GET /api/asset-models/
+[2026-04-14 12:02:35.975555] START GET /api/asset-types/1/
+[2026-04-14 12:02:35.978703] START GET /api/asset-attribute-definitions/
+[2026-04-14 12:02:35.985973] START GET /api/asset-brands/
+[2026-04-14 12:02:36.046149] END   GET /api/asset-models/ -> 200
+[2026-04-14 12:02:36.057281] END   GET /api/asset-brands/ -> 200
+[2026-04-14 12:02:36.057507] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 12:02:36.058887] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 12:02:36.061246] START GET /api/asset-models/
+[2026-04-14 12:02:36.070838] START GET /api/asset-attribute-definitions/
+[2026-04-14 12:02:36.071534] START GET /api/asset-brands/
+[2026-04-14 12:02:36.073949] START GET /api/asset-types/1/
+[2026-04-14 12:02:36.127311] END   GET /api/asset-models/ -> 200
+[2026-04-14 12:02:36.129924] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 12:02:36.138512] END   GET /api/asset-brands/ -> 200
+[2026-04-14 12:02:36.139185] END   GET /api/asset-types/1/ -> 200
+[2026-04-14 12:02:37.651628] START GET /api/asset-types/
+[2026-04-14 12:02:37.653206] START GET /api/asset-attribute-definitions/
+[2026-04-14 12:02:37.703882] END   GET /api/asset-types/ -> 200
+[2026-04-14 12:02:37.709442] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 12:02:37.710501] START GET /api/asset-types/
+[2026-04-14 12:02:37.717394] START GET /api/asset-attribute-definitions/
+[2026-04-14 12:02:37.760379] END   GET /api/asset-types/ -> 200
+[2026-04-14 12:02:37.766379] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:12:16.325929] START GET /api/asset-types/
+[2026-04-14 13:12:16.328592] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:12:16.376483] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:12:16.376619] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:12:16.383052] START GET /api/asset-types/
+[2026-04-14 13:12:16.385130] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:12:16.431410] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:12:16.431506] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:13:13.257758] START GET /api/asset-type-attributes/
+[2026-04-14 13:13:13.319699] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:13:31.117419] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:13:31.169465] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:13:31.175235] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:13:31.223251] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:13:46.285232] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:13:46.355209] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:13:46.362432] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:13:46.413296] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:13:47.837509] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:13:47.838517] START GET /api/asset-types/
+[2026-04-14 13:13:47.901936] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:13:47.909105] START GET /api/asset-types/
+[2026-04-14 13:13:48.003185] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:13:48.009975] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:13:48.062294] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:13:48.066639] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:13:49.096838] START GET /api/asset-type-attributes/
+[2026-04-14 13:13:49.159285] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:13:54.796749] START POST /api/asset-type-attributes/
+[2026-04-14 13:13:54.915855] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:13:54.925814] START GET /api/asset-type-attributes/
+[2026-04-14 13:13:54.982609] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:13:55.513781] START GET /api/asset-type-attributes/
+[2026-04-14 13:13:55.577526] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:13:58.307117] START POST /api/asset-type-attributes/
+[2026-04-14 13:13:58.388901] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:13:58.399017] START GET /api/asset-type-attributes/
+[2026-04-14 13:13:58.564749] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:00.170012] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:00.342295] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:12.686015] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:12.979793] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:12.989334] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:13.042474] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:19.010515] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:19.066199] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:23.226572] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:23.423820] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:23.433657] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:23.485990] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:27.437254] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:27.605723] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:27.615530] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:27.659449] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:30.209656] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:30.399558] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:30.409815] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:30.466605] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:32.651057] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:32.714263] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:36.273610] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:36.384015] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:36.393378] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:36.443347] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:36.896389] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:36.958961] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:36.965233] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:37.021778] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:37.442762] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:37.496695] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:41.050804] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:41.149801] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:41.160269] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:41.217322] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:41.841538] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:41.909177] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:45.838529] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:45.913257] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:45.922302] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:45.970896] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:46.779609] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:46.836317] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:52.059812] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:52.141876] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:52.151098] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:52.201987] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:52.568782] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:52.622335] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:55.562784] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:55.684417] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:55.692612] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:55.741678] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:56.125850] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:56.294562] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:14:59.391600] START POST /api/asset-type-attributes/
+[2026-04-14 13:14:59.459629] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:14:59.470215] START GET /api/asset-type-attributes/
+[2026-04-14 13:14:59.528181] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:15:05.272240] START POST /api/asset-type-attributes/
+[2026-04-14 13:15:05.343432] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:15:05.351330] START GET /api/asset-type-attributes/
+[2026-04-14 13:15:05.405643] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:15:06.714313] START GET /api/asset-type-attributes/
+[2026-04-14 13:15:06.774227] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:15:06.782860] START GET /api/asset-type-attributes/
+[2026-04-14 13:15:06.836660] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:15:15.719914] START GET /api/asset-type-attributes/
+[2026-04-14 13:15:15.775990] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:15:18.617121] START GET /api/asset-type-attributes/
+[2026-04-14 13:15:18.679360] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:15:21.162363] START GET /api/asset-type-attributes/
+[2026-04-14 13:15:21.218913] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:15:24.201735] START GET /api/asset-type-attributes/
+[2026-04-14 13:15:24.356220] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:16:26.787118] START GET /api/asset-type-attributes/
+[2026-04-14 13:16:26.845500] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:16:35.982852] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:16:36.146961] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:16:36.153175] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:16:36.203901] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:16:48.899657] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:16:48.960583] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:16:48.970798] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:16:49.019284] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:09.458611] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:17:09.524539] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:17:09.533075] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:09.580849] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:10.906495] START GET /api/asset-types/
+[2026-04-14 13:17:10.906987] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:10.967189] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:17:10.967382] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:10.978186] START GET /api/asset-types/
+[2026-04-14 13:17:10.982885] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:11.025187] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:17:11.025473] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:13.567019] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:13.628400] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:13.634838] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:13.683331] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:24.340719] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:17:24.402148] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:17:24.411164] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:24.459661] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:35.147067] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:17:35.204871] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:17:35.213560] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:35.263799] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:53.754655] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:17:53.817487] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:17:53.825616] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:53.983531] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:55.612826] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:55.613867] START GET /api/asset-types/
+[2026-04-14 13:17:55.667711] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:17:55.673736] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:55.675164] START GET /api/asset-types/
+[2026-04-14 13:17:55.679885] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:17:55.725476] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:17:55.734277] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:17:56.449320] START GET /api/asset-type-attributes/
+[2026-04-14 13:17:56.504893] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:08.642925] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:08.740149] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:08.748531] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:08.801623] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:10.014697] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:10.086753] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:14.213615] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:14.315665] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:14.324196] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:14.374118] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:15.244231] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:15.479562] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:18.012064] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:18.126753] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:18.141018] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:18.196607] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:18.751557] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:18.815628] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:22.254421] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:22.448154] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:22.456718] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:22.508882] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:25.422399] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:25.523644] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:25.533932] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:25.590578] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:26.623244] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:26.687918] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:32.732928] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:32.822417] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:32.831959] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:32.887759] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:39.412265] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:39.491105] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:39.500191] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:39.555752] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:42.813803] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:42.891904] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:42.902278] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:42.957851] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:46.238792] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:46.325885] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:46.339032] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:46.397713] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:53.662842] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:53.742763] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:53.755557] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:53.810295] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:54.272699] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:54.338565] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:18:58.442223] START POST /api/asset-type-attributes/
+[2026-04-14 13:18:58.561585] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:18:58.572290] START GET /api/asset-type-attributes/
+[2026-04-14 13:18:58.624637] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:19:05.267139] START POST /api/asset-type-attributes/
+[2026-04-14 13:19:05.383511] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:19:05.391648] START GET /api/asset-type-attributes/
+[2026-04-14 13:19:05.446770] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:19:08.967824] START POST /api/asset-type-attributes/
+[2026-04-14 13:19:09.090293] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:19:09.099725] START GET /api/asset-type-attributes/
+[2026-04-14 13:19:09.149459] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:19:13.132989] START POST /api/asset-type-attributes/
+[2026-04-14 13:19:13.248474] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:19:13.258920] START GET /api/asset-type-attributes/
+[2026-04-14 13:19:13.420396] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:19:15.956541] START POST /api/asset-type-attributes/
+[2026-04-14 13:19:16.188794] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:19:16.199110] START GET /api/asset-type-attributes/
+[2026-04-14 13:19:16.251982] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:19:49.595692] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:19:49.650030] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:19:49.656992] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:19:49.708295] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:01.924045] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:20:02.099386] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:20:02.109196] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:20:02.156307] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:03.423716] START GET /api/asset-types/
+[2026-04-14 13:20:03.426375] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:20:03.475087] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:20:03.479656] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:03.481637] START GET /api/asset-types/
+[2026-04-14 13:20:03.488523] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:20:03.535150] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:20:03.539780] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:06.294721] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:06.350056] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:20:07.209564] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:07.266420] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:20:11.649312] START POST /api/asset-type-attributes/
+[2026-04-14 13:20:11.842548] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:20:11.851977] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:12.020768] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:20:13.769977] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:13.828855] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:20:16.992559] START POST /api/asset-type-attributes/
+[2026-04-14 13:20:17.102349] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:20:17.114673] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:17.163543] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:20:22.964990] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:23.031117] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:20:26.192372] START POST /api/asset-type-attributes/
+[2026-04-14 13:20:26.271384] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:20:26.280809] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:26.336799] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:20:31.584944] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:31.647141] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:20:38.174270] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:20:38.227216] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:38.233300] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:20:38.286721] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:51.474038] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:20:51.535688] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:20:51.544573] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:20:51.594053] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:53.330890] START GET /api/asset-types/
+[2026-04-14 13:20:53.333486] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:20:53.390063] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:53.396114] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:20:53.446803] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:20:53.496935] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:20:53.504447] START GET /api/asset-types/
+[2026-04-14 13:20:53.558223] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:20:57.886524] START GET /api/asset-type-attributes/
+[2026-04-14 13:20:57.952500] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:21:00.305292] START GET /api/asset-type-attributes/
+[2026-04-14 13:21:00.370363] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:21:01.496594] START GET /api/asset-type-attributes/
+[2026-04-14 13:21:01.564559] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:21:31.792669] START GET /api/asset-type-attributes/
+[2026-04-14 13:21:31.847796] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:21:35.058037] START GET /api/asset-type-attributes/
+[2026-04-14 13:21:35.227271] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:21:35.682172] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:21:35.735814] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:21:35.742037] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:21:35.797943] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:21:51.185278] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:21:51.238671] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:21:51.248157] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:21:51.296323] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:21:53.186324] START GET /api/asset-types/
+[2026-04-14 13:21:53.187321] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:21:53.252925] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:21:53.258762] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:21:53.266897] START GET /api/asset-types/
+[2026-04-14 13:21:53.271042] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:21:53.312155] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:21:53.315699] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:21:56.687963] START GET /api/asset-type-attributes/
+[2026-04-14 13:21:56.855483] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:22:08.434308] START POST /api/asset-type-attributes/
+[2026-04-14 13:22:08.714877] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:22:08.724288] START GET /api/asset-type-attributes/
+[2026-04-14 13:22:08.885206] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:24:34.783467] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:24:34.856611] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:24:34.863252] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:24:34.913461] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:24:58.078440] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:24:58.132515] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:24:58.141954] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:24:58.199301] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:08.291353] START GET /api/asset-types/
+[2026-04-14 13:25:08.294339] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:08.343060] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:25:08.348745] START GET /api/asset-types/
+[2026-04-14 13:25:08.398151] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:25:08.457043] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:08.462228] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:08.616353] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:14.485484] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:14.545705] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:14.551346] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:14.599739] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:37.987910] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:25:38.050419] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:25:38.059927] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:38.110055] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:42.860403] START GET /api/asset-types/
+[2026-04-14 13:25:42.864490] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:42.928469] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:42.934083] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:42.986615] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:43.023426] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:25:43.028934] START GET /api/asset-types/
+[2026-04-14 13:25:43.079698] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:25:44.430008] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:44.492431] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:44.496864] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:44.539682] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:52.911766] START GET /api/asset-types/
+[2026-04-14 13:25:52.915914] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:52.964624] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:25:52.971407] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:52.973907] START GET /api/asset-types/
+[2026-04-14 13:25:52.978030] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:53.026175] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:25:53.026956] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:54.310302] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:54.360214] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:25:54.367020] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:25:54.418899] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:26:16.737088] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:26:16.820082] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:26:16.833335] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:26:16.879885] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:26:18.050675] START GET /api/asset-types/
+[2026-04-14 13:26:18.051994] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:26:18.117265] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:26:18.117630] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:26:18.124445] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:26:18.126807] START GET /api/asset-types/
+[2026-04-14 13:26:18.177330] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:26:18.177444] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:26:24.742185] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:26:24.796427] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:26:24.803617] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:26:24.854087] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:26:43.023898] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:26:43.081560] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:26:43.091240] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:26:43.143613] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:26:44.928013] START GET /api/asset-types/
+[2026-04-14 13:26:44.929339] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:26:44.994723] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:26:44.995102] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:26:45.005161] START GET /api/asset-types/
+[2026-04-14 13:26:45.007760] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:26:45.050510] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:26:45.061753] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:02.862179] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:02.918161] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:02.924746] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:02.979670] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:04.252080] START GET /api/asset-types/
+[2026-04-14 13:32:04.258148] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:04.312603] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:32:04.312865] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:04.320232] START GET /api/asset-types/
+[2026-04-14 13:32:04.322375] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:04.372247] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:04.372575] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:32:05.677642] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:05.730571] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:05.738056] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:05.790298] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:17.006848] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:32:17.068717] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:32:17.078865] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:17.133424] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:18.913914] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:18.913352] START GET /api/asset-types/
+[2026-04-14 13:32:18.967868] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:18.968547] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:32:18.979271] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:18.981171] START GET /api/asset-types/
+[2026-04-14 13:32:19.022877] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:19.131644] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:32:24.597506] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:24.662320] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:24.668308] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:24.718760] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:31.734515] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:32:31.791578] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:32:31.799379] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:31.850166] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:32.745301] START GET /api/asset-types/
+[2026-04-14 13:32:32.746397] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:32.815102] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:32:32.816492] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:32.825235] START GET /api/asset-types/
+[2026-04-14 13:32:32.827316] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:32.877510] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:32:32.992009] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:37.421461] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:37.483328] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:37.490056] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:37.537301] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:32:50.583909] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:32:50.644047] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:32:50.653913] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:32:50.703876] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:33:20.680046] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:33:20.736493] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:33:20.744985] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:33:20.794206] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:35:04.017805] START GET /api/asset-types/
+[2026-04-14 13:35:04.019149] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:35:04.082069] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:35:04.082982] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:35:04.091497] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:35:04.092459] START GET /api/asset-types/
+[2026-04-14 13:35:04.147024] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:35:04.147756] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:41:15.618374] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:41:15.778807] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:41:15.784306] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:41:15.824813] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:42:14.939917] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:42:15.008778] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:42:15.018686] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:42:15.071741] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:42:32.718822] START GET /api/asset-types/
+[2026-04-14 13:42:32.721646] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:42:32.779814] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:42:32.780171] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:42:32.789926] START GET /api/asset-types/
+[2026-04-14 13:42:32.790718] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:42:32.847451] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:42:32.942632] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:43:09.646854] START GET /api/asset-type-attributes/
+[2026-04-14 13:43:09.710971] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:44:18.800827] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:44:18.867866] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:44:18.875193] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:44:18.928829] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:44:36.071119] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:44:36.141675] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:44:36.150826] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:44:36.202905] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:44:57.902667] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:44:57.961668] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:44:57.970943] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:44:58.025687] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:45:13.520760] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:45:13.579542] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:45:13.588457] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:45:13.748266] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:46:06.768839] START POST /api/asset-attribute-definitions/
+[2026-04-14 13:46:06.825044] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 13:46:06.833623] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:46:06.988455] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:46:08.354344] START GET /api/asset-types/
+[2026-04-14 13:46:08.355727] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:46:08.399328] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:46:08.405746] START GET /api/asset-types/
+[2026-04-14 13:46:08.451076] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:46:08.516455] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:46:08.523406] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:46:08.569056] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:46:09.296215] START GET /api/asset-type-attributes/
+[2026-04-14 13:46:09.366229] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:46:40.396375] START GET /api/asset-types/
+[2026-04-14 13:46:40.397989] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:46:40.463781] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:46:40.463932] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:46:40.470250] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:46:40.474723] START GET /api/asset-types/
+[2026-04-14 13:46:40.529682] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:46:40.625858] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:46:41.360203] START GET /api/asset-type-attributes/
+[2026-04-14 13:46:41.418347] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:46:49.193897] START POST /api/asset-type-attributes/
+[2026-04-14 13:46:49.294452] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:46:49.304946] START GET /api/asset-type-attributes/
+[2026-04-14 13:46:49.461731] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:46:55.417482] START POST /api/asset-type-attributes/
+[2026-04-14 13:46:55.525280] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:46:55.536090] START GET /api/asset-type-attributes/
+[2026-04-14 13:46:55.591216] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:47:02.263605] START POST /api/asset-type-attributes/
+[2026-04-14 13:47:02.371401] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:47:02.380985] START GET /api/asset-type-attributes/
+[2026-04-14 13:47:02.439683] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:47:18.372429] START POST /api/asset-type-attributes/
+[2026-04-14 13:47:18.477757] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:47:18.488648] START GET /api/asset-type-attributes/
+[2026-04-14 13:47:18.545293] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:47:22.866423] START POST /api/asset-type-attributes/
+[2026-04-14 13:47:22.967369] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:47:22.976437] START GET /api/asset-type-attributes/
+[2026-04-14 13:47:23.134156] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:47:41.909620] START POST /api/asset-type-attributes/
+[2026-04-14 13:47:42.119935] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:47:42.128175] START GET /api/asset-type-attributes/
+[2026-04-14 13:47:42.297656] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:47:54.376009] START POST /api/asset-type-attributes/
+[2026-04-14 13:47:54.484327] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:47:54.494457] START GET /api/asset-type-attributes/
+[2026-04-14 13:47:54.550954] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:48:02.614421] START POST /api/asset-type-attributes/
+[2026-04-14 13:48:02.722301] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:48:02.730683] START GET /api/asset-type-attributes/
+[2026-04-14 13:48:02.787590] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:48:30.886099] START POST /api/asset-type-attributes/
+[2026-04-14 13:48:30.985299] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:48:30.993929] START GET /api/asset-type-attributes/
+[2026-04-14 13:48:31.047673] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:48:34.092582] START GET /api/asset-type-attributes/
+[2026-04-14 13:48:34.149606] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:48:39.114766] START POST /api/asset-type-attributes/
+[2026-04-14 13:48:39.201000] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:48:39.209337] START GET /api/asset-type-attributes/
+[2026-04-14 13:48:39.258746] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:48:43.641779] START POST /api/asset-type-attributes/
+[2026-04-14 13:48:43.713376] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:48:43.721535] START GET /api/asset-type-attributes/
+[2026-04-14 13:48:43.773047] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:48:48.848693] START POST /api/asset-type-attributes/
+[2026-04-14 13:48:48.932817] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:48:48.944116] START GET /api/asset-type-attributes/
+[2026-04-14 13:48:49.109597] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:48:54.931313] START POST /api/asset-type-attributes/
+[2026-04-14 13:48:55.009496] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:48:55.019756] START GET /api/asset-type-attributes/
+[2026-04-14 13:48:55.073994] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:48:58.723237] START POST /api/asset-type-attributes/
+[2026-04-14 13:48:58.807575] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:48:58.815308] START GET /api/asset-type-attributes/
+[2026-04-14 13:48:58.973329] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:49:07.260040] START POST /api/asset-type-attributes/
+[2026-04-14 13:49:07.352013] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:49:07.360551] START GET /api/asset-type-attributes/
+[2026-04-14 13:49:07.415707] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:49:10.951768] START POST /api/asset-type-attributes/
+[2026-04-14 13:49:11.033244] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:49:11.045499] START GET /api/asset-type-attributes/
+[2026-04-14 13:49:11.099149] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:49:16.554567] START POST /api/asset-type-attributes/
+[2026-04-14 13:49:16.630524] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:49:16.641673] START GET /api/asset-type-attributes/
+[2026-04-14 13:49:16.802261] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:49:48.193184] START GET /api/asset-type-attributes/
+[2026-04-14 13:49:48.360439] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:50:30.553282] START POST /api/asset-type-attributes/
+[2026-04-14 13:50:30.658955] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:50:30.667915] START GET /api/asset-type-attributes/
+[2026-04-14 13:50:30.721460] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:50:36.514596] START POST /api/asset-type-attributes/
+[2026-04-14 13:50:36.631649] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:50:36.641411] START GET /api/asset-type-attributes/
+[2026-04-14 13:50:36.690376] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:50:48.263772] START GET /api/asset-type-attributes/
+[2026-04-14 13:50:48.321532] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:51:04.623865] START POST /api/asset-type-attributes/
+[2026-04-14 13:51:04.801241] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:51:04.816067] START GET /api/asset-type-attributes/
+[2026-04-14 13:51:04.869013] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:52:15.183072] START POST /api/asset-type-attributes/
+[2026-04-14 13:52:15.358259] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:52:15.366284] START GET /api/asset-type-attributes/
+[2026-04-14 13:52:15.419775] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:52:22.212426] START POST /api/asset-type-attributes/
+[2026-04-14 13:52:22.388500] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:52:22.398802] START GET /api/asset-type-attributes/
+[2026-04-14 13:52:22.447884] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:52:32.548283] START POST /api/asset-type-attributes/
+[2026-04-14 13:52:32.734206] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:52:32.746111] START GET /api/asset-type-attributes/
+[2026-04-14 13:52:32.795660] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:52:37.328840] START POST /api/asset-type-attributes/
+[2026-04-14 13:52:37.508718] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:52:37.518820] START GET /api/asset-type-attributes/
+[2026-04-14 13:52:37.569029] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:52:42.913729] START POST /api/asset-type-attributes/
+[2026-04-14 13:52:43.091247] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:52:43.100553] START GET /api/asset-type-attributes/
+[2026-04-14 13:52:43.147999] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:52:51.241713] START POST /api/asset-type-attributes/
+[2026-04-14 13:52:51.436417] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:52:51.446643] START GET /api/asset-type-attributes/
+[2026-04-14 13:52:51.498968] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:52:52.893891] START GET /api/asset-type-attributes/
+[2026-04-14 13:52:52.957754] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:52:59.679791] START POST /api/asset-type-attributes/
+[2026-04-14 13:52:59.780483] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:52:59.791303] START GET /api/asset-type-attributes/
+[2026-04-14 13:52:59.844187] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:53:31.830004] START POST /api/asset-type-attributes/
+[2026-04-14 13:53:31.932177] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:53:31.943032] START GET /api/asset-type-attributes/
+[2026-04-14 13:53:31.988557] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:53:54.734037] START POST /api/asset-type-attributes/
+[2026-04-14 13:53:54.948593] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:53:54.961348] START GET /api/asset-type-attributes/
+[2026-04-14 13:53:55.014196] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:53:57.033658] START GET /api/asset-type-attributes/
+[2026-04-14 13:53:57.102236] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:04.121145] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:04.178172] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:09.349016] START POST /api/asset-type-attributes/
+[2026-04-14 13:54:09.452995] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:54:09.462961] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:09.516153] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:15.014497] START POST /api/asset-type-attributes/
+[2026-04-14 13:54:15.109452] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:54:15.119141] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:15.171375] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:19.926013] START POST /api/asset-type-attributes/
+[2026-04-14 13:54:20.025924] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:54:20.036354] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:20.088987] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:28.066174] START POST /api/asset-type-attributes/
+[2026-04-14 13:54:28.166804] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:54:28.175953] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:28.331581] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:32.998375] START POST /api/asset-type-attributes/
+[2026-04-14 13:54:33.097447] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:54:33.109021] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:33.271201] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:52.703551] START POST /api/asset-type-attributes/
+[2026-04-14 13:54:52.805862] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:54:52.815381] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:52.864890] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:57.102071] START POST /api/asset-type-attributes/
+[2026-04-14 13:54:57.209077] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:54:57.216803] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:57.269588] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:54:59.534324] START GET /api/asset-type-attributes/
+[2026-04-14 13:54:59.586539] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:55:13.255987] START POST /api/asset-type-attributes/
+[2026-04-14 13:55:13.333088] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:55:13.343661] START GET /api/asset-type-attributes/
+[2026-04-14 13:55:13.393562] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:55:18.253424] START POST /api/asset-type-attributes/
+[2026-04-14 13:55:18.325746] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:55:18.335094] START GET /api/asset-type-attributes/
+[2026-04-14 13:55:18.385244] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:55:27.252400] START POST /api/asset-type-attributes/
+[2026-04-14 13:55:27.320783] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:55:27.331258] START GET /api/asset-type-attributes/
+[2026-04-14 13:55:27.387156] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:55:37.349450] START POST /api/asset-type-attributes/
+[2026-04-14 13:55:37.422835] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:55:37.431948] START GET /api/asset-type-attributes/
+[2026-04-14 13:55:37.486232] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:55:40.777427] START POST /api/asset-type-attributes/
+[2026-04-14 13:55:40.856489] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:55:40.868655] START GET /api/asset-type-attributes/
+[2026-04-14 13:55:40.915775] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:55:45.542716] START POST /api/asset-type-attributes/
+[2026-04-14 13:55:45.618022] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:55:45.632330] START GET /api/asset-type-attributes/
+[2026-04-14 13:55:45.684609] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:55:50.048630] START POST /api/asset-type-attributes/
+[2026-04-14 13:55:50.126467] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 13:55:50.136508] START GET /api/asset-type-attributes/
+[2026-04-14 13:55:50.189559] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:56:06.342455] START GET /api/asset-types/
+[2026-04-14 13:56:06.343501] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:56:06.397925] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:56:06.398023] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:56:06.404353] START GET /api/asset-attribute-definitions/
+[2026-04-14 13:56:06.407318] START GET /api/asset-types/
+[2026-04-14 13:56:06.457605] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 13:56:06.457697] END   GET /api/asset-types/ -> 200
+[2026-04-14 13:56:09.960033] START GET /api/asset-type-attributes/
+[2026-04-14 13:56:10.007019] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 13:56:17.497618] START GET /api/asset-type-attributes/
+[2026-04-14 13:56:17.553007] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:05:00.841811] START GET /api/asset-types/
+[2026-04-14 14:05:00.846275] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:05:00.919844] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:05:00.920061] END   GET /api/asset-types/ -> 200
+[2026-04-14 14:05:00.927599] START GET /api/asset-types/
+[2026-04-14 14:05:00.928648] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:05:00.989469] END   GET /api/asset-types/ -> 200
+[2026-04-14 14:05:00.996774] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:06:49.034200] START GET /api/asset-type-attributes/
+[2026-04-14 14:06:49.091668] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:07:42.387675] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:07:42.447418] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:07:42.453004] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:07:42.500696] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:07:53.745559] START POST /api/asset-attribute-definitions/
+[2026-04-14 14:07:53.817589] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 14:07:53.827596] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:07:53.877379] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:07:55.097660] START GET /api/asset-types/
+[2026-04-14 14:07:55.098687] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:07:55.148096] END   GET /api/asset-types/ -> 200
+[2026-04-14 14:07:55.152538] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:07:55.154436] START GET /api/asset-types/
+[2026-04-14 14:07:55.157522] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:07:55.206191] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:07:55.319077] END   GET /api/asset-types/ -> 200
+[2026-04-14 14:07:56.741528] START GET /api/asset-type-attributes/
+[2026-04-14 14:07:56.796428] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:07:59.791810] START GET /api/asset-type-attributes/
+[2026-04-14 14:07:59.846428] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:08:05.780670] START POST /api/asset-type-attributes/
+[2026-04-14 14:08:05.955921] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:08:05.965658] START GET /api/asset-type-attributes/
+[2026-04-14 14:08:06.017272] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:08:06.936668] START GET /api/asset-type-attributes/
+[2026-04-14 14:08:06.996712] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:08:26.126337] START POST /api/asset-type-attributes/
+[2026-04-14 14:08:26.206146] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:08:26.217227] START GET /api/asset-type-attributes/
+[2026-04-14 14:08:26.274339] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:08:34.531755] START POST /api/asset-type-attributes/
+[2026-04-14 14:08:34.607369] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:08:34.618954] START GET /api/asset-type-attributes/
+[2026-04-14 14:08:34.680469] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:08:44.687713] START GET /api/asset-type-attributes/
+[2026-04-14 14:08:44.744863] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:09:19.627793] START GET /api/asset-type-attributes/
+[2026-04-14 14:09:19.679339] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:10:40.815537] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:10:40.868140] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:10:40.875269] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:10:40.924000] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:10:52.645524] START POST /api/asset-attribute-definitions/
+[2026-04-14 14:10:52.814433] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 14:10:52.822546] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:10:52.983535] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:11:24.132175] START POST /api/asset-attribute-definitions/
+[2026-04-14 14:11:24.189022] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 14:11:24.198622] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:11:24.250061] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:12:10.690920] START POST /api/asset-attribute-definitions/
+[2026-04-14 14:12:10.755355] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 14:12:10.767379] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:12:10.823040] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:12:30.170713] START POST /api/asset-attribute-definitions/
+[2026-04-14 14:12:30.229803] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 14:12:30.237105] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:12:30.288774] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:13:10.356442] START GET /api/asset-types/
+[2026-04-14 14:13:10.359562] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:13:10.405354] END   GET /api/asset-types/ -> 200
+[2026-04-14 14:13:10.412591] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:13:10.417776] START GET /api/asset-types/
+[2026-04-14 14:13:10.422625] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:13:10.473956] END   GET /api/asset-types/ -> 200
+[2026-04-14 14:13:10.474401] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:13:11.937330] START GET /api/asset-type-attributes/
+[2026-04-14 14:13:11.988995] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:13:20.352504] START POST /api/asset-type-attributes/
+[2026-04-14 14:13:20.475723] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:13:20.490570] START GET /api/asset-type-attributes/
+[2026-04-14 14:13:20.544335] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:13:26.625220] START POST /api/asset-type-attributes/
+[2026-04-14 14:13:26.745707] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:13:26.755274] START GET /api/asset-type-attributes/
+[2026-04-14 14:13:26.806571] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:13:32.160909] START POST /api/asset-type-attributes/
+[2026-04-14 14:13:32.281248] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:13:32.289797] START GET /api/asset-type-attributes/
+[2026-04-14 14:13:32.344561] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:13:38.462551] START POST /api/asset-type-attributes/
+[2026-04-14 14:13:38.584863] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:13:38.593903] START GET /api/asset-type-attributes/
+[2026-04-14 14:13:38.648737] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:13:45.191775] START POST /api/asset-type-attributes/
+[2026-04-14 14:13:45.314063] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:13:45.323035] START GET /api/asset-type-attributes/
+[2026-04-14 14:13:45.374241] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:15:26.468547] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:15:26.636613] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:15:26.642457] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:15:26.691591] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:15:57.146623] START POST /api/asset-attribute-definitions/
+[2026-04-14 14:15:57.203854] END   POST /api/asset-attribute-definitions/ -> 201
+[2026-04-14 14:15:57.213705] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:15:57.271978] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:15:59.307123] START GET /api/asset-types/
+[2026-04-14 14:15:59.307997] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:15:59.372584] END   GET /api/asset-types/ -> 200
+[2026-04-14 14:15:59.372868] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:15:59.381797] START GET /api/asset-types/
+[2026-04-14 14:15:59.386180] START GET /api/asset-attribute-definitions/
+[2026-04-14 14:15:59.443210] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-14 14:15:59.443670] END   GET /api/asset-types/ -> 200
+[2026-04-14 14:16:01.475379] START GET /api/asset-type-attributes/
+[2026-04-14 14:16:01.529742] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 14:16:09.727271] START POST /api/asset-type-attributes/
+[2026-04-14 14:16:09.860155] END   POST /api/asset-type-attributes/ -> 201
+[2026-04-14 14:16:09.870311] START GET /api/asset-type-attributes/
+[2026-04-14 14:16:09.938724] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 15:01:17.127222] START GET /api/asset-type-attributes/
+[2026-04-14 15:01:17.268636] END   GET /api/asset-type-attributes/ -> 200
+[2026-04-14 15:01:20.276685] START GET /api/stock-item-types/
+[2026-04-14 15:01:20.278914] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 15:01:20.368808] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 15:01:20.369383] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 15:01:20.377342] START GET /api/stock-item-types/
+[2026-04-14 15:01:20.381409] START GET /api/stock-item-attribute-definitions/
+[2026-04-14 15:01:20.468227] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-14 15:01:20.545529] END   GET /api/stock-item-types/ -> 200
+[2026-04-14 15:01:20.851694] START GET /api/organizational-structures/
+[2026-04-14 15:01:20.960374] END   GET /api/organizational-structures/ -> 200
+[2026-04-14 15:01:20.966054] START GET /api/organizational-structures/
+[2026-04-14 15:01:21.034663] END   GET /api/organizational-structures/ -> 200
+[2026-04-14 15:01:29.795718] START GET /api/organizational-structure-relations/
+[2026-04-14 15:01:30.005402] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-14 15:02:13.857376] START GET /api/persons/
+[2026-04-14 15:02:13.864501] START GET /api/roles/
+[2026-04-14 15:02:13.953886] END   GET /api/roles/ -> 200
+[2026-04-14 15:02:13.964829] START GET /api/roles/
+[2026-04-14 15:02:13.987755] END   GET /api/persons/ -> 200
+[2026-04-14 15:02:13.994369] START GET /api/persons/
+[2026-04-14 15:02:14.022335] END   GET /api/roles/ -> 200
+[2026-04-14 15:02:14.095405] END   GET /api/persons/ -> 200
+[2026-04-14 15:08:24.431880] START GET /api/persons/
+[2026-04-14 15:08:24.438420] START GET /api/roles/
+[2026-04-14 15:08:24.522349] END   GET /api/roles/ -> 200
+[2026-04-14 15:08:24.534039] START GET /api/roles/
+[2026-04-14 15:08:24.557303] END   GET /api/persons/ -> 200
+[2026-04-14 15:08:24.566213] START GET /api/persons/
+[2026-04-14 15:08:24.606427] END   GET /api/roles/ -> 200
+[2026-04-14 15:08:24.772143] END   GET /api/persons/ -> 200
+[2026-04-14 15:08:38.879555] START GET /api/user-sessions/
+[2026-04-14 15:08:38.910194] START GET /api/auth-logs/
+[2026-04-14 15:08:38.995210] END   GET /api/user-sessions/ -> 200
+[2026-04-14 15:08:38.995954] END   GET /api/auth-logs/ -> 200
+[2026-04-14 15:08:39.003528] START GET /api/user-sessions/
+[2026-04-14 15:08:39.004928] START GET /api/auth-logs/
+[2026-04-14 15:08:39.075596] END   GET /api/auth-logs/ -> 200
+[2026-04-14 15:08:39.185565] END   GET /api/user-sessions/ -> 200
