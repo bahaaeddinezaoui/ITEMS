@@ -1,0 +1,109 @@
+# Production Deployment Guide
+
+This guide outlines the steps to host the **Equipment Management System** on your network server (`192.214.23.69`).
+
+## 0. Minimal Transfer List (Recommended)
+To save time and avoid slow transfer speeds, **DO NOT** copy the entire project. Only copy the following items:
+
+| Item | Path | Purpose | Size (approx.) |
+| :--- | :--- | :--- | :--- |
+| **Backend Source** | `backend/` (Exclude `venv`) | Core logic & API | ~10 MB |
+| **Frontend Build** | `frontend/dist/` | Production application | ~3 MB |
+| **Frontend Source** | `frontend/src/`, `frontend/public/` | Future development | ~4 MB |
+| **Offline Assets** | `offline_assets/python/` | Python library wheels | ~12 MB |
+| **Database** | `project_iguana.sql` | Database schema | <1 MB |
+| **Config** | `requirements.txt`, `package.json` | Versions & settings | <1 MB |
+
+**Total Transfer Size: ~30 MB** (vs ~350 MB for the full folder).
+
+## 1. Summary of Changes Applied
+- **Offline Readiness**:
+  - Downloaded all Python dependencies to `offline_assets/python/`.
+  - Confirmed all frontend fonts are local (not loaded from Google CDNs).
+- **Backend**:
+  - `DEBUG` set to `False`.
+  - `ALLOWED_HOSTS` updated to `['192.214.23.69', 'localhost', '127.0.0.1']`.
+  - `STATIC_ROOT` configured for `collectstatic`.
+  - Ran `python manage.py collectstatic` to prepare static files.
+- **Frontend**:
+  - Updated API base URL in `.env` to `http://192.214.23.69:8000/api/`.
+  - Ran `npm run build` to generate the `dist` folder.
+
+---
+
+## 2. Running the Production Server
+
+### A. Backend (Django)
+In production on Windows, do **not** use `python manage.py runserver`. Instead, use **Waitress**.
+
+1. **Install Waitress Offline**:
+   On the offline server, run:
+   ```powershell
+   .\venv\Scripts\activate
+   pip install --no-index --find-links=../offline_assets/python waitress
+   ```
+
+2. **Run the Backend**:
+   ```powershell
+   waitress-serve --port=8000 ems.wsgi:application
+   ```
+
+### B. Frontend (React/Vite)
+The production-ready files are located in `frontend/dist`. 
+
+**For Offline Development/Updates**:
+Since the server is offline, `npm install` will not work.
+1. **Transfer `node_modules`**: Zip the `frontend/node_modules` folder from your development machine and unzip it into the `frontend/` folder on the server.
+2. **Transfer `dist`**: The `dist` folder is already built and ready to be served by Nginx.
+
+---
+
+## 3. Recommended Nginx Configuration
+To serve both the frontend and backend on the same server, use Nginx as a reverse proxy.
+
+```nginx
+server {
+    listen 80;
+    server_name 192.214.23.69;
+
+    # Frontend
+    location / {
+        root /path/to/your/project/frontend/dist;
+        index index.html;
+        try_files $uri /index.html;
+    }
+
+    # Backend API
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Backend Admin
+    location /admin/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Static Files (Django Admin CSS/JS)
+    location /static/ {
+        alias /path/to/your/project/backend/staticfiles/;
+    }
+
+    # Media Files (Uploads)
+    location /media/ {
+        alias /path/to/your/project/backend/media/;
+    }
+}
+```
+
+---
+
+## 4. Maintenance and Updates
+When you update the code on the server:
+1. **Pull the changes**.
+2. **Rebuild the frontend**: `cd frontend; npm run build`.
+3. **Collect static files**: `cd backend; python manage.py collectstatic`.
+4. **Restart the Gunicorn service**.

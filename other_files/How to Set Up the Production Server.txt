@@ -1,0 +1,70 @@
+1. Set Up the Backend Environment
+Open a terminal in the project directory on the server and run:
+
+	1. Create a Virtual Environment:
+        python -m venv venv
+	2. Activate it:
+        .\venv\Scripts\activate
+	cd backend
+        3. Install Dependencies Offline:
+         Use the pre-downloaded assets to install libraries without internet:
+         pip install --no-index --find-links=offline_assets/python -r requirements.txt (use the absolute path instead if it does not work)
+   
+
+2. Set Up the Database
+Make sure PostgreSQL is installed on the server, then import the database schema:
+psql -U postgres -d project_iguana -f project_iguana.sql
+
+3. Launch the Backend
+	1. On the offline server, run:
+   	.\venv\Scripts\activate
+   	pip install --no-index --find-links=../offline_assets/python waitress
+
+	2. Run the Backend:
+   	waitress-serve --port=8000 ems.wsgi:application
+
+	3. Set up nginx:
+
+
+	server {
+    listen 80;
+    server_name 192.214.23.69;
+
+    # Frontend
+    location / {
+        root /path/to/your/project/frontend/dist;
+        index index.html;
+        try_files $uri /index.html;
+    }
+
+    # Backend API
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Backend Admin
+    location /admin/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Static Files (Django Admin CSS/JS)
+    location /static/ {
+        alias /path/to/your/project/backend/staticfiles/;
+    }
+
+    # Media Files (Uploads)
+    location /media/ {
+        alias /path/to/your/project/backend/media/;
+    }
+}
+
+
+4. Quick Test (No Nginx yet):
+Use Python to serve the `dist` folder:
+cd frontend/dist
+python -m http.server 80
+
