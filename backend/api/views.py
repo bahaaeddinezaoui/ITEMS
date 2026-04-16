@@ -7307,17 +7307,17 @@ class OrganizationalStructureViewSet(SuperuserWriteMixin, viewsets.ModelViewSet)
 
 
 class OrganizationalStructureRelationViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
-    queryset = OrganizationalStructureRelation.objects.all().order_by("organizational_structure_id", "parent_organizational_structure_id")
+    queryset = OrganizationalStructureRelation.objects.all().order_by("child_organizational_structure_id", "parent_organizational_structure_id")
     serializer_class = OrganizationalStructureRelationSerializer
 
     def get_queryset(self):
         queryset = OrganizationalStructureRelation.objects.select_related(
-            "organizational_structure", "parent_organizational_structure"
-        ).order_by("organizational_structure_id", "parent_organizational_structure_id")
+            "child_organizational_structure", "parent_organizational_structure"
+        ).order_by("child_organizational_structure_id", "parent_organizational_structure_id")
         org_structure_id = self.request.query_params.get("org_structure_id")
         if org_structure_id is not None:
             try:
-                queryset = queryset.filter(organizational_structure_id=int(org_structure_id))
+                queryset = queryset.filter(child_organizational_structure_id=int(org_structure_id))
             except (ValueError, TypeError):
                 pass
         return queryset

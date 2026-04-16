@@ -74910,3 +74910,382 @@ Response Body: {"error":"Only superusers can create asset attribute definitions"
 [2026-04-14 15:08:39.004928] START GET /api/auth-logs/
 [2026-04-14 15:08:39.075596] END   GET /api/auth-logs/ -> 200
 [2026-04-14 15:08:39.185565] END   GET /api/user-sessions/ -> 200
+[2026-04-15 14:06:01.753051] START POST /api/auth/signup/
+[2026-04-15 14:06:01.760458] END   POST /api/auth/signup/ -> 400
+Response Body: {"error":"All fields are required: first_name, last_name, sex, birth_date, username, password"}
+[2026-04-16 13:36:44.168023] START POST /api/auth/login/
+[2026-04-16 13:36:44.396434] END   POST /api/auth/login/ -> 200
+[2026-04-16 13:36:46.524211] START GET /api/location-types/
+[2026-04-16 13:36:46.531738] START GET /api/locations/
+[2026-04-16 13:36:46.627696] END   GET /api/location-types/ -> 200
+[2026-04-16 13:36:46.640995] START GET /api/location-types/
+[2026-04-16 13:36:46.664129] END   GET /api/locations/ -> 200
+[2026-04-16 13:36:46.672068] START GET /api/locations/
+[2026-04-16 13:36:46.689757] END   GET /api/location-types/ -> 200
+[2026-04-16 13:36:46.757536] END   GET /api/locations/ -> 200
+[2026-04-16 13:36:51.380513] START GET /api/roles/
+[2026-04-16 13:36:51.380991] START GET /api/position-role-mappings/
+[2026-04-16 13:36:51.380039] START GET /api/positions/
+[2026-04-16 13:36:51.436755] END   GET /api/roles/ -> 200
+[2026-04-16 13:36:51.445858] START GET /api/roles/
+[2026-04-16 13:36:51.504889] END   GET /api/roles/ -> 200
+[2026-04-16 13:36:51.554460] END   GET /api/positions/ -> 200
+[2026-04-16 13:36:51.560572] END   GET /api/position-role-mappings/ -> 200
+[2026-04-16 13:36:51.565796] START GET /api/positions/
+[2026-04-16 13:36:51.569756] START GET /api/position-role-mappings/
+[2026-04-16 13:36:51.618867] END   GET /api/positions/ -> 200
+[2026-04-16 13:36:51.629151] END   GET /api/position-role-mappings/ -> 200
+[2026-04-16 13:36:52.742957] START GET /api/positions/
+[2026-04-16 13:36:52.798196] END   GET /api/positions/ -> 200
+[2026-04-16 13:36:52.806495] START GET /api/positions/
+[2026-04-16 13:36:52.862966] END   GET /api/positions/ -> 200
+[2026-04-16 13:37:16.174350] START GET /api/locations/
+[2026-04-16 13:37:16.175732] START GET /api/location-types/
+[2026-04-16 13:37:16.235916] END   GET /api/location-types/ -> 200
+[2026-04-16 13:37:16.243698] START GET /api/location-types/
+[2026-04-16 13:37:16.299128] END   GET /api/location-types/ -> 200
+[2026-04-16 13:37:16.376768] END   GET /api/locations/ -> 200
+[2026-04-16 13:37:16.385021] START GET /api/locations/
+[2026-04-16 13:37:16.480476] END   GET /api/locations/ -> 200
+[2026-04-16 13:37:17.728730] START GET /api/positions/
+[2026-04-16 13:37:17.785538] END   GET /api/positions/ -> 200
+[2026-04-16 13:37:17.793677] START GET /api/positions/
+[2026-04-16 13:37:17.851182] END   GET /api/positions/ -> 200
+[2026-04-16 13:37:19.482973] START GET /api/positions/
+[2026-04-16 13:37:19.483614] START GET /api/position-role-mappings/
+[2026-04-16 13:37:19.484613] START GET /api/roles/
+[2026-04-16 13:37:19.543999] END   GET /api/position-role-mappings/ -> 200
+[2026-04-16 13:37:19.552615] START GET /api/position-role-mappings/
+[2026-04-16 13:37:19.614150] END   GET /api/position-role-mappings/ -> 200
+[2026-04-16 13:37:19.662902] END   GET /api/positions/ -> 200
+[2026-04-16 13:37:19.663848] END   GET /api/roles/ -> 200
+[2026-04-16 13:37:19.677931] START GET /api/positions/
+[2026-04-16 13:37:19.682576] START GET /api/roles/
+[2026-04-16 13:37:19.744951] END   GET /api/positions/ -> 200
+[2026-04-16 13:37:19.748538] END   GET /api/roles/ -> 200
+[2026-04-16 13:37:20.930307] START GET /api/roles/
+[2026-04-16 13:37:20.935514] START GET /api/persons/
+[2026-04-16 13:37:20.988829] END   GET /api/roles/ -> 200
+[2026-04-16 13:37:20.997091] START GET /api/roles/
+[2026-04-16 13:37:21.022393] END   GET /api/persons/ -> 200
+[2026-04-16 13:37:21.029465] START GET /api/persons/
+[2026-04-16 13:37:21.114103] END   GET /api/persons/ -> 200
+[2026-04-16 13:37:21.162329] END   GET /api/roles/ -> 200
+[2026-04-16 13:37:21.578747] START GET /api/organizational-structures/
+[2026-04-16 13:37:21.637028] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:37:21.645619] START GET /api/organizational-structures/
+[2026-04-16 13:37:21.701340] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:42:43.870791] START GET /api/organizational-structures/
+[2026-04-16 13:42:43.937992] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:42:43.949142] START GET /api/organizational-structures/
+[2026-04-16 13:42:44.008637] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:48:32.655162] START GET /api/organizational-structures/
+[2026-04-16 13:48:32.907844] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:48:32.920478] START GET /api/organizational-structures/
+[2026-04-16 13:48:32.969953] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:49:30.594458] START GET /api/organizational-structures/
+[2026-04-16 13:49:30.658584] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:54:35.966013] START GET /api/organizational-structures/
+[2026-04-16 13:54:36.131530] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:54:36.141714] START GET /api/organizational-structures/
+[2026-04-16 13:54:36.318016] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:54:36.747574] START GET /api/organizational-structures/
+[2026-04-16 13:54:36.803077] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:54:36.813430] START GET /api/organizational-structures/
+[2026-04-16 13:54:36.867713] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:57:11.618808] START GET /api/organizational-structures/
+[2026-04-16 13:57:11.750802] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:57:11.759095] START GET /api/organizational-structures/
+[2026-04-16 13:57:11.809767] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:57:11.821861] START GET /api/organizational-structures/
+[2026-04-16 13:57:11.978206] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:58:02.175596] START GET /api/organizational-structures/
+[2026-04-16 13:58:02.340684] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:58:02.349107] START GET /api/organizational-structures/
+[2026-04-16 13:58:02.405188] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:58:02.874518] START GET /api/organizational-structures/
+[2026-04-16 13:58:03.028946] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 13:58:03.035766] START GET /api/organizational-structures/
+[2026-04-16 13:58:03.094448] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:06:40.263733] START GET /api/organizational-structures/
+[2026-04-16 14:06:40.378822] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:06:40.387946] START GET /api/organizational-structures/
+[2026-04-16 14:06:40.446292] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:06:51.568114] START GET /api/organizational-structures/
+[2026-04-16 14:06:51.626083] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:06:51.633945] START GET /api/organizational-structures/
+[2026-04-16 14:06:51.691616] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:12:09.601777] START GET /api/organizational-structures/
+[2026-04-16 14:12:09.670551] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:38:23.174886] START GET /api/organizational-structures/
+[2026-04-16 14:38:23.247765] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:38:23.255279] START GET /api/organizational-structures/
+[2026-04-16 14:38:23.407803] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:38:23.940897] START GET /api/organizational-structures/
+[2026-04-16 14:38:24.098447] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:38:24.104816] START GET /api/organizational-structures/
+[2026-04-16 14:38:24.164018] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:38:58.925367] START GET /api/organizational-structures/
+[2026-04-16 14:38:58.996663] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:38:59.002446] START GET /api/organizational-structures/
+[2026-04-16 14:38:59.047345] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:39:01.302385] START GET /api/organizational-structures/
+[2026-04-16 14:39:01.354940] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:39:01.359939] START GET /api/organizational-structures/
+[2026-04-16 14:39:01.402999] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:39:39.594782] START GET /api/organizational-structures/
+[2026-04-16 14:39:39.662356] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:39:39.672495] START GET /api/organizational-structures/
+[2026-04-16 14:39:39.727521] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:41:29.579850] START GET /api/organizational-structures/
+[2026-04-16 14:41:29.621010] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:47:16.582290] START GET /api/organizational-structures/
+[2026-04-16 14:47:16.620290] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:48:20.585983] START GET /api/organizational-structures/
+[2026-04-16 14:48:20.630727] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:48:32.166725] START GET /api/organizational-structures/
+[2026-04-16 14:48:32.232313] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:48:32.243215] START GET /api/organizational-structures/
+[2026-04-16 14:48:32.305410] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:48:32.862958] START GET /api/organizational-structures/
+[2026-04-16 14:48:32.934692] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:48:32.941888] START GET /api/organizational-structures/
+[2026-04-16 14:48:33.000592] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:48:38.389901] START GET /api/organizational-structure-relations/
+[2026-04-16 14:48:38.499952] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 14:48:49.588431] START GET /api/organizational-structures/
+[2026-04-16 14:48:49.642625] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:50:14.752120] START GET /api/organizational-structures/
+[2026-04-16 14:50:14.809100] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:50:14.814003] START GET /api/organizational-structures/
+[2026-04-16 14:50:14.867946] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:50:22.418569] START PUT /api/organizational-structures/1/
+[2026-04-16 14:50:22.536452] END   PUT /api/organizational-structures/1/ -> 200
+[2026-04-16 14:50:22.548721] START GET /api/organizational-structures/
+[2026-04-16 14:50:22.604127] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:50:27.265570] START GET /api/organizational-structures/
+[2026-04-16 14:50:27.314314] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:50:27.321630] START GET /api/organizational-structures/
+[2026-04-16 14:50:27.370608] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:50:30.113443] START GET /api/organizational-structure-relations/
+[2026-04-16 14:50:30.164953] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 14:52:18.009945] START GET /api/organizational-structures/
+[2026-04-16 14:52:18.113307] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:52:18.132849] START GET /api/organizational-structures/
+[2026-04-16 14:52:18.215869] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:52:18.828880] START GET /api/organizational-structures/
+[2026-04-16 14:52:18.936138] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:52:18.942036] START GET /api/organizational-structures/
+[2026-04-16 14:52:19.055809] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:51.706076] START GET /api/organizational-structures/
+[2026-04-16 14:55:51.869739] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:51.876390] START GET /api/organizational-structures/
+[2026-04-16 14:55:52.021275] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:52.709410] START GET /api/organizational-structures/
+[2026-04-16 14:55:52.768419] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:52.778343] START GET /api/organizational-structures/
+[2026-04-16 14:55:52.926978] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:53.439523] START GET /api/organizational-structures/
+[2026-04-16 14:55:53.500240] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:53.510279] START GET /api/organizational-structures/
+[2026-04-16 14:55:53.559162] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:54.398695] START GET /api/organizational-structures/
+[2026-04-16 14:55:54.451900] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:54.458403] START GET /api/organizational-structures/
+[2026-04-16 14:55:54.502331] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:55.514827] START GET /api/organizational-structures/
+[2026-04-16 14:55:55.666406] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:55.672433] START GET /api/organizational-structures/
+[2026-04-16 14:55:55.716219] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:56.499991] START GET /api/organizational-structures/
+[2026-04-16 14:55:56.562443] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:56.567085] START GET /api/organizational-structures/
+[2026-04-16 14:55:56.617117] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:57.164524] START GET /api/organizational-structures/
+[2026-04-16 14:55:57.215300] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:57.222333] START GET /api/organizational-structures/
+[2026-04-16 14:55:57.263424] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:57.884905] START GET /api/organizational-structures/
+[2026-04-16 14:55:57.948071] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:57.953613] START GET /api/organizational-structures/
+[2026-04-16 14:55:58.007627] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:58.389766] START GET /api/organizational-structures/
+[2026-04-16 14:55:58.452344] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:55:58.459868] START GET /api/organizational-structures/
+[2026-04-16 14:55:58.518089] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:07.591003] START GET /api/organizational-structures/
+[2026-04-16 14:56:07.631083] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:26.018634] START GET /api/organizational-structures/
+[2026-04-16 14:56:26.179860] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:26.184622] START GET /api/organizational-structures/
+[2026-04-16 14:56:26.228192] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:26.834025] START GET /api/organizational-structures/
+[2026-04-16 14:56:26.980934] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:26.985943] START GET /api/organizational-structures/
+[2026-04-16 14:56:27.043025] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:27.549111] START GET /api/organizational-structures/
+[2026-04-16 14:56:27.598267] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:27.603397] START GET /api/organizational-structures/
+[2026-04-16 14:56:27.649542] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:28.168962] START GET /api/organizational-structures/
+[2026-04-16 14:56:28.222888] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:28.229385] START GET /api/organizational-structures/
+[2026-04-16 14:56:28.273133] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:50.928147] START GET /api/organizational-structures/
+[2026-04-16 14:56:50.989422] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 14:56:50.997634] START GET /api/organizational-structures/
+[2026-04-16 14:56:51.054808] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:01:09.648030] START GET /api/organizational-structures/
+[2026-04-16 15:01:09.810046] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:01:09.814730] START GET /api/organizational-structures/
+[2026-04-16 15:01:09.852921] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:01:57.688575] START GET /api/organizational-structures/
+[2026-04-16 15:01:57.774998] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:01:57.783148] START GET /api/organizational-structures/
+[2026-04-16 15:01:57.837282] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:01:58.606980] START GET /api/organizational-structures/
+[2026-04-16 15:01:58.670556] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:01:58.680615] START GET /api/organizational-structures/
+[2026-04-16 15:01:58.737347] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:02:00.326764] START GET /api/organizational-structure-relations/
+[2026-04-16 15:02:00.416035] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:02:11.334172] START GET /api/organizational-structure-relations/
+[2026-04-16 15:02:11.403918] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:02:12.245778] START GET /api/organizational-structure-relations/
+[2026-04-16 15:02:12.313289] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:02:13.221229] START GET /api/organizational-structure-relations/
+[2026-04-16 15:02:13.327441] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:02:17.479964] START GET /api/organizational-structure-relations/
+[2026-04-16 15:02:17.552639] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:02:18.065737] START GET /api/organizational-structure-relations/
+[2026-04-16 15:02:18.144931] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:03:04.858725] START GET /api/organizational-structure-relations/
+[2026-04-16 15:03:04.921017] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:32:19.512748] START GET /api/organizational-structures/
+[2026-04-16 15:32:19.747126] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:32:19.760720] START GET /api/organizational-structures/
+[2026-04-16 15:32:19.917281] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:32:21.379284] START GET /api/organizational-structure-relations/
+[2026-04-16 15:32:21.559634] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:34:50.356609] START GET /api/organizational-structures/
+[2026-04-16 15:34:50.427019] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:34:50.433737] START GET /api/organizational-structures/
+[2026-04-16 15:34:50.600117] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:34:52.006937] START GET /api/organizational-structure-relations/
+[2026-04-16 15:34:52.087466] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:36:06.346793] START GET /api/organizational-structures/
+[2026-04-16 15:36:06.414401] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:36:06.424154] START GET /api/organizational-structures/
+[2026-04-16 15:36:06.491779] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:36:08.004357] START GET /api/organizational-structure-relations/
+[2026-04-16 15:36:08.067805] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:36:47.572758] START GET /api/organizational-structure-relations/
+[2026-04-16 15:36:47.642504] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:37:21.685125] START GET /api/organizational-structure-relations/
+[2026-04-16 15:37:21.754890] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:38:04.476377] START GET /api/organizational-structures/
+[2026-04-16 15:38:04.648840] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:38:04.658555] START GET /api/organizational-structures/
+[2026-04-16 15:38:04.727062] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:38:09.341452] START GET /api/organizational-structure-relations/
+[2026-04-16 15:38:09.411245] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:38:39.809125] START GET /api/organizational-structures/
+[2026-04-16 15:38:39.893492] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:38:39.901720] START GET /api/organizational-structures/
+[2026-04-16 15:38:39.970641] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:39:01.224952] START GET /api/organizational-structures/
+[2026-04-16 15:39:01.295636] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:39:01.305534] START GET /api/organizational-structures/
+[2026-04-16 15:39:01.366944] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:45:59.280691] START GET /api/organizational-structures/
+[2026-04-16 15:45:59.478393] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:45:59.484686] START GET /api/organizational-structures/
+[2026-04-16 15:45:59.548796] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:46:00.977405] START GET /api/organizational-structure-relations/
+[2026-04-16 15:46:01.161591] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:46:11.132957] START PUT /api/organizational-structure-relations/3/undefined/
+[2026-04-16 15:46:11.248530] END   PUT /api/organizational-structure-relations/3/undefined/ -> 404
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Not Found</title>
+</head>
+<body>
+  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>
+</body>
+</html>
+
+[2026-04-16 15:46:24.651460] START GET /api/organizational-structure-relations/
+[2026-04-16 15:46:24.726789] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:46:27.926500] START GET /api/organizational-structure-relations/
+[2026-04-16 15:46:28.002091] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:46:32.264399] START GET /api/organizational-structure-relations/
+[2026-04-16 15:46:32.333672] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:46:33.939000] START GET /api/organizational-structure-relations/
+[2026-04-16 15:46:34.018559] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:46:38.282361] START GET /api/organizational-structure-relations/
+[2026-04-16 15:46:38.353846] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:47:12.068250] START PUT /api/organizational-structure-relations/4/undefined/
+[2026-04-16 15:47:12.072713] END   PUT /api/organizational-structure-relations/4/undefined/ -> 404
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Not Found</title>
+</head>
+<body>
+  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>
+</body>
+</html>
+
+[2026-04-16 15:47:41.727596] START POST /api/organizational-structures/
+[2026-04-16 15:47:41.842394] END   POST /api/organizational-structures/ -> 201
+[2026-04-16 15:47:41.852327] START GET /api/organizational-structures/
+[2026-04-16 15:47:42.021769] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:47:45.547646] START GET /api/organizational-structure-relations/
+[2026-04-16 15:47:45.620185] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:47:49.142509] START PUT /api/organizational-structure-relations/5/undefined/
+[2026-04-16 15:47:49.149275] END   PUT /api/organizational-structure-relations/5/undefined/ -> 404
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Not Found</title>
+</head>
+<body>
+  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>
+</body>
+</html>
+
+[2026-04-16 15:47:50.131260] START PUT /api/organizational-structure-relations/5/undefined/
+[2026-04-16 15:47:50.135503] END   PUT /api/organizational-structure-relations/5/undefined/ -> 404
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Not Found</title>
+</head>
+<body>
+  <h1>Not Found</h1><p>The requested resource was not found on this server.</p>
+</body>
+</html>
+
+[2026-04-16 15:51:03.643768] START GET /api/organizational-structures/
+[2026-04-16 15:51:03.722667] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:51:03.734518] START GET /api/organizational-structures/
+[2026-04-16 15:51:03.791940] END   GET /api/organizational-structures/ -> 200
+[2026-04-16 15:51:05.631187] START GET /api/organizational-structure-relations/
+[2026-04-16 15:51:05.701799] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:51:07.885941] START GET /api/organizational-structure-relations/
+[2026-04-16 15:51:07.950514] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:51:14.195065] START GET /api/organizational-structure-relations/
+[2026-04-16 15:51:14.263164] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:51:21.958886] START POST /api/organizational-structure-relations/
+[2026-04-16 15:51:22.050231] END   POST /api/organizational-structure-relations/ -> 201
+[2026-04-16 15:51:22.061705] START GET /api/organizational-structure-relations/
+[2026-04-16 15:51:22.126728] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:51:34.009072] START GET /api/organizational-structure-relations/
+[2026-04-16 15:51:34.089239] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-16 15:51:36.418064] START GET /api/organizational-structure-relations/
+[2026-04-16 15:51:36.499693] END   GET /api/organizational-structure-relations/ -> 200

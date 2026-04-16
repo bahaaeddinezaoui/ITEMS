@@ -1871,10 +1871,9 @@ ALTER TABLE public.organizational_structure OWNER TO postgres;
 --
 
 CREATE TABLE public.organizational_structure_relation (
-    organizational_structure_id integer CONSTRAINT organizational_structure_re_organizational_structure_i_not_null NOT NULL,
+    child_organizational_structure_id integer CONSTRAINT organizational_structure_re_organizational_structure_i_not_null NOT NULL,
     parent_organizational_structure_id integer CONSTRAINT organizational_structure_re_parent_organizational_stru_not_null NOT NULL,
-    relation_id integer,
-    relation_type character varying(60)
+    relation_id integer
 );
 
 
@@ -4074,8 +4073,8 @@ COPY public.organizational_structure (organizational_structure_id, structure_cod
 -- Data for Name: organizational_structure_relation; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.organizational_structure_relation (organizational_structure_id, parent_organizational_structure_id, relation_id, relation_type) FROM stdin;
-2	1	\N	
+COPY public.organizational_structure_relation (child_organizational_structure_id, parent_organizational_structure_id, relation_id) FROM stdin;
+2	1	\N
 \.
 
 
@@ -5532,7 +5531,7 @@ ALTER TABLE ONLY public.organizational_structure
 --
 
 ALTER TABLE ONLY public.organizational_structure_relation
-    ADD CONSTRAINT organizational_structure_relation_pkey PRIMARY KEY (organizational_structure_id, parent_organizational_structure_id);
+    ADD CONSTRAINT organizational_structure_relation_pkey PRIMARY KEY (child_organizational_structure_id, parent_organizational_structure_id);
 
 
 --
@@ -7214,7 +7213,7 @@ ALTER TABLE ONLY public.maintenance_step
 --
 
 ALTER TABLE ONLY public.organizational_structure_relation
-    ADD CONSTRAINT fk_organiza_organizat_organiza_child FOREIGN KEY (organizational_structure_id) REFERENCES public.organizational_structure(organizational_structure_id) ON UPDATE RESTRICT ON DELETE RESTRICT;
+    ADD CONSTRAINT fk_organiza_organizat_organiza_child FOREIGN KEY (child_organizational_structure_id) REFERENCES public.organizational_structure(organizational_structure_id) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
 
 --

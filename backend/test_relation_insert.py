@@ -19,9 +19,8 @@ def test_insert():
     parent = structs[1]
     
     data = {
-        'organizational_structure': child.pk,
+        'child_organizational_structure': child.pk,
         'parent_organizational_structure': parent.pk,
-        'relation_type': 'Test Relation'
     }
     
     print(f"Testing Serializer insert: {data}")

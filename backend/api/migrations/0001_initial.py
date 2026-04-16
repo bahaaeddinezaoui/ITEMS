@@ -830,9 +830,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='OrganizationalStructureRelation',
             fields=[
-                ('organizational_structure', models.ForeignKey(db_column='organizational_structure_id', on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='child_relations', serialize=False, to='api.organizationalstructure')),
+                ('child_organizational_structure', models.ForeignKey(db_column='child_organizational_structure_id', on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='child_relations', serialize=False, to='api.organizationalstructure')),
                 ('relation_id', models.IntegerField(blank=True, db_column='relation_id', null=True)),
-                ('relation_type', models.CharField(blank=True, db_column='relation_type', max_length=60, null=True)),
             ],
             options={
                 'db_table': 'organizational_structure_relation',
