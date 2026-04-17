@@ -295,12 +295,19 @@ class OrganizationalStructureRelationSerializer(serializers.ModelSerializer):
         instance = OrganizationalStructureRelation()
         org = validated_data.get('child_organizational_structure')
         parent = validated_data.get('parent_organizational_structure')
-        
+
         # Use .pk if it's an object, otherwise use the value itself
         instance.child_organizational_structure_id = org.pk if hasattr(org, 'pk') else org
         instance.parent_organizational_structure_id = parent.pk if hasattr(parent, 'pk') else parent
-        instance.relation_id = validated_data.get('relation_id')
-        
+
+        # Auto-generate relation_id if not provided
+        relation_id = validated_data.get('relation_id')
+        if relation_id is None:
+            from django.db.models import Max
+            max_id = OrganizationalStructureRelation.objects.aggregate(Max('relation_id'))['relation_id__max']
+            relation_id = (max_id or 0) + 1
+        instance.relation_id = relation_id
+
         # Must use force_insert=True since we are providing the manual PK
         instance.save(force_insert=True)
         return instance

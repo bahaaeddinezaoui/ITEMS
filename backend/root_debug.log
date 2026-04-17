@@ -75957,3 +75957,129 @@ Response Body: {"detail":"Given token not valid for any token type","code":"toke
 [2026-04-17 17:52:11.340099] END   GET /api/location-relations/by-child/1/ -> 200
 [2026-04-17 17:52:14.735144] START GET /api/location-relations/by-child/2/
 [2026-04-17 17:52:14.799053] END   GET /api/location-relations/by-child/2/ -> 200
+[2026-04-17 17:53:31.014037] START GET /api/organizational-structures/
+[2026-04-17 17:53:31.136146] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:53:31.150618] START GET /api/organizational-structures/
+[2026-04-17 17:53:31.206572] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:54:08.897969] START POST /api/organizational-structures/
+[2026-04-17 17:54:09.012323] END   POST /api/organizational-structures/ -> 201
+[2026-04-17 17:54:09.027822] START GET /api/organizational-structures/
+[2026-04-17 17:54:09.091562] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:54:15.456458] START GET /api/organizational-structure-relations/
+[2026-04-17 17:54:15.535415] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 17:54:21.670467] START POST /api/organizational-structure-relations/
+[2026-04-17 17:54:21.761042] END   POST /api/organizational-structure-relations/ -> 201
+[2026-04-17 17:54:21.771553] START GET /api/organizational-structure-relations/
+[2026-04-17 17:54:21.826617] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 17:57:53.326004] START GET /api/persons/
+[2026-04-17 17:57:53.328519] START GET /api/roles/
+[2026-04-17 17:57:53.427286] END   GET /api/roles/ -> 200
+[2026-04-17 17:57:53.442950] START GET /api/roles/
+[2026-04-17 17:57:53.463042] END   GET /api/persons/ -> 200
+[2026-04-17 17:57:53.474101] START GET /api/persons/
+[2026-04-17 17:57:53.569839] END   GET /api/persons/ -> 200
+[2026-04-17 17:57:53.612579] END   GET /api/roles/ -> 200
+[2026-04-17 17:57:53.975769] START GET /api/organizational-structures/
+[2026-04-17 17:57:54.032536] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:57:54.042700] START GET /api/organizational-structures/
+[2026-04-17 17:57:54.099574] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:57:55.076008] START GET /api/asset-attribute-definitions/
+[2026-04-17 17:57:55.083164] START GET /api/asset-types/
+[2026-04-17 17:57:55.133435] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 17:57:55.141591] START GET /api/asset-attribute-definitions/
+[2026-04-17 17:57:55.147730] END   GET /api/asset-types/ -> 200
+[2026-04-17 17:57:55.156745] START GET /api/asset-types/
+[2026-04-17 17:57:55.196566] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 17:57:55.311222] END   GET /api/asset-types/ -> 200
+[2026-04-17 17:57:55.618224] START GET /api/persons/
+[2026-04-17 17:57:55.620007] START GET /api/roles/
+[2026-04-17 17:57:55.687333] END   GET /api/roles/ -> 200
+[2026-04-17 17:57:55.699753] START GET /api/roles/
+[2026-04-17 17:57:55.714043] END   GET /api/persons/ -> 200
+[2026-04-17 17:57:55.727287] START GET /api/persons/
+[2026-04-17 17:57:55.764554] END   GET /api/roles/ -> 200
+[2026-04-17 17:57:55.822494] END   GET /api/persons/ -> 200
+[2026-04-17 17:57:56.434521] START GET /api/stock-item-types/
+[2026-04-17 17:57:56.435764] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 17:57:56.495226] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 17:57:56.495816] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 17:57:56.506438] START GET /api/stock-item-types/
+[2026-04-17 17:57:56.507891] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 17:57:56.554764] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 17:57:56.559624] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 17:57:56.872324] START GET /api/organizational-structures/
+[2026-04-17 17:57:56.929010] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:57:56.936427] START GET /api/organizational-structures/
+[2026-04-17 17:57:56.992026] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:57:59.088411] START GET /api/roles/
+[2026-04-17 17:57:59.087943] START GET /api/persons/
+[2026-04-17 17:57:59.248976] END   GET /api/roles/ -> 200
+[2026-04-17 17:57:59.262255] START GET /api/roles/
+[2026-04-17 17:57:59.288228] END   GET /api/persons/ -> 200
+[2026-04-17 17:57:59.294611] START GET /api/persons/
+[2026-04-17 17:57:59.324884] END   GET /api/roles/ -> 200
+[2026-04-17 17:57:59.380560] END   GET /api/persons/ -> 200
+[2026-04-17 17:57:59.686258] START GET /api/organizational-structures/
+[2026-04-17 17:57:59.744053] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:57:59.750113] START GET /api/organizational-structures/
+[2026-04-17 17:57:59.802582] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:58:00.773613] START GET /api/asset-types/
+[2026-04-17 17:58:00.774630] START GET /api/asset-attribute-definitions/
+[2026-04-17 17:58:00.825046] END   GET /api/asset-types/ -> 200
+[2026-04-17 17:58:00.825396] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 17:58:00.831687] START GET /api/asset-attribute-definitions/
+[2026-04-17 17:58:00.832378] START GET /api/asset-types/
+[2026-04-17 17:58:00.886247] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 17:58:00.888300] END   GET /api/asset-types/ -> 200
+[2026-04-17 17:58:01.032175] START GET /api/persons/
+[2026-04-17 17:58:01.033769] START GET /api/roles/
+[2026-04-17 17:58:01.095379] END   GET /api/roles/ -> 200
+[2026-04-17 17:58:01.109512] START GET /api/roles/
+[2026-04-17 17:58:01.130709] END   GET /api/persons/ -> 200
+[2026-04-17 17:58:01.140385] START GET /api/persons/
+[2026-04-17 17:58:01.166427] END   GET /api/roles/ -> 200
+[2026-04-17 17:58:01.228392] END   GET /api/persons/ -> 200
+[2026-04-17 17:58:02.364399] START GET /api/organizational-structures/
+[2026-04-17 17:58:02.415017] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 17:58:02.421967] START GET /api/organizational-structures/
+[2026-04-17 17:58:02.573971] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 19:34:21.641568] START GET /api/organizational-structures/
+[2026-04-17 19:34:21.821879] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 19:34:21.834635] START GET /api/organizational-structures/
+[2026-04-17 19:34:21.886764] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 19:34:24.374019] START GET /api/organizational-structure-relations/
+[2026-04-17 19:34:24.451204] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 19:34:26.584984] START GET /api/organizational-structure-relations/
+[2026-04-17 19:34:26.656592] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 19:34:33.833561] START GET /api/organizational-structure-relations/
+[2026-04-17 19:34:33.897289] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 19:34:35.511855] START GET /api/organizational-structure-relations/
+[2026-04-17 19:34:35.587955] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 19:35:06.433737] START GET /api/organizational-structure-relations/
+[2026-04-17 19:35:06.507494] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 19:35:08.486494] START GET /api/organizational-structure-relations/
+[2026-04-17 19:35:08.548242] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 19:39:16.264102] START GET /api/persons/
+[2026-04-17 19:39:16.266858] START GET /api/roles/
+[2026-04-17 19:39:16.317689] END   GET /api/roles/ -> 200
+[2026-04-17 19:39:16.327037] START GET /api/roles/
+[2026-04-17 19:39:16.352789] END   GET /api/persons/ -> 200
+[2026-04-17 19:39:16.360778] START GET /api/persons/
+[2026-04-17 19:39:16.382225] END   GET /api/roles/ -> 200
+[2026-04-17 19:39:16.447959] END   GET /api/persons/ -> 200
+[2026-04-17 19:39:17.886128] START GET /api/asset-types/
+[2026-04-17 19:39:17.886668] START GET /api/asset-attribute-definitions/
+[2026-04-17 19:39:17.938819] END   GET /api/asset-types/ -> 200
+[2026-04-17 19:39:17.943557] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 19:39:17.952149] START GET /api/asset-types/
+[2026-04-17 19:39:17.955404] START GET /api/asset-attribute-definitions/
+[2026-04-17 19:39:18.000509] END   GET /api/asset-types/ -> 200
+[2026-04-17 19:39:18.002007] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 19:39:19.063880] START GET /api/stock-item-types/
+[2026-04-17 19:39:19.069164] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 19:39:19.119498] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 19:39:19.119710] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 19:39:19.128866] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 19:39:19.131426] START GET /api/stock-item-types/
+[2026-04-17 19:39:19.183376] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 19:39:19.186217] END   GET /api/stock-item-types/ -> 200
