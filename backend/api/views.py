@@ -46,6 +46,7 @@ from .models import (
     Maintenance,
     MaintenanceStep,
     MaintenanceTypicalStep,
+    OrganizationalStructureType,
     OrganizationalStructure,
     OrganizationalStructureRelation,
     Person,
@@ -518,6 +519,7 @@ from .serializers import (
     MaintenanceTypicalStepSerializer,
     MaintenanceTypicalStepSerializer,
     PhysicalConditionSerializer,
+    OrganizationalStructureTypeSerializer,
     OrganizationalStructureRelationSerializer,
     OrganizationalStructureSerializer,
     PersonSerializer,
@@ -7458,6 +7460,23 @@ class PositionRoleMappingViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
 
 # Organizational Structure ViewSets
+class OrganizationalStructureTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
+    queryset = OrganizationalStructureType.objects.all().order_by("organizational_structure_type_id")
+    serializer_class = OrganizationalStructureTypeSerializer
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create organizational structure types")
+        if denial:
+            return denial
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        last_type = OrganizationalStructureType.objects.order_by("-organizational_structure_type_id").first()
+        next_id = (last_type.organizational_structure_type_id + 1) if last_type else 1
+        org_type = OrganizationalStructureType.objects.create(organizational_structure_type_id=next_id, **serializer.validated_data)
+        return Response(OrganizationalStructureTypeSerializer(org_type).data, status=status.HTTP_201_CREATED)
+
+
 class OrganizationalStructureViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = OrganizationalStructure.objects.all().order_by("organizational_structure_id")
     serializer_class = OrganizationalStructureSerializer

@@ -15,7 +15,9 @@ import {
     X,
     LayoutGrid,
     Search,
-    RefreshCw
+    RefreshCw,
+    Settings,
+    Image
 } from 'lucide-react';
 import { consumableAttributeDefinitionService, consumableTypeAttributeService, consumableTypeService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -47,6 +49,7 @@ const ConsumablesTypesPage = () => {
         is_mandatory: false,
         default_value: ''
     });
+    const [showAttributesModal, setShowAttributesModal] = useState(false);
 
     useEffect(() => {
         fetchTypes();
@@ -220,6 +223,15 @@ const ConsumablesTypesPage = () => {
                     </button>
                     <button 
                         type="button" 
+                        className="btn btn-secondary" 
+                        onClick={goToAttributeDefinitions}
+                        style={{ padding: 'var(--space-3) var(--space-4)' }}
+                    >
+                        <Settings2 size={18} />
+                        <span>Definitions</span>
+                    </button>
+                    <button 
+                        type="button" 
                         className="btn btn-primary" 
                         onClick={() => setShowTypeForm(true)}
                         style={{ padding: 'var(--space-3) var(--space-6)' }}
@@ -285,15 +297,31 @@ const ConsumablesTypesPage = () => {
                                     key={type.consumable_type_id} 
                                     className="card" 
                                     style={{ 
-                                        background: selectedConsumableType?.consumable_type_id === type.consumable_type_id ? 'var(--color-accent-glow)' : 'var(--color-bg-card)', 
-                                        border: '1px solid',
-                                        borderColor: selectedConsumableType?.consumable_type_id === type.consumable_type_id ? 'var(--color-accent-primary)' : 'var(--color-border)',
-                                        transition: 'all 0.2s ease',
-                                        cursor: 'pointer'
+                                        background: 'var(--color-bg-card)', 
+                                        border: '1px solid var(--color-border)',
+                                        transition: 'all 0.2s ease'
                                     }}
-                                    onClick={() => showTypeAttributes(type)}
                                 >
                                     <div className="card-body" style={{ padding: 'var(--space-5)' }}>
+                                        {/* Type Photo Placeholder */}
+                                        <div style={{ 
+                                            width: '100%', 
+                                            height: '120px', 
+                                            background: 'var(--color-bg-secondary)', 
+                                            borderRadius: 'var(--radius-md)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: 'var(--color-text-muted)',
+                                            marginBottom: 'var(--space-4)',
+                                            border: '2px dashed var(--color-border)'
+                                        }}>
+                                            <div style={{ textAlign: 'center' }}>
+                                                <Image size={32} style={{ marginBottom: 'var(--space-2)', opacity: 0.5 }} />
+                                                <span style={{ fontSize: 'var(--font-size-xs)', display: 'block' }}>Type Photo</span>
+                                            </div>
+                                        </div>
+
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
                                             <div style={{ 
                                                 width: '40px', 
@@ -332,10 +360,20 @@ const ConsumablesTypesPage = () => {
                                         <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
                                             {type.consumable_type_label}
                                         </h3>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)' }}>
                                             <Hash size={14} />
                                             <span style={{ fontWeight: '600', letterSpacing: '0.05em' }}>{type.consumable_type_code}</span>
                                         </div>
+
+                                        {/* Attributes Button */}
+                                        <button 
+                                            className="btn btn-secondary" 
+                                            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}
+                                            onClick={(e) => { e.stopPropagation(); showTypeAttributes(type); setShowAttributesModal(true); }}
+                                        >
+                                            <Settings size={16} />
+                                            <span>Manage Attributes</span>
+                                        </button>
                                     </div>
                                 </div>
                             ))}
@@ -343,154 +381,240 @@ const ConsumablesTypesPage = () => {
                     )}
                 </div>
 
-                <div style={{ flex: '0.8', position: 'sticky', top: 'var(--space-6)' }}>
-                    <div className="card" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)' }}>
-                        <div className="card-header" style={{ padding: 'var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                <Settings2 size={20} className="text-accent" />
-                                <h2 className="card-title" style={{ margin: 0 }}>Type Attributes</h2>
+            </div>
+
+            {/* Modal for Type Attributes */}
+            {showAttributesModal && selectedConsumableType && (
+                <div className="modal-overlay" onClick={() => setShowAttributesModal(false)}>
+                    <div className="modal" style={{ maxWidth: '700px', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
+                        {/* Modal Header */}
+                        <div className="modal-header" style={{ borderBottom: '1px solid var(--color-border)', padding: 'var(--space-5)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                                <div style={{ 
+                                    width: '48px', 
+                                    height: '48px', 
+                                    background: 'var(--color-accent-glow)', 
+                                    borderRadius: 'var(--radius-lg)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--color-accent-primary)'
+                                }}>
+                                    <Settings2 size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="modal-title" style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>{selectedConsumableType.consumable_type_label}</h2>
+                                    <p style={{ margin: 'var(--space-1) 0 0', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                        {typeAttributes.length} attributes defined
+                                    </p>
+                                </div>
                             </div>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                <button
-                                    onClick={goToAttributeDefinitions}
-                                    className="btn btn-secondary"
-                                    style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
-                                >
-                                    Definitions
-                                </button>
-                                {selectedConsumableType && (
-                                    <button
-                                        onClick={() => setShowAddTypeAttributeForm(!showAddTypeAttributeForm)}
-                                        className="btn btn-primary"
-                                        style={{ padding: 'var(--space-2) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
-                                    >
-                                        <Plus size={14} />
-                                        <span>Add</span>
-                                    </button>
-                                )}
-                            </div>
+                            <button className="modal-close" onClick={() => setShowAttributesModal(false)} style={{ padding: 'var(--space-2)' }}>
+                                <X size={24} />
+                            </button>
                         </div>
 
-                        <div className="card-body" style={{ padding: 'var(--space-5)' }}>
-                            {!selectedConsumableType ? (
-                                <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-muted)' }}>
-                                    <Info size={40} style={{ marginBottom: 'var(--space-3)', opacity: 0.5 }} />
-                                    <p>Select a type to manage its attributes</p>
+                        {/* Modal Body */}
+                        <div className="modal-body" style={{ flex: 1, overflow: 'auto', padding: 'var(--space-5)' }}>
+                            {/* Add Attribute Button */}
+                            <button
+                                onClick={() => setShowAddTypeAttributeForm(!showAddTypeAttributeForm)}
+                                className="btn btn-primary"
+                                style={{ 
+                                    width: '100%', 
+                                    padding: 'var(--space-4)', 
+                                    marginBottom: 'var(--space-5)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 'var(--space-2)'
+                                }}
+                            >
+                                <Plus size={18} />
+                                <span>{showAddTypeAttributeForm ? 'Cancel' : 'Add New Attribute'}</span>
+                            </button>
+
+                            {/* Add Attribute Form */}
+                            {showAddTypeAttributeForm && (
+                                <div style={{ 
+                                    marginBottom: 'var(--space-6)', 
+                                    padding: 'var(--space-5)', 
+                                    background: 'var(--color-bg-secondary)', 
+                                    border: '2px solid var(--color-accent-primary)', 
+                                    borderRadius: 'var(--radius-lg)',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                }}>
+                                    <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-md)', color: 'var(--color-accent-primary)' }}>New Attribute</h4>
+                                    <form onSubmit={handleAddTypeAttributeSubmit} className="form">
+                                        <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                            <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>Attribute Definition</label>
+                                            <select
+                                                name="consumable_attribute_definition"
+                                                value={typeAttributeForm.consumable_attribute_definition}
+                                                onChange={handleTypeAttributeInputChange}
+                                                className="form-input"
+                                                style={{ height: '44px' }}
+                                            >
+                                                <option value="">Select a definition...</option>
+                                                {availableAttributeDefinitions.map((def) => (
+                                                    <option key={def.consumable_attribute_definition_id} value={def.consumable_attribute_definition_id}>
+                                                        {def.description}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+                                            <div className="form-group">
+                                                <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>Default Value</label>
+                                                <input
+                                                    type="text"
+                                                    name="default_value"
+                                                    placeholder="Enter default value (optional)"
+                                                    value={typeAttributeForm.default_value}
+                                                    onChange={handleTypeAttributeInputChange}
+                                                    className="form-input"
+                                                    style={{ height: '44px' }}
+                                                />
+                                            </div>
+                                            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                                <label style={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    gap: 'var(--space-3)', 
+                                                    cursor: 'pointer',
+                                                    padding: 'var(--space-3)',
+                                                    background: 'var(--color-bg-card)',
+                                                    borderRadius: 'var(--radius-md)',
+                                                    border: '1px solid var(--color-border)',
+                                                    width: '100%'
+                                                }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        name="is_mandatory"
+                                                        checked={typeAttributeForm.is_mandatory}
+                                                        onChange={handleTypeAttributeInputChange}
+                                                        style={{ width: '18px', height: '18px' }}
+                                                    />
+                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>Mandatory</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                                            <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1, padding: 'var(--space-3)' }}>
+                                                {saving ? 'Saving...' : 'Save Attribute'}
+                                            </button>
+                                            <button type="button" onClick={() => setShowAddTypeAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1, padding: 'var(--space-3)' }}>Cancel</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            )}
+
+                            {/* Attributes List */}
+                            {attributesLoading ? (
+                                <div className="loading-state" style={{ padding: 'var(--space-8)' }}>
+                                    <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
+                                    <span>Loading attributes...</span>
+                                </div>
+                            ) : typeAttributes.length === 0 ? (
+                                <div style={{ 
+                                    textAlign: 'center', 
+                                    padding: 'var(--space-12)', 
+                                    color: 'var(--color-text-muted)',
+                                    background: 'var(--color-bg-secondary)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    border: '2px dashed var(--color-border)'
+                                }}>
+                                    <Settings2 size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.3 }} />
+                                    <p style={{ fontSize: 'var(--font-size-md)', margin: 0 }}>No attributes defined yet</p>
+                                    <p style={{ fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-2)' }}>Click "Add New Attribute" to get started</p>
                                 </div>
                             ) : (
-                                <>
-                                    <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-3)', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                        <div style={{ fontWeight: '600', color: 'var(--color-accent-primary)' }}>{selectedConsumableType.consumable_type_label}</div>
-                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{typeAttributes.length} assigned attributes</div>
-                                    </div>
-
-                                    {showAddTypeAttributeForm && (
-                                        <div style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4)', background: 'var(--color-bg-secondary)', border: '1px solid var(--color-accent-primary)', borderRadius: 'var(--radius-md)' }}>
-                                            <form onSubmit={handleAddTypeAttributeSubmit} className="form">
-                                                <div className="form-group">
-                                                    <label className="form-label">Definition</label>
-                                                    <select
-                                                        name="consumable_attribute_definition"
-                                                        value={typeAttributeForm.consumable_attribute_definition}
-                                                        onChange={handleTypeAttributeInputChange}
-                                                        className="form-input"
-                                                    >
-                                                        <option value="">Select an attribute...</option>
-                                                        {availableAttributeDefinitions.map((def) => (
-                                                            <option key={def.consumable_attribute_definition_id} value={def.consumable_attribute_definition_id}>
-                                                                {def.description}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-                                                    <div className="form-group">
-                                                        <label className="form-label">Default Value</label>
-                                                        <input
-                                                            type="text"
-                                                            name="default_value"
-                                                            placeholder="None"
-                                                            value={typeAttributeForm.default_value}
-                                                            onChange={handleTypeAttributeInputChange}
-                                                            className="form-input"
-                                                        />
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                                    {typeAttributes.map((attr, index) => {
+                                        const definition = attr.definition || attributeDefinitions.find((d) => d.consumable_attribute_definition_id === attr.consumable_attribute_definition);
+                                        return (
+                                            <div
+                                                key={`${attr.consumable_type}-${attr.consumable_attribute_definition}`}
+                                                style={{
+                                                    padding: 'var(--space-4) var(--space-5)',
+                                                    background: 'var(--color-bg-card)',
+                                                    borderRadius: 'var(--radius-lg)',
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    border: '1px solid var(--color-border)',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                                                    <div style={{ 
+                                                        width: '40px', 
+                                                        height: '40px', 
+                                                        background: 'var(--color-accent-glow)', 
+                                                        borderRadius: 'var(--radius-md)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        color: 'var(--color-accent-primary)',
+                                                        fontSize: '14px',
+                                                        fontWeight: '700'
+                                                    }}>
+                                                        {index + 1}
                                                     </div>
-                                                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: 'var(--space-3)' }}>
-                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer' }}>
-                                                            <input
-                                                                type="checkbox"
-                                                                name="is_mandatory"
-                                                                checked={typeAttributeForm.is_mandatory}
-                                                                onChange={handleTypeAttributeInputChange}
-                                                            />
-                                                            <span style={{ fontSize: 'var(--font-size-sm)' }}>Mandatory</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-
-                                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                                    <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1 }}>Save</button>
-                                                    <button type="button" onClick={() => setShowAddTypeAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    )}
-
-                                    {attributesLoading ? (
-                                        <div className="loading-state">
-                                            <div className="loading-spinner"></div>
-                                        </div>
-                                    ) : typeAttributes.length === 0 ? (
-                                        <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>No attributes defined for this type.</p>
-                                    ) : (
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                                            {typeAttributes.map((attr) => {
-                                                const definition = attr.definition || attributeDefinitions.find((d) => d.consumable_attribute_definition_id === attr.consumable_attribute_definition);
-                                                return (
-                                                    <div
-                                                        key={`${attr.consumable_type}-${attr.consumable_attribute_definition}`}
-                                                        style={{
-                                                            padding: 'var(--space-3) var(--space-4)',
-                                                            background: 'var(--color-bg-secondary)',
-                                                            borderRadius: 'var(--radius-md)',
-                                                            display: 'flex',
-                                                            justifyContent: 'space-between',
-                                                            alignItems: 'center',
-                                                            border: '1px solid var(--color-border)'
-                                                        }}
-                                                    >
-                                                        <div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-                                                                <span style={{ fontWeight: '600', fontSize: 'var(--font-size-sm)' }}>{definition?.description}</span>
-                                                                {attr.is_mandatory && (
-                                                                    <span style={{ fontSize: '10px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-error)', padding: '1px 4px', borderRadius: '4px', textTransform: 'uppercase' }}>Mandatory</span>
-                                                                )}
-                                                            </div>
-                                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '11px', display: 'flex', gap: 'var(--space-3)' }}>
-                                                                <span>{definition?.data_type || 'any'}</span>
-                                                                {definition?.unit && <span>• {definition.unit}</span>}
-                                                                {attr.default_value && <span>• Def: {attr.default_value}</span>}
-                                                            </div>
+                                                    <div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-1)' }}>
+                                                            <span style={{ fontWeight: '600', fontSize: 'var(--font-size-md)' }}>{definition?.description}</span>
+                                                            {attr.is_mandatory && (
+                                                                <span style={{ fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: 'var(--color-error)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', textTransform: 'uppercase', fontWeight: '600' }}>Required</span>
+                                                            )}
                                                         </div>
-                                                        <button
-                                                            onClick={() => handleDeleteTypeAttribute(attr.consumable_attribute_definition)}
-                                                            style={{ border: 'none', background: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: 'var(--space-1)' }}
-                                                            className="hover-text-error"
-                                                        >
-                                                            <X size={16} />
-                                                        </button>
+                                                        <div style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)', display: 'flex', gap: 'var(--space-4)', alignItems: 'center' }}>
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                                                                <Tag size={12} />
+                                                                {definition?.data_type || 'any'}
+                                                            </span>
+                                                            {definition?.unit && <span>• {definition.unit}</span>}
+                                                            {attr.default_value && (
+                                                                <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--color-accent-primary)' }}>
+                                                                    <Hash size={12} />
+                                                                    Default: {attr.default_value}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleDeleteTypeAttribute(attr.consumable_attribute_definition)}
+                                                    style={{ 
+                                                        border: 'none', 
+                                                        background: 'var(--color-bg-secondary)', 
+                                                        color: 'var(--color-text-muted)', 
+                                                        cursor: 'pointer', 
+                                                        padding: 'var(--space-2)',
+                                                        borderRadius: 'var(--radius-md)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--color-error)'; }}
+                                                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-bg-secondary)'; e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+                                                    title="Remove attribute"
+                                                >
+                                                    <X size={18} />
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             )}
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Modal for Creating New Type */}
             {showTypeForm && (

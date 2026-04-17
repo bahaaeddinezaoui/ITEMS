@@ -1320,6 +1320,33 @@ export const positionRoleMappingService = {
     },
 };
 
+// Organizational Structure Type service
+export const organizationalStructureTypeService = {
+    getAll: async () => {
+        const response = await api.get('organizational-structure-types/');
+        return response.data;
+    },
+
+    getById: async (id) => {
+        const response = await api.get(`organizational-structure-types/${id}/`);
+        return response.data;
+    },
+
+    create: async (typeData) => {
+        const response = await api.post('organizational-structure-types/', typeData);
+        return response.data;
+    },
+
+    update: async (id, typeData) => {
+        const response = await api.put(`organizational-structure-types/${id}/`, typeData);
+        return response.data;
+    },
+
+    delete: async (id) => {
+        await api.delete(`organizational-structure-types/${id}/`);
+    },
+};
+
 // Organizational Structure service
 export const organizationalStructureService = {
     getAll: async () => {

@@ -357,12 +357,31 @@ class PositionRoleMapping(models.Model):
         unique_together = (('position', 'role'),)
 
 
+class OrganizationalStructureType(models.Model):
+    """Maps to organizational_structure_type table"""
+    organizational_structure_type_id = models.AutoField(primary_key=True, db_column='organizational_structure_type_id')
+    organizational_structure_type = models.CharField(max_length=30, db_column='organizational_structure_type')
+
+    class Meta:
+        managed = False
+        db_table = 'organizational_structure_type'
+
+    def __str__(self):
+        return self.organizational_structure_type
+
+
 class OrganizationalStructure(models.Model):
     """Maps to organizational_structure table"""
     organizational_structure_id = models.AutoField(primary_key=True, db_column='organizational_structure_id')
     structure_code = models.CharField(max_length=50, db_column='structure_code')
     structure_name = models.CharField(max_length=255, db_column='structure_name')
-    structure_type = models.CharField(max_length=30, db_column='structure_type')
+    structure_type = models.ForeignKey(
+        OrganizationalStructureType,
+        on_delete=models.SET_NULL,
+        db_column='structure_type_id',
+        null=True,
+        blank=True
+    )
     is_active = models.BooleanField(db_column='is_active')
 
     class Meta:

@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { organizationalStructureService, organizationalStructureRelationService } from '../services/api';
+import { organizationalStructureService, organizationalStructureRelationService, organizationalStructureTypeService } from '../services/api';
 
 // Form Tab Component
-const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, handleCancel }) => (
+const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, handleCancel, structureTypes, structureTypesLoading }) => (
     <div className="card">
         <div className="card-body">
             <div className="form-header" style={{ marginBottom: 'var(--space-6)' }}>
@@ -29,15 +29,21 @@ const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, h
 
                     <div className="form-group">
                         <label className="form-label">Structure Type *</label>
-                        <input
-                            type="text"
-                            name="structure_type"
-                            value={formData.structure_type}
+                        <select
+                            name="structure_type_id"
+                            value={formData.structure_type_id}
                             onChange={handleFormChange}
                             required
                             className="form-control"
-                            placeholder="e.g., Department, Division"
-                        />
+                            disabled={structureTypesLoading}
+                        >
+                            <option value="">{structureTypesLoading ? 'Loading...' : 'Select a type...'}</option>
+                            {structureTypes.map(type => (
+                                <option key={type.organizational_structure_type_id} value={type.organizational_structure_type_id}>
+                                    {type.organizational_structure_type}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 
@@ -125,6 +131,53 @@ const HierarchyModal = ({
                 </div>
 
                 <div className="hierarchy-modal-body">
+                    {/* Current Parent Display */}
+                    {relations.length > 0 && !editingRelation && (
+                        <div className="hierarchy-section">
+                            <div className="hierarchy-section-header">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
+                                </svg>
+                                <span>Current Parent</span>
+                            </div>
+                            
+                            {relations.map((relation) => {
+                                const parentStructure = structures.find(s => s.organizational_structure_id === relation.parent_organizational_structure);
+                                return parentStructure ? (
+                                    <div key={relation.parent_organizational_structure} className="hierarchy-connected-card">
+                                        <div className="hierarchy-connected-info">
+                                            <div className="hierarchy-connected-indicator">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
+                                                </svg>
+                                            </div>
+                                            <div className="hierarchy-connected-text">
+                                                <span className="hierarchy-connected-label">Parent Structure</span>
+                                                <span className="hierarchy-connected-name">
+                                                    {parentStructure.structure_name} ({parentStructure.structure_code})
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="hierarchy-connected-actions">
+                                            <button 
+                                                className="hierarchy-btn hierarchy-btn-outline"
+                                                onClick={() => handleEditRelation(relation)}
+                                            >
+                                                Change
+                                            </button>
+                                            <button 
+                                                className="hierarchy-btn hierarchy-btn-danger-outline"
+                                                onClick={() => handleDeleteRelation(relation.child_organizational_structure, relation.parent_organizational_structure)}
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : null;
+                            })}
+                        </div>
+                    )}
+
                     {/* Parent Assignment Form */}
                     {(editingRelation || (relations.length === 0 && selectedStructure)) && (
                         <div className="hierarchy-section hierarchy-form-section">
@@ -154,7 +207,7 @@ const HierarchyModal = ({
                                                     key={structure.organizational_structure_id} 
                                                     value={structure.organizational_structure_id}
                                                 >
-                                                    {structure.structure_name} ({structure.structure_code}) - {structure.structure_type}
+                                                    {structure.structure_name} ({structure.structure_code}) - {structure.structure_type_label || 'N/A'}
                                                 </option>
                                             ))
                                         }
@@ -174,6 +227,29 @@ const HierarchyModal = ({
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    )}
+
+                    {/* No Parent State */}
+                    {relations.length === 0 && !editingRelation && selectedStructure && (
+                        <div className="hierarchy-section">
+                            <div className="hierarchy-empty-card">
+                                <div className="hierarchy-empty-icon">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
+                                    </svg>
+                                </div>
+                                <h3 className="hierarchy-empty-title">No Parent Structure</h3>
+                                <p className="hierarchy-empty-desc">
+                                    This structure has no parent assigned. You can assign a parent structure to establish hierarchy.
+                                </p>
+                                <button 
+                                    className="hierarchy-btn hierarchy-btn-primary"
+                                    onClick={() => handleEditRelation({})}
+                                >
+                                    Assign Parent
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -216,10 +292,10 @@ const StructuresTabContent = ({
         return () => { document.body.style.overflow = ''; };
     }, [isModalOpen]);
 
-    const filteredStructures = structures.filter(s => 
+    const filteredStructures = structures.filter(s =>
         s.structure_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.structure_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.structure_type.toLowerCase().includes(searchQuery.toLowerCase())
+        (s.structure_type_label || '').toLowerCase().includes(searchQuery.toLowerCase())
     ).sort((a, b) => {
         const aVal = a[sortField]?.toString().toLowerCase() || '';
         const bVal = b[sortField]?.toString().toLowerCase() || '';
@@ -326,7 +402,7 @@ const StructuresTabContent = ({
                                             </div>
                                         </td>
                                         <td>
-                                            <span className="badge badge-info">{structure.structure_type}</span>
+                                            <span className="badge badge-info">{structure.structure_type_label || 'N/A'}</span>
                                         </td>
                                         <td>
                                             <span className={`badge ${structure.is_active ? 'badge-success' : 'badge-warning'}`}>
@@ -389,10 +465,12 @@ const OrganizationalStructurePage = () => {
 
     // Structures state
     const [structures, setStructures] = useState([]);
+    const [structureTypes, setStructureTypes] = useState([]);
+    const [structureTypesLoading, setStructureTypesLoading] = useState(false);
     const [formData, setFormData] = useState({
         structure_code: '',
         structure_name: '',
-        structure_type: '',
+        structure_type_id: '',
         is_active: true,
     });
     const [editingId, setEditingId] = useState(null);
@@ -413,6 +491,7 @@ const OrganizationalStructurePage = () => {
 
     useEffect(() => {
         fetchStructures();
+        fetchStructureTypes();
     }, []);
 
     // Auto-dismiss notifications
@@ -437,6 +516,18 @@ const OrganizationalStructurePage = () => {
             setError('Failed to fetch organizational structures: ' + err.message);
         } finally {
             setLoading(false);
+        }
+    }, []);
+
+    const fetchStructureTypes = useCallback(async () => {
+        setStructureTypesLoading(true);
+        try {
+            const data = await organizationalStructureTypeService.getAll();
+            setStructureTypes(Array.isArray(data) ? data : []);
+        } catch (err) {
+            setError('Failed to fetch structure types: ' + err.message);
+        } finally {
+            setStructureTypesLoading(false);
         }
     }, []);
 
@@ -465,7 +556,7 @@ const OrganizationalStructurePage = () => {
             setFormData({
                 structure_code: '',
                 structure_name: '',
-                structure_type: '',
+                structure_type_id: '',
                 is_active: true,
             });
             setEditingId(null);
@@ -479,7 +570,7 @@ const OrganizationalStructurePage = () => {
         setFormData({
             structure_code: structure.structure_code,
             structure_name: structure.structure_name,
-            structure_type: structure.structure_type,
+            structure_type_id: structure.structure_type_id || '',
             is_active: structure.is_active,
         });
         setEditingId(structure.organizational_structure_id);
@@ -502,7 +593,7 @@ const OrganizationalStructurePage = () => {
         setFormData({
             structure_code: '',
             structure_name: '',
-            structure_type: '',
+            structure_type_id: '',
             is_active: true,
         });
         setEditingId(null);
@@ -1373,6 +1464,8 @@ const OrganizationalStructurePage = () => {
                             handleFormChange={handleFormChange}
                             handleSubmit={handleSubmit}
                             handleCancel={handleCancel}
+                            structureTypes={structureTypes}
+                            structureTypesLoading={structureTypesLoading}
                         />
                     )}
                 </div>
