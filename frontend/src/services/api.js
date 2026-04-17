@@ -1225,6 +1225,43 @@ export const locationService = {
     },
 };
 
+// Location Relation service
+export const locationRelationService = {
+    getAll: async () => {
+        const response = await api.get('location-relations/');
+        return response.data;
+    },
+
+    getByChildId: async (childId) => {
+        const response = await api.get(`location-relations/by-child/${childId}/`);
+        return response.data;
+    },
+
+    getByParentId: async (parentId) => {
+        const response = await api.get(`location-relations/by-parent/${parentId}/`);
+        return response.data;
+    },
+
+    getHierarchy: async (locationId) => {
+        const response = await api.get(`location-relations/hierarchy/${locationId}/`);
+        return response.data;
+    },
+
+    create: async (relationData) => {
+        const response = await api.post('location-relations/', relationData);
+        return response.data;
+    },
+
+    update: async (childId, parentId, relationData) => {
+        const response = await api.put(`location-relations/${childId}/`, relationData);
+        return response.data;
+    },
+
+    delete: async (childId, parentId) => {
+        await api.delete(`location-relations/${childId}/`);
+    },
+};
+
 // Location Inventory service
 export const locationInventoryService = {
     getInventory: async (params) => {

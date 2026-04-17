@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, Position, PositionRoleMapping, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable, AuthenticationLog, UserSession
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, LocationRelation, Position, PositionRoleMapping, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable, AuthenticationLog, UserSession
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -190,6 +190,21 @@ class LocationSerializer(serializers.ModelSerializer):
         model = Location
         fields = ['location_id', 'location_name', 'location_type', 'location_type_label', 'location_type_code']
         read_only_fields = ['location_id']
+
+
+class LocationRelationSerializer(serializers.ModelSerializer):
+    """Serializer for LocationRelation model"""
+    child_location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
+    parent_location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
+    child_location_name = serializers.CharField(source='child_location.location_name', read_only=True)
+    parent_location_name = serializers.CharField(source='parent_location.location_name', read_only=True)
+    
+    class Meta:
+        model = LocationRelation
+        fields = [
+            'child_location', 'parent_location', 'relation_id',
+            'child_location_name', 'parent_location_name'
+        ]
 
 
 class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):

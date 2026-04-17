@@ -60,6 +60,7 @@ from .models import (
     Position,
     PositionRoleMapping,
     Location,
+    LocationRelation,
     LocationType,
     StockItem,
     StockItemAttributeDefinition,
@@ -527,6 +528,7 @@ from .serializers import (
     PositionRoleMappingSerializer,
     RoleSerializer,
     LocationSerializer,
+    LocationRelationSerializer,
     LocationTypeSerializer,
     StockItemAttributeDefinitionSerializer,
     StockItemAttributeValueSerializer,
@@ -7235,6 +7237,173 @@ class LocationViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_id = (last_item.location_id + 1) if last_item else 1
         item = Location.objects.create(location_id=next_id, **serializer.validated_data)
         return Response(LocationSerializer(item).data, status=status.HTTP_201_CREATED)
+
+
+class LocationRelationViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = LocationRelation.objects.all().order_by("child_location_id")
+    serializer_class = LocationRelationSerializer
+
+    def get_queryset(self):
+        queryset = LocationRelation.objects.all().order_by("child_location_id")
+        
+        # Safely access query parameters
+        if hasattr(self, 'request') and self.request:
+            child_location = self.request.query_params.get("child_location")
+            parent_location = self.request.query_params.get("parent_location")
+            
+            if child_location is not None:
+                queryset = queryset.filter(child_location=child_location)
+            if parent_location is not None:
+                queryset = queryset.filter(parent_location=parent_location)
+        
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Prevent circular references
+        child_id = serializer.validated_data['child_location'].location_id
+        parent_id = serializer.validated_data['parent_location'].location_id
+        
+        if child_id == parent_id:
+            return Response(
+                {"error": "A location cannot be its own parent"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Check if this would create a circular reference
+        if self._would_create_circular_reference(child_id, parent_id):
+            return Response(
+                {"error": "This would create a circular reference in the location hierarchy"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Generate a unique relation_id
+        from django.db.models import Max
+        max_relation_id = LocationRelation.objects.aggregate(max_id=Max('relation_id'))['max_id'] or 0
+        next_relation_id = max_relation_id + 1
+        
+        # Add relation_id to validated data
+        validated_data = serializer.validated_data.copy()
+        validated_data['relation_id'] = next_relation_id
+        
+        item = LocationRelation.objects.create(**validated_data)
+        return Response(LocationRelationSerializer(item).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        # Prevent circular references on update
+        if 'parent_location' in serializer.validated_data:
+            child_id = instance.child_location.location_id
+            parent_id = serializer.validated_data['parent_location'].location_id
+            
+            if child_id == parent_id:
+                return Response(
+                    {"error": "A location cannot be its own parent"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            if self._would_create_circular_reference(child_id, parent_id):
+                return Response(
+                    {"error": "This would create a circular reference in the location hierarchy"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        serializer.save()
+        return Response(LocationRelationSerializer(instance).data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def _would_create_circular_reference(self, child_id, parent_id):
+        """Check if setting parent_id as parent of child_id would create a circular reference"""
+        visited = set()
+        current = parent_id
+        
+        while current is not None and current not in visited:
+            visited.add(current)
+            try:
+                parent_relation = LocationRelation.objects.get(child_location_id=current)
+                current = parent_relation.parent_location.location_id
+            except LocationRelation.DoesNotExist:
+                current = None
+        
+        return current == child_id
+
+    @action(detail=False, methods=['get'], url_path='by-child/(?P<child_id>[^/.]+)')
+    def by_child(self, request, child_id=None):
+        """Get relations by child location ID"""
+        try:
+            relations = LocationRelation.objects.filter(child_location_id=child_id)
+            serializer = self.get_serializer(relations, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'], url_path='by-parent/(?P<parent_id>[^/.]+)')
+    def by_parent(self, request, parent_id=None):
+        """Get relations by parent location ID"""
+        try:
+            relations = LocationRelation.objects.filter(parent_location_id=parent_id)
+            serializer = self.get_serializer(relations, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'], url_path='hierarchy/(?P<location_id>[^/.]+)')
+    def hierarchy(self, request, location_id=None):
+        """Get the full hierarchy for a location (parents and children)"""
+        try:
+            location = Location.objects.get(location_id=location_id)
+            
+            # Get parent chain
+            parents = []
+            current = location
+            while True:
+                try:
+                    parent_relation = LocationRelation.objects.get(child_location=current)
+                    parent_location = parent_relation.parent_location
+                    parents.append({
+                        'location_id': parent_location.location_id,
+                        'location_name': parent_location.location_name,
+                        'location_type': parent_location.location_type.location_type_label if parent_location.location_type else None
+                    })
+                    current = parent_location
+                except LocationRelation.DoesNotExist:
+                    break
+            
+            # Get direct children
+            children_relations = LocationRelation.objects.filter(parent_location=location)
+            children = []
+            for relation in children_relations:
+                child_location = relation.child_location
+                children.append({
+                    'location_id': child_location.location_id,
+                    'location_name': child_location.location_name,
+                    'location_type': child_location.location_type.location_type_label if child_location.location_type else None
+                })
+            
+            return Response({
+                'location': {
+                    'location_id': location.location_id,
+                    'location_name': location.location_name,
+                    'location_type': location.location_type.location_type_label if location.location_type else None
+                },
+                'parents': list(reversed(parents)),  # Root first
+                'children': children
+            })
+        except Location.DoesNotExist:
+            return Response({"error": "Location not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PhysicalConditionViewSet(viewsets.ReadOnlyModelViewSet):

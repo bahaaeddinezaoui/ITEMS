@@ -75289,3 +75289,671 @@ Response Body:
 [2026-04-16 15:51:34.089239] END   GET /api/organizational-structure-relations/ -> 200
 [2026-04-16 15:51:36.418064] START GET /api/organizational-structure-relations/
 [2026-04-16 15:51:36.499693] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 08:17:20.780725] START GET /api/organizational-structures/
+[2026-04-17 08:17:20.848587] END   GET /api/organizational-structures/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-17 08:17:22.173352] START GET /api/organizational-structures/
+[2026-04-17 08:17:22.183258] END   GET /api/organizational-structures/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-17 08:17:37.773282] START POST /api/auth/login/
+[2026-04-17 08:17:38.233014] END   POST /api/auth/login/ -> 200
+[2026-04-17 08:17:40.077049] START GET /api/organizational-structures/
+[2026-04-17 08:17:40.185982] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 08:17:40.201547] START GET /api/organizational-structures/
+[2026-04-17 08:17:40.292111] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 08:17:43.343183] START GET /api/organizational-structure-relations/
+[2026-04-17 08:17:43.460348] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 08:17:45.422533] START GET /api/organizational-structure-relations/
+[2026-04-17 08:17:45.666068] END   GET /api/organizational-structure-relations/ -> 200
+[2026-04-17 08:21:47.046046] START GET /api/persons/
+[2026-04-17 08:21:47.047980] START GET /api/roles/
+[2026-04-17 08:21:47.158374] END   GET /api/roles/ -> 200
+[2026-04-17 08:21:47.171303] START GET /api/roles/
+[2026-04-17 08:21:47.197777] END   GET /api/persons/ -> 200
+[2026-04-17 08:21:47.205944] START GET /api/persons/
+[2026-04-17 08:21:47.234793] END   GET /api/roles/ -> 200
+[2026-04-17 08:21:47.300654] END   GET /api/persons/ -> 200
+[2026-04-17 08:21:48.764309] START GET /api/asset-types/
+[2026-04-17 08:21:48.766241] START GET /api/asset-attribute-definitions/
+[2026-04-17 08:21:48.836616] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 08:21:48.837704] END   GET /api/asset-types/ -> 200
+[2026-04-17 08:21:48.844866] START GET /api/asset-attribute-definitions/
+[2026-04-17 08:21:48.845649] START GET /api/asset-types/
+[2026-04-17 08:21:48.911391] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 08:21:48.911566] END   GET /api/asset-types/ -> 200
+[2026-04-17 08:21:53.392696] START GET /api/stock-item-types/
+[2026-04-17 08:21:53.394404] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 08:21:53.469305] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 08:21:53.470207] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 08:21:53.478684] START GET /api/stock-item-types/
+[2026-04-17 08:21:53.482492] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 08:21:53.545247] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 08:21:53.545950] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 08:21:54.125582] START GET /api/consumable-types/
+[2026-04-17 08:21:54.126985] START GET /api/consumable-attribute-definitions/
+[2026-04-17 08:21:54.193039] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-17 08:21:54.200502] START GET /api/consumable-attribute-definitions/
+[2026-04-17 08:21:54.261220] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-17 08:21:54.300922] END   GET /api/consumable-types/ -> 200
+[2026-04-17 08:21:54.308400] START GET /api/consumable-types/
+[2026-04-17 08:21:54.495109] END   GET /api/consumable-types/ -> 200
+[2026-04-17 08:21:55.256033] START GET /api/location-types/
+[2026-04-17 08:21:55.262896] START GET /api/locations/
+[2026-04-17 08:21:55.332928] END   GET /api/location-types/ -> 200
+[2026-04-17 08:21:55.343377] START GET /api/location-types/
+[2026-04-17 08:21:55.364969] END   GET /api/locations/ -> 200
+[2026-04-17 08:21:55.371200] START GET /api/locations/
+[2026-04-17 08:21:55.405669] END   GET /api/location-types/ -> 200
+[2026-04-17 08:21:55.457796] END   GET /api/locations/ -> 200
+[2026-04-17 11:30:30.542020] START GET /api/organizational-structures/
+[2026-04-17 11:30:30.686076] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:30:30.699883] START GET /api/organizational-structures/
+[2026-04-17 11:30:30.754890] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:30:30.921003] START GET /api/asset-types/
+[2026-04-17 11:30:30.924018] START GET /api/asset-attribute-definitions/
+[2026-04-17 11:30:30.982389] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 11:30:30.982749] END   GET /api/asset-types/ -> 200
+[2026-04-17 11:30:30.996169] START GET /api/asset-attribute-definitions/
+[2026-04-17 11:30:30.998384] START GET /api/asset-types/
+[2026-04-17 11:30:31.056180] END   GET /api/asset-types/ -> 200
+[2026-04-17 11:30:31.060547] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 11:30:31.500554] START GET /api/organizational-structures/
+[2026-04-17 11:30:31.553441] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:30:31.561267] START GET /api/organizational-structures/
+[2026-04-17 11:30:31.723025] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:30:31.949424] START GET /api/asset-types/
+[2026-04-17 11:30:31.954175] START GET /api/asset-attribute-definitions/
+[2026-04-17 11:30:31.999885] END   GET /api/asset-types/ -> 200
+[2026-04-17 11:30:32.005912] START GET /api/asset-types/
+[2026-04-17 11:30:32.009199] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 11:30:32.014746] START GET /api/asset-attribute-definitions/
+[2026-04-17 11:30:32.064645] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 11:30:32.158036] END   GET /api/asset-types/ -> 200
+[2026-04-17 11:30:32.312203] START GET /api/consumable-types/
+[2026-04-17 11:30:32.316640] START GET /api/consumable-attribute-definitions/
+[2026-04-17 11:30:32.375374] END   GET /api/consumable-types/ -> 200
+[2026-04-17 11:30:32.375947] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-17 11:30:32.385789] START GET /api/consumable-types/
+[2026-04-17 11:30:32.386891] START GET /api/consumable-attribute-definitions/
+[2026-04-17 11:30:32.437757] END   GET /api/consumable-types/ -> 200
+[2026-04-17 11:30:32.443999] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-17 11:30:32.805343] START GET /api/positions/
+[2026-04-17 11:30:32.860332] END   GET /api/positions/ -> 200
+[2026-04-17 11:30:32.868178] START GET /api/positions/
+[2026-04-17 11:30:32.916459] END   GET /api/positions/ -> 200
+[2026-04-17 11:32:54.528993] START GET /api/locations/
+[2026-04-17 11:32:54.530867] START GET /api/location-types/
+[2026-04-17 11:32:54.596303] END   GET /api/location-types/ -> 200
+[2026-04-17 11:32:54.610295] START GET /api/location-types/
+[2026-04-17 11:32:54.633323] END   GET /api/locations/ -> 200
+[2026-04-17 11:32:54.640690] START GET /api/locations/
+[2026-04-17 11:32:54.666407] END   GET /api/location-types/ -> 200
+[2026-04-17 11:32:54.822674] END   GET /api/locations/ -> 200
+[2026-04-17 11:32:55.304572] START GET /api/asset-types/
+[2026-04-17 11:32:55.305570] START GET /api/asset-attribute-definitions/
+[2026-04-17 11:32:55.363300] END   GET /api/asset-types/ -> 200
+[2026-04-17 11:32:55.363841] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 11:32:55.373819] START GET /api/asset-attribute-definitions/
+[2026-04-17 11:32:55.374755] START GET /api/asset-types/
+[2026-04-17 11:32:55.433598] END   GET /api/asset-types/ -> 200
+[2026-04-17 11:32:55.434127] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 11:32:56.070435] START GET /api/stock-item-types/
+[2026-04-17 11:32:56.073859] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 11:32:56.234798] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 11:32:56.235041] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 11:32:56.242446] START GET /api/stock-item-types/
+[2026-04-17 11:32:56.243201] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 11:32:56.288223] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 11:32:56.296585] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 11:32:56.499034] START GET /api/positions/
+[2026-04-17 11:32:56.557343] END   GET /api/positions/ -> 200
+[2026-04-17 11:32:56.563919] START GET /api/positions/
+[2026-04-17 11:32:56.612703] END   GET /api/positions/ -> 200
+[2026-04-17 11:32:57.073409] START GET /api/positions/
+[2026-04-17 11:32:57.074411] START GET /api/roles/
+[2026-04-17 11:32:57.076494] START GET /api/position-role-mappings/
+[2026-04-17 11:32:57.143032] END   GET /api/positions/ -> 200
+[2026-04-17 11:32:57.149328] END   GET /api/roles/ -> 200
+[2026-04-17 11:32:57.152351] START GET /api/positions/
+[2026-04-17 11:32:57.159491] START GET /api/roles/
+[2026-04-17 11:32:57.185830] END   GET /api/position-role-mappings/ -> 200
+[2026-04-17 11:32:57.192138] START GET /api/position-role-mappings/
+[2026-04-17 11:32:57.200168] END   GET /api/positions/ -> 200
+[2026-04-17 11:32:57.206694] END   GET /api/roles/ -> 200
+[2026-04-17 11:32:57.246446] END   GET /api/position-role-mappings/ -> 200
+[2026-04-17 11:33:03.923554] START GET /api/my-items/
+[2026-04-17 11:33:04.011278] END   GET /api/my-items/ -> 200
+[2026-04-17 11:33:04.019174] START GET /api/my-items/
+[2026-04-17 11:33:04.085122] END   GET /api/my-items/ -> 200
+[2026-04-17 11:33:04.991361] START GET /api/problem-reports/mine/
+[2026-04-17 11:33:05.179679] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-17 11:33:05.188865] START GET /api/problem-reports/mine/
+[2026-04-17 11:33:05.351606] END   GET /api/problem-reports/mine/ -> 200
+[2026-04-17 11:33:06.294328] START GET /api/persons/
+[2026-04-17 11:33:06.295205] START GET /api/problem-reports/
+[2026-04-17 11:33:06.295932] START GET /api/persons/
+[2026-04-17 11:33:06.297881] START GET /api/persons/
+[2026-04-17 11:33:06.359047] END   GET /api/persons/ -> 200
+[2026-04-17 11:33:06.367237] END   GET /api/problem-reports/ -> 200
+[2026-04-17 11:33:06.378629] END   GET /api/persons/ -> 200
+[2026-04-17 11:33:06.385604] END   GET /api/persons/ -> 200
+[2026-04-17 11:33:06.379517] START GET /api/persons/
+[2026-04-17 11:33:06.384995] START GET /api/problem-reports/
+[2026-04-17 11:33:06.395594] START GET /api/persons/
+[2026-04-17 11:33:06.401610] START GET /api/persons/
+[2026-04-17 11:33:06.447536] END   GET /api/persons/ -> 200
+[2026-04-17 11:33:06.452356] END   GET /api/problem-reports/ -> 200
+[2026-04-17 11:33:06.456933] END   GET /api/persons/ -> 200
+[2026-04-17 11:33:06.457805] END   GET /api/persons/ -> 200
+[2026-04-17 11:33:06.796563] START GET /api/asset-incident-reports/
+[2026-04-17 11:33:06.808051] START GET /api/assets/
+[2026-04-17 11:33:06.866064] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-17 11:33:06.868900] END   GET /api/assets/ -> 200
+[2026-04-17 11:33:06.875318] START GET /api/asset-incident-reports/
+[2026-04-17 11:33:06.878241] START GET /api/assets/
+[2026-04-17 11:33:06.934636] END   GET /api/assets/ -> 200
+[2026-04-17 11:33:06.938412] END   GET /api/asset-incident-reports/ -> 200
+[2026-04-17 11:33:09.452961] START GET /api/organizational-structures/
+[2026-04-17 11:33:09.515739] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:33:09.524484] START GET /api/organizational-structures/
+[2026-04-17 11:33:09.585821] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:33:27.137485] START GET /api/persons/
+[2026-04-17 11:33:27.140192] START GET /api/roles/
+[2026-04-17 11:33:27.204366] END   GET /api/roles/ -> 200
+[2026-04-17 11:33:27.221416] START GET /api/roles/
+[2026-04-17 11:33:27.237023] END   GET /api/persons/ -> 200
+[2026-04-17 11:33:27.245851] START GET /api/persons/
+[2026-04-17 11:33:27.280440] END   GET /api/roles/ -> 200
+[2026-04-17 11:33:27.337017] END   GET /api/persons/ -> 200
+[2026-04-17 11:33:38.704353] START GET /api/asset-types/
+[2026-04-17 11:33:38.705946] START GET /api/asset-attribute-definitions/
+[2026-04-17 11:33:38.760641] END   GET /api/asset-types/ -> 200
+[2026-04-17 11:33:38.764548] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 11:33:38.769628] START GET /api/asset-types/
+[2026-04-17 11:33:38.773836] START GET /api/asset-attribute-definitions/
+[2026-04-17 11:33:38.822893] END   GET /api/asset-types/ -> 200
+[2026-04-17 11:33:38.829643] END   GET /api/asset-attribute-definitions/ -> 200
+[2026-04-17 11:33:39.587089] START GET /api/stock-item-types/
+[2026-04-17 11:33:39.588296] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 11:33:39.638871] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 11:33:39.644273] START GET /api/stock-item-types/
+[2026-04-17 11:33:39.695508] END   GET /api/stock-item-types/ -> 200
+[2026-04-17 11:33:39.755438] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 11:33:39.761976] START GET /api/stock-item-attribute-definitions/
+[2026-04-17 11:33:39.810727] END   GET /api/stock-item-attribute-definitions/ -> 200
+[2026-04-17 11:33:40.622896] START GET /api/consumable-types/
+[2026-04-17 11:33:40.624102] START GET /api/consumable-attribute-definitions/
+[2026-04-17 11:33:40.673487] END   GET /api/consumable-types/ -> 200
+[2026-04-17 11:33:40.679754] START GET /api/consumable-types/
+[2026-04-17 11:33:40.728215] END   GET /api/consumable-types/ -> 200
+[2026-04-17 11:33:40.784323] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-17 11:33:40.790159] START GET /api/consumable-attribute-definitions/
+[2026-04-17 11:33:40.836989] END   GET /api/consumable-attribute-definitions/ -> 200
+[2026-04-17 11:33:41.040387] START GET /api/locations/
+[2026-04-17 11:33:41.041458] START GET /api/location-types/
+[2026-04-17 11:33:41.128459] END   GET /api/locations/ -> 200
+[2026-04-17 11:33:41.135880] START GET /api/locations/
+[2026-04-17 11:33:41.202434] END   GET /api/location-types/ -> 200
+[2026-04-17 11:33:41.211077] START GET /api/location-types/
+[2026-04-17 11:33:41.222307] END   GET /api/locations/ -> 200
+[2026-04-17 11:33:41.258780] END   GET /api/location-types/ -> 200
+[2026-04-17 11:37:52.187919] START GET /api/organizational-structures/
+[2026-04-17 11:37:52.346504] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:37:52.352638] START GET /api/organizational-structures/
+[2026-04-17 11:37:52.403154] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:51:45.204525] START GET /api/locations/
+[2026-04-17 11:51:45.205805] START GET /api/location-types/
+[2026-04-17 11:51:45.361438] END   GET /api/location-types/ -> 200
+[2026-04-17 11:51:45.378507] START GET /api/location-types/
+[2026-04-17 11:51:45.400223] END   GET /api/locations/ -> 200
+[2026-04-17 11:51:45.409735] START GET /api/locations/
+[2026-04-17 11:51:45.437789] END   GET /api/location-types/ -> 200
+[2026-04-17 11:51:45.501727] END   GET /api/locations/ -> 200
+[2026-04-17 11:55:08.734235] START GET /api/location-types/
+[2026-04-17 11:55:08.896401] END   GET /api/locations/ -> 200
+[2026-04-17 11:55:08.905663] START GET /api/locations/
+[2026-04-17 11:55:08.951493] END   GET /api/location-types/ -> 200
+[2026-04-17 11:55:08.959241] START GET /api/location-types/
+[2026-04-17 11:55:08.991499] END   GET /api/locations/ -> 200
+[2026-04-17 11:55:09.009512] END   GET /api/location-types/ -> 200
+[2026-04-17 11:56:05.051797] START GET /api/organizational-structures/
+[2026-04-17 11:56:05.127694] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:56:05.135147] START GET /api/organizational-structures/
+[2026-04-17 11:56:05.189885] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:56:55.512212] START GET /api/organizational-structures/
+[2026-04-17 11:56:55.575407] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:56:55.587079] START GET /api/organizational-structures/
+[2026-04-17 11:56:55.646366] END   GET /api/organizational-structures/ -> 200
+[2026-04-17 11:56:56.665178] START GET /api/locations/
+[2026-04-17 11:56:56.666818] START GET /api/location-types/
+[2026-04-17 11:56:56.730116] END   GET /api/location-types/ -> 200
+[2026-04-17 11:56:56.742189] START GET /api/location-types/
+[2026-04-17 11:56:56.761426] END   GET /api/locations/ -> 200
+[2026-04-17 11:56:56.768796] START GET /api/locations/
+[2026-04-17 11:56:56.793866] END   GET /api/location-types/ -> 200
+[2026-04-17 11:56:56.851653] END   GET /api/locations/ -> 200
+[2026-04-17 11:56:58.473306] START GET /api/locations/
+[2026-04-17 11:56:58.476930] START GET /api/location-types/
+[2026-04-17 11:56:58.559195] END   GET /api/locations/ -> 200
+[2026-04-17 11:56:58.567655] START GET /api/locations/
+[2026-04-17 11:56:58.641381] END   GET /api/location-types/ -> 200
+[2026-04-17 11:56:58.649320] START GET /api/location-types/
+[2026-04-17 11:56:58.698824] END   GET /api/locations/ -> 200
+[2026-04-17 11:56:58.740242] END   GET /api/location-types/ -> 200
+[2026-04-17 11:56:59.195229] START GET /api/locations/
+[2026-04-17 11:56:59.201694] START GET /api/location-types/
+[2026-04-17 11:56:59.254732] END   GET /api/location-types/ -> 200
+[2026-04-17 11:56:59.262001] START GET /api/location-types/
+[2026-04-17 11:56:59.275645] END   GET /api/locations/ -> 200
+[2026-04-17 11:56:59.281736] START GET /api/locations/
+[2026-04-17 11:56:59.309319] END   GET /api/location-types/ -> 200
+[2026-04-17 11:56:59.357642] END   GET /api/locations/ -> 200
+[2026-04-17 11:56:59.898504] START GET /api/location-relations/by-child/1/
+[2026-04-17 11:56:59.966115] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 11:57:01.832895] START GET /api/location-relations/by-child/1/
+[2026-04-17 11:57:01.888700] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 11:57:30.529863] START GET /api/location-relations/by-child/22/
+[2026-04-17 11:57:30.583124] END   GET /api/location-relations/by-child/22/ -> 200
+[2026-04-17 12:01:50.041775] START GET /api/locations/
+[2026-04-17 12:01:50.045068] START GET /api/location-types/
+[2026-04-17 12:01:50.210532] END   GET /api/location-types/ -> 200
+[2026-04-17 12:01:50.220057] START GET /api/location-types/
+[2026-04-17 12:01:50.242510] END   GET /api/locations/ -> 200
+[2026-04-17 12:01:50.250784] START GET /api/locations/
+[2026-04-17 12:01:50.334373] END   GET /api/locations/ -> 200
+[2026-04-17 12:01:50.375899] END   GET /api/location-types/ -> 200
+[2026-04-17 12:02:05.878910] START POST /api/locations/
+[2026-04-17 12:02:05.957187] END   POST /api/locations/ -> 201
+[2026-04-17 12:02:05.971427] START GET /api/locations/
+[2026-04-17 12:02:06.057055] END   GET /api/locations/ -> 200
+[2026-04-17 12:02:41.264219] START GET /api/locations/
+[2026-04-17 12:02:41.265127] START GET /api/location-types/
+[2026-04-17 12:02:41.342039] END   GET /api/locations/ -> 200
+[2026-04-17 12:02:41.348683] START GET /api/locations/
+[2026-04-17 12:02:41.429445] END   GET /api/location-types/ -> 200
+[2026-04-17 12:02:41.436410] START GET /api/location-types/
+[2026-04-17 12:02:41.486543] END   GET /api/location-types/ -> 200
+[2026-04-17 12:02:41.527720] END   GET /api/locations/ -> 200
+[2026-04-17 12:02:48.732584] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:02:48.783483] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:03:12.182209] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:03:12.235310] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:03:16.997190] START POST /api/location-relations/
+[2026-04-17 12:03:17.078807] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 12:03:42.119505] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:03:42.171208] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:03:45.649988] START POST /api/location-relations/
+[2026-04-17 12:03:45.688253] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 12:03:58.455039] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:03:58.504096] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:04:06.068614] START POST /api/location-relations/
+[2026-04-17 12:04:06.134963] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 12:04:22.685922] START GET /api/locations/
+[2026-04-17 12:04:22.686450] START GET /api/location-types/
+[2026-04-17 12:04:22.747362] END   GET /api/location-types/ -> 200
+[2026-04-17 12:04:22.759809] START GET /api/location-types/
+[2026-04-17 12:04:22.813404] END   GET /api/location-types/ -> 200
+[2026-04-17 12:04:22.882404] END   GET /api/locations/ -> 200
+[2026-04-17 12:04:22.888616] START GET /api/locations/
+[2026-04-17 12:04:22.952524] END   GET /api/locations/ -> 200
+[2026-04-17 12:04:29.193077] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:04:29.245649] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:04:37.199077] START POST /api/location-relations/
+[2026-04-17 12:04:37.278657] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 12:05:01.342658] START GET /api/locations/
+[2026-04-17 12:05:01.343625] START GET /api/location-types/
+[2026-04-17 12:05:01.397517] END   GET /api/location-types/ -> 200
+[2026-04-17 12:05:01.407369] START GET /api/location-types/
+[2026-04-17 12:05:01.423810] END   GET /api/locations/ -> 200
+[2026-04-17 12:05:01.429787] START GET /api/locations/
+[2026-04-17 12:05:01.451672] END   GET /api/location-types/ -> 200
+[2026-04-17 12:05:01.513257] END   GET /api/locations/ -> 200
+[2026-04-17 12:05:04.515670] START GET /api/location-relations/by-child/26/
+[2026-04-17 12:05:04.570043] END   GET /api/location-relations/by-child/26/ -> 200
+[2026-04-17 12:05:39.221681] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:05:39.270181] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:05:46.763576] START POST /api/location-relations/
+[2026-04-17 12:05:46.821772] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 12:09:07.478910] START GET /api/locations/
+[2026-04-17 12:09:07.479717] START GET /api/location-types/
+[2026-04-17 12:09:07.608870] END   GET /api/location-types/ -> 200
+[2026-04-17 12:09:07.621631] START GET /api/location-types/
+[2026-04-17 12:09:07.636143] END   GET /api/locations/ -> 200
+[2026-04-17 12:09:07.642315] START GET /api/locations/
+[2026-04-17 12:09:07.672301] END   GET /api/location-types/ -> 200
+[2026-04-17 12:09:07.724664] END   GET /api/locations/ -> 200
+[2026-04-17 12:09:09.168469] START GET /api/location-relations/by-child/1/
+[2026-04-17 12:09:09.223133] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 12:09:13.540627] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:09:13.598483] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:09:18.126012] START POST /api/location-relations/
+[2026-04-17 12:09:18.190520] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 12:09:52.095077] START GET /api/locations/
+[2026-04-17 12:09:52.095461] START GET /api/location-types/
+[2026-04-17 12:09:52.145131] END   GET /api/location-types/ -> 200
+[2026-04-17 12:09:52.153295] START GET /api/location-types/
+[2026-04-17 12:09:52.171214] END   GET /api/locations/ -> 200
+[2026-04-17 12:09:52.177008] START GET /api/locations/
+[2026-04-17 12:09:52.207257] END   GET /api/location-types/ -> 200
+[2026-04-17 12:09:52.247066] END   GET /api/locations/ -> 200
+[2026-04-17 12:10:01.189174] START GET /api/location-relations/by-child/26/
+[2026-04-17 12:10:01.239025] END   GET /api/location-relations/by-child/26/ -> 200
+[2026-04-17 12:10:05.999158] START GET /api/location-relations/by-child/23/
+[2026-04-17 12:10:06.049361] END   GET /api/location-relations/by-child/23/ -> 200
+[2026-04-17 12:10:14.241375] START POST /api/location-relations/
+[2026-04-17 12:10:14.279818] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 12:13:38.383431] START GET /api/locations/
+[2026-04-17 12:13:38.389986] START GET /api/location-types/
+[2026-04-17 12:13:38.854432] END   GET /api/location-types/ -> 200
+[2026-04-17 12:13:38.880892] START GET /api/location-types/
+[2026-04-17 12:13:38.918487] END   GET /api/locations/ -> 200
+[2026-04-17 12:13:38.933240] START GET /api/locations/
+[2026-04-17 12:13:38.952945] END   GET /api/location-types/ -> 200
+[2026-04-17 12:13:39.158752] END   GET /api/locations/ -> 200
+[2026-04-17 12:13:46.404382] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:13:46.475613] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:13:55.346661] START GET /api/location-relations/by-child/24/
+[2026-04-17 12:13:55.408494] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 12:14:01.087088] START POST /api/location-relations/
+[2026-04-17 12:14:01.279547] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 13:52:39.435569] START GET /api/locations/
+[2026-04-17 13:52:39.439859] START GET /api/location-types/
+[2026-04-17 13:52:39.568742] END   GET /api/location-types/ -> 200
+[2026-04-17 13:52:39.587972] START GET /api/location-types/
+[2026-04-17 13:52:39.634298] END   GET /api/locations/ -> 200
+[2026-04-17 13:52:39.645494] START GET /api/locations/
+[2026-04-17 13:52:39.669752] END   GET /api/location-types/ -> 200
+[2026-04-17 13:52:39.754155] END   GET /api/locations/ -> 200
+[2026-04-17 16:08:46.987036] START GET /api/locations/
+[2026-04-17 16:08:46.996279] START GET /api/location-types/
+[2026-04-17 16:08:47.084577] END   GET /api/location-types/ -> 200
+[2026-04-17 16:08:47.095993] START GET /api/location-types/
+[2026-04-17 16:08:47.121062] END   GET /api/locations/ -> 200
+[2026-04-17 16:08:47.131009] START GET /api/locations/
+[2026-04-17 16:08:47.165773] END   GET /api/location-types/ -> 200
+[2026-04-17 16:08:47.255850] END   GET /api/locations/ -> 200
+[2026-04-17 16:09:31.600929] START GET /api/locations/
+[2026-04-17 16:09:31.603582] START GET /api/location-types/
+[2026-04-17 16:09:31.706354] END   GET /api/location-types/ -> 200
+[2026-04-17 16:09:31.714614] START GET /api/location-types/
+[2026-04-17 16:09:31.786662] END   GET /api/location-types/ -> 200
+[2026-04-17 16:09:31.816560] END   GET /api/locations/ -> 200
+[2026-04-17 16:09:31.823538] START GET /api/locations/
+[2026-04-17 16:09:31.909768] END   GET /api/locations/ -> 200
+[2026-04-17 16:09:34.274713] START GET /api/location-relations/by-child/1/
+[2026-04-17 16:09:34.332144] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 16:09:42.069444] START GET /api/location-relations/by-child/24/
+[2026-04-17 16:09:42.133522] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 16:09:48.282460] START POST /api/location-relations/
+[2026-04-17 16:09:48.363113] END   POST /api/location-relations/ -> 500
+Response Body: 
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Server Error (500)</title>
+</head>
+<body>
+  <h1>Server Error (500)</h1><p></p>
+</body>
+</html>
+
+[2026-04-17 16:14:02.121921] START GET /api/location-types/
+[2026-04-17 16:14:02.123083] START GET /api/locations/
+[2026-04-17 16:14:02.241709] END   GET /api/location-types/ -> 200
+[2026-04-17 16:14:02.249781] START GET /api/location-types/
+[2026-04-17 16:14:02.267883] END   GET /api/locations/ -> 200
+[2026-04-17 16:14:02.274743] START GET /api/locations/
+[2026-04-17 16:14:02.297572] END   GET /api/location-types/ -> 200
+[2026-04-17 16:14:02.352201] END   GET /api/locations/ -> 200
+[2026-04-17 16:14:07.936541] START GET /api/locations/
+[2026-04-17 16:14:07.940411] START GET /api/location-types/
+[2026-04-17 16:14:07.989612] END   GET /api/location-types/ -> 200
+[2026-04-17 16:14:07.995564] START GET /api/location-types/
+[2026-04-17 16:14:08.043325] END   GET /api/location-types/ -> 200
+[2026-04-17 16:14:08.129856] END   GET /api/locations/ -> 200
+[2026-04-17 16:14:08.138937] START GET /api/locations/
+[2026-04-17 16:14:08.225115] END   GET /api/locations/ -> 200
+[2026-04-17 16:14:09.456735] START GET /api/location-relations/by-child/1/
+[2026-04-17 16:14:09.505178] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 16:14:14.308955] START GET /api/location-relations/by-child/24/
+[2026-04-17 16:14:14.473874] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 16:14:18.902435] START POST /api/location-relations/
+[2026-04-17 16:14:18.967157] END   POST /api/location-relations/ -> 201
+[2026-04-17 16:14:18.980274] START GET /api/location-relations/by-child/24/
+[2026-04-17 16:14:19.035060] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 16:17:05.020721] START GET /api/locations/
+[2026-04-17 16:17:05.021500] START GET /api/location-types/
+[2026-04-17 16:17:05.125796] END   GET /api/location-types/ -> 200
+[2026-04-17 16:17:05.132025] START GET /api/location-types/
+[2026-04-17 16:17:05.152167] END   GET /api/locations/ -> 200
+[2026-04-17 16:17:05.165298] START GET /api/locations/
+[2026-04-17 16:17:05.179958] END   GET /api/location-types/ -> 200
+[2026-04-17 16:17:05.229930] END   GET /api/locations/ -> 200
+[2026-04-17 16:17:19.276009] START GET /api/locations/
+[2026-04-17 16:17:19.277589] START GET /api/location-types/
+[2026-04-17 16:17:19.337048] END   GET /api/location-types/ -> 200
+[2026-04-17 16:17:19.345628] START GET /api/location-types/
+[2026-04-17 16:17:19.362099] END   GET /api/locations/ -> 200
+[2026-04-17 16:17:19.367634] START GET /api/locations/
+[2026-04-17 16:17:19.433210] END   GET /api/locations/ -> 200
+[2026-04-17 16:17:19.492571] END   GET /api/location-types/ -> 200
+[2026-04-17 16:17:28.448254] START GET /api/location-relations/by-child/23/
+[2026-04-17 16:17:28.497282] END   GET /api/location-relations/by-child/23/ -> 200
+[2026-04-17 16:17:32.912826] START POST /api/location-relations/
+[2026-04-17 16:17:32.983949] END   POST /api/location-relations/ -> 201
+[2026-04-17 16:17:32.993430] START GET /api/location-relations/by-child/23/
+[2026-04-17 16:17:33.167386] END   GET /api/location-relations/by-child/23/ -> 200
+[2026-04-17 17:27:35.071260] START GET /api/locations/
+[2026-04-17 17:27:35.074203] START GET /api/location-types/
+[2026-04-17 17:27:35.134378] END   GET /api/locations/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-17 17:27:35.135161] END   GET /api/location-types/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-17 17:27:35.152277] START GET /api/locations/
+[2026-04-17 17:27:35.152762] START GET /api/location-types/
+[2026-04-17 17:27:35.157717] END   GET /api/locations/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-17 17:27:35.158570] END   GET /api/location-types/ -> 401
+Response Body: {"detail":"Given token not valid for any token type","code":"token_not_valid","messages":[{"token_class":"AccessToken","token_type":"access","message":"Token is expired"}]}
+[2026-04-17 17:27:41.453152] START POST /api/auth/login/
+[2026-04-17 17:27:41.700645] END   POST /api/auth/login/ -> 200
+[2026-04-17 17:27:48.036802] START GET /api/locations/
+[2026-04-17 17:27:48.038212] START GET /api/location-types/
+[2026-04-17 17:27:48.100426] END   GET /api/location-types/ -> 200
+[2026-04-17 17:27:48.112259] START GET /api/location-types/
+[2026-04-17 17:27:48.138706] END   GET /api/locations/ -> 200
+[2026-04-17 17:27:48.144264] START GET /api/locations/
+[2026-04-17 17:27:48.164965] END   GET /api/location-types/ -> 200
+[2026-04-17 17:27:48.233588] END   GET /api/locations/ -> 200
+[2026-04-17 17:27:49.391526] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:27:49.438275] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:28:08.436640] START GET /api/location-relations/by-child/23/
+[2026-04-17 17:28:08.487900] END   GET /api/location-relations/by-child/23/ -> 200
+[2026-04-17 17:28:11.356976] START GET /api/location-relations/by-child/24/
+[2026-04-17 17:28:11.497159] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 17:28:39.949601] START GET /api/locations/
+[2026-04-17 17:28:39.950847] START GET /api/location-types/
+[2026-04-17 17:28:40.002181] END   GET /api/location-types/ -> 200
+[2026-04-17 17:28:40.008216] START GET /api/location-types/
+[2026-04-17 17:28:40.057194] END   GET /api/location-types/ -> 200
+[2026-04-17 17:28:40.129262] END   GET /api/locations/ -> 200
+[2026-04-17 17:28:40.136774] START GET /api/locations/
+[2026-04-17 17:28:40.215700] END   GET /api/locations/ -> 200
+[2026-04-17 17:28:45.853929] START GET /api/location-relations/by-child/23/
+[2026-04-17 17:28:45.899563] END   GET /api/location-relations/by-child/23/ -> 200
+[2026-04-17 17:28:48.550132] START GET /api/location-relations/by-child/24/
+[2026-04-17 17:28:48.593980] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 17:28:57.823571] START POST /api/location-relations/
+[2026-04-17 17:28:57.882810] END   POST /api/location-relations/ -> 201
+[2026-04-17 17:28:57.893365] START GET /api/location-relations/by-child/24/
+[2026-04-17 17:28:57.941898] END   GET /api/location-relations/by-child/24/ -> 200
+[2026-04-17 17:29:26.268927] START POST /api/locations/
+[2026-04-17 17:29:26.326052] END   POST /api/locations/ -> 201
+[2026-04-17 17:29:26.335618] START GET /api/locations/
+[2026-04-17 17:29:26.426088] END   GET /api/locations/ -> 200
+[2026-04-17 17:29:33.376696] START GET /api/location-relations/by-child/27/
+[2026-04-17 17:29:33.422058] END   GET /api/location-relations/by-child/27/ -> 200
+[2026-04-17 17:29:39.137778] START POST /api/location-relations/
+[2026-04-17 17:29:39.202166] END   POST /api/location-relations/ -> 201
+[2026-04-17 17:29:39.211683] START GET /api/location-relations/by-child/27/
+[2026-04-17 17:29:39.268017] END   GET /api/location-relations/by-child/27/ -> 200
+[2026-04-17 17:29:42.644465] START GET /api/location-relations/by-child/26/
+[2026-04-17 17:29:42.693617] END   GET /api/location-relations/by-child/26/ -> 200
+[2026-04-17 17:33:32.866900] START GET /api/locations/
+[2026-04-17 17:33:32.878746] START GET /api/location-types/
+[2026-04-17 17:33:32.952871] END   GET /api/location-types/ -> 200
+[2026-04-17 17:33:32.964689] START GET /api/location-types/
+[2026-04-17 17:33:32.989588] END   GET /api/locations/ -> 200
+[2026-04-17 17:33:32.995809] START GET /api/locations/
+[2026-04-17 17:33:33.010744] END   GET /api/location-types/ -> 200
+[2026-04-17 17:33:33.094546] END   GET /api/locations/ -> 200
+[2026-04-17 17:33:34.101124] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:33:34.150112] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:34:51.140909] START GET /api/locations/
+[2026-04-17 17:34:51.142873] START GET /api/location-types/
+[2026-04-17 17:34:51.266406] END   GET /api/locations/ -> 200
+[2026-04-17 17:34:51.273950] START GET /api/locations/
+[2026-04-17 17:34:51.317815] END   GET /api/location-types/ -> 200
+[2026-04-17 17:34:51.324428] START GET /api/location-types/
+[2026-04-17 17:34:51.471697] END   GET /api/location-types/ -> 200
+[2026-04-17 17:34:51.474670] END   GET /api/locations/ -> 200
+[2026-04-17 17:34:52.345649] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:34:52.400470] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:35:01.370143] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:35:01.422543] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:37:02.404157] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:37:02.528447] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:38:15.653254] START GET /api/locations/
+[2026-04-17 17:38:15.657043] START GET /api/location-types/
+[2026-04-17 17:38:15.722348] END   GET /api/location-types/ -> 200
+[2026-04-17 17:38:15.729693] START GET /api/location-types/
+[2026-04-17 17:38:15.742559] END   GET /api/locations/ -> 200
+[2026-04-17 17:38:15.749303] START GET /api/locations/
+[2026-04-17 17:38:15.779122] END   GET /api/location-types/ -> 200
+[2026-04-17 17:38:15.810158] END   GET /api/locations/ -> 200
+[2026-04-17 17:38:18.774548] START GET /api/locations/
+[2026-04-17 17:38:18.775170] START GET /api/location-types/
+[2026-04-17 17:38:18.833821] END   GET /api/location-types/ -> 200
+[2026-04-17 17:38:18.839190] START GET /api/location-types/
+[2026-04-17 17:38:18.891768] END   GET /api/location-types/ -> 200
+[2026-04-17 17:38:18.965846] END   GET /api/locations/ -> 200
+[2026-04-17 17:38:18.977308] START GET /api/locations/
+[2026-04-17 17:38:19.160304] END   GET /api/locations/ -> 200
+[2026-04-17 17:38:22.365595] START GET /api/location-relations/by-child/26/
+[2026-04-17 17:38:22.418048] END   GET /api/location-relations/by-child/26/ -> 200
+[2026-04-17 17:38:30.936072] START GET /api/location-relations/by-child/22/
+[2026-04-17 17:38:30.986315] END   GET /api/location-relations/by-child/22/ -> 200
+[2026-04-17 17:38:34.142707] START GET /api/locations/
+[2026-04-17 17:38:34.144652] START GET /api/location-types/
+[2026-04-17 17:38:34.240569] END   GET /api/locations/ -> 200
+[2026-04-17 17:38:34.246692] START GET /api/locations/
+[2026-04-17 17:38:34.314334] END   GET /api/location-types/ -> 200
+[2026-04-17 17:38:34.323770] START GET /api/location-types/
+[2026-04-17 17:38:34.334693] END   GET /api/locations/ -> 200
+[2026-04-17 17:38:34.376314] END   GET /api/location-types/ -> 200
+[2026-04-17 17:38:35.818419] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:38:35.973726] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:39:08.572172] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:39:08.632697] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:47:25.413720] START GET /api/locations/
+[2026-04-17 17:47:25.416668] START GET /api/location-types/
+[2026-04-17 17:47:25.569611] END   GET /api/location-types/ -> 200
+[2026-04-17 17:47:25.587237] START GET /api/location-types/
+[2026-04-17 17:47:25.619084] END   GET /api/locations/ -> 200
+[2026-04-17 17:47:25.627181] START GET /api/locations/
+[2026-04-17 17:47:25.652714] END   GET /api/location-types/ -> 200
+[2026-04-17 17:47:25.719117] END   GET /api/locations/ -> 200
+[2026-04-17 17:47:27.179798] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:47:27.351493] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:52:11.276092] START GET /api/location-relations/by-child/1/
+[2026-04-17 17:52:11.340099] END   GET /api/location-relations/by-child/1/ -> 200
+[2026-04-17 17:52:14.735144] START GET /api/location-relations/by-child/2/
+[2026-04-17 17:52:14.799053] END   GET /api/location-relations/by-child/2/ -> 200

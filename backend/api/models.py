@@ -307,6 +307,29 @@ class Location(models.Model):
         return self.location_name
 
 
+class LocationRelation(models.Model):
+    """Maps to location_relation table for parent-child relationships"""
+    child_location = models.ForeignKey(
+        Location,
+        on_delete=models.CASCADE,
+        db_column='child_location_id',
+        related_name='child_relations',
+        primary_key=True
+    )
+    parent_location = models.ForeignKey(
+        Location,
+        on_delete=models.CASCADE,
+        db_column='parent_location_id',
+        related_name='parent_relations'
+    )
+    relation_id = models.IntegerField(blank=True, null=True, db_column='relation_id')
+
+    class Meta:
+        managed = False
+        db_table = 'location_relation'
+        unique_together = (('child_location', 'parent_location'),)
+
+
 class Position(models.Model):
     """Maps to position table"""
     position_id = models.AutoField(primary_key=True, db_column='position_id')
