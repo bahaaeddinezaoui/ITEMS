@@ -1,21 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { organizationalStructureService, organizationalStructureRelationService, organizationalStructureTypeService } from '../services/api';
 
 // Form Tab Component
-const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, handleCancel, structureTypes, structureTypesLoading }) => (
+const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, handleCancel, structureTypes, structureTypesLoading, t }) => (
     <div className="card">
         <div className="card-body">
             <div className="form-header" style={{ marginBottom: 'var(--space-6)' }}>
-                <h3 className="form-title">{editingId ? 'Edit Structure' : 'Add Structure'}</h3>
+                <h3 className="form-title">{editingId ? t('organizationalStructure.editStructure') : t('organizationalStructure.addStructure')}</h3>
                 <p className="form-subtitle">
-                    {editingId ? 'Update the organizational structure details' : 'Create a new organizational structure'}
+                    {editingId ? t('organizationalStructure.updateDetails') : t('organizationalStructure.createNew')}
                 </p>
             </div>
 
             <form onSubmit={handleSubmit}>
                 <div className="form-row">
                     <div className="form-group">
-                        <label className="form-label">Structure Code *</label>
+                        <label className="form-label">{t('organizationalStructure.structureCode')} *</label>
                         <input
                             type="text"
                             name="structure_code"
@@ -23,12 +24,12 @@ const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, h
                             onChange={handleFormChange}
                             required
                             className="form-control"
-                            placeholder="e.g., IT, HR, FIN"
+                            placeholder={t('organizationalStructure.codePlaceholder')}
                         />
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Structure Type *</label>
+                        <label className="form-label">{t('organizationalStructure.structureType')} *</label>
                         <select
                             name="structure_type_id"
                             value={formData.structure_type_id}
@@ -37,7 +38,7 @@ const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, h
                             className="form-control"
                             disabled={structureTypesLoading}
                         >
-                            <option value="">{structureTypesLoading ? 'Loading...' : 'Select a type...'}</option>
+                            <option value="">{structureTypesLoading ? t('common.loading') : t('organizationalStructure.selectType')}</option>
                             {structureTypes.map(type => (
                                 <option key={type.organizational_structure_type_id} value={type.organizational_structure_type_id}>
                                     {type.organizational_structure_type}
@@ -48,7 +49,7 @@ const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, h
                 </div>
 
                 <div className="form-group">
-                    <label className="form-label">Structure Name *</label>
+                    <label className="form-label">{t('organizationalStructure.structureName')} *</label>
                     <input
                         type="text"
                         name="structure_name"
@@ -56,7 +57,7 @@ const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, h
                         onChange={handleFormChange}
                         required
                         className="form-control"
-                        placeholder="e.g., Information Technology Department"
+                        placeholder={t('organizationalStructure.namePlaceholder')}
                     />
                 </div>
 
@@ -69,18 +70,18 @@ const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, h
                             onChange={handleFormChange}
                             className="form-checkbox"
                         />
-                        <span>Active Structure</span>
+                        <span>{t('organizationalStructure.activeStructure')}</span>
                     </label>
-                    <span className="form-hint">Inactive structures are hidden from selection</span>
+                    <span className="form-hint">{t('organizationalStructure.inactiveHint')}</span>
                 </div>
 
                 <div className="form-actions">
                     <button type="submit" className="btn btn-primary">
-                        {editingId ? 'Save Changes' : 'Create Structure'}
+                        {editingId ? t('common.saveChanges') : t('organizationalStructure.createStructure')}
                     </button>
                     {editingId && (
                         <button type="button" onClick={handleCancel} className="btn btn-secondary">
-                            Cancel
+                            {t('common.cancel')}
                         </button>
                     )}
                 </div>
@@ -102,8 +103,11 @@ const HierarchyModal = ({
     editingRelation,
     handleCancelRelation,
     handleEditRelation,
-    handleDeleteRelation
+    handleDeleteRelation,
+    t
 }) => {
+    const { t: tHook } = useTranslation();
+    const tFunc = t || tHook;
     if (!isOpen || !selectedStructure) return null;
 
     return (
@@ -117,13 +121,13 @@ const HierarchyModal = ({
                             </svg>
                         </div>
                         <div className="hierarchy-header-text">
-                            <h3 className="hierarchy-modal-title">Hierarchy Configuration</h3>
+                            <h3 className="hierarchy-modal-title">{tFunc('organizationalStructure.hierarchyConfiguration')}</h3>
                             <p className="hierarchy-modal-subtitle">
                                 {selectedStructure.structure_name} <span className="hierarchy-code-badge">{selectedStructure.structure_code}</span>
                             </p>
                         </div>
                     </div>
-                    <button className="hierarchy-close-btn" onClick={onClose} aria-label="Close modal">
+                    <button className="hierarchy-close-btn" onClick={onClose} aria-label={tFunc('common.close')}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                         </svg>
@@ -138,7 +142,7 @@ const HierarchyModal = ({
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
                                 </svg>
-                                <span>Current Parent</span>
+                                <span>{tFunc('organizationalStructure.currentParent')}</span>
                             </div>
                             
                             {relations.map((relation) => {
@@ -152,7 +156,7 @@ const HierarchyModal = ({
                                                 </svg>
                                             </div>
                                             <div className="hierarchy-connected-text">
-                                                <span className="hierarchy-connected-label">Parent Structure</span>
+                                                <span className="hierarchy-connected-label">{tFunc('organizationalStructure.parentStructure')}</span>
                                                 <span className="hierarchy-connected-name">
                                                     {parentStructure.structure_name} ({parentStructure.structure_code})
                                                 </span>
@@ -163,13 +167,13 @@ const HierarchyModal = ({
                                                 className="hierarchy-btn hierarchy-btn-outline"
                                                 onClick={() => handleEditRelation(relation)}
                                             >
-                                                Change
+                                                {tFunc('common.change')}
                                             </button>
                                             <button 
                                                 className="hierarchy-btn hierarchy-btn-danger-outline"
                                                 onClick={() => handleDeleteRelation(relation.child_organizational_structure, relation.parent_organizational_structure)}
                                             >
-                                                Remove
+                                                {tFunc('common.remove')}
                                             </button>
                                         </div>
                                     </div>
@@ -185,12 +189,12 @@ const HierarchyModal = ({
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M12 5v14"/><path d="M5 12h14"/>
                                 </svg>
-                                <span>{editingRelation?.parent_organizational_structure ? 'Change Parent' : 'Assign Parent'}</span>
+                                <span>{editingRelation?.parent_organizational_structure ? tFunc('organizationalStructure.changeParent') : tFunc('organizationalStructure.assignParent')}</span>
                             </div>
                             
                             <form onSubmit={handleSubmitRelation}>
                                 <div className="hierarchy-form-group">
-                                    <label className="hierarchy-form-label">Select Parent Structure</label>
+                                    <label className="hierarchy-form-label">{tFunc('organizationalStructure.selectParentStructure')}</label>
                                     <select
                                         name="parent_organizational_structure"
                                         value={relationFormData.parent_organizational_structure}
@@ -198,7 +202,7 @@ const HierarchyModal = ({
                                         required
                                         className="hierarchy-form-select"
                                     >
-                                        <option value="">Choose a parent structure...</option>
+                                        <option value="">{tFunc('organizationalStructure.chooseParent')}</option>
                                         {structures
                                             .filter(s => s.organizational_structure_id !== selectedStructure.organizational_structure_id)
                                             .sort((a, b) => a.structure_name.localeCompare(b.structure_name))
@@ -216,14 +220,14 @@ const HierarchyModal = ({
 
                                 <div className="hierarchy-form-actions">
                                     <button type="submit" className="hierarchy-btn hierarchy-btn-primary">
-                                        {editingRelation?.parent_organizational_structure ? 'Update Connection' : 'Save Connection'}
+                                        {editingRelation?.parent_organizational_structure ? tFunc('organizationalStructure.updateConnection') : tFunc('organizationalStructure.saveConnection')}
                                     </button>
                                     <button 
                                         type="button" 
                                         className="hierarchy-btn hierarchy-btn-outline"
                                         onClick={handleCancelRelation}
                                     >
-                                        Cancel
+                                        {tFunc('common.cancel')}
                                     </button>
                                 </div>
                             </form>
@@ -239,15 +243,15 @@ const HierarchyModal = ({
                                         <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
                                     </svg>
                                 </div>
-                                <h3 className="hierarchy-empty-title">No Parent Structure</h3>
+                                <h3 className="hierarchy-empty-title">{tFunc('organizationalStructure.noParent')}</h3>
                                 <p className="hierarchy-empty-desc">
-                                    This structure has no parent assigned. You can assign a parent structure to establish hierarchy.
+                                    {tFunc('organizationalStructure.noParentDesc')}
                                 </p>
                                 <button 
                                     className="hierarchy-btn hierarchy-btn-primary"
                                     onClick={() => handleEditRelation({})}
                                 >
-                                    Assign Parent
+                                    {tFunc('organizationalStructure.assignParent')}
                                 </button>
                             </div>
                         </div>
@@ -272,7 +276,8 @@ const StructuresTabContent = ({
     handleDeleteRelation,
     relations,
     selectedStructure,
-    handleSelectStructureForRelations
+    handleSelectStructureForRelations,
+    t
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortField, setSortField] = useState('structure_name');
@@ -326,12 +331,12 @@ const StructuresTabContent = ({
                     <input
                         type="text"
                         className="search-input"
-                        placeholder="Search structures by name, code, or type..."
+                        placeholder={t('organizationalStructure.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <span className="results-count">{filteredStructures.length} of {structures.length} structures</span>
+                <span className="results-count">{filteredStructures.length} {t('organizationalStructure.of')} {structures.length} {t('organizationalStructure.structures')}</span>
             </div>
 
             {/* Structures Table */}
@@ -339,15 +344,15 @@ const StructuresTabContent = ({
                 {loading ? (
                     <div className="loading-state">
                         <div className="loading-spinner" />
-                        <p>Loading structures...</p>
+                        <p>{t('organizationalStructure.loading')}</p>
                     </div>
                 ) : filteredStructures.length === 0 ? (
                     <div className="empty-state">
                         <h3 className="empty-state-title">
-                            {searchQuery ? 'No structures found' : 'No organizational structures'}
+                            {searchQuery ? t('organizationalStructure.noStructuresFound') : t('organizationalStructure.noStructures')}
                         </h3>
                         <p className="empty-state-text">
-                            {searchQuery ? 'Try adjusting your search terms' : 'Create one to get started'}
+                            {searchQuery ? t('organizationalStructure.adjustSearch') : t('organizationalStructure.createToStart')}
                         </p>
                     </div>
                 ) : (
@@ -362,7 +367,7 @@ const StructuresTabContent = ({
                                             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
                                         }}
                                     >
-                                        Code
+                                        {t('organizationalStructure.code')}
                                         {sortField === 'structure_code' && (
                                             <span className="sort-indicator">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
                                         )}
@@ -374,14 +379,14 @@ const StructuresTabContent = ({
                                             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
                                         }}
                                     >
-                                        Structure Name
+                                        {t('organizationalStructure.structureName')}
                                         {sortField === 'structure_name' && (
                                             <span className="sort-indicator">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
                                         )}
                                     </th>
-                                    <th>Type</th>
-                                    <th>Status</th>
-                                    <th className="actions-header">Actions</th>
+                                    <th>{t('common.type')}</th>
+                                    <th>{t('common.status')}</th>
+                                    <th className="actions-header">{t('common.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -402,11 +407,11 @@ const StructuresTabContent = ({
                                             </div>
                                         </td>
                                         <td>
-                                            <span className="badge badge-info">{structure.structure_type_label || 'N/A'}</span>
+                                            <span className="badge badge-info">{structure.structure_type_label || t('common.na')}</span>
                                         </td>
                                         <td>
                                             <span className={`badge ${structure.is_active ? 'badge-success' : 'badge-warning'}`}>
-                                                {structure.is_active ? 'Active' : 'Inactive'}
+                                                {structure.is_active ? t('common.active') : t('common.inactive')}
                                             </span>
                                         </td>
                                         <td>
@@ -414,7 +419,7 @@ const StructuresTabContent = ({
                                                 <button 
                                                     className="btn btn-secondary btn-sm"
                                                     onClick={() => handleEdit(structure)}
-                                                    title="Edit"
+                                                    title={t('common.edit')}
                                                 >
                                                     ✎
                                                 </button>
@@ -422,12 +427,12 @@ const StructuresTabContent = ({
                                                     className="btn btn-secondary btn-sm"
                                                     onClick={() => handleSelect(structure)}
                                                 >
-                                                    Select
+                                                    {t('common.select')}
                                                 </button>
                                                 <button 
                                                     className="btn btn-secondary btn-sm btn-danger-hover"
                                                     onClick={() => handleDelete(structure.organizational_structure_id)}
-                                                    title="Delete"
+                                                    title={t('common.delete')}
                                                 >
                                                     🗑
                                                 </button>
@@ -455,12 +460,14 @@ const StructuresTabContent = ({
                 handleCancelRelation={handleCancelRelation}
                 handleEditRelation={handleEditRelation}
                 handleDeleteRelation={handleDeleteRelation}
+                t={t}
             />
         </div>
     );
 };
 
 const OrganizationalStructurePage = () => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('structures');
 
     // Structures state
@@ -513,7 +520,7 @@ const OrganizationalStructurePage = () => {
             const data = await organizationalStructureService.getAll();
             setStructures(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch organizational structures: ' + err.message);
+            setError(t('organizationalStructure.fetchError') + ': ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -525,7 +532,7 @@ const OrganizationalStructurePage = () => {
             const data = await organizationalStructureTypeService.getAll();
             setStructureTypes(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch structure types: ' + err.message);
+            setError(t('organizationalStructure.fetchTypesError') + ': ' + err.message);
         } finally {
             setStructureTypesLoading(false);
         }
@@ -547,10 +554,10 @@ const OrganizationalStructurePage = () => {
         try {
             if (editingId) {
                 await organizationalStructureService.update(editingId, formData);
-                setSuccessMessage('Organizational structure updated successfully!');
+                setSuccessMessage(t('messages.updateSuccess'));
             } else {
                 await organizationalStructureService.create(formData);
-                setSuccessMessage('Organizational structure created successfully!');
+                setSuccessMessage(t('messages.createSuccess'));
             }
 
             setFormData({
@@ -562,7 +569,7 @@ const OrganizationalStructurePage = () => {
             setEditingId(null);
             await fetchStructures();
         } catch (err) {
-            setError('Failed to save organizational structure: ' + err.message);
+            setError(t('organizationalStructure.saveError') + ': ' + err.message);
         }
     }, [editingId, formData, fetchStructures]);
 
@@ -578,13 +585,13 @@ const OrganizationalStructurePage = () => {
     }, []);
 
     const handleDelete = useCallback(async (id) => {
-        if (window.confirm('Are you sure you want to delete this organizational structure?')) {
+        if (window.confirm(t('organizationalStructure.confirmDelete'))) {
             try {
                 await organizationalStructureService.delete(id);
-                setSuccessMessage('Organizational structure deleted successfully!');
+                setSuccessMessage(t('messages.deleteSuccess'));
                 await fetchStructures();
             } catch (err) {
-                setError('Failed to delete organizational structure: ' + err.message);
+                setError(t('organizationalStructure.deleteError') + ': ' + err.message);
             }
         }
     }, [fetchStructures]);
@@ -607,7 +614,7 @@ const OrganizationalStructurePage = () => {
             const data = await organizationalStructureRelationService.getByStructureId(structureId);
             setRelations(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch relations: ' + err.message);
+            setError(t('organizationalStructure.fetchRelationsError') + ': ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -638,7 +645,7 @@ const OrganizationalStructurePage = () => {
         setSuccessMessage(null);
 
         if (!relationFormData.parent_organizational_structure) {
-            setError('Please select a parent organizational structure');
+            setError(t('organizationalStructure.selectParentError'));
             return;
         }
 
@@ -649,10 +656,10 @@ const OrganizationalStructurePage = () => {
                     editingRelation.parent_organizational_structure,
                     relationFormData
                 );
-                setSuccessMessage('Relation updated successfully!');
+                setSuccessMessage(t('organizationalStructure.relationUpdateSuccess'));
             } else {
                 await organizationalStructureRelationService.create(relationFormData);
-                setSuccessMessage('Relation created successfully!');
+                setSuccessMessage(t('organizationalStructure.relationCreateSuccess'));
             }
 
             setRelationFormData({
@@ -664,7 +671,7 @@ const OrganizationalStructurePage = () => {
             setRelations(Array.isArray(data) ? data : []);
             setActiveTab('relations_list');
         } catch (err) {
-            setError('Failed to save relation: ' + err.message);
+            setError(t('organizationalStructure.relationSaveError') + ': ' + err.message);
         }
     }, [editingRelation, relationFormData, selectedStructure]);
 
@@ -677,14 +684,14 @@ const OrganizationalStructurePage = () => {
     }, []);
 
     const handleDeleteRelation = useCallback(async (childId, parentId) => {
-        if (window.confirm('Are you sure you want to delete this relation?')) {
+        if (window.confirm(t('organizationalStructure.confirmDeleteRelation'))) {
             try {
                 await organizationalStructureRelationService.delete(childId, parentId);
-                setSuccessMessage('Relation deleted successfully!');
+                setSuccessMessage(t('organizationalStructure.relationDeleteSuccess'));
                 const data = await organizationalStructureRelationService.getByStructureId(selectedStructure.organizational_structure_id);
                 setRelations(Array.isArray(data) ? data : []);
             } catch (err) {
-                setError('Failed to delete relation: ' + err.message);
+                setError(t('organizationalStructure.relationDeleteError') + ': ' + err.message);
             }
         }
     }, [selectedStructure]);
@@ -1391,8 +1398,8 @@ const OrganizationalStructurePage = () => {
                 <div className="page-title-with-icon">
                     <div className="page-title-icon">🏢</div>
                     <div className="page-title-text">
-                        <h1>Organizational Structure</h1>
-                        <p>Manage organizational units and their hierarchical relationships</p>
+                        <h1>{t('nav.organizationalStructure')}</h1>
+                        <p>{t('organizationalStructure.subtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -1424,7 +1431,7 @@ const OrganizationalStructurePage = () => {
                         onClick={() => setActiveTab('structures')}
                     >
                         <span>⚡</span>
-                        Structures & Hierarchy
+                        {t('organizationalStructure.structuresAndHierarchy')}
                         {selectedStructure && <span className="tab-indicator"></span>}
                     </button>
                     <button
@@ -1433,7 +1440,7 @@ const OrganizationalStructurePage = () => {
                         onClick={() => setActiveTab('form')}
                     >
                         <span>{editingId ? '✎' : '+'}</span>
-                        {editingId ? 'Edit Structure' : 'New Structure'}
+                        {editingId ? t('organizationalStructure.editStructure') : t('organizationalStructure.newStructure')}
                     </button>
                 </div>
 
@@ -1455,6 +1462,7 @@ const OrganizationalStructurePage = () => {
                             relations={relations}
                             selectedStructure={selectedStructure}
                             handleSelectStructureForRelations={handleSelectStructureForRelations}
+                            t={t}
                         />
                     )}
                     {activeTab === 'form' && (
@@ -1466,6 +1474,7 @@ const OrganizationalStructurePage = () => {
                             handleCancel={handleCancel}
                             structureTypes={structureTypes}
                             structureTypesLoading={structureTypesLoading}
+                            t={t}
                         />
                     )}
                 </div>

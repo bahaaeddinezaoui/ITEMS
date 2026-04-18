@@ -1,0 +1,124 @@
+{
+  "AssetType": [
+    {
+      "entity_id": 1,
+      "asset_type_label": ""
+    },
+    {
+      "entity_id": 2,
+      "asset_type_label": ""
+    }
+  ],
+  "ConsumableType": [
+    {
+      "entity_id": 1,
+      "consumable_type_label": ""
+    }
+  ],
+  "StockItemType": [
+    {
+      "entity_id": 1,
+      "stock_item_type_label": ""
+    },
+    {
+      "entity_id": 2,
+      "stock_item_type_label": ""
+    }
+  ],
+  "LocationType": [
+    {
+      "entity_id": 1,
+      "location_type_label": "مكتب"
+    },
+    {
+      "entity_id": 2,
+      "location_type_label": "مخزن"
+    },
+    {
+      "entity_id": 3,
+      "location_type_label": "غرفة الخوادم"
+    },
+    {
+      "entity_id": 4,
+      "location_type_label": "ورشة عمل"
+    }
+  ],
+  "PhysicalCondition": [
+    {
+      "entity_id": 1,
+      "condition_label": "جديد",
+      "description": "لم يستخدم أبداً"
+    },
+    {
+      "entity_id": 2,
+      "condition_label": "ممتاز",
+      "description": "مستعمل، كالجديد"
+    },
+    {
+      "entity_id": 3,
+      "condition_label": "جيد",
+      "description": "مستعمل، حالة جيدة"
+    },
+    {
+      "entity_id": 4,
+      "condition_label": "تالف",
+      "description": "بحاجة إلى إصلاح"
+    },
+    {
+      "entity_id": 5,
+      "condition_label": "معطل",
+      "description": "لا يعمل"
+    }
+  ],
+  "Role": [
+    {
+      "entity_id": 1,
+      "role_label": "مسؤول النظام",
+      "description": "صلاحيات كاملة على النظام"
+    },
+    {
+      "entity_id": 2,
+      "role_label": "فني",
+      "description": "الصيانة والإصلاحات"
+    },
+    {
+      "entity_id": 3,
+      "role_label": "مدير المخزن",
+      "description": "إدارة المخزون"
+    },
+    {
+      "entity_id": 4,
+      "role_label": "مستخدم",
+      "description": "عرض فقط"
+    }
+  ],
+  "Position": [
+    {
+      "entity_id": 1,
+      "position_label": "مدير",
+      "description": "إدارة القسم"
+    },
+    {
+      "entity_id": 2,
+      "position_label": "فني صيانة",
+      "description": "صيانة المعدات"
+    },
+    {
+      "entity_id": 3,
+      "position_label": "مستخدم عادي",
+      "description": "مستخدم للمعدات"
+    }
+  ],
+  "Location": [
+    {
+      "entity_id": 1,
+      "location_name": ""
+    }
+  ],
+  "OrganizationalStructure": [
+    {
+      "entity_id": 1,
+      "structure_name": ""
+    }
+  ]
+}

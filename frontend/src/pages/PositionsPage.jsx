@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { positionService } from '../services/api';
 
 const PositionsPage = () => {
+    const { t } = useTranslation();
     const [positions, setPositions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -25,7 +27,7 @@ const PositionsPage = () => {
             const data = await positionService.getAll();
             setPositions(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch positions: ' + err.message);
+            setError(t('positions.fetchError') + ': ' + err.message);
             setPositions([]);
         } finally {
             setLoading(false);
@@ -56,7 +58,7 @@ const PositionsPage = () => {
             setEditingId(null);
             await fetchPositions();
         } catch (err) {
-            setError('Failed to save position: ' + (err.response?.data?.error || err.message));
+            setError(t('positions.saveError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -73,12 +75,12 @@ const PositionsPage = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this position?')) {
+        if (window.confirm(t('positions.confirmDelete'))) {
             try {
                 await positionService.delete(id);
                 await fetchPositions();
             } catch (err) {
-                setError('Failed to delete position: ' + err.message);
+                setError(t('positions.deleteError') + ': ' + err.message);
             }
         }
     };
@@ -92,8 +94,8 @@ const PositionsPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Positions</h1>
-                <p className="page-subtitle">Manage job positions in the organization</p>
+                <h1 className="page-title">{t('nav.positions')}</h1>
+                <p className="page-subtitle">{t('positions.subtitle')}</p>
             </div>
 
             {error && (
@@ -118,7 +120,7 @@ const PositionsPage = () => {
                     borderBottom: '1px solid var(--color-border)'
                 }}>
                     <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                        All Positions
+                        {t('positions.allPositions')}
                     </h2>
                     <button
                         onClick={() => {
@@ -140,7 +142,7 @@ const PositionsPage = () => {
                             whiteSpace: 'nowrap'
                         }}
                     >
-                        {showForm ? 'Cancel' : '+ New Position'}
+                        {showForm ? t('common.cancel') : `+ ${t('positions.addPosition')}`}
                     </button>
                 </div>
 
@@ -154,7 +156,7 @@ const PositionsPage = () => {
                                     fontSize: 'var(--font-size-sm)',
                                     fontWeight: '500'
                                 }}>
-                                    Position Label *
+                                    {t('positions.positionLabel')} *
                                 </label>
                                 <input
                                     type="text"
@@ -162,7 +164,7 @@ const PositionsPage = () => {
                                     value={formData.position_label}
                                     onChange={handleInputChange}
                                     required
-                                    placeholder="e.g., Software Engineer"
+                                    placeholder={t('positions.labelPlaceholder')}
                                     style={{
                                         width: '100%',
                                         padding: 'var(--space-2) var(--space-3)',
@@ -182,7 +184,7 @@ const PositionsPage = () => {
                                     fontSize: 'var(--font-size-sm)',
                                     fontWeight: '500'
                                 }}>
-                                    Position Code *
+                                    {t('positions.positionCode')} *
                                 </label>
                                 <input
                                     type="text"
@@ -190,7 +192,7 @@ const PositionsPage = () => {
                                     value={formData.position_code}
                                     onChange={handleInputChange}
                                     required
-                                    placeholder="e.g., SE"
+                                    placeholder={t('positions.codePlaceholder')}
                                     maxLength="48"
                                     style={{
                                         width: '100%',
@@ -211,13 +213,13 @@ const PositionsPage = () => {
                                     fontSize: 'var(--font-size-sm)',
                                     fontWeight: '500'
                                 }}>
-                                    Description
+                                    {t('common.description')}
                                 </label>
                                 <textarea
                                     name="description"
                                     value={formData.description}
                                     onChange={handleInputChange}
-                                    placeholder="Optional description for this position"
+                                    placeholder={t('positions.descPlaceholder')}
                                     rows="3"
                                     maxLength="256"
                                     style={{
@@ -250,7 +252,7 @@ const PositionsPage = () => {
                                         opacity: saving ? 0.6 : 1
                                     }}
                                 >
-                                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
                                 </button>
                                 <button
                                     type="button"
@@ -267,7 +269,7 @@ const PositionsPage = () => {
                                         fontWeight: '500'
                                     }}
                                 >
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                             </div>
                         </form>
@@ -277,11 +279,11 @@ const PositionsPage = () => {
                 <div className="card-body" style={{ padding: 0 }}>
                     {loading ? (
                         <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
-                            Loading...
+                            {t('common.loading')}
                         </div>
                     ) : positions.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
-                            No positions found
+                            {t('positions.noPositions')}
                         </div>
                     ) : (
                         <div>
@@ -298,10 +300,10 @@ const PositionsPage = () => {
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.5px'
                             }}>
-                                <div>Position</div>
-                                <div>Code</div>
-                                <div>Description</div>
-                                <div>Actions</div>
+                                <div>{t('positions.positionLabel')}</div>
+                                <div>{t('positions.positionCode')}</div>
+                                <div>{t('common.description')}</div>
+                                <div>{t('common.actions')}</div>
                             </div>
                             {positions.map((position, index) => (
                                 <div
@@ -331,7 +333,7 @@ const PositionsPage = () => {
                                         {position.position_code}
                                     </div>
                                     <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                        {position.description || '—'}
+                                        {position.description || `— ${t('common.none')} —`}
                                     </div>
                                     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                         <button
@@ -349,7 +351,7 @@ const PositionsPage = () => {
                                             onMouseEnter={(e) => { e.target.style.opacity = 1; }}
                                             onMouseLeave={(e) => { e.target.style.opacity = 0.7; }}
                                         >
-                                            Edit
+                                            {t('common.edit')}
                                         </button>
                                         <button
                                             onClick={() => handleDelete(position.position_id)}
@@ -366,7 +368,7 @@ const PositionsPage = () => {
                                             onMouseEnter={(e) => { e.target.style.opacity = 1; }}
                                             onMouseLeave={(e) => { e.target.style.opacity = 0.7; }}
                                         >
-                                            Delete
+                                            {t('common.delete')}
                                         </button>
                                     </div>
                                 </div>

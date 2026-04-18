@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const DashboardLayout = () => {
     const { user, logout, isSuperuser } = useAuth();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const userMenuRef = useRef(null);
@@ -101,7 +104,7 @@ const DashboardLayout = () => {
 
                 <nav className="sidebar-nav">
                     <div className="nav-section">
-                        <span className="nav-section-title">Dashboard</span>
+                        <span className="nav-section-title">{t('nav.dashboard')}</span>
                         <NavLink to="/dashboard" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <rect x="3" y="3" width="7" height="7" />
@@ -109,14 +112,14 @@ const DashboardLayout = () => {
                                 <rect x="14" y="14" width="7" height="7" />
                                 <rect x="3" y="14" width="7" height="7" />
                             </svg>
-                            Dashboard
+                            {t('nav.dashboard')}
                         </NavLink>
                     </div>
 
                     {isSuperuser && (
                         <>
                             <div className="nav-section">
-                                <span className="nav-section-title">Management</span>
+                                <span className="nav-section-title">{t('nav.organizationalStructure')}</span>
 
                                 <NavLink to="/dashboard/organizational-structure" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -125,7 +128,7 @@ const DashboardLayout = () => {
                                         <path d="M3.27 6.96a3 3 0 0 1 5.46 0" />
                                         <path d="M15.27 6.96a3 3 0 0 1 5.46 0" />
                                     </svg>
-                                    Organizational Structure
+                                    {t('nav.organizationalStructure')}
                                 </NavLink>
 
                                 <NavLink to="/dashboard/persons" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -135,7 +138,7 @@ const DashboardLayout = () => {
                                         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                     </svg>
-                                    Persons
+                                    {t('nav.persons')}
                                 </NavLink>
 
                                 <NavLink to="/dashboard/assets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -143,7 +146,7 @@ const DashboardLayout = () => {
                                         <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                                     </svg>
-                                    Assets
+                                    {t('nav.assets')}
                                 </NavLink>
 
                                 <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -152,14 +155,14 @@ const DashboardLayout = () => {
                                         <circle cx="20" cy="21" r="1" />
                                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                                     </svg>
-                                    Stock Items
+                                    {t('nav.stockItems')}
                                 </NavLink>
 
                                 <NavLink to="/dashboard/consumables" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                                     </svg>
-                                    Consumables
+                                    {t('nav.consumables')}
                                 </NavLink>
 
                                 <NavLink to="/dashboard/locations" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -167,7 +170,7 @@ const DashboardLayout = () => {
                                         <rect x="3" y="3" width="18" height="18" rx="2" />
                                         <path d="M9 3v18M9 9h12M9 15h12" />
                                     </svg>
-                                    Locations
+                                    {t('nav.locations')}
                                 </NavLink>
 
                                 <NavLink to="/dashboard/positions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -177,7 +180,7 @@ const DashboardLayout = () => {
                                         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                     </svg>
-                                    Positions
+                                    {t('nav.positions')}
                                 </NavLink>
 
                                 <NavLink to="/dashboard/position-role-mappings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -473,6 +476,9 @@ const DashboardLayout = () => {
                 </nav>
 
                 <div className="sidebar-footer">
+                    <div className="flex items-center justify-between px-4 py-2 border-t border-white/10">
+                        <LanguageSwitcher />
+                    </div>
                     <div
                         className="user-info"
                         ref={userMenuRef}
@@ -542,7 +548,7 @@ const DashboardLayout = () => {
                                 e.stopPropagation();
                                 handleLogout();
                             }}
-                            title="Logout"
+                            title={t('nav.logout')}
                         >
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { locationService, locationTypeService, locationRelationService } from '../services/api';
 
 // Modal Component for Location Hierarchy Configuration
@@ -16,6 +17,8 @@ const LocationHierarchyModal = ({
     handleEditRelation,
     handleDeleteRelation
 }) => {
+    const { t } = useTranslation();
+
     if (!isOpen || !selectedLocation) return null;
 
     const hasRelation = relations.length > 0;
@@ -59,7 +62,7 @@ const LocationHierarchyModal = ({
                             </div>
                             <div>
                                 <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', letterSpacing: '-0.5px' }}>
-                                    Location Hierarchy
+                                    {t('locations.hierarchy')}
                                 </h3>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '14px', opacity: 0.9, fontWeight: '500' }}>
                                     {selectedLocation.location_name}
@@ -131,7 +134,7 @@ const LocationHierarchyModal = ({
                                         fontWeight: '600',
                                         marginBottom: '4px'
                                     }}>
-                                        Currently Located In
+                                        {t('locations.currentlyLocatedIn')}
                                     </div>
                                     <div style={{ 
                                         fontWeight: '700', 
@@ -254,7 +257,7 @@ const LocationHierarchyModal = ({
                                     color: '#f8fafc',
                                     fontSize: '16px'
                                 }}>
-                                    {editingRelation?.parent_location ? 'Change Parent Location' : 'Assign Parent Location'}
+                                    {editingRelation?.parent_location ? t('locations.changeParentLocation') : t('locations.assignParentLocation')}
                                 </span>
                             </div>
                             
@@ -269,7 +272,7 @@ const LocationHierarchyModal = ({
                                         textTransform: 'uppercase',
                                         letterSpacing: '0.5px'
                                     }}>
-                                        Select Parent Location
+                                        {t('locations.selectParentLocation')}
                                     </label>
                                     <select
                                         name="parent_location"
@@ -303,7 +306,7 @@ const LocationHierarchyModal = ({
                                             e.target.style.boxShadow = 'none';
                                         }}
                                     >
-                                        <option value="" style={{ background: '#0f172a' }}>Choose a parent location...</option>
+                                        <option value="" style={{ background: '#0f172a' }}>{t('locations.chooseParentLocation')}</option>
                                         {locations
                                             .filter(l => l.location_id !== selectedLocation.location_id)
                                             .sort((a, b) => a.location_name.localeCompare(b.location_name))
@@ -313,7 +316,7 @@ const LocationHierarchyModal = ({
                                                     value={location.location_id}
                                                     style={{ background: '#0f172a' }}
                                                 >
-                                                    {location.location_name} — {location.location_type_label || 'No type'}
+                                                    {location.location_name} — {location.location_type_label || t('locations.noType')}
                                                 </option>
                                             ))
                                         }
@@ -345,7 +348,7 @@ const LocationHierarchyModal = ({
                                             e.target.style.boxShadow = '0 4px 14px rgba(99, 102, 241, 0.4)';
                                         }}
                                     >
-                                        {editingRelation?.parent_location ? 'Update Connection' : 'Create Connection'}
+                                        {editingRelation?.parent_location ? t('locations.updateConnection') : t('locations.createConnection')}
                                     </button>
                                     <button 
                                         type="button" 
@@ -372,7 +375,7 @@ const LocationHierarchyModal = ({
                                             e.target.style.color = '#cbd5e1';
                                         }}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </button>
                                 </div>
                             </form>
@@ -385,6 +388,7 @@ const LocationHierarchyModal = ({
 };
 
 const LocationsPage = () => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('locations');
 
     // Locations state
@@ -429,6 +433,13 @@ const LocationsPage = () => {
         }
     }, [error, successMessage]);
 
+    const handleCloseModal = useCallback(() => {
+        setIsModalOpen(false);
+        setSelectedLocation(null);
+        setRelations([]);
+        setEditingRelation(null);
+    }, []);
+
     // Modal management
     useEffect(() => {
         if (isModalOpen) {
@@ -441,7 +452,7 @@ const LocationsPage = () => {
             };
         }
         return () => { document.body.style.overflow = ''; };
-    }, [isModalOpen]);
+    }, [isModalOpen, handleCloseModal]);
 
     const fetchLocationTypes = async () => {
         try {
@@ -459,7 +470,7 @@ const LocationsPage = () => {
             const data = await locationService.getAll();
             setLocations(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch locations: ' + err.message);
+            setError(t('locations.fetchError') + ': ' + err.message);
             setLocations([]);
         } finally {
             setLoading(false);
@@ -482,10 +493,10 @@ const LocationsPage = () => {
         try {
             if (editingId) {
                 await locationService.update(editingId, formData);
-                setSuccessMessage('Location updated successfully!');
+                setSuccessMessage(t('messages.updateSuccess'));
             } else {
                 await locationService.create(formData);
-                setSuccessMessage('Location created successfully!');
+                setSuccessMessage(t('messages.createSuccess'));
             }
             setFormData({ location_name: '', location_type: '' });
             setShowForm(false);
@@ -493,7 +504,7 @@ const LocationsPage = () => {
             setActiveTab('locations');
             await fetchLocations();
         } catch (err) {
-            setError('Failed to save location: ' + (err.response?.data?.error || err.message));
+            setError(t('locations.saveError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -509,13 +520,13 @@ const LocationsPage = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this location?')) {
+        if (window.confirm(t('locations.confirmDelete'))) {
             try {
                 await locationService.delete(id);
-                setSuccessMessage('Location deleted successfully!');
+                setSuccessMessage(t('messages.deleteSuccess'));
                 await fetchLocations();
             } catch (err) {
-                setError('Failed to delete location: ' + err.message);
+                setError(t('locations.deleteError') + ': ' + err.message);
             }
         }
     };
@@ -557,7 +568,7 @@ const LocationsPage = () => {
         setSuccessMessage(null);
 
         if (!relationFormData.parent_location) {
-            setError('Please select a parent location');
+            setError(t('locations.selectParentError'));
             return;
         }
 
@@ -568,10 +579,10 @@ const LocationsPage = () => {
                     editingRelation.parent_location,
                     relationFormData
                 );
-                setSuccessMessage('Relation updated successfully!');
+                setSuccessMessage(t('locations.relationUpdateSuccess'));
             } else {
                 await locationRelationService.create(relationFormData);
-                setSuccessMessage('Relation created successfully!');
+                setSuccessMessage(t('locations.relationCreateSuccess'));
             }
 
             setRelationFormData({
@@ -582,7 +593,7 @@ const LocationsPage = () => {
             const data = await locationRelationService.getByChildId(selectedLocation.location_id);
             setRelations(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to save relation: ' + (err.response?.data?.error || err.message));
+            setError(t('locations.relationSaveError') + ': ' + (err.response?.data?.error || err.message));
         }
     }, [editingRelation, relationFormData, selectedLocation]);
 
@@ -595,17 +606,17 @@ const LocationsPage = () => {
     }, []);
 
     const handleDeleteRelation = useCallback(async (childId, parentId) => {
-        if (window.confirm('Are you sure you want to delete this relation?')) {
+        if (window.confirm(t('locations.confirmDeleteRelation'))) {
             try {
                 await locationRelationService.delete(childId, parentId);
-                setSuccessMessage('Relation deleted successfully!');
+                setSuccessMessage(t('locations.relationDeleteSuccess'));
                 const data = await locationRelationService.getByChildId(selectedLocation.location_id);
                 setRelations(Array.isArray(data) ? data : []);
             } catch (err) {
-                setError('Failed to delete relation: ' + err.message);
+                setError(t('locations.relationDeleteError') + ': ' + err.message);
             }
         }
-    }, [selectedLocation]);
+    }, [selectedLocation, t]);
 
     const handleCancelRelation = useCallback(() => {
         setRelationFormData({
@@ -615,22 +626,11 @@ const LocationsPage = () => {
         setEditingRelation(null);
     }, [selectedLocation]);
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setSelectedLocation(null);
-        setRelations([]);
-        setEditingRelation(null);
-    };
-
-    const handleSelect = (location) => {
-        handleSelectLocationForRelations(location);
-    };
-
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Locations</h1>
-                <p className="page-subtitle">Manage building locations and their hierarchy</p>
+                <h1 className="page-title">{t('nav.locations')}</h1>
+                <p className="page-subtitle">{t('locations.subtitle')}</p>
             </div>
 
             {error && (
@@ -668,7 +668,7 @@ const LocationsPage = () => {
                     borderBottom: '1px solid var(--color-border)'
                 }}>
                     <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                        All Locations
+                        {t('locations.allLocations')}
                     </h2>
                     <button
                         onClick={() => {
@@ -690,7 +690,7 @@ const LocationsPage = () => {
                             whiteSpace: 'nowrap'
                         }}
                     >
-                        {showForm ? 'Cancel' : '+ New Location'}
+                        {showForm ? t('common.cancel') : `+ ${t('locations.addLocation')}`}
                     </button>
                 </div>
 
@@ -704,7 +704,7 @@ const LocationsPage = () => {
                                     fontSize: 'var(--font-size-sm)',
                                     fontWeight: '500'
                                 }}>
-                                    Location Name *
+                                    {t('locations.locationName')} *
                                 </label>
                                 <input
                                     type="text"
@@ -712,7 +712,7 @@ const LocationsPage = () => {
                                     value={formData.location_name}
                                     onChange={handleInputChange}
                                     required
-                                    placeholder="e.g., Conference Room A"
+                                    placeholder={t('locations.locationNamePlaceholder')}
                                     maxLength="30"
                                     style={{
                                         width: '100%',
@@ -733,7 +733,7 @@ const LocationsPage = () => {
                                     fontSize: 'var(--font-size-sm)',
                                     fontWeight: '500'
                                 }}>
-                                    Location Type *
+                                    {t('locations.locationType')} *
                                 </label>
                                 <select
                                     name="location_type"
@@ -750,7 +750,7 @@ const LocationsPage = () => {
                                         fontFamily: 'inherit'
                                     }}
                                 >
-                                    <option value="">Select a location type</option>
+                                    <option value="">{t('locations.selectLocationType')}</option>
                                     {locationTypes.map((rt) => (
                                         <option key={rt.location_type_id} value={rt.location_type_id}>
                                             {rt.location_type_label}
@@ -776,7 +776,7 @@ const LocationsPage = () => {
                                         opacity: saving ? 0.6 : 1
                                     }}
                                 >
-                                    {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                                    {saving ? t('common.saving') : editingId ? t('common.update') : t('common.create')}
                                 </button>
                                 <button
                                     type="button"
@@ -793,7 +793,7 @@ const LocationsPage = () => {
                                         fontWeight: '500'
                                     }}
                                 >
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                             </div>
                         </form>
@@ -803,11 +803,11 @@ const LocationsPage = () => {
                 <div className="card-body" style={{ padding: 0 }}>
                     {loading ? (
                         <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
-                            Loading...
+                            {t('common.loading')}
                         </div>
                     ) : locations.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: 'var(--space-6)', color: 'var(--color-text-secondary)' }}>
-                            No locations found
+                            {t('locations.noLocationsFound')}
                         </div>
                     ) : (
                         <div>
@@ -824,10 +824,10 @@ const LocationsPage = () => {
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.5px'
                             }}>
-                                <div>Location Name</div>
-                                <div>Location Type</div>
-                                <div>Hierarchy</div>
-                                <div>Actions</div>
+                                <div>{t('locations.locationName')}</div>
+                                <div>{t('locations.locationType')}</div>
+                                <div>{t('locations.hierarchy')}</div>
+                                <div>{t('common.actions')}</div>
                             </div>
                             {locations.map((location, index) => (
                                 <div
@@ -878,7 +878,7 @@ const LocationsPage = () => {
                                                 e.target.style.color = 'var(--color-primary)';
                                             }}
                                         >
-                                            Hierarchy
+                                            {t('locations.hierarchy')}
                                         </button>
                                     </div>
                                     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -897,7 +897,7 @@ const LocationsPage = () => {
                                             onMouseEnter={(e) => { e.target.style.opacity = 1; }}
                                             onMouseLeave={(e) => { e.target.style.opacity = 0.7; }}
                                         >
-                                            Edit
+                                            {t('common.edit')}
                                         </button>
                                         <button
                                             onClick={() => handleDelete(location.location_id)}
@@ -914,7 +914,7 @@ const LocationsPage = () => {
                                             onMouseEnter={(e) => { e.target.style.opacity = 1; }}
                                             onMouseLeave={(e) => { e.target.style.opacity = 0.7; }}
                                         >
-                                            Delete
+                                            {t('common.delete')}
                                         </button>
                                     </div>
                                 </div>

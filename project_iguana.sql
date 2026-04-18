@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict 3Kg7QpELsJtA8iAIrt89uqxyXAogI7LTeFslOAv7l2XWiGruwVSBhExNKsATkwf
+\restrict trQtfBe7hC5G5fDbs8VZTrv0IEq91DYyUmn0WFfvqoPquLCM7X9xHz9cdHtqZd2
 
 -- Dumped from database version 18.1
 -- Dumped by pg_dump version 18.1
 
--- Started on 2026-04-13 21:19:41
+-- Started on 2026-04-18 20:33:08
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -22,7 +22,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 983 (class 1247 OID 38244)
+-- TOC entry 986 (class 1247 OID 43506)
 -- Name: maintenance_domain; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -35,7 +35,7 @@ CREATE TYPE public.maintenance_domain AS ENUM (
 ALTER TYPE public.maintenance_domain OWNER TO postgres;
 
 --
--- TOC entry 986 (class 1247 OID 38250)
+-- TOC entry 989 (class 1247 OID 43512)
 -- Name: movement_status; Type: TYPE; Schema: public; Owner: postgres
 --
 
@@ -53,7 +53,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 219 (class 1259 OID 38257)
+-- TOC entry 219 (class 1259 OID 43519)
 -- Name: acceptance_report; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -73,7 +73,7 @@ CREATE TABLE public.acceptance_report (
 ALTER TABLE public.acceptance_report OWNER TO postgres;
 
 --
--- TOC entry 220 (class 1259 OID 38264)
+-- TOC entry 220 (class 1259 OID 43526)
 -- Name: administrative_certificate; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -98,7 +98,7 @@ CREATE TABLE public.administrative_certificate (
 ALTER TABLE public.administrative_certificate OWNER TO postgres;
 
 --
--- TOC entry 6086 (class 0 OID 0)
+-- TOC entry 6108 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: COLUMN administrative_certificate.operation; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -107,7 +107,7 @@ COMMENT ON COLUMN public.administrative_certificate.operation IS 'Action" can be
 
 
 --
--- TOC entry 6087 (class 0 OID 0)
+-- TOC entry 6109 (class 0 OID 0)
 -- Dependencies: 220
 -- Name: COLUMN administrative_certificate.format; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -116,7 +116,7 @@ COMMENT ON COLUMN public.administrative_certificate.format IS 'Among the formats
 
 
 --
--- TOC entry 221 (class 1259 OID 38275)
+-- TOC entry 221 (class 1259 OID 43537)
 -- Name: asset; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -139,7 +139,7 @@ CREATE TABLE public.asset (
 ALTER TABLE public.asset OWNER TO postgres;
 
 --
--- TOC entry 222 (class 1259 OID 38280)
+-- TOC entry 222 (class 1259 OID 43542)
 -- Name: asset_attribute_definition; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -155,7 +155,7 @@ CREATE TABLE public.asset_attribute_definition (
 ALTER TABLE public.asset_attribute_definition OWNER TO postgres;
 
 --
--- TOC entry 223 (class 1259 OID 38284)
+-- TOC entry 223 (class 1259 OID 43546)
 -- Name: asset_attribute_value; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -172,7 +172,7 @@ CREATE TABLE public.asset_attribute_value (
 ALTER TABLE public.asset_attribute_value OWNER TO postgres;
 
 --
--- TOC entry 224 (class 1259 OID 38291)
+-- TOC entry 224 (class 1259 OID 43553)
 -- Name: asset_brand; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -188,7 +188,7 @@ CREATE TABLE public.asset_brand (
 ALTER TABLE public.asset_brand OWNER TO postgres;
 
 --
--- TOC entry 225 (class 1259 OID 38295)
+-- TOC entry 225 (class 1259 OID 43557)
 -- Name: asset_condition_history; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -207,7 +207,7 @@ CREATE TABLE public.asset_condition_history (
 ALTER TABLE public.asset_condition_history OWNER TO postgres;
 
 --
--- TOC entry 226 (class 1259 OID 38303)
+-- TOC entry 226 (class 1259 OID 43565)
 -- Name: asset_destruction_certificate; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -221,7 +221,7 @@ CREATE TABLE public.asset_destruction_certificate (
 ALTER TABLE public.asset_destruction_certificate OWNER TO postgres;
 
 --
--- TOC entry 227 (class 1259 OID 38309)
+-- TOC entry 227 (class 1259 OID 43571)
 -- Name: asset_destruction_certificate_asset; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -236,7 +236,7 @@ CREATE TABLE public.asset_destruction_certificate_asset (
 ALTER TABLE public.asset_destruction_certificate_asset OWNER TO postgres;
 
 --
--- TOC entry 228 (class 1259 OID 38316)
+-- TOC entry 228 (class 1259 OID 43578)
 -- Name: asset_destruction_certificate_asset_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -252,7 +252,7 @@ CREATE SEQUENCE public.asset_destruction_certificate_asset_id_seq
 ALTER SEQUENCE public.asset_destruction_certificate_asset_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6088 (class 0 OID 0)
+-- TOC entry 6110 (class 0 OID 0)
 -- Dependencies: 228
 -- Name: asset_destruction_certificate_asset_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -261,7 +261,7 @@ ALTER SEQUENCE public.asset_destruction_certificate_asset_id_seq OWNED BY public
 
 
 --
--- TOC entry 229 (class 1259 OID 38317)
+-- TOC entry 229 (class 1259 OID 43579)
 -- Name: asset_failed_external_maintenance; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -275,7 +275,7 @@ CREATE TABLE public.asset_failed_external_maintenance (
 ALTER TABLE public.asset_failed_external_maintenance OWNER TO postgres;
 
 --
--- TOC entry 345 (class 1259 OID 40322)
+-- TOC entry 230 (class 1259 OID 43584)
 -- Name: asset_incident_report; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -307,7 +307,7 @@ CREATE TABLE public.asset_incident_report (
 ALTER TABLE public.asset_incident_report OWNER TO postgres;
 
 --
--- TOC entry 344 (class 1259 OID 40321)
+-- TOC entry 231 (class 1259 OID 43609)
 -- Name: asset_incident_report_asset_incident_report_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -322,7 +322,7 @@ ALTER TABLE public.asset_incident_report ALTER COLUMN asset_incident_report_id A
 
 
 --
--- TOC entry 349 (class 1259 OID 40357)
+-- TOC entry 232 (class 1259 OID 43610)
 -- Name: asset_incident_report_consumable; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -336,7 +336,7 @@ CREATE TABLE public.asset_incident_report_consumable (
 ALTER TABLE public.asset_incident_report_consumable OWNER TO postgres;
 
 --
--- TOC entry 348 (class 1259 OID 40356)
+-- TOC entry 233 (class 1259 OID 43616)
 -- Name: asset_incident_report_consumable_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -351,7 +351,7 @@ ALTER TABLE public.asset_incident_report_consumable ALTER COLUMN id ADD GENERATE
 
 
 --
--- TOC entry 347 (class 1259 OID 40348)
+-- TOC entry 234 (class 1259 OID 43617)
 -- Name: asset_incident_report_stock_item; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -365,7 +365,7 @@ CREATE TABLE public.asset_incident_report_stock_item (
 ALTER TABLE public.asset_incident_report_stock_item OWNER TO postgres;
 
 --
--- TOC entry 346 (class 1259 OID 40347)
+-- TOC entry 235 (class 1259 OID 43623)
 -- Name: asset_incident_report_stock_item_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -380,7 +380,7 @@ ALTER TABLE public.asset_incident_report_stock_item ALTER COLUMN id ADD GENERATE
 
 
 --
--- TOC entry 230 (class 1259 OID 38322)
+-- TOC entry 236 (class 1259 OID 43624)
 -- Name: asset_is_assigned_to_person; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -400,8 +400,8 @@ CREATE TABLE public.asset_is_assigned_to_person (
 ALTER TABLE public.asset_is_assigned_to_person OWNER TO postgres;
 
 --
--- TOC entry 6089 (class 0 OID 0)
--- Dependencies: 230
+-- TOC entry 6111 (class 0 OID 0)
+-- Dependencies: 236
 -- Name: TABLE asset_is_assigned_to_person; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -409,7 +409,7 @@ COMMENT ON TABLE public.asset_is_assigned_to_person IS 'The first person is the 
 
 
 --
--- TOC entry 231 (class 1259 OID 38332)
+-- TOC entry 237 (class 1259 OID 43634)
 -- Name: asset_is_composed_of_consumable_history; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -427,7 +427,7 @@ CREATE TABLE public.asset_is_composed_of_consumable_history (
 ALTER TABLE public.asset_is_composed_of_consumable_history OWNER TO postgres;
 
 --
--- TOC entry 232 (class 1259 OID 38338)
+-- TOC entry 238 (class 1259 OID 43640)
 -- Name: asset_is_composed_of_consumable_history_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -443,8 +443,8 @@ CREATE SEQUENCE public.asset_is_composed_of_consumable_history_id_seq
 ALTER SEQUENCE public.asset_is_composed_of_consumable_history_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6090 (class 0 OID 0)
--- Dependencies: 232
+-- TOC entry 6112 (class 0 OID 0)
+-- Dependencies: 238
 -- Name: asset_is_composed_of_consumable_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -452,7 +452,7 @@ ALTER SEQUENCE public.asset_is_composed_of_consumable_history_id_seq OWNED BY pu
 
 
 --
--- TOC entry 233 (class 1259 OID 38339)
+-- TOC entry 239 (class 1259 OID 43641)
 -- Name: asset_is_composed_of_stock_item_history; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -470,7 +470,7 @@ CREATE TABLE public.asset_is_composed_of_stock_item_history (
 ALTER TABLE public.asset_is_composed_of_stock_item_history OWNER TO postgres;
 
 --
--- TOC entry 234 (class 1259 OID 38345)
+-- TOC entry 240 (class 1259 OID 43647)
 -- Name: asset_is_composed_of_stock_item_history_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -486,8 +486,8 @@ CREATE SEQUENCE public.asset_is_composed_of_stock_item_history_id_seq
 ALTER SEQUENCE public.asset_is_composed_of_stock_item_history_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6091 (class 0 OID 0)
--- Dependencies: 234
+-- TOC entry 6113 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: asset_is_composed_of_stock_item_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -495,7 +495,7 @@ ALTER SEQUENCE public.asset_is_composed_of_stock_item_history_id_seq OWNED BY pu
 
 
 --
--- TOC entry 235 (class 1259 OID 38346)
+-- TOC entry 241 (class 1259 OID 43648)
 -- Name: asset_model; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -516,7 +516,7 @@ CREATE TABLE public.asset_model (
 ALTER TABLE public.asset_model OWNER TO postgres;
 
 --
--- TOC entry 236 (class 1259 OID 38352)
+-- TOC entry 242 (class 1259 OID 43654)
 -- Name: asset_model_attribute_value; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -533,7 +533,7 @@ CREATE TABLE public.asset_model_attribute_value (
 ALTER TABLE public.asset_model_attribute_value OWNER TO postgres;
 
 --
--- TOC entry 237 (class 1259 OID 38359)
+-- TOC entry 243 (class 1259 OID 43661)
 -- Name: asset_model_default_consumable; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -549,7 +549,7 @@ CREATE TABLE public.asset_model_default_consumable (
 ALTER TABLE public.asset_model_default_consumable OWNER TO postgres;
 
 --
--- TOC entry 238 (class 1259 OID 38367)
+-- TOC entry 244 (class 1259 OID 43669)
 -- Name: asset_model_default_consumable_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -565,8 +565,8 @@ CREATE SEQUENCE public.asset_model_default_consumable_id_seq
 ALTER SEQUENCE public.asset_model_default_consumable_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6092 (class 0 OID 0)
--- Dependencies: 238
+-- TOC entry 6114 (class 0 OID 0)
+-- Dependencies: 244
 -- Name: asset_model_default_consumable_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -574,7 +574,7 @@ ALTER SEQUENCE public.asset_model_default_consumable_id_seq OWNED BY public.asse
 
 
 --
--- TOC entry 239 (class 1259 OID 38368)
+-- TOC entry 245 (class 1259 OID 43670)
 -- Name: asset_model_default_stock_item; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -590,7 +590,7 @@ CREATE TABLE public.asset_model_default_stock_item (
 ALTER TABLE public.asset_model_default_stock_item OWNER TO postgres;
 
 --
--- TOC entry 240 (class 1259 OID 38376)
+-- TOC entry 246 (class 1259 OID 43678)
 -- Name: asset_model_default_stock_item_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -606,8 +606,8 @@ CREATE SEQUENCE public.asset_model_default_stock_item_id_seq
 ALTER SEQUENCE public.asset_model_default_stock_item_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6093 (class 0 OID 0)
--- Dependencies: 240
+-- TOC entry 6115 (class 0 OID 0)
+-- Dependencies: 246
 -- Name: asset_model_default_stock_item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -615,7 +615,7 @@ ALTER SEQUENCE public.asset_model_default_stock_item_id_seq OWNED BY public.asse
 
 
 --
--- TOC entry 241 (class 1259 OID 38377)
+-- TOC entry 247 (class 1259 OID 43679)
 -- Name: asset_movement; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -635,7 +635,7 @@ CREATE TABLE public.asset_movement (
 ALTER TABLE public.asset_movement OWNER TO postgres;
 
 --
--- TOC entry 242 (class 1259 OID 38388)
+-- TOC entry 248 (class 1259 OID 43690)
 -- Name: asset_type; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -650,7 +650,7 @@ CREATE TABLE public.asset_type (
 ALTER TABLE public.asset_type OWNER TO postgres;
 
 --
--- TOC entry 243 (class 1259 OID 38394)
+-- TOC entry 249 (class 1259 OID 43696)
 -- Name: asset_type_attribute; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -665,7 +665,7 @@ CREATE TABLE public.asset_type_attribute (
 ALTER TABLE public.asset_type_attribute OWNER TO postgres;
 
 --
--- TOC entry 244 (class 1259 OID 38399)
+-- TOC entry 250 (class 1259 OID 43701)
 -- Name: attribution_order; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -682,7 +682,7 @@ CREATE TABLE public.attribution_order (
 ALTER TABLE public.attribution_order OWNER TO postgres;
 
 --
--- TOC entry 245 (class 1259 OID 38404)
+-- TOC entry 251 (class 1259 OID 43706)
 -- Name: attribution_order_asset_consumable_accessory; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -697,7 +697,7 @@ CREATE TABLE public.attribution_order_asset_consumable_accessory (
 ALTER TABLE public.attribution_order_asset_consumable_accessory OWNER TO postgres;
 
 --
--- TOC entry 246 (class 1259 OID 38411)
+-- TOC entry 252 (class 1259 OID 43713)
 -- Name: attribution_order_asset_consumable_accessory_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -713,8 +713,8 @@ CREATE SEQUENCE public.attribution_order_asset_consumable_accessory_id_seq
 ALTER SEQUENCE public.attribution_order_asset_consumable_accessory_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6094 (class 0 OID 0)
--- Dependencies: 246
+-- TOC entry 6116 (class 0 OID 0)
+-- Dependencies: 252
 -- Name: attribution_order_asset_consumable_accessory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -722,7 +722,7 @@ ALTER SEQUENCE public.attribution_order_asset_consumable_accessory_id_seq OWNED 
 
 
 --
--- TOC entry 247 (class 1259 OID 38412)
+-- TOC entry 253 (class 1259 OID 43714)
 -- Name: attribution_order_asset_stock_item_accessory; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -737,7 +737,7 @@ CREATE TABLE public.attribution_order_asset_stock_item_accessory (
 ALTER TABLE public.attribution_order_asset_stock_item_accessory OWNER TO postgres;
 
 --
--- TOC entry 248 (class 1259 OID 38419)
+-- TOC entry 254 (class 1259 OID 43721)
 -- Name: attribution_order_asset_stock_item_accessory_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -753,8 +753,8 @@ CREATE SEQUENCE public.attribution_order_asset_stock_item_accessory_id_seq
 ALTER SEQUENCE public.attribution_order_asset_stock_item_accessory_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6095 (class 0 OID 0)
--- Dependencies: 248
+-- TOC entry 6117 (class 0 OID 0)
+-- Dependencies: 254
 -- Name: attribution_order_asset_stock_item_accessory_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -762,7 +762,7 @@ ALTER SEQUENCE public.attribution_order_asset_stock_item_accessory_id_seq OWNED 
 
 
 --
--- TOC entry 249 (class 1259 OID 38420)
+-- TOC entry 255 (class 1259 OID 43722)
 -- Name: auth_group; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -775,7 +775,7 @@ CREATE TABLE public.auth_group (
 ALTER TABLE public.auth_group OWNER TO postgres;
 
 --
--- TOC entry 250 (class 1259 OID 38425)
+-- TOC entry 256 (class 1259 OID 43727)
 -- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -790,7 +790,7 @@ ALTER TABLE public.auth_group ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTI
 
 
 --
--- TOC entry 251 (class 1259 OID 38426)
+-- TOC entry 257 (class 1259 OID 43728)
 -- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -804,7 +804,7 @@ CREATE TABLE public.auth_group_permissions (
 ALTER TABLE public.auth_group_permissions OWNER TO postgres;
 
 --
--- TOC entry 252 (class 1259 OID 38432)
+-- TOC entry 258 (class 1259 OID 43734)
 -- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -819,7 +819,7 @@ ALTER TABLE public.auth_group_permissions ALTER COLUMN id ADD GENERATED BY DEFAU
 
 
 --
--- TOC entry 253 (class 1259 OID 38433)
+-- TOC entry 259 (class 1259 OID 43735)
 -- Name: auth_permission; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -834,7 +834,7 @@ CREATE TABLE public.auth_permission (
 ALTER TABLE public.auth_permission OWNER TO postgres;
 
 --
--- TOC entry 254 (class 1259 OID 38440)
+-- TOC entry 260 (class 1259 OID 43742)
 -- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -849,7 +849,7 @@ ALTER TABLE public.auth_permission ALTER COLUMN id ADD GENERATED BY DEFAULT AS I
 
 
 --
--- TOC entry 255 (class 1259 OID 38441)
+-- TOC entry 261 (class 1259 OID 43743)
 -- Name: auth_user; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -871,7 +871,7 @@ CREATE TABLE public.auth_user (
 ALTER TABLE public.auth_user OWNER TO postgres;
 
 --
--- TOC entry 256 (class 1259 OID 38456)
+-- TOC entry 262 (class 1259 OID 43758)
 -- Name: auth_user_groups; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -885,7 +885,7 @@ CREATE TABLE public.auth_user_groups (
 ALTER TABLE public.auth_user_groups OWNER TO postgres;
 
 --
--- TOC entry 257 (class 1259 OID 38462)
+-- TOC entry 263 (class 1259 OID 43764)
 -- Name: auth_user_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -900,7 +900,7 @@ ALTER TABLE public.auth_user_groups ALTER COLUMN id ADD GENERATED BY DEFAULT AS 
 
 
 --
--- TOC entry 258 (class 1259 OID 38463)
+-- TOC entry 264 (class 1259 OID 43765)
 -- Name: auth_user_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -915,7 +915,7 @@ ALTER TABLE public.auth_user ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTIT
 
 
 --
--- TOC entry 259 (class 1259 OID 38464)
+-- TOC entry 265 (class 1259 OID 43766)
 -- Name: auth_user_user_permissions; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -929,7 +929,7 @@ CREATE TABLE public.auth_user_user_permissions (
 ALTER TABLE public.auth_user_user_permissions OWNER TO postgres;
 
 --
--- TOC entry 260 (class 1259 OID 38470)
+-- TOC entry 266 (class 1259 OID 43772)
 -- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -944,7 +944,7 @@ ALTER TABLE public.auth_user_user_permissions ALTER COLUMN id ADD GENERATED BY D
 
 
 --
--- TOC entry 261 (class 1259 OID 38471)
+-- TOC entry 267 (class 1259 OID 43773)
 -- Name: authentication_log; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -962,8 +962,8 @@ CREATE TABLE public.authentication_log (
 ALTER TABLE public.authentication_log OWNER TO postgres;
 
 --
--- TOC entry 6096 (class 0 OID 0)
--- Dependencies: 261
+-- TOC entry 6118 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: COLUMN authentication_log.event_type; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -971,8 +971,8 @@ COMMENT ON COLUMN public.authentication_log.event_type IS 'LOGIN_SUCCESS, LOGIN_
 
 
 --
--- TOC entry 6097 (class 0 OID 0)
--- Dependencies: 261
+-- TOC entry 6119 (class 0 OID 0)
+-- Dependencies: 267
 -- Name: COLUMN authentication_log.failure_reason; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -980,7 +980,7 @@ COMMENT ON COLUMN public.authentication_log.failure_reason IS 'e.g., Invalid Pas
 
 
 --
--- TOC entry 262 (class 1259 OID 38476)
+-- TOC entry 268 (class 1259 OID 43778)
 -- Name: backorder_report; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -995,8 +995,8 @@ CREATE TABLE public.backorder_report (
 ALTER TABLE public.backorder_report OWNER TO postgres;
 
 --
--- TOC entry 6098 (class 0 OID 0)
--- Dependencies: 262
+-- TOC entry 6120 (class 0 OID 0)
+-- Dependencies: 268
 -- Name: TABLE backorder_report; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1004,7 +1004,7 @@ COMMENT ON TABLE public.backorder_report IS 'Renamed from bon_de_reste';
 
 
 --
--- TOC entry 263 (class 1259 OID 38483)
+-- TOC entry 269 (class 1259 OID 43785)
 -- Name: backorder_report_consumable_model_line; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1020,7 +1020,7 @@ CREATE TABLE public.backorder_report_consumable_model_line (
 ALTER TABLE public.backorder_report_consumable_model_line OWNER TO postgres;
 
 --
--- TOC entry 264 (class 1259 OID 38491)
+-- TOC entry 270 (class 1259 OID 43793)
 -- Name: backorder_report_stock_item_model_line; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1036,7 +1036,7 @@ CREATE TABLE public.backorder_report_stock_item_model_line (
 ALTER TABLE public.backorder_report_stock_item_model_line OWNER TO postgres;
 
 --
--- TOC entry 265 (class 1259 OID 38499)
+-- TOC entry 271 (class 1259 OID 43801)
 -- Name: broken_item_report; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1049,8 +1049,8 @@ CREATE TABLE public.broken_item_report (
 ALTER TABLE public.broken_item_report OWNER TO postgres;
 
 --
--- TOC entry 6099 (class 0 OID 0)
--- Dependencies: 265
+-- TOC entry 6121 (class 0 OID 0)
+-- Dependencies: 271
 -- Name: TABLE broken_item_report; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1058,7 +1058,7 @@ COMMENT ON TABLE public.broken_item_report IS 'Equivalent of C5';
 
 
 --
--- TOC entry 266 (class 1259 OID 38505)
+-- TOC entry 272 (class 1259 OID 43807)
 -- Name: company_asset_request; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1081,8 +1081,8 @@ CREATE TABLE public.company_asset_request (
 ALTER TABLE public.company_asset_request OWNER TO postgres;
 
 --
--- TOC entry 6100 (class 0 OID 0)
--- Dependencies: 266
+-- TOC entry 6122 (class 0 OID 0)
+-- Dependencies: 272
 -- Name: TABLE company_asset_request; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1090,7 +1090,7 @@ COMMENT ON TABLE public.company_asset_request IS 'Demande du mat�riel';
 
 
 --
--- TOC entry 267 (class 1259 OID 38512)
+-- TOC entry 273 (class 1259 OID 43814)
 -- Name: consumable; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1112,7 +1112,7 @@ CREATE TABLE public.consumable (
 ALTER TABLE public.consumable OWNER TO postgres;
 
 --
--- TOC entry 268 (class 1259 OID 38517)
+-- TOC entry 274 (class 1259 OID 43819)
 -- Name: consumable_attribute_definition; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1129,7 +1129,7 @@ CREATE TABLE public.consumable_attribute_definition (
 ALTER TABLE public.consumable_attribute_definition OWNER TO postgres;
 
 --
--- TOC entry 269 (class 1259 OID 38521)
+-- TOC entry 275 (class 1259 OID 43823)
 -- Name: consumable_attribute_value; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1146,7 +1146,7 @@ CREATE TABLE public.consumable_attribute_value (
 ALTER TABLE public.consumable_attribute_value OWNER TO postgres;
 
 --
--- TOC entry 270 (class 1259 OID 38528)
+-- TOC entry 276 (class 1259 OID 43830)
 -- Name: consumable_brand; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1162,7 +1162,7 @@ CREATE TABLE public.consumable_brand (
 ALTER TABLE public.consumable_brand OWNER TO postgres;
 
 --
--- TOC entry 271 (class 1259 OID 38532)
+-- TOC entry 277 (class 1259 OID 43834)
 -- Name: consumable_condition_history; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1180,7 +1180,7 @@ CREATE TABLE public.consumable_condition_history (
 ALTER TABLE public.consumable_condition_history OWNER TO postgres;
 
 --
--- TOC entry 272 (class 1259 OID 38539)
+-- TOC entry 278 (class 1259 OID 43841)
 -- Name: consumable_is_assigned_to_person; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1200,8 +1200,8 @@ CREATE TABLE public.consumable_is_assigned_to_person (
 ALTER TABLE public.consumable_is_assigned_to_person OWNER TO postgres;
 
 --
--- TOC entry 6101 (class 0 OID 0)
--- Dependencies: 272
+-- TOC entry 6123 (class 0 OID 0)
+-- Dependencies: 278
 -- Name: TABLE consumable_is_assigned_to_person; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1209,7 +1209,7 @@ COMMENT ON TABLE public.consumable_is_assigned_to_person IS 'The first person is
 
 
 --
--- TOC entry 273 (class 1259 OID 38549)
+-- TOC entry 279 (class 1259 OID 43851)
 -- Name: consumable_is_compatible_with_asset; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1222,7 +1222,7 @@ CREATE TABLE public.consumable_is_compatible_with_asset (
 ALTER TABLE public.consumable_is_compatible_with_asset OWNER TO postgres;
 
 --
--- TOC entry 274 (class 1259 OID 38554)
+-- TOC entry 280 (class 1259 OID 43856)
 -- Name: consumable_is_compatible_with_stock_item; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1235,7 +1235,7 @@ CREATE TABLE public.consumable_is_compatible_with_stock_item (
 ALTER TABLE public.consumable_is_compatible_with_stock_item OWNER TO postgres;
 
 --
--- TOC entry 275 (class 1259 OID 38559)
+-- TOC entry 281 (class 1259 OID 43861)
 -- Name: consumable_is_used_in_stock_item_history; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1253,7 +1253,7 @@ CREATE TABLE public.consumable_is_used_in_stock_item_history (
 ALTER TABLE public.consumable_is_used_in_stock_item_history OWNER TO postgres;
 
 --
--- TOC entry 276 (class 1259 OID 38565)
+-- TOC entry 282 (class 1259 OID 43867)
 -- Name: consumable_is_used_in_stock_item_history_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1269,8 +1269,8 @@ CREATE SEQUENCE public.consumable_is_used_in_stock_item_history_id_seq
 ALTER SEQUENCE public.consumable_is_used_in_stock_item_history_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6102 (class 0 OID 0)
--- Dependencies: 276
+-- TOC entry 6124 (class 0 OID 0)
+-- Dependencies: 282
 -- Name: consumable_is_used_in_stock_item_history_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -1278,7 +1278,7 @@ ALTER SEQUENCE public.consumable_is_used_in_stock_item_history_id_seq OWNED BY p
 
 
 --
--- TOC entry 277 (class 1259 OID 38566)
+-- TOC entry 283 (class 1259 OID 43868)
 -- Name: consumable_model; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1299,7 +1299,7 @@ CREATE TABLE public.consumable_model (
 ALTER TABLE public.consumable_model OWNER TO postgres;
 
 --
--- TOC entry 278 (class 1259 OID 38572)
+-- TOC entry 284 (class 1259 OID 43874)
 -- Name: consumable_model_attribute_value; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1316,7 +1316,7 @@ CREATE TABLE public.consumable_model_attribute_value (
 ALTER TABLE public.consumable_model_attribute_value OWNER TO postgres;
 
 --
--- TOC entry 279 (class 1259 OID 38579)
+-- TOC entry 285 (class 1259 OID 43881)
 -- Name: consumable_model_is_found_in_purchase_order; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1332,8 +1332,8 @@ CREATE TABLE public.consumable_model_is_found_in_purchase_order (
 ALTER TABLE public.consumable_model_is_found_in_purchase_order OWNER TO postgres;
 
 --
--- TOC entry 6103 (class 0 OID 0)
--- Dependencies: 279
+-- TOC entry 6125 (class 0 OID 0)
+-- Dependencies: 285
 -- Name: TABLE consumable_model_is_found_in_purchase_order; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1341,7 +1341,7 @@ COMMENT ON TABLE public.consumable_model_is_found_in_purchase_order IS 'Renamed 
 
 
 --
--- TOC entry 280 (class 1259 OID 38584)
+-- TOC entry 286 (class 1259 OID 43886)
 -- Name: consumable_movement; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1361,7 +1361,7 @@ CREATE TABLE public.consumable_movement (
 ALTER TABLE public.consumable_movement OWNER TO postgres;
 
 --
--- TOC entry 281 (class 1259 OID 38595)
+-- TOC entry 287 (class 1259 OID 43897)
 -- Name: consumable_type; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1376,7 +1376,7 @@ CREATE TABLE public.consumable_type (
 ALTER TABLE public.consumable_type OWNER TO postgres;
 
 --
--- TOC entry 282 (class 1259 OID 38601)
+-- TOC entry 288 (class 1259 OID 43903)
 -- Name: consumable_type_attribute; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1391,7 +1391,7 @@ CREATE TABLE public.consumable_type_attribute (
 ALTER TABLE public.consumable_type_attribute OWNER TO postgres;
 
 --
--- TOC entry 283 (class 1259 OID 38606)
+-- TOC entry 289 (class 1259 OID 43908)
 -- Name: delivery_note; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1407,8 +1407,8 @@ CREATE TABLE public.delivery_note (
 ALTER TABLE public.delivery_note OWNER TO postgres;
 
 --
--- TOC entry 6104 (class 0 OID 0)
--- Dependencies: 283
+-- TOC entry 6126 (class 0 OID 0)
+-- Dependencies: 289
 -- Name: TABLE delivery_note; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1416,7 +1416,7 @@ COMMENT ON TABLE public.delivery_note IS 'Renamed from bon_de_livraison';
 
 
 --
--- TOC entry 284 (class 1259 OID 38613)
+-- TOC entry 290 (class 1259 OID 43915)
 -- Name: django_admin_log; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1436,7 +1436,7 @@ CREATE TABLE public.django_admin_log (
 ALTER TABLE public.django_admin_log OWNER TO postgres;
 
 --
--- TOC entry 285 (class 1259 OID 38625)
+-- TOC entry 291 (class 1259 OID 43927)
 -- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1451,7 +1451,7 @@ ALTER TABLE public.django_admin_log ALTER COLUMN id ADD GENERATED BY DEFAULT AS 
 
 
 --
--- TOC entry 286 (class 1259 OID 38626)
+-- TOC entry 292 (class 1259 OID 43928)
 -- Name: django_content_type; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1465,7 +1465,7 @@ CREATE TABLE public.django_content_type (
 ALTER TABLE public.django_content_type OWNER TO postgres;
 
 --
--- TOC entry 287 (class 1259 OID 38632)
+-- TOC entry 293 (class 1259 OID 43934)
 -- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1480,7 +1480,7 @@ ALTER TABLE public.django_content_type ALTER COLUMN id ADD GENERATED BY DEFAULT 
 
 
 --
--- TOC entry 288 (class 1259 OID 38633)
+-- TOC entry 294 (class 1259 OID 43935)
 -- Name: django_migrations; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1495,7 +1495,7 @@ CREATE TABLE public.django_migrations (
 ALTER TABLE public.django_migrations OWNER TO postgres;
 
 --
--- TOC entry 289 (class 1259 OID 38642)
+-- TOC entry 295 (class 1259 OID 43944)
 -- Name: django_migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1510,7 +1510,7 @@ ALTER TABLE public.django_migrations ALTER COLUMN id ADD GENERATED BY DEFAULT AS
 
 
 --
--- TOC entry 290 (class 1259 OID 38643)
+-- TOC entry 296 (class 1259 OID 43945)
 -- Name: django_session; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1524,7 +1524,7 @@ CREATE TABLE public.django_session (
 ALTER TABLE public.django_session OWNER TO postgres;
 
 --
--- TOC entry 291 (class 1259 OID 38651)
+-- TOC entry 297 (class 1259 OID 43953)
 -- Name: external_maintenance; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1543,7 +1543,7 @@ CREATE TABLE public.external_maintenance (
 ALTER TABLE public.external_maintenance OWNER TO postgres;
 
 --
--- TOC entry 292 (class 1259 OID 38657)
+-- TOC entry 298 (class 1259 OID 43959)
 -- Name: external_maintenance_document; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1560,7 +1560,7 @@ CREATE TABLE public.external_maintenance_document (
 ALTER TABLE public.external_maintenance_document OWNER TO postgres;
 
 --
--- TOC entry 293 (class 1259 OID 38664)
+-- TOC entry 299 (class 1259 OID 43966)
 -- Name: external_maintenance_provider; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1574,7 +1574,7 @@ CREATE TABLE public.external_maintenance_provider (
 ALTER TABLE public.external_maintenance_provider OWNER TO postgres;
 
 --
--- TOC entry 294 (class 1259 OID 38668)
+-- TOC entry 300 (class 1259 OID 43970)
 -- Name: external_maintenance_step; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1591,7 +1591,7 @@ CREATE TABLE public.external_maintenance_step (
 ALTER TABLE public.external_maintenance_step OWNER TO postgres;
 
 --
--- TOC entry 295 (class 1259 OID 38674)
+-- TOC entry 301 (class 1259 OID 43976)
 -- Name: external_maintenance_typical_step; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1608,8 +1608,8 @@ CREATE TABLE public.external_maintenance_typical_step (
 ALTER TABLE public.external_maintenance_typical_step OWNER TO postgres;
 
 --
--- TOC entry 6105 (class 0 OID 0)
--- Dependencies: 295
+-- TOC entry 6127 (class 0 OID 0)
+-- Dependencies: 301
 -- Name: COLUMN external_maintenance_typical_step.maintenance_type; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1617,7 +1617,7 @@ COMMENT ON COLUMN public.external_maintenance_typical_step.maintenance_type IS '
 
 
 --
--- TOC entry 296 (class 1259 OID 38679)
+-- TOC entry 302 (class 1259 OID 43981)
 -- Name: invoice; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1631,7 +1631,7 @@ CREATE TABLE public.invoice (
 ALTER TABLE public.invoice OWNER TO postgres;
 
 --
--- TOC entry 297 (class 1259 OID 38686)
+-- TOC entry 303 (class 1259 OID 43988)
 -- Name: location; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1645,7 +1645,7 @@ CREATE TABLE public.location (
 ALTER TABLE public.location OWNER TO postgres;
 
 --
--- TOC entry 298 (class 1259 OID 38690)
+-- TOC entry 304 (class 1259 OID 43992)
 -- Name: location_belongs_to_organizational_structure; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1658,7 +1658,21 @@ CREATE TABLE public.location_belongs_to_organizational_structure (
 ALTER TABLE public.location_belongs_to_organizational_structure OWNER TO postgres;
 
 --
--- TOC entry 299 (class 1259 OID 38695)
+-- TOC entry 305 (class 1259 OID 43997)
+-- Name: location_relation; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.location_relation (
+    child_location_id integer NOT NULL,
+    parent_location_id integer NOT NULL,
+    relation_id integer
+);
+
+
+ALTER TABLE public.location_relation OWNER TO postgres;
+
+--
+-- TOC entry 306 (class 1259 OID 44002)
 -- Name: location_type; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1672,7 +1686,7 @@ CREATE TABLE public.location_type (
 ALTER TABLE public.location_type OWNER TO postgres;
 
 --
--- TOC entry 300 (class 1259 OID 38701)
+-- TOC entry 307 (class 1259 OID 44008)
 -- Name: location_type_location_type_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1688,8 +1702,8 @@ CREATE SEQUENCE public.location_type_location_type_id_seq
 ALTER SEQUENCE public.location_type_location_type_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6106 (class 0 OID 0)
--- Dependencies: 300
+-- TOC entry 6128 (class 0 OID 0)
+-- Dependencies: 307
 -- Name: location_type_location_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -1697,7 +1711,7 @@ ALTER SEQUENCE public.location_type_location_type_id_seq OWNED BY public.locatio
 
 
 --
--- TOC entry 301 (class 1259 OID 38702)
+-- TOC entry 308 (class 1259 OID 44009)
 -- Name: maintenance; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1721,7 +1735,7 @@ CREATE TABLE public.maintenance (
 ALTER TABLE public.maintenance OWNER TO postgres;
 
 --
--- TOC entry 302 (class 1259 OID 38710)
+-- TOC entry 309 (class 1259 OID 44017)
 -- Name: maintenance_inspection_leads_to_broken_item_report; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1734,7 +1748,7 @@ CREATE TABLE public.maintenance_inspection_leads_to_broken_item_report (
 ALTER TABLE public.maintenance_inspection_leads_to_broken_item_report OWNER TO postgres;
 
 --
--- TOC entry 303 (class 1259 OID 38715)
+-- TOC entry 310 (class 1259 OID 44022)
 -- Name: maintenance_step; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1756,7 +1770,7 @@ CREATE TABLE public.maintenance_step (
 ALTER TABLE public.maintenance_step OWNER TO postgres;
 
 --
--- TOC entry 304 (class 1259 OID 38722)
+-- TOC entry 311 (class 1259 OID 44029)
 -- Name: maintenance_step_attribute_change; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1779,7 +1793,7 @@ CREATE TABLE public.maintenance_step_attribute_change (
 ALTER TABLE public.maintenance_step_attribute_change OWNER TO postgres;
 
 --
--- TOC entry 305 (class 1259 OID 38732)
+-- TOC entry 312 (class 1259 OID 44039)
 -- Name: maintenance_step_attribute_ch_maintenance_step_attribute_ch_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1794,7 +1808,7 @@ ALTER TABLE public.maintenance_step_attribute_change ALTER COLUMN maintenance_st
 
 
 --
--- TOC entry 306 (class 1259 OID 38733)
+-- TOC entry 313 (class 1259 OID 44040)
 -- Name: maintenance_step_item_request; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1822,7 +1836,7 @@ CREATE TABLE public.maintenance_step_item_request (
 ALTER TABLE public.maintenance_step_item_request OWNER TO postgres;
 
 --
--- TOC entry 307 (class 1259 OID 38742)
+-- TOC entry 314 (class 1259 OID 44049)
 -- Name: maintenance_typical_step; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1841,8 +1855,8 @@ CREATE TABLE public.maintenance_typical_step (
 ALTER TABLE public.maintenance_typical_step OWNER TO postgres;
 
 --
--- TOC entry 6107 (class 0 OID 0)
--- Dependencies: 307
+-- TOC entry 6129 (class 0 OID 0)
+-- Dependencies: 314
 -- Name: COLUMN maintenance_typical_step.maintenance_type; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1850,7 +1864,7 @@ COMMENT ON COLUMN public.maintenance_typical_step.maintenance_type IS 'Hardware 
 
 
 --
--- TOC entry 308 (class 1259 OID 38750)
+-- TOC entry 315 (class 1259 OID 44057)
 -- Name: organizational_structure; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1858,15 +1872,15 @@ CREATE TABLE public.organizational_structure (
     organizational_structure_id integer NOT NULL,
     structure_code character varying(50),
     structure_name character varying(255),
-    structure_type character varying(30),
-    is_active boolean
+    is_active boolean,
+    structure_type_id integer
 );
 
 
 ALTER TABLE public.organizational_structure OWNER TO postgres;
 
 --
--- TOC entry 309 (class 1259 OID 38754)
+-- TOC entry 316 (class 1259 OID 44061)
 -- Name: organizational_structure_relation; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1880,7 +1894,45 @@ CREATE TABLE public.organizational_structure_relation (
 ALTER TABLE public.organizational_structure_relation OWNER TO postgres;
 
 --
--- TOC entry 310 (class 1259 OID 38759)
+-- TOC entry 317 (class 1259 OID 44066)
+-- Name: organizational_structure_type; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.organizational_structure_type (
+    organizational_structure_type_id integer CONSTRAINT organizational_structure_ty_organizational_structure_t_not_null NOT NULL,
+    organizational_structure_type character varying(30) CONSTRAINT organizational_structure_t_organizational_structure_t_not_null1 NOT NULL
+);
+
+
+ALTER TABLE public.organizational_structure_type OWNER TO postgres;
+
+--
+-- TOC entry 318 (class 1259 OID 44071)
+-- Name: organizational_structure_type_organizational_structure_type_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.organizational_structure_type_organizational_structure_type_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.organizational_structure_type_organizational_structure_type_seq OWNER TO postgres;
+
+--
+-- TOC entry 6130 (class 0 OID 0)
+-- Dependencies: 318
+-- Name: organizational_structure_type_organizational_structure_type_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.organizational_structure_type_organizational_structure_type_seq OWNED BY public.organizational_structure_type.organizational_structure_type_id;
+
+
+--
+-- TOC entry 319 (class 1259 OID 44072)
 -- Name: person; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1897,7 +1949,7 @@ CREATE TABLE public.person (
 ALTER TABLE public.person OWNER TO postgres;
 
 --
--- TOC entry 311 (class 1259 OID 38768)
+-- TOC entry 320 (class 1259 OID 44081)
 -- Name: person_assignment; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1914,8 +1966,8 @@ CREATE TABLE public.person_assignment (
 ALTER TABLE public.person_assignment OWNER TO postgres;
 
 --
--- TOC entry 6108 (class 0 OID 0)
--- Dependencies: 311
+-- TOC entry 6131 (class 0 OID 0)
+-- Dependencies: 320
 -- Name: COLUMN person_assignment.employment_type; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -1923,7 +1975,7 @@ COMMENT ON COLUMN public.person_assignment.employment_type IS 'Permanent, contra
 
 
 --
--- TOC entry 312 (class 1259 OID 38774)
+-- TOC entry 321 (class 1259 OID 44087)
 -- Name: person_reports_problem_on_asset; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1939,7 +1991,7 @@ CREATE TABLE public.person_reports_problem_on_asset (
 ALTER TABLE public.person_reports_problem_on_asset OWNER TO postgres;
 
 --
--- TOC entry 313 (class 1259 OID 38782)
+-- TOC entry 322 (class 1259 OID 44095)
 -- Name: person_reports_problem_on_asset_included_consumable; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1953,7 +2005,7 @@ CREATE TABLE public.person_reports_problem_on_asset_included_consumable (
 ALTER TABLE public.person_reports_problem_on_asset_included_consumable OWNER TO postgres;
 
 --
--- TOC entry 314 (class 1259 OID 38788)
+-- TOC entry 323 (class 1259 OID 44101)
 -- Name: person_reports_problem_on_asset_included_consumable_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1969,8 +2021,8 @@ CREATE SEQUENCE public.person_reports_problem_on_asset_included_consumable_id_se
 ALTER SEQUENCE public.person_reports_problem_on_asset_included_consumable_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6109 (class 0 OID 0)
--- Dependencies: 314
+-- TOC entry 6132 (class 0 OID 0)
+-- Dependencies: 323
 -- Name: person_reports_problem_on_asset_included_consumable_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -1978,7 +2030,7 @@ ALTER SEQUENCE public.person_reports_problem_on_asset_included_consumable_id_seq
 
 
 --
--- TOC entry 315 (class 1259 OID 38789)
+-- TOC entry 324 (class 1259 OID 44102)
 -- Name: person_reports_problem_on_asset_included_context; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1991,7 +2043,7 @@ CREATE TABLE public.person_reports_problem_on_asset_included_context (
 ALTER TABLE public.person_reports_problem_on_asset_included_context OWNER TO postgres;
 
 --
--- TOC entry 316 (class 1259 OID 38794)
+-- TOC entry 325 (class 1259 OID 44107)
 -- Name: person_reports_problem_on_asset_included_stock_item; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2005,7 +2057,7 @@ CREATE TABLE public.person_reports_problem_on_asset_included_stock_item (
 ALTER TABLE public.person_reports_problem_on_asset_included_stock_item OWNER TO postgres;
 
 --
--- TOC entry 317 (class 1259 OID 38800)
+-- TOC entry 326 (class 1259 OID 44113)
 -- Name: person_reports_problem_on_asset_included_stock_item_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -2021,8 +2073,8 @@ CREATE SEQUENCE public.person_reports_problem_on_asset_included_stock_item_id_se
 ALTER SEQUENCE public.person_reports_problem_on_asset_included_stock_item_id_seq OWNER TO postgres;
 
 --
--- TOC entry 6110 (class 0 OID 0)
--- Dependencies: 317
+-- TOC entry 6133 (class 0 OID 0)
+-- Dependencies: 326
 -- Name: person_reports_problem_on_asset_included_stock_item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -2030,7 +2082,7 @@ ALTER SEQUENCE public.person_reports_problem_on_asset_included_stock_item_id_seq
 
 
 --
--- TOC entry 318 (class 1259 OID 38801)
+-- TOC entry 327 (class 1259 OID 44114)
 -- Name: person_reports_problem_on_consumable; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2046,7 +2098,7 @@ CREATE TABLE public.person_reports_problem_on_consumable (
 ALTER TABLE public.person_reports_problem_on_consumable OWNER TO postgres;
 
 --
--- TOC entry 319 (class 1259 OID 38809)
+-- TOC entry 328 (class 1259 OID 44122)
 -- Name: person_reports_problem_on_stock_item; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2062,7 +2114,7 @@ CREATE TABLE public.person_reports_problem_on_stock_item (
 ALTER TABLE public.person_reports_problem_on_stock_item OWNER TO postgres;
 
 --
--- TOC entry 320 (class 1259 OID 38817)
+-- TOC entry 329 (class 1259 OID 44130)
 -- Name: person_role_mapping; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2075,8 +2127,8 @@ CREATE TABLE public.person_role_mapping (
 ALTER TABLE public.person_role_mapping OWNER TO postgres;
 
 --
--- TOC entry 6111 (class 0 OID 0)
--- Dependencies: 320
+-- TOC entry 6134 (class 0 OID 0)
+-- Dependencies: 329
 -- Name: COLUMN person_role_mapping.role_id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -2084,7 +2136,7 @@ COMMENT ON COLUMN public.person_role_mapping.role_id IS 'Roles: TECHNICIAN, INVE
 
 
 --
--- TOC entry 321 (class 1259 OID 38822)
+-- TOC entry 330 (class 1259 OID 44135)
 -- Name: physical_condition; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2099,7 +2151,7 @@ CREATE TABLE public.physical_condition (
 ALTER TABLE public.physical_condition OWNER TO postgres;
 
 --
--- TOC entry 322 (class 1259 OID 38826)
+-- TOC entry 331 (class 1259 OID 44139)
 -- Name: position; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2114,7 +2166,7 @@ CREATE TABLE public."position" (
 ALTER TABLE public."position" OWNER TO postgres;
 
 --
--- TOC entry 350 (class 1259 OID 40433)
+-- TOC entry 332 (class 1259 OID 44143)
 -- Name: position_role_mapping; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2129,7 +2181,7 @@ CREATE TABLE public.position_role_mapping (
 ALTER TABLE public.position_role_mapping OWNER TO postgres;
 
 --
--- TOC entry 323 (class 1259 OID 38830)
+-- TOC entry 333 (class 1259 OID 44152)
 -- Name: purchase_order; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2145,8 +2197,8 @@ CREATE TABLE public.purchase_order (
 ALTER TABLE public.purchase_order OWNER TO postgres;
 
 --
--- TOC entry 6112 (class 0 OID 0)
--- Dependencies: 323
+-- TOC entry 6135 (class 0 OID 0)
+-- Dependencies: 333
 -- Name: TABLE purchase_order; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -2154,7 +2206,7 @@ COMMENT ON TABLE public.purchase_order IS 'Renamed from bon_de_commande';
 
 
 --
--- TOC entry 324 (class 1259 OID 38837)
+-- TOC entry 334 (class 1259 OID 44159)
 -- Name: receipt_report; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2169,8 +2221,8 @@ CREATE TABLE public.receipt_report (
 ALTER TABLE public.receipt_report OWNER TO postgres;
 
 --
--- TOC entry 6113 (class 0 OID 0)
--- Dependencies: 324
+-- TOC entry 6136 (class 0 OID 0)
+-- Dependencies: 334
 -- Name: TABLE receipt_report; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -2178,7 +2230,7 @@ COMMENT ON TABLE public.receipt_report IS 'This represents the "PV de réception
 
 
 --
--- TOC entry 325 (class 1259 OID 38843)
+-- TOC entry 335 (class 1259 OID 44165)
 -- Name: role; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2193,8 +2245,8 @@ CREATE TABLE public.role (
 ALTER TABLE public.role OWNER TO postgres;
 
 --
--- TOC entry 6114 (class 0 OID 0)
--- Dependencies: 325
+-- TOC entry 6137 (class 0 OID 0)
+-- Dependencies: 335
 -- Name: TABLE role; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -2202,8 +2254,8 @@ COMMENT ON TABLE public.role IS 'Role is what the person can do in the system';
 
 
 --
--- TOC entry 6115 (class 0 OID 0)
--- Dependencies: 325
+-- TOC entry 6138 (class 0 OID 0)
+-- Dependencies: 335
 -- Name: COLUMN role.role_id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -2211,7 +2263,7 @@ COMMENT ON COLUMN public.role.role_id IS 'Roles: TECHNICIAN, INVENTORY_MANAGER, 
 
 
 --
--- TOC entry 326 (class 1259 OID 38847)
+-- TOC entry 336 (class 1259 OID 44169)
 -- Name: stock_item; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2233,7 +2285,7 @@ CREATE TABLE public.stock_item (
 ALTER TABLE public.stock_item OWNER TO postgres;
 
 --
--- TOC entry 327 (class 1259 OID 38852)
+-- TOC entry 337 (class 1259 OID 44174)
 -- Name: stock_item_attribute_definition; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2249,7 +2301,7 @@ CREATE TABLE public.stock_item_attribute_definition (
 ALTER TABLE public.stock_item_attribute_definition OWNER TO postgres;
 
 --
--- TOC entry 328 (class 1259 OID 38856)
+-- TOC entry 338 (class 1259 OID 44178)
 -- Name: stock_item_attribute_value; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2266,7 +2318,7 @@ CREATE TABLE public.stock_item_attribute_value (
 ALTER TABLE public.stock_item_attribute_value OWNER TO postgres;
 
 --
--- TOC entry 329 (class 1259 OID 38863)
+-- TOC entry 339 (class 1259 OID 44185)
 -- Name: stock_item_brand; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2282,7 +2334,7 @@ CREATE TABLE public.stock_item_brand (
 ALTER TABLE public.stock_item_brand OWNER TO postgres;
 
 --
--- TOC entry 330 (class 1259 OID 38867)
+-- TOC entry 340 (class 1259 OID 44189)
 -- Name: stock_item_condition_history; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2301,7 +2353,7 @@ CREATE TABLE public.stock_item_condition_history (
 ALTER TABLE public.stock_item_condition_history OWNER TO postgres;
 
 --
--- TOC entry 331 (class 1259 OID 38875)
+-- TOC entry 341 (class 1259 OID 44197)
 -- Name: stock_item_consumable_destruction_certificate; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2315,7 +2367,7 @@ CREATE TABLE public.stock_item_consumable_destruction_certificate (
 ALTER TABLE public.stock_item_consumable_destruction_certificate OWNER TO postgres;
 
 --
--- TOC entry 332 (class 1259 OID 38881)
+-- TOC entry 342 (class 1259 OID 44203)
 -- Name: stock_item_is_assigned_to_person; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2335,8 +2387,8 @@ CREATE TABLE public.stock_item_is_assigned_to_person (
 ALTER TABLE public.stock_item_is_assigned_to_person OWNER TO postgres;
 
 --
--- TOC entry 6116 (class 0 OID 0)
--- Dependencies: 332
+-- TOC entry 6139 (class 0 OID 0)
+-- Dependencies: 342
 -- Name: TABLE stock_item_is_assigned_to_person; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -2344,7 +2396,7 @@ COMMENT ON TABLE public.stock_item_is_assigned_to_person IS 'The first person is
 
 
 --
--- TOC entry 333 (class 1259 OID 38891)
+-- TOC entry 343 (class 1259 OID 44213)
 -- Name: stock_item_is_compatible_with_asset; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2357,7 +2409,7 @@ CREATE TABLE public.stock_item_is_compatible_with_asset (
 ALTER TABLE public.stock_item_is_compatible_with_asset OWNER TO postgres;
 
 --
--- TOC entry 334 (class 1259 OID 38896)
+-- TOC entry 344 (class 1259 OID 44218)
 -- Name: stock_item_model; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2378,7 +2430,7 @@ CREATE TABLE public.stock_item_model (
 ALTER TABLE public.stock_item_model OWNER TO postgres;
 
 --
--- TOC entry 335 (class 1259 OID 38902)
+-- TOC entry 345 (class 1259 OID 44224)
 -- Name: stock_item_model_attribute_value; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2395,7 +2447,7 @@ CREATE TABLE public.stock_item_model_attribute_value (
 ALTER TABLE public.stock_item_model_attribute_value OWNER TO postgres;
 
 --
--- TOC entry 336 (class 1259 OID 38909)
+-- TOC entry 346 (class 1259 OID 44231)
 -- Name: stock_item_model_is_found_in_purchase_order; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2411,8 +2463,8 @@ CREATE TABLE public.stock_item_model_is_found_in_purchase_order (
 ALTER TABLE public.stock_item_model_is_found_in_purchase_order OWNER TO postgres;
 
 --
--- TOC entry 6117 (class 0 OID 0)
--- Dependencies: 336
+-- TOC entry 6140 (class 0 OID 0)
+-- Dependencies: 346
 -- Name: TABLE stock_item_model_is_found_in_purchase_order; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -2420,7 +2472,7 @@ COMMENT ON TABLE public.stock_item_model_is_found_in_purchase_order IS 'Renamed 
 
 
 --
--- TOC entry 337 (class 1259 OID 38914)
+-- TOC entry 347 (class 1259 OID 44236)
 -- Name: stock_item_movement; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2440,7 +2492,7 @@ CREATE TABLE public.stock_item_movement (
 ALTER TABLE public.stock_item_movement OWNER TO postgres;
 
 --
--- TOC entry 338 (class 1259 OID 38925)
+-- TOC entry 348 (class 1259 OID 44247)
 -- Name: stock_item_type; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2455,7 +2507,7 @@ CREATE TABLE public.stock_item_type (
 ALTER TABLE public.stock_item_type OWNER TO postgres;
 
 --
--- TOC entry 339 (class 1259 OID 38931)
+-- TOC entry 349 (class 1259 OID 44253)
 -- Name: stock_item_type_attribute; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2470,7 +2522,7 @@ CREATE TABLE public.stock_item_type_attribute (
 ALTER TABLE public.stock_item_type_attribute OWNER TO postgres;
 
 --
--- TOC entry 340 (class 1259 OID 38936)
+-- TOC entry 350 (class 1259 OID 44258)
 -- Name: supplier; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2489,7 +2541,7 @@ CREATE TABLE public.supplier (
 ALTER TABLE public.supplier OWNER TO postgres;
 
 --
--- TOC entry 341 (class 1259 OID 38940)
+-- TOC entry 351 (class 1259 OID 44262)
 -- Name: user_account; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2513,7 +2565,7 @@ CREATE TABLE public.user_account (
 ALTER TABLE public.user_account OWNER TO postgres;
 
 --
--- TOC entry 342 (class 1259 OID 38956)
+-- TOC entry 352 (class 1259 OID 44278)
 -- Name: user_session; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2531,7 +2583,7 @@ CREATE TABLE public.user_session (
 ALTER TABLE public.user_session OWNER TO postgres;
 
 --
--- TOC entry 343 (class 1259 OID 38964)
+-- TOC entry 353 (class 1259 OID 44286)
 -- Name: warehouse; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2545,8 +2597,8 @@ CREATE TABLE public.warehouse (
 ALTER TABLE public.warehouse OWNER TO postgres;
 
 --
--- TOC entry 6118 (class 0 OID 0)
--- Dependencies: 343
+-- TOC entry 6141 (class 0 OID 0)
+-- Dependencies: 353
 -- Name: TABLE warehouse; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -2554,7 +2606,7 @@ COMMENT ON TABLE public.warehouse IS 'Warehouse" is in our case "ERI/2RM';
 
 
 --
--- TOC entry 5314 (class 2604 OID 38968)
+-- TOC entry 5323 (class 2604 OID 44290)
 -- Name: asset_destruction_certificate_asset id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2562,7 +2614,7 @@ ALTER TABLE ONLY public.asset_destruction_certificate_asset ALTER COLUMN id SET 
 
 
 --
--- TOC entry 5315 (class 2604 OID 38969)
+-- TOC entry 5331 (class 2604 OID 44291)
 -- Name: asset_is_composed_of_consumable_history id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2570,7 +2622,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_consumable_history ALTER COLUMN id 
 
 
 --
--- TOC entry 5316 (class 2604 OID 38970)
+-- TOC entry 5332 (class 2604 OID 44292)
 -- Name: asset_is_composed_of_stock_item_history id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2578,7 +2630,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_stock_item_history ALTER COLUMN id 
 
 
 --
--- TOC entry 5317 (class 2604 OID 38971)
+-- TOC entry 5333 (class 2604 OID 44293)
 -- Name: asset_model_default_consumable id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2586,7 +2638,7 @@ ALTER TABLE ONLY public.asset_model_default_consumable ALTER COLUMN id SET DEFAU
 
 
 --
--- TOC entry 5319 (class 2604 OID 38972)
+-- TOC entry 5335 (class 2604 OID 44294)
 -- Name: asset_model_default_stock_item id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2594,7 +2646,7 @@ ALTER TABLE ONLY public.asset_model_default_stock_item ALTER COLUMN id SET DEFAU
 
 
 --
--- TOC entry 5322 (class 2604 OID 38973)
+-- TOC entry 5338 (class 2604 OID 44295)
 -- Name: attribution_order_asset_consumable_accessory id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2602,7 +2654,7 @@ ALTER TABLE ONLY public.attribution_order_asset_consumable_accessory ALTER COLUM
 
 
 --
--- TOC entry 5323 (class 2604 OID 38974)
+-- TOC entry 5339 (class 2604 OID 44296)
 -- Name: attribution_order_asset_stock_item_accessory id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2610,7 +2662,7 @@ ALTER TABLE ONLY public.attribution_order_asset_stock_item_accessory ALTER COLUM
 
 
 --
--- TOC entry 5324 (class 2604 OID 38975)
+-- TOC entry 5340 (class 2604 OID 44297)
 -- Name: consumable_is_used_in_stock_item_history id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2618,7 +2670,7 @@ ALTER TABLE ONLY public.consumable_is_used_in_stock_item_history ALTER COLUMN id
 
 
 --
--- TOC entry 5327 (class 2604 OID 38976)
+-- TOC entry 5343 (class 2604 OID 44298)
 -- Name: location_type location_type_id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2626,7 +2678,15 @@ ALTER TABLE ONLY public.location_type ALTER COLUMN location_type_id SET DEFAULT 
 
 
 --
--- TOC entry 5329 (class 2604 OID 38977)
+-- TOC entry 5345 (class 2604 OID 44299)
+-- Name: organizational_structure_type organizational_structure_type_id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.organizational_structure_type ALTER COLUMN organizational_structure_type_id SET DEFAULT nextval('public.organizational_structure_type_organizational_structure_type_seq'::regclass);
+
+
+--
+-- TOC entry 5346 (class 2604 OID 44300)
 -- Name: person_reports_problem_on_asset_included_consumable id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2634,7 +2694,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_consumable ALTE
 
 
 --
--- TOC entry 5330 (class 2604 OID 38978)
+-- TOC entry 5347 (class 2604 OID 44301)
 -- Name: person_reports_problem_on_asset_included_stock_item id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2642,7 +2702,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_stock_item ALTE
 
 
 --
--- TOC entry 5949 (class 0 OID 38257)
+-- TOC entry 5968 (class 0 OID 43519)
 -- Dependencies: 219
 -- Data for Name: acceptance_report; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2656,7 +2716,7 @@ COPY public.acceptance_report (acceptance_report_id, delivery_note_id, acceptanc
 
 
 --
--- TOC entry 5950 (class 0 OID 38264)
+-- TOC entry 5969 (class 0 OID 43526)
 -- Dependencies: 220
 -- Data for Name: administrative_certificate; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2666,20 +2726,17 @@ COPY public.administrative_certificate (administrative_certificate_id, warehouse
 
 
 --
--- TOC entry 5951 (class 0 OID 38275)
+-- TOC entry 5970 (class 0 OID 43537)
 -- Dependencies: 221
 -- Data for Name: asset; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset (asset_id, asset_model_id, attribution_order_id, destruction_certificate_id, asset_serial_number, asset_fabrication_datetime, asset_inventory_number, asset_service_tag, asset_name, asset_name_in_the_administrative_certificate, asset_arrival_datetime, asset_status) FROM stdin;
-2	1	\N	\N	7777	\N	\N	\N	\N	\N	\N	\N
-1	1	\N	\N	1234	\N	\N	\N	\N	\N	\N	lost
-3	1	\N	\N	TEST-ASSET-1775207486	\N	207486	ASVC1775207486	TEST_ASSET_207486	\N	\N	lost
 \.
 
 
 --
--- TOC entry 5952 (class 0 OID 38280)
+-- TOC entry 5971 (class 0 OID 43542)
 -- Dependencies: 222
 -- Data for Name: asset_attribute_definition; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2687,13 +2744,53 @@ COPY public.asset (asset_id, asset_model_id, attribution_order_id, destruction_c
 COPY public.asset_attribute_definition (asset_attribute_definition_id, data_type, unit, description, maintenance_domain) FROM stdin;
 2	number	mAh	Battery Capacity	\N
 3	string	\N	Disk Type	\N
-1	number	Inch	Screen Resolution	network
 4	number	mm	Dimension X	\N
+5	string	\N	IPv4 Address	\N
+6	string	\N	IPv6 Address	\N
+7	string	\N	MAC Address	\N
+8	string	\N	Username	\N
+9	number	mm	Dimension Y	\N
+10	number	mm	Dimension Z	\N
+11	string	\N	NetBIOS	\N
+12	string	\N	Password	\N
+13	bool	\N	Camera Included	\N
+1	number	Inch	Screen Size	network
+14	string	\N	Screen Resolution	\N
+15	string	\N	Projection Resolution	\N
+16	string	\N	Paper Size	\N
+17	number	W	Power Capacity	\N
+18	number	GB	Default RAM Size	\N
+19	string	\N	Default RAM Generation (DDRx)	\N
+20	string	\N	Default CPU	\N
+21	string	\N	Default Integrated GPU	\N
+22	string	\N	Default Dedicated GPU	\N
+24	number	\N	Number of Ethernet Ports	\N
+25	string	\N	Printing Technology	\N
+26	number	DPI	Max Resolution (DPI)	\N
+27	string	\N	Wire Type (Ethernet / USB)	\N
+28	string	\N	Wireless Connection Type (Bluetooth, Wi-Fi, Both)	\N
+29	number	Paper(s)	Paper Capacity	\N
+30	number	g	Weight	\N
+31	string	\N	Panel Type	\N
+32	number	Hz	Refresh Rate	\N
+33	bool	\N	Fingerprint Reader Included	\N
+34	number	bit(s)	Color Bit Depth	\N
+35	string	\N	Display Panel Technology	\N
+36	number	mS	Screen Response Time	\N
+37	string	\N	Aspect Ratio	\N
+38	string	\N	Display Ports	\N
+23	bool	\N	Colors Printing?	\N
+39	string	\N	Light Source Technology	\N
+40	number	MB	Port Speed	\N
+41	bool	\N	Management (Managed / Unmanaged)	\N
+42	bool	\N	Power Over Ethernet (PoE)	\N
+43	number	\N	Layer (2/3)	\N
+44	string	\N	Standard Ethernet Category	\N
 \.
 
 
 --
--- TOC entry 5953 (class 0 OID 38284)
+-- TOC entry 5972 (class 0 OID 43546)
 -- Dependencies: 223
 -- Data for Name: asset_attribute_value; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2703,7 +2800,7 @@ COPY public.asset_attribute_value (asset_attribute_definition_id, asset_id, valu
 
 
 --
--- TOC entry 5954 (class 0 OID 38291)
+-- TOC entry 5973 (class 0 OID 43553)
 -- Dependencies: 224
 -- Data for Name: asset_brand; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2728,11 +2825,20 @@ COPY public.asset_brand (asset_brand_id, brand_name, brand_code, is_active, bran
 17	RICOH	RICOH	t	\N
 18	Siemens	SIEMENS	t	\N
 19	DTSCC	DTSCC	t	\N
+20	Avision	AVISION	t	\N
+21	Lexmark	LEXMARK	t	\N
+22	Pantum	PANTUM	t	\N
+23	Dascom	DASCOM	t	\N
+24	D-Link	D-LINK	t	\N
+25	Cisco	CISCO	t	\N
+26	TP-Link	TPLINK	t	\N
+27	Intex	INTEX	t	\N
+28	AVAYA	AVAYA	t	\N
 \.
 
 
 --
--- TOC entry 5955 (class 0 OID 38295)
+-- TOC entry 5974 (class 0 OID 43557)
 -- Dependencies: 225
 -- Data for Name: asset_condition_history; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2742,7 +2848,7 @@ COPY public.asset_condition_history (asset_condition_history_id, asset_id, condi
 
 
 --
--- TOC entry 5956 (class 0 OID 38303)
+-- TOC entry 5975 (class 0 OID 43565)
 -- Dependencies: 226
 -- Data for Name: asset_destruction_certificate; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2755,7 +2861,7 @@ COPY public.asset_destruction_certificate (asset_destruction_certificate_id, dig
 
 
 --
--- TOC entry 5957 (class 0 OID 38309)
+-- TOC entry 5976 (class 0 OID 43571)
 -- Dependencies: 227
 -- Data for Name: asset_destruction_certificate_asset; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2765,7 +2871,7 @@ COPY public.asset_destruction_certificate_asset (id, asset_destruction_certifica
 
 
 --
--- TOC entry 5959 (class 0 OID 38317)
+-- TOC entry 5978 (class 0 OID 43579)
 -- Dependencies: 229
 -- Data for Name: asset_failed_external_maintenance; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2775,85 +2881,68 @@ COPY public.asset_failed_external_maintenance (asset_id, external_maintenance_id
 
 
 --
--- TOC entry 6075 (class 0 OID 40322)
--- Dependencies: 345
+-- TOC entry 5979 (class 0 OID 43584)
+-- Dependencies: 230
 -- Data for Name: asset_incident_report; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_incident_report (asset_incident_report_id, asset_id, owner_person_id, school_headquarter_person_id, reason, owner_note, digital_copy, is_signed_by_owner, is_signed_by_it_bureau_chief, is_signed_by_exploitation_chief, is_signed_by_protection_and_security_bureau_chief, is_signed_by_school_headquarter, it_bureau_chief_note, exploitation_chief_note, protection_and_security_bureau_chief_note, school_headquarter_note, report_datetime, status, maintenance_id) FROM stdin;
-1	1	10	\N	stolen	dddddd	\N	f	t	t	f	f	ccccccccccccccc	dddddd	\N	\N	2026-04-02 13:19:41.966875	submitted	\N
-2	1	10	\N	stolen		\N	f	f	t	f	f	\N		\N	\N	2026-04-03 07:30:23.136921	submitted	\N
-3	2	1009	\N	lost	Incident Test	\N	f	f	t	f	f	\N	Incident Test	\N	\N	2026-04-03 07:55:48.302238	submitted	\N
-4	1	10	\N	irrecoverably_damaged	Incident Test	\N	f	f	t	f	f	\N	Incident Test	\N	\N	2026-04-03 08:07:45.852384	submitted	\N
-5	1	10	\N	irrecoverably_damaged	Incident Test	\N	f	f	t	f	f	\N	Incident Test	\N	\N	2026-04-03 08:10:14.687526	submitted	\N
-6	1	10	\N	irrecoverably_damaged	Incident Test	\N	f	f	t	f	f	\N	Incident Test	\N	\N	2026-04-03 08:11:14.19535	submitted	\N
-7	1	10	\N	lost	Let exploitation chief decide per item	\N	f	f	t	f	f	\N	Let exploitation chief decide per item	\N	\N	2026-04-03 09:09:01.893008	submitted	\N
-8	3	10	\N	irrecoverably_damaged	test	\N	f	f	t	f	f	\N	test	\N	\N	2026-04-03 09:12:30.727609	submitted	\N
-9	3	9	\N	lost	bbbbbbbbbbbbb	\N	t	f	t	f	f	\N	tgtgtgtgtgt	\N	\N	2026-04-03 09:24:05.850394	submitted	\N
 \.
 
 
 --
--- TOC entry 6079 (class 0 OID 40357)
--- Dependencies: 349
+-- TOC entry 5981 (class 0 OID 43610)
+-- Dependencies: 232
 -- Data for Name: asset_incident_report_consumable; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_incident_report_consumable (id, asset_incident_report_id, consumable_id) FROM stdin;
-1	8	57
-2	9	57
 \.
 
 
 --
--- TOC entry 6077 (class 0 OID 40348)
--- Dependencies: 347
+-- TOC entry 5983 (class 0 OID 43617)
+-- Dependencies: 234
 -- Data for Name: asset_incident_report_stock_item; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_incident_report_stock_item (id, asset_incident_report_id, stock_item_id) FROM stdin;
-1	8	9
-2	9	9
 \.
 
 
 --
--- TOC entry 5960 (class 0 OID 38322)
--- Dependencies: 230
+-- TOC entry 5985 (class 0 OID 43624)
+-- Dependencies: 236
 -- Data for Name: asset_is_assigned_to_person; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_is_assigned_to_person (person_id, asset_id, assigned_by_person_id, assignment_id, start_datetime, end_datetime, condition_on_assignment, is_active, is_confirmed_by_exploitation_chief_id) FROM stdin;
-9	3	10	1	2026-04-03 09:23:00	\N	Needs Repair	t	10
 \.
 
 
 --
--- TOC entry 5961 (class 0 OID 38332)
--- Dependencies: 231
+-- TOC entry 5986 (class 0 OID 43634)
+-- Dependencies: 237
 -- Data for Name: asset_is_composed_of_consumable_history; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_is_composed_of_consumable_history (consumable_id, asset_id, maintenance_step_id, start_datetime, end_datetime, id, attribution_order_id) FROM stdin;
-56	2	\N	\N	\N	1	\N
-57	3	\N	2026-04-03 09:11:26.368374	\N	2	\N
 \.
 
 
 --
--- TOC entry 5963 (class 0 OID 38339)
--- Dependencies: 233
+-- TOC entry 5988 (class 0 OID 43641)
+-- Dependencies: 239
 -- Data for Name: asset_is_composed_of_stock_item_history; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_is_composed_of_stock_item_history (stock_item_id, asset_id, maintenance_step_id, start_datetime, end_datetime, id, attribution_order_id) FROM stdin;
-9	3	\N	2026-04-03 09:11:26.365471	\N	1	\N
 \.
 
 
 --
--- TOC entry 5965 (class 0 OID 38346)
--- Dependencies: 235
+-- TOC entry 5990 (class 0 OID 43648)
+-- Dependencies: 241
 -- Data for Name: asset_model; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2865,59 +2954,1208 @@ COPY public.asset_model (asset_model_id, asset_brand_id, asset_type_id, model_na
 5	3	1	WM15-CCLPRO	WM15CCLPRO	\N	\N	t	\N	\N
 6	5	1	LC001	LC001	\N	\N	t	\N	\N
 7	19	1	LC002	LC002	\N	\N	t	\N	\N
+8	4	3	Hoggar Series 700 Pro	\N	\N	\N	t	\N	\N
+9	4	3	Hoggar Series 700	\N	\N	\N	t	\N	\N
+10	4	3	Hoggar Q7700	\N	\N	\N	t	\N	\N
+11	6	3	Type 01 Z1 G9	\N	\N	\N	t	\N	\N
+12	6	3	Pro 3130MT	\N	\N	\N	t	\N	\N
+13	1	3	M460	\N	\N	\N	t	\N	\N
+14	1	3	M480	\N	\N	\N	t	\N	\N
+15	3	3	D-11	\N	\N	\N	t	\N	\N
+16	3	3	D700	\N	\N	\N	t	\N	\N
+17	2	3	Esprimo P400	\N	\N	\N	t	\N	\N
+18	8	5	GT 20000	\N	\N	\N	t	\N	\N
+19	8	5	GT 15000	\N	\N	\N	t	\N	\N
+20	8	5	1640 XL	\N	\N	\N	t	\N	\N
+21	6	5	officeJet K7103	\N	\N	\N	t	\N	\N
+22	6	5	Scan Jet G2710	\N	\N	\N	t	\N	\N
+23	20	5	AD345GFN	\N	\N	\N	t	\N	\N
+24	8	4	Ligne Printronix P8000	\N	\N	\N	t	\N	\N
+25	8	4	WF AL-300	\N	\N	\N	t	\N	\N
+26	8	4	M2400	\N	\N	\N	t	\N	\N
+27	8	4	LQ 2090	\N	\N	\N	t	\N	\N
+28	8	4	LQ 2080	\N	\N	\N	t	\N	\N
+29	8	4	B1100	\N	\N	\N	t	\N	\N
+30	8	4	ACULASER C4200	\N	\N	\N	t	\N	\N
+31	6	4	MFP MANAGED E877DN	\N	\N	\N	t	\N	\N
+32	6	4	LaserJet P1606dn	\N	\N	\N	t	\N	\N
+33	6	4	officeJet 7612	\N	\N	\N	t	\N	\N
+34	6	4	officeJet K7103	\N	\N	\N	t	\N	\N
+35	21	4	MS 510dn	\N	\N	\N	t	\N	\N
+36	21	4	E260dn	\N	\N	\N	t	\N	\N
+37	7	4	5550	\N	\N	\N	t	\N	\N
+38	7	4	B840 DN	\N	\N	\N	t	\N	\N
+39	7	4	5750	\N	\N	\N	t	\N	\N
+40	7	4	B432 DN	\N	\N	\N	t	\N	\N
+41	7	4	C843 DN	\N	\N	\N	t	\N	\N
+42	7	4	C532 DN	\N	\N	\N	t	\N	\N
+43	7	4	5591 ML	\N	\N	\N	t	\N	\N
+44	17	4	SP 4310n	\N	\N	\N	t	\N	\N
+45	17	4	SP 6430 DN	\N	\N	\N	t	\N	\N
+46	12	4	3330V_DNIM	\N	\N	\N	t	\N	\N
+47	12	4	WorkCentre 3315	\N	\N	\N	t	\N	\N
+48	15	4	LBP 236DW	\N	\N	\N	t	\N	\N
+49	22	4	BP 5200	\N	\N	\N	t	\N	\N
+50	23	4	2610+	\N	\N	\N	t	\N	\N
+51	5	2	AC001	\N	\N	\N	t	\N	\N
+52	10	2	OptiPlex AIO 7420 65W	\N	\N	\N	t	\N	\N
+53	24	8	DES 1024D	\N	\N	\N	t	\N	\N
+54	25	8	Catalyst 3750	\N	\N	\N	t	\N	\N
+55	25	8	Catalyst 3850	\N	\N	\N	t	\N	\N
+56	25	8	Catalyst 2950	\N	\N	\N	t	\N	\N
+57	25	8	TL-SF 1016 16 Ports RJ-45	\N	\N	\N	t	\N	\N
+58	25	8	Telesystem	\N	\N	\N	t	\N	\N
+59	24	8	TLSF 1024D	\N	\N	\N	t	\N	\N
+60	26	8	TLSF1024D	\N	\N	\N	t	\N	\N
+61	27	8	INTEX	\N	\N	\N	t	\N	\N
+62	25	8	Catalyst 2960	\N	\N	\N	t	\N	\N
+63	28	8	AVAYA	\N	\N	\N	t	\N	\N
+64	28	8	ERS3549GTS	\N	\N	\N	t	\N	\N
 \.
 
 
 --
--- TOC entry 5966 (class 0 OID 38352)
--- Dependencies: 236
+-- TOC entry 5991 (class 0 OID 43654)
+-- Dependencies: 242
 -- Data for Name: asset_model_attribute_value; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_model_attribute_value (asset_model_id, asset_attribute_definition_id, value_bool, value_string, value_number, value_date) FROM stdin;
-1	2	f	\N	90000.000000	\N
-1	3	f	SSD NVMe	\N	\N
+18	4	\N	\N	\N	\N
+18	5	\N	\N	\N	\N
+18	6	\N	\N	\N	\N
+18	9	\N	\N	\N	\N
+18	10	\N	\N	\N	\N
+19	4	\N	\N	\N	\N
+19	5	\N	\N	\N	\N
+19	6	\N	\N	\N	\N
+19	9	\N	\N	\N	\N
+19	10	\N	\N	\N	\N
+20	4	\N	\N	\N	\N
+20	5	\N	\N	\N	\N
+20	6	\N	\N	\N	\N
+20	9	\N	\N	\N	\N
+20	10	\N	\N	\N	\N
+21	4	\N	\N	\N	\N
+21	5	\N	\N	\N	\N
+21	6	\N	\N	\N	\N
+21	9	\N	\N	\N	\N
+21	10	\N	\N	\N	\N
+22	4	\N	\N	\N	\N
+22	5	\N	\N	\N	\N
+22	6	\N	\N	\N	\N
+22	9	\N	\N	\N	\N
+22	10	\N	\N	\N	\N
+23	4	\N	\N	\N	\N
+23	5	\N	\N	\N	\N
+23	6	\N	\N	\N	\N
+23	9	\N	\N	\N	\N
+23	10	\N	\N	\N	\N
+24	9	\N	\N	\N	\N
+24	10	\N	\N	\N	\N
+24	4	\N	\N	\N	\N
+25	9	\N	\N	\N	\N
+25	10	\N	\N	\N	\N
+25	4	\N	\N	\N	\N
+26	9	\N	\N	\N	\N
+26	10	\N	\N	\N	\N
+26	4	\N	\N	\N	\N
+27	9	\N	\N	\N	\N
+27	10	\N	\N	\N	\N
+27	4	\N	\N	\N	\N
+28	9	\N	\N	\N	\N
+28	10	\N	\N	\N	\N
+28	4	\N	\N	\N	\N
+29	9	\N	\N	\N	\N
+29	10	\N	\N	\N	\N
+29	4	\N	\N	\N	\N
+30	9	\N	\N	\N	\N
+30	10	\N	\N	\N	\N
+30	4	\N	\N	\N	\N
+31	9	\N	\N	\N	\N
+31	10	\N	\N	\N	\N
+31	4	\N	\N	\N	\N
+32	9	\N	\N	\N	\N
+32	10	\N	\N	\N	\N
+32	4	\N	\N	\N	\N
+33	9	\N	\N	\N	\N
+33	10	\N	\N	\N	\N
+33	4	\N	\N	\N	\N
+34	9	\N	\N	\N	\N
+34	10	\N	\N	\N	\N
+34	4	\N	\N	\N	\N
+35	9	\N	\N	\N	\N
+35	10	\N	\N	\N	\N
+35	4	\N	\N	\N	\N
+36	9	\N	\N	\N	\N
+36	10	\N	\N	\N	\N
+36	4	\N	\N	\N	\N
+37	9	\N	\N	\N	\N
+37	10	\N	\N	\N	\N
+37	4	\N	\N	\N	\N
+38	9	\N	\N	\N	\N
+38	10	\N	\N	\N	\N
+38	4	\N	\N	\N	\N
+39	9	\N	\N	\N	\N
+39	10	\N	\N	\N	\N
+39	4	\N	\N	\N	\N
+40	9	\N	\N	\N	\N
+40	10	\N	\N	\N	\N
+40	4	\N	\N	\N	\N
+41	9	\N	\N	\N	\N
+41	10	\N	\N	\N	\N
+41	4	\N	\N	\N	\N
+42	9	\N	\N	\N	\N
+42	10	\N	\N	\N	\N
+42	4	\N	\N	\N	\N
+43	9	\N	\N	\N	\N
+43	10	\N	\N	\N	\N
+43	4	\N	\N	\N	\N
+44	9	\N	\N	\N	\N
+44	10	\N	\N	\N	\N
+44	4	\N	\N	\N	\N
+45	9	\N	\N	\N	\N
+45	10	\N	\N	\N	\N
+45	4	\N	\N	\N	\N
+46	9	\N	\N	\N	\N
+46	10	\N	\N	\N	\N
+46	4	\N	\N	\N	\N
+47	9	\N	\N	\N	\N
+47	10	\N	\N	\N	\N
+47	4	\N	\N	\N	\N
+48	9	\N	\N	\N	\N
+48	10	\N	\N	\N	\N
+48	4	\N	\N	\N	\N
+49	9	\N	\N	\N	\N
+49	10	\N	\N	\N	\N
+49	4	\N	\N	\N	\N
+50	9	\N	\N	\N	\N
+50	10	\N	\N	\N	\N
+50	4	\N	\N	\N	\N
+51	1	\N	\N	\N	\N
+51	2	\N	\N	\N	\N
+51	3	\N	\N	\N	\N
+51	4	\N	\N	\N	\N
+51	5	\N	\N	\N	\N
+51	6	\N	\N	\N	\N
+51	7	\N	\N	\N	\N
+51	8	\N	\N	\N	\N
+51	9	\N	\N	\N	\N
+51	10	\N	\N	\N	\N
+51	11	\N	\N	\N	\N
+51	12	\N	\N	\N	\N
+52	1	\N	\N	\N	\N
+52	2	\N	\N	\N	\N
+52	3	\N	\N	\N	\N
+52	4	\N	\N	\N	\N
+52	5	\N	\N	\N	\N
+52	6	\N	\N	\N	\N
+52	7	\N	\N	\N	\N
+52	8	\N	\N	\N	\N
+52	9	\N	\N	\N	\N
+52	10	\N	\N	\N	\N
+52	11	\N	\N	\N	\N
+52	12	\N	\N	\N	\N
+53	9	\N	\N	\N	\N
+53	10	\N	\N	\N	\N
+53	4	\N	\N	\N	\N
+54	9	\N	\N	\N	\N
+54	10	\N	\N	\N	\N
+54	4	\N	\N	\N	\N
+55	9	\N	\N	\N	\N
+55	10	\N	\N	\N	\N
+55	4	\N	\N	\N	\N
+56	9	\N	\N	\N	\N
+56	10	\N	\N	\N	\N
+56	4	\N	\N	\N	\N
+57	9	\N	\N	\N	\N
+57	10	\N	\N	\N	\N
+57	4	\N	\N	\N	\N
+58	9	\N	\N	\N	\N
+58	10	\N	\N	\N	\N
+58	4	\N	\N	\N	\N
+59	9	\N	\N	\N	\N
+59	10	\N	\N	\N	\N
+59	4	\N	\N	\N	\N
+60	9	\N	\N	\N	\N
+60	10	\N	\N	\N	\N
+60	4	\N	\N	\N	\N
+61	9	\N	\N	\N	\N
+61	10	\N	\N	\N	\N
+61	4	\N	\N	\N	\N
+62	9	\N	\N	\N	\N
+62	10	\N	\N	\N	\N
+62	4	\N	\N	\N	\N
+63	9	\N	\N	\N	\N
+63	10	\N	\N	\N	\N
+63	4	\N	\N	\N	\N
+64	9	\N	\N	\N	\N
+64	10	\N	\N	\N	\N
+64	4	\N	\N	\N	\N
+51	13	\N	\N	\N	\N
+52	13	\N	\N	\N	\N
+1	1	\N	\N	15.600000	\N
+1	2	\N	\N	\N	\N
+1	3	\N	\N	\N	\N
+1	4	\N	\N	\N	\N
+1	5	\N	\N	\N	\N
+1	6	\N	\N	\N	\N
+1	7	\N	\N	\N	\N
+1	8	\N	\N	\N	\N
+1	9	\N	\N	\N	\N
+1	10	\N	\N	\N	\N
+1	11	\N	\N	\N	\N
+1	12	\N	\N	\N	\N
+1	14	\N	\N	\N	\N
+2	1	\N	\N	15.600000	\N
+2	2	\N	\N	\N	\N
+2	3	\N	\N	\N	\N
+2	4	\N	\N	\N	\N
+2	5	\N	\N	\N	\N
+2	6	\N	\N	\N	\N
+2	7	\N	\N	\N	\N
+2	8	\N	\N	\N	\N
+2	9	\N	\N	\N	\N
+2	10	\N	\N	\N	\N
+2	11	\N	\N	\N	\N
+2	12	\N	\N	\N	\N
+2	14	\N	\N	\N	\N
+3	1	\N	\N	15.600000	\N
+3	2	\N	\N	\N	\N
+3	3	\N	\N	\N	\N
+3	4	\N	\N	\N	\N
+3	5	\N	\N	\N	\N
+3	6	\N	\N	\N	\N
+3	7	\N	\N	\N	\N
+3	8	\N	\N	\N	\N
+3	9	\N	\N	\N	\N
+3	10	\N	\N	\N	\N
+3	11	\N	\N	\N	\N
+3	12	\N	\N	\N	\N
+3	14	\N	\N	\N	\N
+4	1	\N	\N	15.600000	\N
+4	2	\N	\N	\N	\N
+4	3	\N	\N	\N	\N
+4	4	\N	\N	\N	\N
+4	5	\N	\N	\N	\N
+4	6	\N	\N	\N	\N
+4	7	\N	\N	\N	\N
+4	8	\N	\N	\N	\N
+4	9	\N	\N	\N	\N
+4	10	\N	\N	\N	\N
+4	11	\N	\N	\N	\N
+4	12	\N	\N	\N	\N
+4	14	\N	\N	\N	\N
+50	17	\N	\N	\N	\N
+5	1	\N	\N	15.600000	\N
+5	2	\N	\N	\N	\N
+5	3	\N	\N	\N	\N
+5	4	\N	\N	\N	\N
+5	5	\N	\N	\N	\N
+5	6	\N	\N	\N	\N
+5	7	\N	\N	\N	\N
+5	8	\N	\N	\N	\N
+5	9	\N	\N	\N	\N
+5	10	\N	\N	\N	\N
+5	11	\N	\N	\N	\N
+5	12	\N	\N	\N	\N
+5	14	\N	\N	\N	\N
+6	1	\N	\N	15.600000	\N
+6	2	\N	\N	\N	\N
+6	3	\N	\N	\N	\N
+6	4	\N	\N	\N	\N
+6	5	\N	\N	\N	\N
+6	6	\N	\N	\N	\N
+6	7	\N	\N	\N	\N
+6	8	\N	\N	\N	\N
+6	9	\N	\N	\N	\N
+6	10	\N	\N	\N	\N
+6	11	\N	\N	\N	\N
+6	12	\N	\N	\N	\N
+6	14	\N	\N	\N	\N
+7	1	\N	\N	15.600000	\N
+7	2	\N	\N	\N	\N
+7	3	\N	\N	\N	\N
+7	4	\N	\N	\N	\N
+7	5	\N	\N	\N	\N
+7	6	\N	\N	\N	\N
+7	7	\N	\N	\N	\N
+7	8	\N	\N	\N	\N
+7	9	\N	\N	\N	\N
+7	10	\N	\N	\N	\N
+7	11	\N	\N	\N	\N
+7	12	\N	\N	\N	\N
+7	14	\N	\N	\N	\N
+51	14	\N	\N	\N	\N
+52	14	\N	\N	\N	\N
+1	13	\N	\N	\N	\N
+2	13	\N	\N	\N	\N
+3	13	\N	\N	\N	\N
+4	13	\N	\N	\N	\N
+5	13	\N	\N	\N	\N
+6	13	\N	\N	\N	\N
+7	13	\N	\N	\N	\N
+24	16	\N	A4	\N	\N
+25	16	\N	A4	\N	\N
+26	16	\N	A4	\N	\N
+27	16	\N	A4	\N	\N
+28	16	\N	A4	\N	\N
+29	16	\N	A4	\N	\N
+30	16	\N	A4	\N	\N
+31	16	\N	A4	\N	\N
+32	16	\N	A4	\N	\N
+33	16	\N	A4	\N	\N
+34	16	\N	A4	\N	\N
+35	16	\N	A4	\N	\N
+36	16	\N	A4	\N	\N
+37	16	\N	A4	\N	\N
+38	16	\N	A4	\N	\N
+39	16	\N	A4	\N	\N
+40	16	\N	A4	\N	\N
+41	16	\N	A4	\N	\N
+42	16	\N	A4	\N	\N
+43	16	\N	A4	\N	\N
+44	16	\N	A4	\N	\N
+45	16	\N	A4	\N	\N
+46	16	\N	A4	\N	\N
+47	16	\N	A4	\N	\N
+48	16	\N	A4	\N	\N
+49	16	\N	A4	\N	\N
+50	16	\N	A4	\N	\N
+1	17	\N	\N	\N	\N
+2	17	\N	\N	\N	\N
+3	17	\N	\N	\N	\N
+4	17	\N	\N	\N	\N
+5	17	\N	\N	\N	\N
+6	17	\N	\N	\N	\N
+7	17	\N	\N	\N	\N
+51	17	\N	\N	\N	\N
+52	17	\N	\N	\N	\N
+8	3	\N	\N	\N	\N
+8	4	\N	\N	\N	\N
+8	5	\N	\N	\N	\N
+8	6	\N	\N	\N	\N
+8	7	\N	\N	\N	\N
+8	8	\N	\N	\N	\N
+8	9	\N	\N	\N	\N
+8	10	\N	\N	\N	\N
+8	11	\N	\N	\N	\N
+8	12	\N	\N	\N	\N
+8	17	\N	\N	\N	\N
+9	3	\N	\N	\N	\N
+9	4	\N	\N	\N	\N
+9	5	\N	\N	\N	\N
+9	6	\N	\N	\N	\N
+9	7	\N	\N	\N	\N
+9	8	\N	\N	\N	\N
+9	9	\N	\N	\N	\N
+9	10	\N	\N	\N	\N
+9	11	\N	\N	\N	\N
+9	12	\N	\N	\N	\N
+9	17	\N	\N	\N	\N
+10	3	\N	\N	\N	\N
+10	4	\N	\N	\N	\N
+10	5	\N	\N	\N	\N
+10	6	\N	\N	\N	\N
+10	7	\N	\N	\N	\N
+10	8	\N	\N	\N	\N
+10	9	\N	\N	\N	\N
+10	10	\N	\N	\N	\N
+10	11	\N	\N	\N	\N
+10	12	\N	\N	\N	\N
+10	17	\N	\N	\N	\N
+11	3	\N	\N	\N	\N
+11	4	\N	\N	\N	\N
+11	5	\N	\N	\N	\N
+11	6	\N	\N	\N	\N
+11	7	\N	\N	\N	\N
+11	8	\N	\N	\N	\N
+11	9	\N	\N	\N	\N
+11	10	\N	\N	\N	\N
+11	11	\N	\N	\N	\N
+11	12	\N	\N	\N	\N
+11	17	\N	\N	\N	\N
+12	3	\N	\N	\N	\N
+12	4	\N	\N	\N	\N
+12	5	\N	\N	\N	\N
+12	6	\N	\N	\N	\N
+12	7	\N	\N	\N	\N
+12	8	\N	\N	\N	\N
+12	9	\N	\N	\N	\N
+12	10	\N	\N	\N	\N
+12	11	\N	\N	\N	\N
+12	12	\N	\N	\N	\N
+12	17	\N	\N	\N	\N
+13	3	\N	\N	\N	\N
+13	4	\N	\N	\N	\N
+13	5	\N	\N	\N	\N
+13	6	\N	\N	\N	\N
+13	7	\N	\N	\N	\N
+13	8	\N	\N	\N	\N
+13	9	\N	\N	\N	\N
+13	10	\N	\N	\N	\N
+13	11	\N	\N	\N	\N
+13	12	\N	\N	\N	\N
+13	17	\N	\N	\N	\N
+14	3	\N	\N	\N	\N
+14	4	\N	\N	\N	\N
+14	5	\N	\N	\N	\N
+14	6	\N	\N	\N	\N
+14	7	\N	\N	\N	\N
+14	8	\N	\N	\N	\N
+14	9	\N	\N	\N	\N
+14	10	\N	\N	\N	\N
+14	11	\N	\N	\N	\N
+14	12	\N	\N	\N	\N
+14	17	\N	\N	\N	\N
+15	3	\N	\N	\N	\N
+15	4	\N	\N	\N	\N
+15	5	\N	\N	\N	\N
+15	6	\N	\N	\N	\N
+15	7	\N	\N	\N	\N
+15	8	\N	\N	\N	\N
+15	9	\N	\N	\N	\N
+15	10	\N	\N	\N	\N
+15	11	\N	\N	\N	\N
+15	12	\N	\N	\N	\N
+15	17	\N	\N	\N	\N
+16	3	\N	\N	\N	\N
+16	4	\N	\N	\N	\N
+16	5	\N	\N	\N	\N
+16	6	\N	\N	\N	\N
+16	7	\N	\N	\N	\N
+16	8	\N	\N	\N	\N
+16	9	\N	\N	\N	\N
+16	10	\N	\N	\N	\N
+16	11	\N	\N	\N	\N
+16	12	\N	\N	\N	\N
+16	17	\N	\N	\N	\N
+17	3	\N	\N	\N	\N
+17	4	\N	\N	\N	\N
+17	5	\N	\N	\N	\N
+17	6	\N	\N	\N	\N
+17	7	\N	\N	\N	\N
+17	8	\N	\N	\N	\N
+17	9	\N	\N	\N	\N
+17	10	\N	\N	\N	\N
+17	11	\N	\N	\N	\N
+17	12	\N	\N	\N	\N
+17	17	\N	\N	\N	\N
+24	17	\N	\N	\N	\N
+25	17	\N	\N	\N	\N
+26	17	\N	\N	\N	\N
+27	17	\N	\N	\N	\N
+28	17	\N	\N	\N	\N
+29	17	\N	\N	\N	\N
+30	17	\N	\N	\N	\N
+31	17	\N	\N	\N	\N
+32	17	\N	\N	\N	\N
+33	17	\N	\N	\N	\N
+34	17	\N	\N	\N	\N
+35	17	\N	\N	\N	\N
+36	17	\N	\N	\N	\N
+37	17	\N	\N	\N	\N
+38	17	\N	\N	\N	\N
+39	17	\N	\N	\N	\N
+40	17	\N	\N	\N	\N
+41	17	\N	\N	\N	\N
+42	17	\N	\N	\N	\N
+43	17	\N	\N	\N	\N
+44	17	\N	\N	\N	\N
+45	17	\N	\N	\N	\N
+46	17	\N	\N	\N	\N
+47	17	\N	\N	\N	\N
+48	17	\N	\N	\N	\N
+49	17	\N	\N	\N	\N
+24	5	\N	\N	\N	\N
+25	5	\N	\N	\N	\N
+26	5	\N	\N	\N	\N
+27	5	\N	\N	\N	\N
+28	5	\N	\N	\N	\N
+29	5	\N	\N	\N	\N
+30	5	\N	\N	\N	\N
+31	5	\N	\N	\N	\N
+32	5	\N	\N	\N	\N
+33	5	\N	\N	\N	\N
+34	5	\N	\N	\N	\N
+35	5	\N	\N	\N	\N
+36	5	\N	\N	\N	\N
+37	5	\N	\N	\N	\N
+38	5	\N	\N	\N	\N
+39	5	\N	\N	\N	\N
+40	5	\N	\N	\N	\N
+41	5	\N	\N	\N	\N
+42	5	\N	\N	\N	\N
+43	5	\N	\N	\N	\N
+44	5	\N	\N	\N	\N
+45	5	\N	\N	\N	\N
+46	5	\N	\N	\N	\N
+47	5	\N	\N	\N	\N
+48	5	\N	\N	\N	\N
+49	5	\N	\N	\N	\N
+50	5	\N	\N	\N	\N
+24	6	\N	\N	\N	\N
+25	6	\N	\N	\N	\N
+26	6	\N	\N	\N	\N
+27	6	\N	\N	\N	\N
+28	6	\N	\N	\N	\N
+29	6	\N	\N	\N	\N
+30	6	\N	\N	\N	\N
+31	6	\N	\N	\N	\N
+32	6	\N	\N	\N	\N
+33	6	\N	\N	\N	\N
+34	6	\N	\N	\N	\N
+35	6	\N	\N	\N	\N
+36	6	\N	\N	\N	\N
+37	6	\N	\N	\N	\N
+38	6	\N	\N	\N	\N
+39	6	\N	\N	\N	\N
+40	6	\N	\N	\N	\N
+41	6	\N	\N	\N	\N
+42	6	\N	\N	\N	\N
+43	6	\N	\N	\N	\N
+44	6	\N	\N	\N	\N
+45	6	\N	\N	\N	\N
+46	6	\N	\N	\N	\N
+47	6	\N	\N	\N	\N
+48	6	\N	\N	\N	\N
+49	6	\N	\N	\N	\N
+50	6	\N	\N	\N	\N
+18	17	\N	\N	\N	\N
+19	17	\N	\N	\N	\N
+20	17	\N	\N	\N	\N
+21	17	\N	\N	\N	\N
+22	17	\N	\N	\N	\N
+23	17	\N	\N	\N	\N
+18	16	\N	\N	\N	\N
+19	16	\N	\N	\N	\N
+20	16	\N	\N	\N	\N
+21	16	\N	\N	\N	\N
+22	16	\N	\N	\N	\N
+23	16	\N	\N	\N	\N
+53	17	\N	\N	\N	\N
+54	17	\N	\N	\N	\N
+55	17	\N	\N	\N	\N
+56	17	\N	\N	\N	\N
+57	17	\N	\N	\N	\N
+58	17	\N	\N	\N	\N
+59	17	\N	\N	\N	\N
+60	17	\N	\N	\N	\N
+61	17	\N	\N	\N	\N
+62	17	\N	\N	\N	\N
+63	17	\N	\N	\N	\N
+64	17	\N	\N	\N	\N
+1	18	\N	\N	\N	\N
+2	18	\N	\N	\N	\N
+3	18	\N	\N	\N	\N
+4	18	\N	\N	\N	\N
+5	18	\N	\N	\N	\N
+6	18	\N	\N	\N	\N
+7	18	\N	\N	\N	\N
+1	19	\N	\N	\N	\N
+2	19	\N	\N	\N	\N
+3	19	\N	\N	\N	\N
+4	19	\N	\N	\N	\N
+5	19	\N	\N	\N	\N
+6	19	\N	\N	\N	\N
+7	19	\N	\N	\N	\N
+1	20	\N	\N	\N	\N
+2	20	\N	\N	\N	\N
+3	20	\N	\N	\N	\N
+4	20	\N	\N	\N	\N
+5	20	\N	\N	\N	\N
+6	20	\N	\N	\N	\N
+7	20	\N	\N	\N	\N
+1	21	\N	\N	\N	\N
+2	21	\N	\N	\N	\N
+3	21	\N	\N	\N	\N
+4	21	\N	\N	\N	\N
+5	21	\N	\N	\N	\N
+6	21	\N	\N	\N	\N
+7	21	\N	\N	\N	\N
+1	22	\N	\N	\N	\N
+2	22	\N	\N	\N	\N
+3	22	\N	\N	\N	\N
+4	22	\N	\N	\N	\N
+5	22	\N	\N	\N	\N
+6	22	\N	\N	\N	\N
+7	22	\N	\N	\N	\N
+51	18	\N	\N	\N	\N
+52	18	\N	\N	\N	\N
+51	19	\N	\N	\N	\N
+52	19	\N	\N	\N	\N
+51	20	\N	\N	\N	\N
+52	20	\N	\N	\N	\N
+51	21	\N	\N	\N	\N
+52	21	\N	\N	\N	\N
+51	22	\N	\N	\N	\N
+52	22	\N	\N	\N	\N
+8	18	\N	\N	\N	\N
+9	18	\N	\N	\N	\N
+10	18	\N	\N	\N	\N
+11	18	\N	\N	\N	\N
+12	18	\N	\N	\N	\N
+13	18	\N	\N	\N	\N
+14	18	\N	\N	\N	\N
+15	18	\N	\N	\N	\N
+16	18	\N	\N	\N	\N
+17	18	\N	\N	\N	\N
+8	19	\N	\N	\N	\N
+9	19	\N	\N	\N	\N
+10	19	\N	\N	\N	\N
+11	19	\N	\N	\N	\N
+12	19	\N	\N	\N	\N
+13	19	\N	\N	\N	\N
+14	19	\N	\N	\N	\N
+15	19	\N	\N	\N	\N
+16	19	\N	\N	\N	\N
+17	19	\N	\N	\N	\N
+8	20	\N	\N	\N	\N
+9	20	\N	\N	\N	\N
+10	20	\N	\N	\N	\N
+11	20	\N	\N	\N	\N
+12	20	\N	\N	\N	\N
+13	20	\N	\N	\N	\N
+14	20	\N	\N	\N	\N
+15	20	\N	\N	\N	\N
+16	20	\N	\N	\N	\N
+17	20	\N	\N	\N	\N
+8	21	\N	\N	\N	\N
+9	21	\N	\N	\N	\N
+10	21	\N	\N	\N	\N
+11	21	\N	\N	\N	\N
+12	21	\N	\N	\N	\N
+13	21	\N	\N	\N	\N
+14	21	\N	\N	\N	\N
+15	21	\N	\N	\N	\N
+16	21	\N	\N	\N	\N
+17	21	\N	\N	\N	\N
+8	22	\N	\N	\N	\N
+9	22	\N	\N	\N	\N
+10	22	\N	\N	\N	\N
+11	22	\N	\N	\N	\N
+12	22	\N	\N	\N	\N
+13	22	\N	\N	\N	\N
+14	22	\N	\N	\N	\N
+15	22	\N	\N	\N	\N
+16	22	\N	\N	\N	\N
+17	22	\N	\N	\N	\N
+24	23	\N	\N	\N	\N
+25	23	\N	\N	\N	\N
+26	23	\N	\N	\N	\N
+27	23	\N	\N	\N	\N
+28	23	\N	\N	\N	\N
+29	23	\N	\N	\N	\N
+30	23	\N	\N	\N	\N
+31	23	\N	\N	\N	\N
+32	23	\N	\N	\N	\N
+33	23	\N	\N	\N	\N
+34	23	\N	\N	\N	\N
+35	23	\N	\N	\N	\N
+36	23	\N	\N	\N	\N
+37	23	\N	\N	\N	\N
+38	23	\N	\N	\N	\N
+39	23	\N	\N	\N	\N
+40	23	\N	\N	\N	\N
+41	23	\N	\N	\N	\N
+42	23	\N	\N	\N	\N
+43	23	\N	\N	\N	\N
+44	23	\N	\N	\N	\N
+45	23	\N	\N	\N	\N
+46	23	\N	\N	\N	\N
+47	23	\N	\N	\N	\N
+48	23	\N	\N	\N	\N
+49	23	\N	\N	\N	\N
+50	23	\N	\N	\N	\N
+18	23	\N	\N	\N	\N
+19	23	\N	\N	\N	\N
+20	23	\N	\N	\N	\N
+21	23	\N	\N	\N	\N
+22	23	\N	\N	\N	\N
+23	23	\N	\N	\N	\N
+24	25	\N	\N	\N	\N
+25	25	\N	\N	\N	\N
+26	25	\N	\N	\N	\N
+27	25	\N	\N	\N	\N
+28	25	\N	\N	\N	\N
+29	25	\N	\N	\N	\N
+30	25	\N	\N	\N	\N
+31	25	\N	\N	\N	\N
+32	25	\N	\N	\N	\N
+33	25	\N	\N	\N	\N
+34	25	\N	\N	\N	\N
+35	25	\N	\N	\N	\N
+36	25	\N	\N	\N	\N
+37	25	\N	\N	\N	\N
+38	25	\N	\N	\N	\N
+39	25	\N	\N	\N	\N
+40	25	\N	\N	\N	\N
+41	25	\N	\N	\N	\N
+42	25	\N	\N	\N	\N
+43	25	\N	\N	\N	\N
+44	25	\N	\N	\N	\N
+45	25	\N	\N	\N	\N
+46	25	\N	\N	\N	\N
+47	25	\N	\N	\N	\N
+48	25	\N	\N	\N	\N
+49	25	\N	\N	\N	\N
+50	25	\N	\N	\N	\N
+1	26	\N	\N	\N	\N
+2	26	\N	\N	\N	\N
+3	26	\N	\N	\N	\N
+4	26	\N	\N	\N	\N
+5	26	\N	\N	\N	\N
+6	26	\N	\N	\N	\N
+7	26	\N	\N	\N	\N
+1	36	\N	\N	\N	\N
+2	36	\N	\N	\N	\N
+3	36	\N	\N	\N	\N
+4	36	\N	\N	\N	\N
+5	36	\N	\N	\N	\N
+6	36	\N	\N	\N	\N
+7	36	\N	\N	\N	\N
+1	31	\N	\N	\N	\N
+2	31	\N	\N	\N	\N
+3	31	\N	\N	\N	\N
+4	31	\N	\N	\N	\N
+5	31	\N	\N	\N	\N
+6	31	\N	\N	\N	\N
+7	31	\N	\N	\N	\N
+1	37	\N	\N	\N	\N
+2	37	\N	\N	\N	\N
+3	37	\N	\N	\N	\N
+4	37	\N	\N	\N	\N
+5	37	\N	\N	\N	\N
+6	37	\N	\N	\N	\N
+7	37	\N	\N	\N	\N
+1	30	\N	\N	\N	\N
+2	30	\N	\N	\N	\N
+3	30	\N	\N	\N	\N
+4	30	\N	\N	\N	\N
+5	30	\N	\N	\N	\N
+6	30	\N	\N	\N	\N
+7	30	\N	\N	\N	\N
+1	38	\N	\N	\N	\N
+2	38	\N	\N	\N	\N
+3	38	\N	\N	\N	\N
+4	38	\N	\N	\N	\N
+5	38	\N	\N	\N	\N
+6	38	\N	\N	\N	\N
+7	38	\N	\N	\N	\N
+1	35	\N	\N	\N	\N
+2	35	\N	\N	\N	\N
+3	35	\N	\N	\N	\N
+4	35	\N	\N	\N	\N
+5	35	\N	\N	\N	\N
+6	35	\N	\N	\N	\N
+7	35	\N	\N	\N	\N
+1	32	\N	\N	\N	\N
+2	32	\N	\N	\N	\N
+3	32	\N	\N	\N	\N
+4	32	\N	\N	\N	\N
+5	32	\N	\N	\N	\N
+6	32	\N	\N	\N	\N
+7	32	\N	\N	\N	\N
+1	34	\N	\N	\N	\N
+2	34	\N	\N	\N	\N
+3	34	\N	\N	\N	\N
+4	34	\N	\N	\N	\N
+5	34	\N	\N	\N	\N
+6	34	\N	\N	\N	\N
+7	34	\N	\N	\N	\N
+51	30	\N	\N	\N	\N
+52	30	\N	\N	\N	\N
+51	26	\N	\N	\N	\N
+52	26	\N	\N	\N	\N
+51	32	\N	\N	\N	\N
+52	32	\N	\N	\N	\N
+51	38	\N	\N	\N	\N
+52	38	\N	\N	\N	\N
+51	37	\N	\N	\N	\N
+52	37	\N	\N	\N	\N
+51	31	\N	\N	\N	\N
+52	31	\N	\N	\N	\N
+51	34	\N	\N	\N	\N
+52	34	\N	\N	\N	\N
+51	36	\N	\N	\N	\N
+52	36	\N	\N	\N	\N
+8	30	\N	\N	\N	\N
+9	30	\N	\N	\N	\N
+10	30	\N	\N	\N	\N
+11	30	\N	\N	\N	\N
+12	30	\N	\N	\N	\N
+13	30	\N	\N	\N	\N
+14	30	\N	\N	\N	\N
+15	30	\N	\N	\N	\N
+16	30	\N	\N	\N	\N
+17	30	\N	\N	\N	\N
+8	38	\N	\N	\N	\N
+9	38	\N	\N	\N	\N
+10	38	\N	\N	\N	\N
+11	38	\N	\N	\N	\N
+12	38	\N	\N	\N	\N
+13	38	\N	\N	\N	\N
+14	38	\N	\N	\N	\N
+15	38	\N	\N	\N	\N
+16	38	\N	\N	\N	\N
+17	38	\N	\N	\N	\N
+24	7	\N	\N	\N	\N
+25	7	\N	\N	\N	\N
+26	7	\N	\N	\N	\N
+27	7	\N	\N	\N	\N
+28	7	\N	\N	\N	\N
+29	7	\N	\N	\N	\N
+30	7	\N	\N	\N	\N
+31	7	\N	\N	\N	\N
+32	7	\N	\N	\N	\N
+33	7	\N	\N	\N	\N
+34	7	\N	\N	\N	\N
+35	7	\N	\N	\N	\N
+36	7	\N	\N	\N	\N
+37	7	\N	\N	\N	\N
+38	7	\N	\N	\N	\N
+39	7	\N	\N	\N	\N
+40	7	\N	\N	\N	\N
+41	7	\N	\N	\N	\N
+42	7	\N	\N	\N	\N
+43	7	\N	\N	\N	\N
+44	7	\N	\N	\N	\N
+45	7	\N	\N	\N	\N
+46	7	\N	\N	\N	\N
+47	7	\N	\N	\N	\N
+48	7	\N	\N	\N	\N
+49	7	\N	\N	\N	\N
+50	7	\N	\N	\N	\N
+24	30	\N	\N	\N	\N
+25	30	\N	\N	\N	\N
+26	30	\N	\N	\N	\N
+27	30	\N	\N	\N	\N
+28	30	\N	\N	\N	\N
+29	30	\N	\N	\N	\N
+30	30	\N	\N	\N	\N
+31	30	\N	\N	\N	\N
+32	30	\N	\N	\N	\N
+33	30	\N	\N	\N	\N
+34	30	\N	\N	\N	\N
+35	30	\N	\N	\N	\N
+36	30	\N	\N	\N	\N
+37	30	\N	\N	\N	\N
+38	30	\N	\N	\N	\N
+39	30	\N	\N	\N	\N
+40	30	\N	\N	\N	\N
+41	30	\N	\N	\N	\N
+42	30	\N	\N	\N	\N
+43	30	\N	\N	\N	\N
+44	30	\N	\N	\N	\N
+45	30	\N	\N	\N	\N
+46	30	\N	\N	\N	\N
+47	30	\N	\N	\N	\N
+48	30	\N	\N	\N	\N
+49	30	\N	\N	\N	\N
+50	30	\N	\N	\N	\N
+24	34	\N	\N	\N	\N
+25	34	\N	\N	\N	\N
+26	34	\N	\N	\N	\N
+27	34	\N	\N	\N	\N
+28	34	\N	\N	\N	\N
+29	34	\N	\N	\N	\N
+30	34	\N	\N	\N	\N
+31	34	\N	\N	\N	\N
+32	34	\N	\N	\N	\N
+33	34	\N	\N	\N	\N
+34	34	\N	\N	\N	\N
+35	34	\N	\N	\N	\N
+36	34	\N	\N	\N	\N
+37	34	\N	\N	\N	\N
+38	34	\N	\N	\N	\N
+39	34	\N	\N	\N	\N
+40	34	\N	\N	\N	\N
+41	34	\N	\N	\N	\N
+42	34	\N	\N	\N	\N
+43	34	\N	\N	\N	\N
+44	34	\N	\N	\N	\N
+45	34	\N	\N	\N	\N
+46	34	\N	\N	\N	\N
+47	34	\N	\N	\N	\N
+48	34	\N	\N	\N	\N
+49	34	\N	\N	\N	\N
+50	34	\N	\N	\N	\N
+24	26	\N	\N	\N	\N
+25	26	\N	\N	\N	\N
+26	26	\N	\N	\N	\N
+27	26	\N	\N	\N	\N
+28	26	\N	\N	\N	\N
+29	26	\N	\N	\N	\N
+30	26	\N	\N	\N	\N
+31	26	\N	\N	\N	\N
+32	26	\N	\N	\N	\N
+33	26	\N	\N	\N	\N
+34	26	\N	\N	\N	\N
+35	26	\N	\N	\N	\N
+36	26	\N	\N	\N	\N
+37	26	\N	\N	\N	\N
+38	26	\N	\N	\N	\N
+39	26	\N	\N	\N	\N
+40	26	\N	\N	\N	\N
+41	26	\N	\N	\N	\N
+42	26	\N	\N	\N	\N
+43	26	\N	\N	\N	\N
+44	26	\N	\N	\N	\N
+45	26	\N	\N	\N	\N
+46	26	\N	\N	\N	\N
+47	26	\N	\N	\N	\N
+48	26	\N	\N	\N	\N
+49	26	\N	\N	\N	\N
+50	26	\N	\N	\N	\N
+24	27	\N	\N	\N	\N
+25	27	\N	\N	\N	\N
+26	27	\N	\N	\N	\N
+27	27	\N	\N	\N	\N
+28	27	\N	\N	\N	\N
+29	27	\N	\N	\N	\N
+30	27	\N	\N	\N	\N
+31	27	\N	\N	\N	\N
+32	27	\N	\N	\N	\N
+33	27	\N	\N	\N	\N
+34	27	\N	\N	\N	\N
+35	27	\N	\N	\N	\N
+36	27	\N	\N	\N	\N
+37	27	\N	\N	\N	\N
+38	27	\N	\N	\N	\N
+39	27	\N	\N	\N	\N
+40	27	\N	\N	\N	\N
+41	27	\N	\N	\N	\N
+42	27	\N	\N	\N	\N
+43	27	\N	\N	\N	\N
+44	27	\N	\N	\N	\N
+45	27	\N	\N	\N	\N
+46	27	\N	\N	\N	\N
+47	27	\N	\N	\N	\N
+48	27	\N	\N	\N	\N
+49	27	\N	\N	\N	\N
+50	27	\N	\N	\N	\N
+24	28	\N	\N	\N	\N
+25	28	\N	\N	\N	\N
+26	28	\N	\N	\N	\N
+27	28	\N	\N	\N	\N
+28	28	\N	\N	\N	\N
+29	28	\N	\N	\N	\N
+30	28	\N	\N	\N	\N
+31	28	\N	\N	\N	\N
+32	28	\N	\N	\N	\N
+33	28	\N	\N	\N	\N
+34	28	\N	\N	\N	\N
+35	28	\N	\N	\N	\N
+36	28	\N	\N	\N	\N
+37	28	\N	\N	\N	\N
+38	28	\N	\N	\N	\N
+39	28	\N	\N	\N	\N
+40	28	\N	\N	\N	\N
+41	28	\N	\N	\N	\N
+42	28	\N	\N	\N	\N
+43	28	\N	\N	\N	\N
+44	28	\N	\N	\N	\N
+45	28	\N	\N	\N	\N
+46	28	\N	\N	\N	\N
+47	28	\N	\N	\N	\N
+48	28	\N	\N	\N	\N
+49	28	\N	\N	\N	\N
+50	28	\N	\N	\N	\N
+24	29	\N	\N	\N	\N
+25	29	\N	\N	\N	\N
+26	29	\N	\N	\N	\N
+27	29	\N	\N	\N	\N
+28	29	\N	\N	\N	\N
+29	29	\N	\N	\N	\N
+30	29	\N	\N	\N	\N
+31	29	\N	\N	\N	\N
+32	29	\N	\N	\N	\N
+33	29	\N	\N	\N	\N
+34	29	\N	\N	\N	\N
+35	29	\N	\N	\N	\N
+36	29	\N	\N	\N	\N
+37	29	\N	\N	\N	\N
+38	29	\N	\N	\N	\N
+39	29	\N	\N	\N	\N
+40	29	\N	\N	\N	\N
+41	29	\N	\N	\N	\N
+42	29	\N	\N	\N	\N
+43	29	\N	\N	\N	\N
+44	29	\N	\N	\N	\N
+45	29	\N	\N	\N	\N
+46	29	\N	\N	\N	\N
+47	29	\N	\N	\N	\N
+48	29	\N	\N	\N	\N
+49	29	\N	\N	\N	\N
+50	29	\N	\N	\N	\N
+18	34	\N	\N	\N	\N
+19	34	\N	\N	\N	\N
+20	34	\N	\N	\N	\N
+21	34	\N	\N	\N	\N
+22	34	\N	\N	\N	\N
+23	34	\N	\N	\N	\N
+18	7	\N	\N	\N	\N
+19	7	\N	\N	\N	\N
+20	7	\N	\N	\N	\N
+21	7	\N	\N	\N	\N
+22	7	\N	\N	\N	\N
+23	7	\N	\N	\N	\N
+18	25	\N	\N	\N	\N
+19	25	\N	\N	\N	\N
+20	25	\N	\N	\N	\N
+21	25	\N	\N	\N	\N
+22	25	\N	\N	\N	\N
+23	25	\N	\N	\N	\N
+18	30	\N	\N	\N	\N
+19	30	\N	\N	\N	\N
+20	30	\N	\N	\N	\N
+21	30	\N	\N	\N	\N
+22	30	\N	\N	\N	\N
+23	30	\N	\N	\N	\N
+18	29	\N	\N	\N	\N
+19	29	\N	\N	\N	\N
+20	29	\N	\N	\N	\N
+21	29	\N	\N	\N	\N
+22	29	\N	\N	\N	\N
+23	29	\N	\N	\N	\N
+18	26	\N	\N	\N	\N
+19	26	\N	\N	\N	\N
+20	26	\N	\N	\N	\N
+21	26	\N	\N	\N	\N
+22	26	\N	\N	\N	\N
+23	26	\N	\N	\N	\N
+18	27	\N	\N	\N	\N
+19	27	\N	\N	\N	\N
+20	27	\N	\N	\N	\N
+21	27	\N	\N	\N	\N
+22	27	\N	\N	\N	\N
+23	27	\N	\N	\N	\N
+18	28	\N	\N	\N	\N
+19	28	\N	\N	\N	\N
+20	28	\N	\N	\N	\N
+21	28	\N	\N	\N	\N
+22	28	\N	\N	\N	\N
+23	28	\N	\N	\N	\N
+18	8	\N	\N	\N	\N
+19	8	\N	\N	\N	\N
+20	8	\N	\N	\N	\N
+21	8	\N	\N	\N	\N
+22	8	\N	\N	\N	\N
+23	8	\N	\N	\N	\N
+18	11	\N	\N	\N	\N
+19	11	\N	\N	\N	\N
+20	11	\N	\N	\N	\N
+21	11	\N	\N	\N	\N
+22	11	\N	\N	\N	\N
+23	11	\N	\N	\N	\N
+53	42	\N	\N	\N	\N
+54	42	\N	\N	\N	\N
+55	42	\N	\N	\N	\N
+56	42	\N	\N	\N	\N
+57	42	\N	\N	\N	\N
+58	42	\N	\N	\N	\N
+59	42	\N	\N	\N	\N
+60	42	\N	\N	\N	\N
+61	42	\N	\N	\N	\N
+62	42	\N	\N	\N	\N
+63	42	\N	\N	\N	\N
+64	42	\N	\N	\N	\N
+53	43	\N	\N	\N	\N
+54	43	\N	\N	\N	\N
+55	43	\N	\N	\N	\N
+56	43	\N	\N	\N	\N
+57	43	\N	\N	\N	\N
+58	43	\N	\N	\N	\N
+59	43	\N	\N	\N	\N
+60	43	\N	\N	\N	\N
+61	43	\N	\N	\N	\N
+62	43	\N	\N	\N	\N
+63	43	\N	\N	\N	\N
+64	43	\N	\N	\N	\N
+53	30	\N	\N	\N	\N
+54	30	\N	\N	\N	\N
+55	30	\N	\N	\N	\N
+56	30	\N	\N	\N	\N
+57	30	\N	\N	\N	\N
+58	30	\N	\N	\N	\N
+59	30	\N	\N	\N	\N
+60	30	\N	\N	\N	\N
+61	30	\N	\N	\N	\N
+62	30	\N	\N	\N	\N
+63	30	\N	\N	\N	\N
+64	30	\N	\N	\N	\N
+53	40	\N	\N	\N	\N
+54	40	\N	\N	\N	\N
+55	40	\N	\N	\N	\N
+56	40	\N	\N	\N	\N
+57	40	\N	\N	\N	\N
+58	40	\N	\N	\N	\N
+59	40	\N	\N	\N	\N
+60	40	\N	\N	\N	\N
+61	40	\N	\N	\N	\N
+62	40	\N	\N	\N	\N
+63	40	\N	\N	\N	\N
+64	40	\N	\N	\N	\N
+53	41	\N	\N	\N	\N
+54	41	\N	\N	\N	\N
+55	41	\N	\N	\N	\N
+56	41	\N	\N	\N	\N
+57	41	\N	\N	\N	\N
+58	41	\N	\N	\N	\N
+59	41	\N	\N	\N	\N
+60	41	\N	\N	\N	\N
+61	41	\N	\N	\N	\N
+62	41	\N	\N	\N	\N
+63	41	\N	\N	\N	\N
+64	41	\N	\N	\N	\N
+53	44	\N	\N	\N	\N
+54	44	\N	\N	\N	\N
+55	44	\N	\N	\N	\N
+56	44	\N	\N	\N	\N
+57	44	\N	\N	\N	\N
+58	44	\N	\N	\N	\N
+59	44	\N	\N	\N	\N
+60	44	\N	\N	\N	\N
+61	44	\N	\N	\N	\N
+62	44	\N	\N	\N	\N
+63	44	\N	\N	\N	\N
+64	44	\N	\N	\N	\N
 \.
 
 
 --
--- TOC entry 5967 (class 0 OID 38359)
--- Dependencies: 237
+-- TOC entry 5992 (class 0 OID 43661)
+-- Dependencies: 243
 -- Data for Name: asset_model_default_consumable; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_model_default_consumable (id, asset_model_id, consumable_model_id, quantity, notes) FROM stdin;
-1	1	1	1	\N
-3	1	2	2	
 \.
 
 
 --
--- TOC entry 5969 (class 0 OID 38368)
--- Dependencies: 239
+-- TOC entry 5994 (class 0 OID 43670)
+-- Dependencies: 245
 -- Data for Name: asset_model_default_stock_item; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_model_default_stock_item (id, asset_model_id, stock_item_model_id, quantity, notes) FROM stdin;
-1	1	1	4	
 \.
 
 
 --
--- TOC entry 5971 (class 0 OID 38377)
--- Dependencies: 241
+-- TOC entry 5996 (class 0 OID 43679)
+-- Dependencies: 247
 -- Data for Name: asset_movement; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_movement (asset_movement_id, asset_id, source_location_id, destination_location_id, maintenance_step_id, external_maintenance_step_id, movement_reason, movement_datetime, status) FROM stdin;
-1	3	24	24	\N	\N	maintenance_create_1	2026-04-07 10:11:39.007186	accepted
-2	3	24	24	\N	\N	maintenance_create_2	2026-04-07 19:45:57.021274	pending
 \.
 
 
 --
--- TOC entry 5972 (class 0 OID 38388)
--- Dependencies: 242
+-- TOC entry 5997 (class 0 OID 43690)
+-- Dependencies: 248
 -- Data for Name: asset_type; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2930,24 +4168,169 @@ COPY public.asset_type (asset_type_id, asset_type_label, asset_type_code, photo)
 5	Scanner	SCNR	\N
 6	Monitor	MNTR	\N
 8	Switch	SWC	\N
+9	Plotter Table	PLTTBL	\N
 \.
 
 
 --
--- TOC entry 5973 (class 0 OID 38394)
--- Dependencies: 243
+-- TOC entry 5998 (class 0 OID 43696)
+-- Dependencies: 249
 -- Data for Name: asset_type_attribute; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.asset_type_attribute (asset_attribute_definition_id, asset_type_id, is_mandatory, default_value) FROM stdin;
 1	1	t	15.6
 2	1	t	\N
+4	1	f	\N
+9	1	f	\N
+10	1	f	\N
+3	1	f	\N
+5	1	f	\N
+6	1	f	\N
+7	1	f	\N
+8	1	f	\N
+11	1	f	\N
+12	1	f	\N
+1	2	f	\N
+2	2	f	\N
+3	2	f	\N
+4	2	f	\N
+5	2	f	\N
+6	2	f	\N
+7	2	f	\N
+8	2	f	\N
+9	2	f	\N
+11	2	f	\N
+10	2	f	\N
+12	2	f	\N
+4	6	f	\N
+9	6	f	\N
+10	6	f	\N
+1	6	f	\N
+4	5	f	\N
+9	5	f	\N
+10	5	f	\N
+5	5	f	\N
+6	5	f	\N
+4	3	f	\N
+9	3	f	\N
+10	3	f	\N
+11	3	f	\N
+3	3	f	\N
+8	3	f	\N
+5	3	f	\N
+6	3	f	\N
+7	3	f	\N
+12	3	f	\N
+4	4	f	\N
+9	4	f	\N
+10	4	f	\N
+4	8	f	\N
+9	8	f	\N
+10	8	f	\N
+4	7	f	\N
+9	7	f	\N
+10	7	f	\N
+4	9	f	\N
+9	9	f	\N
+10	9	f	\N
+13	2	f	\N
+14	1	f	\N
+14	2	f	\N
+14	6	f	\N
+13	1	f	\N
+15	7	f	\N
+16	4	f	A4
+17	1	f	\N
+17	2	f	\N
+17	3	f	\N
+17	4	f	\N
+5	4	f	\N
+6	4	f	\N
+17	5	f	\N
+16	5	f	\N
+17	6	f	\N
+17	7	f	\N
+17	8	f	\N
+17	9	f	\N
+16	9	f	\N
+18	1	f	\N
+19	1	f	\N
+20	1	f	\N
+21	1	f	\N
+22	1	f	\N
+18	2	f	\N
+19	2	f	\N
+20	2	f	\N
+21	2	f	\N
+22	2	f	\N
+18	3	f	\N
+19	3	f	\N
+20	3	f	\N
+21	3	f	\N
+22	3	f	\N
+23	4	f	\N
+23	5	f	\N
+23	9	f	\N
+25	4	f	\N
+26	1	f	\N
+36	1	f	\N
+31	1	f	\N
+37	1	f	\N
+30	1	f	\N
+38	1	f	\N
+35	1	f	\N
+32	1	f	\N
+34	1	f	\N
+30	2	f	\N
+26	2	f	\N
+32	2	f	\N
+38	2	f	\N
+37	2	f	\N
+31	2	f	\N
+34	2	f	\N
+36	2	f	\N
+30	3	f	\N
+38	3	f	\N
+7	4	f	\N
+30	4	f	\N
+34	4	f	\N
+26	4	f	\N
+27	4	f	\N
+28	4	f	\N
+29	4	f	\N
+34	5	f	\N
+7	5	f	\N
+25	5	f	\N
+30	5	f	\N
+29	5	f	\N
+26	5	f	\N
+27	5	f	\N
+28	5	f	\N
+8	5	f	\N
+11	5	f	\N
+32	6	f	\N
+30	6	f	\N
+31	6	f	\N
+36	6	f	\N
+37	6	f	\N
+38	6	f	\N
+35	6	f	\N
+39	7	f	\N
+27	7	f	\N
+28	7	f	\N
+42	8	f	\N
+43	8	f	\N
+30	8	f	\N
+40	8	f	\N
+41	8	f	\N
+44	8	f	\N
 \.
 
 
 --
--- TOC entry 5974 (class 0 OID 38399)
--- Dependencies: 244
+-- TOC entry 5999 (class 0 OID 43701)
+-- Dependencies: 250
 -- Data for Name: attribution_order; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2956,8 +4339,8 @@ COPY public.attribution_order (attribution_order_id, warehouse_id, attribution_o
 
 
 --
--- TOC entry 5975 (class 0 OID 38404)
--- Dependencies: 245
+-- TOC entry 6000 (class 0 OID 43706)
+-- Dependencies: 251
 -- Data for Name: attribution_order_asset_consumable_accessory; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2966,8 +4349,8 @@ COPY public.attribution_order_asset_consumable_accessory (id, attribution_order_
 
 
 --
--- TOC entry 5977 (class 0 OID 38412)
--- Dependencies: 247
+-- TOC entry 6002 (class 0 OID 43714)
+-- Dependencies: 253
 -- Data for Name: attribution_order_asset_stock_item_accessory; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2976,8 +4359,8 @@ COPY public.attribution_order_asset_stock_item_accessory (id, attribution_order_
 
 
 --
--- TOC entry 5979 (class 0 OID 38420)
--- Dependencies: 249
+-- TOC entry 6004 (class 0 OID 43722)
+-- Dependencies: 255
 -- Data for Name: auth_group; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2986,8 +4369,8 @@ COPY public.auth_group (id, name) FROM stdin;
 
 
 --
--- TOC entry 5981 (class 0 OID 38426)
--- Dependencies: 251
+-- TOC entry 6006 (class 0 OID 43728)
+-- Dependencies: 257
 -- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -2996,8 +4379,8 @@ COPY public.auth_group_permissions (id, group_id, permission_id) FROM stdin;
 
 
 --
--- TOC entry 5983 (class 0 OID 38433)
--- Dependencies: 253
+-- TOC entry 6008 (class 0 OID 43735)
+-- Dependencies: 259
 -- Data for Name: auth_permission; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3342,8 +4725,8 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 
 
 --
--- TOC entry 5985 (class 0 OID 38441)
--- Dependencies: 255
+-- TOC entry 6010 (class 0 OID 43743)
+-- Dependencies: 261
 -- Data for Name: auth_user; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3353,8 +4736,8 @@ COPY public.auth_user (id, password, last_login, is_superuser, username, first_n
 
 
 --
--- TOC entry 5986 (class 0 OID 38456)
--- Dependencies: 256
+-- TOC entry 6011 (class 0 OID 43758)
+-- Dependencies: 262
 -- Data for Name: auth_user_groups; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3363,8 +4746,8 @@ COPY public.auth_user_groups (id, user_id, group_id) FROM stdin;
 
 
 --
--- TOC entry 5989 (class 0 OID 38464)
--- Dependencies: 259
+-- TOC entry 6014 (class 0 OID 43766)
+-- Dependencies: 265
 -- Data for Name: auth_user_user_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3373,18 +4756,39 @@ COPY public.auth_user_user_permissions (id, user_id, permission_id) FROM stdin;
 
 
 --
--- TOC entry 5991 (class 0 OID 38471)
--- Dependencies: 261
+-- TOC entry 6016 (class 0 OID 43773)
+-- Dependencies: 267
 -- Data for Name: authentication_log; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.authentication_log (log_id, user_id, attempted_username, event_type, ip_address, event_timestamp, failure_reason) FROM stdin;
+1	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:01:04.33671	\N
+2	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:01:05.853258	\N
+3	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:01:07.088565	\N
+4	17	manhous	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:01:12.774499	\N
+5	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:01:21.353955	\N
+6	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:01:36.219664	\N
+7	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:01:37.08422	\N
+8	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:01:55.708341	\N
+9	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:05:18.409579	\N
+10	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:09:44.351095	\N
+11	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-13 21:09:58.112815	\N
+12	11	asset_resp	LOGIN_SUCCESS	127.0.0.1	2026-04-14 08:51:09.291132	\N
+13	1	admin	LOGIN_SUCCESS	127.0.0.1	2026-04-14 08:51:56.143568	\N
+14	1	admin	LOGIN_SUCCESS	127.0.0.1	2026-04-16 12:36:44.26655	\N
+15	1	admin	LOGIN_SUCCESS	127.0.0.1	2026-04-17 07:17:38.091468	\N
+16	1	admin	LOGIN_SUCCESS	127.0.0.1	2026-04-17 16:27:41.590504	\N
+17	4	mohceneamoura	LOGIN_SUCCESS	127.0.0.1	2026-04-17 18:40:32.38649	\N
+18	4	mohceneamoura	LOGIN_SUCCESS	127.0.0.1	2026-04-17 18:40:38.841717	\N
+19	1	admin	LOGIN_SUCCESS	127.0.0.1	2026-04-17 18:40:55.62648	\N
+20	2	bahaaeddinezaoui	LOGIN_SUCCESS	127.0.0.1	2026-04-17 19:32:06.502073	\N
+21	1	admin	LOGIN_SUCCESS	127.0.0.1	2026-04-17 19:41:09.90892	\N
 \.
 
 
 --
--- TOC entry 5992 (class 0 OID 38476)
--- Dependencies: 262
+-- TOC entry 6017 (class 0 OID 43778)
+-- Dependencies: 268
 -- Data for Name: backorder_report; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3403,8 +4807,8 @@ COPY public.backorder_report (backorder_report_id, purchase_order_id, backorder_
 
 
 --
--- TOC entry 5993 (class 0 OID 38483)
--- Dependencies: 263
+-- TOC entry 6018 (class 0 OID 43785)
+-- Dependencies: 269
 -- Data for Name: backorder_report_consumable_model_line; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3413,8 +4817,8 @@ COPY public.backorder_report_consumable_model_line (backorder_report_id, consuma
 
 
 --
--- TOC entry 5994 (class 0 OID 38491)
--- Dependencies: 264
+-- TOC entry 6019 (class 0 OID 43793)
+-- Dependencies: 270
 -- Data for Name: backorder_report_stock_item_model_line; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3423,8 +4827,8 @@ COPY public.backorder_report_stock_item_model_line (backorder_report_id, stock_i
 
 
 --
--- TOC entry 5995 (class 0 OID 38499)
--- Dependencies: 265
+-- TOC entry 6020 (class 0 OID 43801)
+-- Dependencies: 271
 -- Data for Name: broken_item_report; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3433,8 +4837,8 @@ COPY public.broken_item_report (broken_item_report_id, digital_copy) FROM stdin;
 
 
 --
--- TOC entry 5996 (class 0 OID 38505)
--- Dependencies: 266
+-- TOC entry 6021 (class 0 OID 43807)
+-- Dependencies: 272
 -- Data for Name: company_asset_request; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3443,8 +4847,8 @@ COPY public.company_asset_request (company_asset_request_id, attribution_order_i
 
 
 --
--- TOC entry 5997 (class 0 OID 38512)
--- Dependencies: 267
+-- TOC entry 6022 (class 0 OID 43814)
+-- Dependencies: 273
 -- Data for Name: consumable; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3510,8 +4914,8 @@ COPY public.consumable (consumable_id, consumable_model_id, stock_item_consumabl
 
 
 --
--- TOC entry 5998 (class 0 OID 38517)
--- Dependencies: 268
+-- TOC entry 6023 (class 0 OID 43819)
+-- Dependencies: 274
 -- Data for Name: consumable_attribute_definition; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3523,8 +4927,8 @@ COPY public.consumable_attribute_definition (consumable_attribute_definition_id,
 
 
 --
--- TOC entry 5999 (class 0 OID 38521)
--- Dependencies: 269
+-- TOC entry 6024 (class 0 OID 43823)
+-- Dependencies: 275
 -- Data for Name: consumable_attribute_value; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3536,8 +4940,8 @@ COPY public.consumable_attribute_value (consumable_id, consumable_attribute_defi
 
 
 --
--- TOC entry 6000 (class 0 OID 38528)
--- Dependencies: 270
+-- TOC entry 6025 (class 0 OID 43830)
+-- Dependencies: 276
 -- Data for Name: consumable_brand; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3549,8 +4953,8 @@ COPY public.consumable_brand (consumable_brand_id, brand_name, brand_code, is_ac
 
 
 --
--- TOC entry 6001 (class 0 OID 38532)
--- Dependencies: 271
+-- TOC entry 6026 (class 0 OID 43834)
+-- Dependencies: 277
 -- Data for Name: consumable_condition_history; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3559,8 +4963,8 @@ COPY public.consumable_condition_history (consumable_condition_history_id, consu
 
 
 --
--- TOC entry 6002 (class 0 OID 38539)
--- Dependencies: 272
+-- TOC entry 6027 (class 0 OID 43841)
+-- Dependencies: 278
 -- Data for Name: consumable_is_assigned_to_person; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3572,19 +4976,18 @@ COPY public.consumable_is_assigned_to_person (assignment_id, consumable_id, pers
 
 
 --
--- TOC entry 6003 (class 0 OID 38549)
--- Dependencies: 273
+-- TOC entry 6028 (class 0 OID 43851)
+-- Dependencies: 279
 -- Data for Name: consumable_is_compatible_with_asset; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.consumable_is_compatible_with_asset (consumable_model_id, asset_model_id) FROM stdin;
-1	1
 \.
 
 
 --
--- TOC entry 6004 (class 0 OID 38554)
--- Dependencies: 274
+-- TOC entry 6029 (class 0 OID 43856)
+-- Dependencies: 280
 -- Data for Name: consumable_is_compatible_with_stock_item; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3593,8 +4996,8 @@ COPY public.consumable_is_compatible_with_stock_item (consumable_model_id, stock
 
 
 --
--- TOC entry 6005 (class 0 OID 38559)
--- Dependencies: 275
+-- TOC entry 6030 (class 0 OID 43861)
+-- Dependencies: 281
 -- Data for Name: consumable_is_used_in_stock_item_history; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3603,8 +5006,8 @@ COPY public.consumable_is_used_in_stock_item_history (consumable_id, stock_item_
 
 
 --
--- TOC entry 6007 (class 0 OID 38566)
--- Dependencies: 277
+-- TOC entry 6032 (class 0 OID 43868)
+-- Dependencies: 283
 -- Data for Name: consumable_model; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3617,8 +5020,8 @@ COPY public.consumable_model (consumable_model_id, consumable_type_id, consumabl
 
 
 --
--- TOC entry 6008 (class 0 OID 38572)
--- Dependencies: 278
+-- TOC entry 6033 (class 0 OID 43874)
+-- Dependencies: 284
 -- Data for Name: consumable_model_attribute_value; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3631,8 +5034,8 @@ COPY public.consumable_model_attribute_value (consumable_model_id, consumable_at
 
 
 --
--- TOC entry 6009 (class 0 OID 38579)
--- Dependencies: 279
+-- TOC entry 6034 (class 0 OID 43881)
+-- Dependencies: 285
 -- Data for Name: consumable_model_is_found_in_purchase_order; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3643,8 +5046,8 @@ COPY public.consumable_model_is_found_in_purchase_order (consumable_model_id, pu
 
 
 --
--- TOC entry 6010 (class 0 OID 38584)
--- Dependencies: 280
+-- TOC entry 6035 (class 0 OID 43886)
+-- Dependencies: 286
 -- Data for Name: consumable_movement; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3653,8 +5056,8 @@ COPY public.consumable_movement (consumable_movement_id, destination_location_id
 
 
 --
--- TOC entry 6011 (class 0 OID 38595)
--- Dependencies: 281
+-- TOC entry 6036 (class 0 OID 43897)
+-- Dependencies: 287
 -- Data for Name: consumable_type; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3665,8 +5068,8 @@ COPY public.consumable_type (consumable_type_id, consumable_type_label, consumab
 
 
 --
--- TOC entry 6012 (class 0 OID 38601)
--- Dependencies: 282
+-- TOC entry 6037 (class 0 OID 43903)
+-- Dependencies: 288
 -- Data for Name: consumable_type_attribute; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3677,8 +5080,8 @@ COPY public.consumable_type_attribute (consumable_type_id, consumable_attribute_
 
 
 --
--- TOC entry 6013 (class 0 OID 38606)
--- Dependencies: 283
+-- TOC entry 6038 (class 0 OID 43908)
+-- Dependencies: 289
 -- Data for Name: delivery_note; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3692,8 +5095,8 @@ COPY public.delivery_note (delivery_note_id, purchase_order_id, delivery_note_da
 
 
 --
--- TOC entry 6014 (class 0 OID 38613)
--- Dependencies: 284
+-- TOC entry 6039 (class 0 OID 43915)
+-- Dependencies: 290
 -- Data for Name: django_admin_log; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3702,8 +5105,8 @@ COPY public.django_admin_log (id, action_time, object_id, object_repr, action_fl
 
 
 --
--- TOC entry 6016 (class 0 OID 38626)
--- Dependencies: 286
+-- TOC entry 6041 (class 0 OID 43928)
+-- Dependencies: 292
 -- Data for Name: django_content_type; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3796,8 +5199,8 @@ COPY public.django_content_type (id, app_label, model) FROM stdin;
 
 
 --
--- TOC entry 6018 (class 0 OID 38633)
--- Dependencies: 288
+-- TOC entry 6043 (class 0 OID 43935)
+-- Dependencies: 294
 -- Data for Name: django_migrations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3845,12 +5248,13 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 43	api	0023_admin_cert_items_moved_flag	2026-03-09 07:12:36.134437-07
 44	api	0024_location_location_type	2026-03-11 16:34:58.831837-07
 45	api	0025_remove_brand_photos	2026-03-11 16:34:58.849577-07
+46	api	0026_location_relation	2026-04-17 03:50:16.696868-07
 \.
 
 
 --
--- TOC entry 6020 (class 0 OID 38643)
--- Dependencies: 290
+-- TOC entry 6045 (class 0 OID 43945)
+-- Dependencies: 296
 -- Data for Name: django_session; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3860,8 +5264,8 @@ mwube6mtzimgwmghul5d0r6qos8lqeqe	.eJxVjDsOwjAQBe_iGllr_Isp6XMGa-3d4ACypTipEHeHSC
 
 
 --
--- TOC entry 6021 (class 0 OID 38651)
--- Dependencies: 291
+-- TOC entry 6046 (class 0 OID 43953)
+-- Dependencies: 297
 -- Data for Name: external_maintenance; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3870,8 +5274,8 @@ COPY public.external_maintenance (external_maintenance_id, maintenance_id, item_
 
 
 --
--- TOC entry 6022 (class 0 OID 38657)
--- Dependencies: 292
+-- TOC entry 6047 (class 0 OID 43959)
+-- Dependencies: 298
 -- Data for Name: external_maintenance_document; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3880,8 +5284,8 @@ COPY public.external_maintenance_document (external_maintenance_document_id, ext
 
 
 --
--- TOC entry 6023 (class 0 OID 38664)
--- Dependencies: 293
+-- TOC entry 6048 (class 0 OID 43966)
+-- Dependencies: 299
 -- Data for Name: external_maintenance_provider; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3891,8 +5295,8 @@ COPY public.external_maintenance_provider (external_maintenance_provider_id, ext
 
 
 --
--- TOC entry 6024 (class 0 OID 38668)
--- Dependencies: 294
+-- TOC entry 6049 (class 0 OID 43970)
+-- Dependencies: 300
 -- Data for Name: external_maintenance_step; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3901,8 +5305,8 @@ COPY public.external_maintenance_step (external_maintenance_step_id, external_ma
 
 
 --
--- TOC entry 6025 (class 0 OID 38674)
--- Dependencies: 295
+-- TOC entry 6050 (class 0 OID 43976)
+-- Dependencies: 301
 -- Data for Name: external_maintenance_typical_step; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3913,8 +5317,8 @@ COPY public.external_maintenance_typical_step (external_maintenance_typical_step
 
 
 --
--- TOC entry 6026 (class 0 OID 38679)
--- Dependencies: 296
+-- TOC entry 6051 (class 0 OID 43981)
+-- Dependencies: 302
 -- Data for Name: invoice; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3927,8 +5331,8 @@ COPY public.invoice (invoice_id, delivery_note_id, digital_copy) FROM stdin;
 
 
 --
--- TOC entry 6027 (class 0 OID 38686)
--- Dependencies: 297
+-- TOC entry 6052 (class 0 OID 43988)
+-- Dependencies: 303
 -- Data for Name: location; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3955,15 +5359,17 @@ COPY public.location (location_id, location_name, location_type_id) FROM stdin;
 20	Teaching Room 20 (2nd Site)	1
 21	Teaching Room 21 (2nd Site)	1
 22	Teaching Room 22 (2nd Site)	1
-24	Maintenance Room	2
 23	IT Main Storage Room	3
 25	ERMT/2RM Maintenance Room	4
+26	IT Bureau	5
+24	IT Bureau: Maintenance Room	2
+27	IT Bureau: Server Room	5
 \.
 
 
 --
--- TOC entry 6028 (class 0 OID 38690)
--- Dependencies: 298
+-- TOC entry 6053 (class 0 OID 43992)
+-- Dependencies: 304
 -- Data for Name: location_belongs_to_organizational_structure; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3972,8 +5378,21 @@ COPY public.location_belongs_to_organizational_structure (organizational_structu
 
 
 --
--- TOC entry 6029 (class 0 OID 38695)
--- Dependencies: 299
+-- TOC entry 6054 (class 0 OID 43997)
+-- Dependencies: 305
+-- Data for Name: location_relation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.location_relation (child_location_id, parent_location_id, relation_id) FROM stdin;
+23	26	1
+24	26	2
+27	26	3
+\.
+
+
+--
+-- TOC entry 6055 (class 0 OID 44002)
+-- Dependencies: 306
 -- Data for Name: location_type; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -3982,24 +5401,23 @@ COPY public.location_type (location_type_id, location_type_label, location_type_
 3	Storage Room	SR
 4	External Maintenance Center	XMC
 2	Maintenance Room	MR
+5	Work Room	WR
 \.
 
 
 --
--- TOC entry 6031 (class 0 OID 38702)
--- Dependencies: 301
+-- TOC entry 6057 (class 0 OID 44009)
+-- Dependencies: 308
 -- Data for Name: maintenance; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.maintenance (maintenance_id, asset_id, performed_by_person_id, approved_by_maintenance_chief_id, is_approved_by_maintenance_chief, start_datetime, end_datetime, description, is_successful, digital_copy, stock_item_id, consumable_id, maintenance_status) FROM stdin;
-1	3	8	6	t	\N	2026-04-07 19:42:04.694488	Testing the table person_reports_problem_on_asset_included_context	t	\N	\N	\N	pending
-2	3	8	6	t	\N	\N	Maintenance chief note	\N	\N	\N	\N	pending
 \.
 
 
 --
--- TOC entry 6032 (class 0 OID 38710)
--- Dependencies: 302
+-- TOC entry 6058 (class 0 OID 44017)
+-- Dependencies: 309
 -- Data for Name: maintenance_inspection_leads_to_broken_item_report; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4008,8 +5426,8 @@ COPY public.maintenance_inspection_leads_to_broken_item_report (maintenance_id, 
 
 
 --
--- TOC entry 6033 (class 0 OID 38715)
--- Dependencies: 303
+-- TOC entry 6059 (class 0 OID 44022)
+-- Dependencies: 310
 -- Data for Name: maintenance_step; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4018,8 +5436,8 @@ COPY public.maintenance_step (maintenance_step_id, maintenance_id, maintenance_t
 
 
 --
--- TOC entry 6034 (class 0 OID 38722)
--- Dependencies: 304
+-- TOC entry 6060 (class 0 OID 44029)
+-- Dependencies: 311
 -- Data for Name: maintenance_step_attribute_change; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4028,8 +5446,8 @@ COPY public.maintenance_step_attribute_change (maintenance_step_attribute_change
 
 
 --
--- TOC entry 6036 (class 0 OID 38733)
--- Dependencies: 306
+-- TOC entry 6062 (class 0 OID 44040)
+-- Dependencies: 313
 -- Data for Name: maintenance_step_item_request; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4038,8 +5456,8 @@ COPY public.maintenance_step_item_request (maintenance_step_item_request_id, mai
 
 
 --
--- TOC entry 6037 (class 0 OID 38742)
--- Dependencies: 307
+-- TOC entry 6063 (class 0 OID 44049)
+-- Dependencies: 314
 -- Data for Name: maintenance_typical_step; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4054,22 +5472,24 @@ COPY public.maintenance_typical_step (maintenance_typical_step_id, estimated_cos
 
 
 --
--- TOC entry 6038 (class 0 OID 38750)
--- Dependencies: 308
+-- TOC entry 6064 (class 0 OID 44057)
+-- Dependencies: 315
 -- Data for Name: organizational_structure; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.organizational_structure (organizational_structure_id, structure_code, structure_name, structure_type, is_active) FROM stdin;
-1	IT	Information Technology	Bureau	t
-2	MNT	Maintenance	Section	t
-3	EXP	Exploitation Section	Section	t
-4	HR	Human Resources	Service	t
+COPY public.organizational_structure (organizational_structure_id, structure_code, structure_name, is_active, structure_type_id) FROM stdin;
+2	MNT	Maintenance	t	2
+3	EXP	Exploitation Section	t	2
+4	HR	Human Resources	t	3
+1	IT	Information Technology	t	1
+5	PS	Protection & Security	t	1
+6	GS	General Secretary	t	1
 \.
 
 
 --
--- TOC entry 6039 (class 0 OID 38754)
--- Dependencies: 309
+-- TOC entry 6065 (class 0 OID 44061)
+-- Dependencies: 316
 -- Data for Name: organizational_structure_relation; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4079,8 +5499,22 @@ COPY public.organizational_structure_relation (child_organizational_structure_id
 
 
 --
--- TOC entry 6040 (class 0 OID 38759)
--- Dependencies: 310
+-- TOC entry 6066 (class 0 OID 44066)
+-- Dependencies: 317
+-- Data for Name: organizational_structure_type; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.organizational_structure_type (organizational_structure_type_id, organizational_structure_type) FROM stdin;
+1	Bureau
+2	Section
+3	Service
+4	Direction
+\.
+
+
+--
+-- TOC entry 6068 (class 0 OID 44072)
+-- Dependencies: 319
 -- Data for Name: person; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4090,26 +5524,21 @@ COPY public.person (person_id, first_name, last_name, sex, birth_date, is_approv
 7	Mohamed	MERINE	Male  	1990-01-01	t
 9	Mohamed	NEDJOUH	Male  	1994-02-05	t
 10	Daoud	BEN SI Messaoud	Male  	2002-02-27	t
-1002	Main	Tech	M     	1990-01-01	t
-1003	Other	Tech	M     	1995-01-01	t
-1006	Stock	Responsible	Male  	1990-01-01	t
-1007	Stock	Responsible	Male  	1990-01-01	t
-1008	Asset	Responsible	Male  	1990-01-01	t
-1010	Director	Admin & Support	Male  	1990-01-01	t
-1011	Director	Admin & Support	Male  	1990-01-01	t
-1012	Director	Admin & Support	Male  	1990-01-01	t
-1013	Protection & Security	Bureau Chief	Male  	1990-01-01	t
-1014	School	Headquarter	Male  	1990-01-01	t
 1015	Amal	BOULEFRED	Male  	1990-01-01	t
 8	Mohcene	AMOURA	Male  	2001-07-03	t
 1009	Charaf Eddine	KEDAYA	Male  	1990-01-01	t
-777	Manhous	HAMAL FANOUS	Male  	2000-01-01	t
+1007	Ibrahim	AIDOUNI	Male  	1990-01-01	t
+1008	Daoud	BEN SI MESSAOUD (Asset Responsible)	Male  	1990-01-01	t
+1012	Sofiane	BEN AMOR	Male  	1990-01-01	t
+1013	M'hamed	BOUREMLA	Male  	1990-01-01	t
+777	Random	Person	Male  	2000-01-01	t
+1014	Said	SIDI OUIS	Male  	1990-01-01	t
 \.
 
 
 --
--- TOC entry 6041 (class 0 OID 38768)
--- Dependencies: 311
+-- TOC entry 6069 (class 0 OID 44081)
+-- Dependencies: 320
 -- Data for Name: person_assignment; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4118,20 +5547,18 @@ COPY public.person_assignment (assignment_id, position_id, person_id, assignment
 
 
 --
--- TOC entry 6042 (class 0 OID 38774)
--- Dependencies: 312
+-- TOC entry 6070 (class 0 OID 44087)
+-- Dependencies: 321
 -- Data for Name: person_reports_problem_on_asset; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.person_reports_problem_on_asset (asset_id, person_id, report_id, report_datetime, owner_observation) FROM stdin;
-3	9	1	2026-04-07 07:53:25.936384	Testing the table person_reports_problem_on_asset_included_context
-3	9	2	2026-04-07 19:43:26.255575	Owner note
 \.
 
 
 --
--- TOC entry 6043 (class 0 OID 38782)
--- Dependencies: 313
+-- TOC entry 6071 (class 0 OID 44095)
+-- Dependencies: 322
 -- Data for Name: person_reports_problem_on_asset_included_consumable; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4140,8 +5567,8 @@ COPY public.person_reports_problem_on_asset_included_consumable (report_id, cons
 
 
 --
--- TOC entry 6045 (class 0 OID 38789)
--- Dependencies: 315
+-- TOC entry 6073 (class 0 OID 44102)
+-- Dependencies: 324
 -- Data for Name: person_reports_problem_on_asset_included_context; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4150,8 +5577,8 @@ COPY public.person_reports_problem_on_asset_included_context (report_id, destina
 
 
 --
--- TOC entry 6046 (class 0 OID 38794)
--- Dependencies: 316
+-- TOC entry 6074 (class 0 OID 44107)
+-- Dependencies: 325
 -- Data for Name: person_reports_problem_on_asset_included_stock_item; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4160,8 +5587,8 @@ COPY public.person_reports_problem_on_asset_included_stock_item (report_id, stoc
 
 
 --
--- TOC entry 6048 (class 0 OID 38801)
--- Dependencies: 318
+-- TOC entry 6076 (class 0 OID 44114)
+-- Dependencies: 327
 -- Data for Name: person_reports_problem_on_consumable; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4170,8 +5597,8 @@ COPY public.person_reports_problem_on_consumable (person_id, consumable_id, repo
 
 
 --
--- TOC entry 6049 (class 0 OID 38809)
--- Dependencies: 319
+-- TOC entry 6077 (class 0 OID 44122)
+-- Dependencies: 328
 -- Data for Name: person_reports_problem_on_stock_item; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4180,8 +5607,8 @@ COPY public.person_reports_problem_on_stock_item (person_id, stock_item_id, repo
 
 
 --
--- TOC entry 6050 (class 0 OID 38817)
--- Dependencies: 320
+-- TOC entry 6078 (class 0 OID 44130)
+-- Dependencies: 329
 -- Data for Name: person_role_mapping; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4202,8 +5629,8 @@ COPY public.person_role_mapping (role_id, person_id) FROM stdin;
 
 
 --
--- TOC entry 6051 (class 0 OID 38822)
--- Dependencies: 321
+-- TOC entry 6079 (class 0 OID 44135)
+-- Dependencies: 330
 -- Data for Name: physical_condition; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4218,8 +5645,8 @@ COPY public.physical_condition (condition_id, condition_code, condition_label, d
 
 
 --
--- TOC entry 6052 (class 0 OID 38826)
--- Dependencies: 322
+-- TOC entry 6080 (class 0 OID 44139)
+-- Dependencies: 331
 -- Data for Name: position; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4241,8 +5668,8 @@ COPY public."position" (position_id, position_code, position_label, description)
 
 
 --
--- TOC entry 6080 (class 0 OID 40433)
--- Dependencies: 350
+-- TOC entry 6081 (class 0 OID 44143)
+-- Dependencies: 332
 -- Data for Name: position_role_mapping; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4257,8 +5684,8 @@ COPY public.position_role_mapping (position_id, role_id, created_at, source) FRO
 
 
 --
--- TOC entry 6053 (class 0 OID 38830)
--- Dependencies: 323
+-- TOC entry 6082 (class 0 OID 44152)
+-- Dependencies: 333
 -- Data for Name: purchase_order; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4274,8 +5701,8 @@ COPY public.purchase_order (purchase_order_id, supplier_id, digital_copy, is_sig
 
 
 --
--- TOC entry 6054 (class 0 OID 38837)
--- Dependencies: 324
+-- TOC entry 6083 (class 0 OID 44159)
+-- Dependencies: 334
 -- Data for Name: receipt_report; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4292,8 +5719,8 @@ COPY public.receipt_report (receipt_report_id, report_datetime, report_full_code
 
 
 --
--- TOC entry 6055 (class 0 OID 38843)
--- Dependencies: 325
+-- TOC entry 6084 (class 0 OID 44165)
+-- Dependencies: 335
 -- Data for Name: role; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4313,29 +5740,18 @@ COPY public.role (role_id, role_code, role_label, description) FROM stdin;
 
 
 --
--- TOC entry 6056 (class 0 OID 38847)
--- Dependencies: 326
+-- TOC entry 6085 (class 0 OID 44169)
+-- Dependencies: 336
 -- Data for Name: stock_item; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.stock_item (stock_item_id, maintenance_step_id, stock_item_model_id, stock_item_consumable_destruction_certificate_id, stock_item_fabrication_datetime, stock_item_name, stock_item_inventory_number, stock_item_warranty_expiry_in_months, stock_item_name_in_administrative_certificate, stock_item_arrival_datetime, stock_item_status) FROM stdin;
-1	\N	1	\N	\N	Mohamed Nedjouh	0001	\N	\N	\N	\N
-2	\N	1	\N	\N	Mohamed Nedjouh Splitted	0002	\N	\N	\N	in_stock
-3	\N	1	\N	\N	Mohamed Nedjouh Splitted 2	0003	\N	\N	\N	in_stock
-4	\N	1	\N	\N	Mohamed Nedjouh Splitted 3	0004	\N	\N	\N	in_stock
-5	\N	1	\N	\N	Mohamed Nedjouh 5	5	\N	\N	\N	in_stock
-6	\N	1	\N	\N	Mohamed Nedjouh 10	0101	\N	\N	\N	in_stock
-7	\N	1	\N	\N	Mohamed Nedjouh100101	10101	\N	\N	\N	in_stock
-8	\N	1	\N	\N	Incident Test	7777	\N	\N	\N	\N
-9	\N	1	\N	\N	TEST_STOCK_207486	207486	\N	\N	\N	lost
-10	\N	1	\N	\N	Inheritance Test	00002	\N	\N	\N	not_delivered_to_company
-11	\N	2	\N	\N	HP Storage Test	00003	\N	\N	\N	not_delivered_to_company
 \.
 
 
 --
--- TOC entry 6057 (class 0 OID 38852)
--- Dependencies: 327
+-- TOC entry 6086 (class 0 OID 44174)
+-- Dependencies: 337
 -- Data for Name: stock_item_attribute_definition; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4349,37 +5765,18 @@ COPY public.stock_item_attribute_definition (stock_item_attribute_definition_id,
 
 
 --
--- TOC entry 6058 (class 0 OID 38856)
--- Dependencies: 328
+-- TOC entry 6087 (class 0 OID 44178)
+-- Dependencies: 338
 -- Data for Name: stock_item_attribute_value; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.stock_item_attribute_value (stock_item_attribute_definition_id, stock_item_id, value_string, value_bool, value_date, value_number) FROM stdin;
-1	6	\N	f	\N	3.000000
-2	1	\N	f	\N	17.000000
-2	6	\N	f	\N	1.000000
-2	7	\N	f	\N	17.000000
-1	1	\N	f	\N	2.000000
-1	7	\N	f	\N	1.000000
-1	10	\N	f	\N	1200000.000000
-2	10	\N	f	\N	150.000000
-2	11	\N	f	\N	120.000000
-3	11	\N	\N	\N	\N
-4	11	\N	\N	\N	\N
-2	2	\N	f	\N	18.000000
-2	3	\N	f	\N	18.000000
-2	4	\N	f	\N	18.000000
-2	5	\N	f	\N	18.000000
-1	2	\N	f	\N	3.000000
-1	3	\N	f	\N	3.000000
-1	4	\N	f	\N	3.000000
-1	5	\N	f	\N	3.000000
 \.
 
 
 --
--- TOC entry 6059 (class 0 OID 38863)
--- Dependencies: 329
+-- TOC entry 6088 (class 0 OID 44185)
+-- Dependencies: 339
 -- Data for Name: stock_item_brand; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4391,8 +5788,8 @@ COPY public.stock_item_brand (stock_item_brand_id, brand_name, brand_code, is_ac
 
 
 --
--- TOC entry 6060 (class 0 OID 38867)
--- Dependencies: 330
+-- TOC entry 6089 (class 0 OID 44189)
+-- Dependencies: 340
 -- Data for Name: stock_item_condition_history; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4401,8 +5798,8 @@ COPY public.stock_item_condition_history (stock_item_condition_history_id, stock
 
 
 --
--- TOC entry 6061 (class 0 OID 38875)
--- Dependencies: 331
+-- TOC entry 6090 (class 0 OID 44197)
+-- Dependencies: 341
 -- Data for Name: stock_item_consumable_destruction_certificate; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4413,8 +5810,8 @@ COPY public.stock_item_consumable_destruction_certificate (destruction_certifica
 
 
 --
--- TOC entry 6062 (class 0 OID 38881)
--- Dependencies: 332
+-- TOC entry 6091 (class 0 OID 44203)
+-- Dependencies: 342
 -- Data for Name: stock_item_is_assigned_to_person; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4423,8 +5820,8 @@ COPY public.stock_item_is_assigned_to_person (stock_item_id, person_id, assigned
 
 
 --
--- TOC entry 6063 (class 0 OID 38891)
--- Dependencies: 333
+-- TOC entry 6092 (class 0 OID 44213)
+-- Dependencies: 343
 -- Data for Name: stock_item_is_compatible_with_asset; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4433,8 +5830,8 @@ COPY public.stock_item_is_compatible_with_asset (stock_item_model_id, asset_mode
 
 
 --
--- TOC entry 6064 (class 0 OID 38896)
--- Dependencies: 334
+-- TOC entry 6093 (class 0 OID 44218)
+-- Dependencies: 344
 -- Data for Name: stock_item_model; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4445,8 +5842,8 @@ COPY public.stock_item_model (stock_item_model_id, stock_item_type_id, stock_ite
 
 
 --
--- TOC entry 6065 (class 0 OID 38902)
--- Dependencies: 335
+-- TOC entry 6094 (class 0 OID 44224)
+-- Dependencies: 345
 -- Data for Name: stock_item_model_attribute_value; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4460,8 +5857,8 @@ COPY public.stock_item_model_attribute_value (stock_item_attribute_definition_id
 
 
 --
--- TOC entry 6066 (class 0 OID 38909)
--- Dependencies: 336
+-- TOC entry 6095 (class 0 OID 44231)
+-- Dependencies: 346
 -- Data for Name: stock_item_model_is_found_in_purchase_order; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4476,8 +5873,8 @@ COPY public.stock_item_model_is_found_in_purchase_order (stock_item_model_id, pu
 
 
 --
--- TOC entry 6067 (class 0 OID 38914)
--- Dependencies: 337
+-- TOC entry 6096 (class 0 OID 44236)
+-- Dependencies: 347
 -- Data for Name: stock_item_movement; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4486,8 +5883,8 @@ COPY public.stock_item_movement (stock_item_movement_id, stock_item_id, source_l
 
 
 --
--- TOC entry 6068 (class 0 OID 38925)
--- Dependencies: 338
+-- TOC entry 6097 (class 0 OID 44247)
+-- Dependencies: 348
 -- Data for Name: stock_item_type; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4503,8 +5900,8 @@ COPY public.stock_item_type (stock_item_type_id, stock_item_type_label, stock_it
 
 
 --
--- TOC entry 6069 (class 0 OID 38931)
--- Dependencies: 339
+-- TOC entry 6098 (class 0 OID 44253)
+-- Dependencies: 349
 -- Data for Name: stock_item_type_attribute; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4516,8 +5913,8 @@ COPY public.stock_item_type_attribute (stock_item_attribute_definition_id, stock
 
 
 --
--- TOC entry 6070 (class 0 OID 38936)
--- Dependencies: 340
+-- TOC entry 6099 (class 0 OID 44258)
+-- Dependencies: 350
 -- Data for Name: supplier; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4527,8 +5924,8 @@ COPY public.supplier (supplier_id, supplier_name, supplier_address, supplier_com
 
 
 --
--- TOC entry 6071 (class 0 OID 38940)
--- Dependencies: 341
+-- TOC entry 6100 (class 0 OID 44262)
+-- Dependencies: 351
 -- Data for Name: user_account; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4537,32 +5934,45 @@ COPY public.user_account (user_id, person_id, username, password_hash, created_a
 15	1014	school_headquarter	ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413	2026-03-07 20:57:47.248902	2026-03-07 20:57:47.248902	2026-03-11 22:40:00.191381	active	0	2026-03-07 20:57:47.248902	\N	\N	2026-03-07 20:57:47.248902
 13	1012	director_admin_sup	ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413	2026-03-07 20:57:47.236569	2026-03-07 20:57:47.236569	2026-03-11 22:40:12.339554	active	0	2026-03-07 20:57:47.236569	\N	\N	2026-03-07 20:57:47.236569
 16	1015	network_tech	bed4efa1d4fdbd954bd3705d6a2a78270ec9a52ecfbfb010c61862af5c76af1761ffeb1aef6aca1bf5d02b3781aa854fabd2b69c790de74e17ecfec3cb6ac4bf	2026-03-13 01:45:58.500981	2026-03-13 01:45:58.500981	2026-03-13 09:56:21.541546	active	0	2026-03-13 01:45:58.500981	\N	\N	2026-03-13 01:45:58.500981
+11	1008	asset_resp	bed4efa1d4fdbd954bd3705d6a2a78270ec9a52ecfbfb010c61862af5c76af1761ffeb1aef6aca1bf5d02b3781aa854fabd2b69c790de74e17ecfec3cb6ac4bf	2026-02-18 09:15:48.937778	2026-02-18 09:15:48.937778	2026-04-14 08:51:09.277807	active	0	2026-02-18 09:15:48.937778	\N	\N	2026-02-18 09:15:48.937778
 6	9	mohamednedjouh	ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413	2026-02-11 11:50:06.603461	2026-02-11 11:50:06.603461	2026-04-07 19:42:55.74939	active	0	2026-02-11 11:50:06.603461	1	1	2026-02-11 11:50:06.603461
 12	1009	it_bureau_chief	ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413	2026-03-07 20:56:05.769516	2026-03-07 20:56:05.769516	2026-04-12 09:00:37.735418	active	0	2026-03-07 20:56:05.769516	\N	\N	2026-03-07 20:56:05.769516
 5	10	bensimessaouddaoud	1d3005bd778154738f4876dfe5b7815a25dd36ae79eaa68b44b78175c4d5cbf4400073ec6e4ce40ff2d11d981fd06ec421ba71c531dc67133ead14635c9471c9	2026-02-11 10:50:19.833168	2026-02-11 10:50:19.833168	2026-04-13 19:58:47.817023	active	0	2026-02-11 10:50:19.833168	1	1	2026-02-11 10:50:19.833168
-2	6	bahaaeddinezaoui	9780eb93119bb629dc9062dc2611bd6bd17532b18a3b8a9ad0290e937000901132ce210686a8b3b843c9fa53797369a087c42cb8e3a18bb2d637cb2014c716df	2026-02-10 14:48:08.044751	2026-02-10 14:48:08.044751	2026-04-13 20:03:50.033476	active	0	2026-03-05 11:34:48.189826	\N	\N	2026-02-10 14:48:08.044751
-4	8	mohceneamoura	40c82ecd90443ed156f5e4d3911c9659b6ecc21174a5ac4cb36f1804a45de6bcb2cae9110329419b04145e4d2ba55bd41a44f65c1e5617e592d7ebaf212c524e	2026-02-10 20:18:23.485554	2026-02-10 20:18:23.485554	2026-04-13 20:13:18.162497	active	0	2026-02-10 20:18:23.485554	\N	\N	2026-02-10 20:18:23.485554
 10	1007	stock_cons_resp	bed4efa1d4fdbd954bd3705d6a2a78270ec9a52ecfbfb010c61862af5c76af1761ffeb1aef6aca1bf5d02b3781aa854fabd2b69c790de74e17ecfec3cb6ac4bf	2026-02-18 09:06:44.673576	2026-02-18 09:06:44.673576	2026-04-07 10:43:03.045686	active	0	2026-02-18 09:06:44.673576	\N	\N	2026-02-18 09:06:44.673576
-11	1008	asset_resp	bed4efa1d4fdbd954bd3705d6a2a78270ec9a52ecfbfb010c61862af5c76af1761ffeb1aef6aca1bf5d02b3781aa854fabd2b69c790de74e17ecfec3cb6ac4bf	2026-02-18 09:15:48.937778	2026-02-18 09:15:48.937778	2026-04-13 20:16:09.249847	active	0	2026-02-18 09:15:48.937778	\N	\N	2026-02-18 09:15:48.937778
-17	777	manhous	ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413	2026-04-07 15:15:42.824332	2026-04-07 15:15:42.824332	2026-04-07 19:07:17.494849	active	0	2026-04-07 15:15:42.824332	1	1	2026-04-07 15:15:42.824332
-1	1	admin	bed4efa1d4fdbd954bd3705d6a2a78270ec9a52ecfbfb010c61862af5c76af1761ffeb1aef6aca1bf5d02b3781aa854fabd2b69c790de74e17ecfec3cb6ac4bf	2026-02-09 19:22:17.092734	2026-02-09 19:22:17.092734	2026-04-08 07:18:03.36842	active	0	2026-02-09 19:22:17.092734	\N	\N	2026-02-09 19:22:17.092734
+17	777	manhous	ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413	2026-04-07 15:15:42.824332	2026-04-07 15:15:42.824332	2026-04-13 21:01:12.769976	active	0	2026-04-07 15:15:42.824332	1	1	2026-04-07 15:15:42.824332
+4	8	mohceneamoura	40c82ecd90443ed156f5e4d3911c9659b6ecc21174a5ac4cb36f1804a45de6bcb2cae9110329419b04145e4d2ba55bd41a44f65c1e5617e592d7ebaf212c524e	2026-02-10 20:18:23.485554	2026-02-10 20:18:23.485554	2026-04-17 18:40:38.839	active	0	2026-02-10 20:18:23.485554	\N	\N	2026-02-10 20:18:23.485554
+2	6	bahaaeddinezaoui	9780eb93119bb629dc9062dc2611bd6bd17532b18a3b8a9ad0290e937000901132ce210686a8b3b843c9fa53797369a087c42cb8e3a18bb2d637cb2014c716df	2026-02-10 14:48:08.044751	2026-02-10 14:48:08.044751	2026-04-17 19:32:06.495728	active	0	2026-03-05 11:34:48.189826	\N	\N	2026-02-10 14:48:08.044751
+1	1	admin	bed4efa1d4fdbd954bd3705d6a2a78270ec9a52ecfbfb010c61862af5c76af1761ffeb1aef6aca1bf5d02b3781aa854fabd2b69c790de74e17ecfec3cb6ac4bf	2026-02-09 19:22:17.092734	2026-02-09 19:22:17.092734	2026-04-17 19:41:09.898204	active	0	2026-02-09 19:22:17.092734	\N	\N	2026-02-09 19:22:17.092734
 14	1013	prot_sec_chief	ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413	2026-03-07 20:57:47.243526	2026-03-07 20:57:47.243526	2026-04-03 07:06:43.144837	active	0	2026-03-07 20:57:47.243526	\N	\N	2026-03-07 20:57:47.243526
 \.
 
 
 --
--- TOC entry 6072 (class 0 OID 38956)
--- Dependencies: 342
+-- TOC entry 6101 (class 0 OID 44278)
+-- Dependencies: 352
 -- Data for Name: user_session; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.user_session (session_id, user_id, ip_address, user_agent, login_datetime, last_activity, logout_datetime) FROM stdin;
+7	1	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-17 07:17:38.11284	2026-04-17 15:17:33.154432	\N
+13	1	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-17 19:41:09.914742	2026-04-17 20:17:33.202323	\N
+12	2	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-17 19:32:06.510074	2026-04-17 19:32:49.353051	\N
+2	2	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-13 21:09:44.357828	2026-04-13 21:09:49.354754	2026-04-13 21:10:07.160885
+11	1	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-17 18:40:55.630879	2026-04-17 19:31:59.695223	\N
+1	2	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-13 21:05:18.413617	2026-04-13 21:05:50.529048	2026-04-13 21:10:09.641194
+3	2	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-13 21:09:58.116815	2026-04-13 21:10:09.707345	\N
+4	11	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-14 08:51:09.298375	2026-04-14 08:51:41.131361	\N
+5	1	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-14 08:51:56.147701	2026-04-14 14:08:39.173076	\N
+8	1	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-17 16:27:41.599444	2026-04-17 18:40:21.961184	\N
+9	4	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-17 18:40:32.398301	2026-04-17 18:40:32.39831	\N
+6	1	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-16 12:36:44.27547	2026-04-16 14:51:36.473389	\N
+10	4	127.0.0.1	Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36	2026-04-17 18:40:38.844619	2026-04-17 18:40:40.344344	\N
 \.
 
 
 --
--- TOC entry 6073 (class 0 OID 38964)
--- Dependencies: 343
+-- TOC entry 6102 (class 0 OID 44286)
+-- Dependencies: 353
 -- Data for Name: warehouse; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -4572,7 +5982,7 @@ COPY public.warehouse (warehouse_id, warehouse_name, warehouse_address) FROM std
 
 
 --
--- TOC entry 6119 (class 0 OID 0)
+-- TOC entry 6142 (class 0 OID 0)
 -- Dependencies: 228
 -- Name: asset_destruction_certificate_asset_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -4581,8 +5991,8 @@ SELECT pg_catalog.setval('public.asset_destruction_certificate_asset_id_seq', 1,
 
 
 --
--- TOC entry 6120 (class 0 OID 0)
--- Dependencies: 344
+-- TOC entry 6143 (class 0 OID 0)
+-- Dependencies: 231
 -- Name: asset_incident_report_asset_incident_report_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4590,8 +6000,8 @@ SELECT pg_catalog.setval('public.asset_incident_report_asset_incident_report_id_
 
 
 --
--- TOC entry 6121 (class 0 OID 0)
--- Dependencies: 348
+-- TOC entry 6144 (class 0 OID 0)
+-- Dependencies: 233
 -- Name: asset_incident_report_consumable_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4599,8 +6009,8 @@ SELECT pg_catalog.setval('public.asset_incident_report_consumable_id_seq', 2, tr
 
 
 --
--- TOC entry 6122 (class 0 OID 0)
--- Dependencies: 346
+-- TOC entry 6145 (class 0 OID 0)
+-- Dependencies: 235
 -- Name: asset_incident_report_stock_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4608,8 +6018,8 @@ SELECT pg_catalog.setval('public.asset_incident_report_stock_item_id_seq', 2, tr
 
 
 --
--- TOC entry 6123 (class 0 OID 0)
--- Dependencies: 232
+-- TOC entry 6146 (class 0 OID 0)
+-- Dependencies: 238
 -- Name: asset_is_composed_of_consumable_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4617,8 +6027,8 @@ SELECT pg_catalog.setval('public.asset_is_composed_of_consumable_history_id_seq'
 
 
 --
--- TOC entry 6124 (class 0 OID 0)
--- Dependencies: 234
+-- TOC entry 6147 (class 0 OID 0)
+-- Dependencies: 240
 -- Name: asset_is_composed_of_stock_item_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4626,8 +6036,8 @@ SELECT pg_catalog.setval('public.asset_is_composed_of_stock_item_history_id_seq'
 
 
 --
--- TOC entry 6125 (class 0 OID 0)
--- Dependencies: 238
+-- TOC entry 6148 (class 0 OID 0)
+-- Dependencies: 244
 -- Name: asset_model_default_consumable_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4635,8 +6045,8 @@ SELECT pg_catalog.setval('public.asset_model_default_consumable_id_seq', 3, true
 
 
 --
--- TOC entry 6126 (class 0 OID 0)
--- Dependencies: 240
+-- TOC entry 6149 (class 0 OID 0)
+-- Dependencies: 246
 -- Name: asset_model_default_stock_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4644,8 +6054,8 @@ SELECT pg_catalog.setval('public.asset_model_default_stock_item_id_seq', 1, true
 
 
 --
--- TOC entry 6127 (class 0 OID 0)
--- Dependencies: 246
+-- TOC entry 6150 (class 0 OID 0)
+-- Dependencies: 252
 -- Name: attribution_order_asset_consumable_accessory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4653,8 +6063,8 @@ SELECT pg_catalog.setval('public.attribution_order_asset_consumable_accessory_id
 
 
 --
--- TOC entry 6128 (class 0 OID 0)
--- Dependencies: 248
+-- TOC entry 6151 (class 0 OID 0)
+-- Dependencies: 254
 -- Name: attribution_order_asset_stock_item_accessory_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4662,8 +6072,8 @@ SELECT pg_catalog.setval('public.attribution_order_asset_stock_item_accessory_id
 
 
 --
--- TOC entry 6129 (class 0 OID 0)
--- Dependencies: 250
+-- TOC entry 6152 (class 0 OID 0)
+-- Dependencies: 256
 -- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4671,8 +6081,8 @@ SELECT pg_catalog.setval('public.auth_group_id_seq', 1, false);
 
 
 --
--- TOC entry 6130 (class 0 OID 0)
--- Dependencies: 252
+-- TOC entry 6153 (class 0 OID 0)
+-- Dependencies: 258
 -- Name: auth_group_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4680,8 +6090,8 @@ SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 1, false);
 
 
 --
--- TOC entry 6131 (class 0 OID 0)
--- Dependencies: 254
+-- TOC entry 6154 (class 0 OID 0)
+-- Dependencies: 260
 -- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4689,8 +6099,8 @@ SELECT pg_catalog.setval('public.auth_permission_id_seq', 336, true);
 
 
 --
--- TOC entry 6132 (class 0 OID 0)
--- Dependencies: 257
+-- TOC entry 6155 (class 0 OID 0)
+-- Dependencies: 263
 -- Name: auth_user_groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4698,8 +6108,8 @@ SELECT pg_catalog.setval('public.auth_user_groups_id_seq', 1, false);
 
 
 --
--- TOC entry 6133 (class 0 OID 0)
--- Dependencies: 258
+-- TOC entry 6156 (class 0 OID 0)
+-- Dependencies: 264
 -- Name: auth_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4707,8 +6117,8 @@ SELECT pg_catalog.setval('public.auth_user_id_seq', 1, true);
 
 
 --
--- TOC entry 6134 (class 0 OID 0)
--- Dependencies: 260
+-- TOC entry 6157 (class 0 OID 0)
+-- Dependencies: 266
 -- Name: auth_user_user_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4716,8 +6126,8 @@ SELECT pg_catalog.setval('public.auth_user_user_permissions_id_seq', 1, false);
 
 
 --
--- TOC entry 6135 (class 0 OID 0)
--- Dependencies: 276
+-- TOC entry 6158 (class 0 OID 0)
+-- Dependencies: 282
 -- Name: consumable_is_used_in_stock_item_history_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4725,8 +6135,8 @@ SELECT pg_catalog.setval('public.consumable_is_used_in_stock_item_history_id_seq
 
 
 --
--- TOC entry 6136 (class 0 OID 0)
--- Dependencies: 285
+-- TOC entry 6159 (class 0 OID 0)
+-- Dependencies: 291
 -- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4734,8 +6144,8 @@ SELECT pg_catalog.setval('public.django_admin_log_id_seq', 1, false);
 
 
 --
--- TOC entry 6137 (class 0 OID 0)
--- Dependencies: 287
+-- TOC entry 6160 (class 0 OID 0)
+-- Dependencies: 293
 -- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4743,17 +6153,17 @@ SELECT pg_catalog.setval('public.django_content_type_id_seq', 84, true);
 
 
 --
--- TOC entry 6138 (class 0 OID 0)
--- Dependencies: 289
+-- TOC entry 6161 (class 0 OID 0)
+-- Dependencies: 295
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_migrations_id_seq', 45, true);
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 46, true);
 
 
 --
--- TOC entry 6139 (class 0 OID 0)
--- Dependencies: 300
+-- TOC entry 6162 (class 0 OID 0)
+-- Dependencies: 307
 -- Name: location_type_location_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4761,8 +6171,8 @@ SELECT pg_catalog.setval('public.location_type_location_type_id_seq', 1, false);
 
 
 --
--- TOC entry 6140 (class 0 OID 0)
--- Dependencies: 305
+-- TOC entry 6163 (class 0 OID 0)
+-- Dependencies: 312
 -- Name: maintenance_step_attribute_ch_maintenance_step_attribute_ch_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4770,8 +6180,17 @@ SELECT pg_catalog.setval('public.maintenance_step_attribute_ch_maintenance_step_
 
 
 --
--- TOC entry 6141 (class 0 OID 0)
--- Dependencies: 314
+-- TOC entry 6164 (class 0 OID 0)
+-- Dependencies: 318
+-- Name: organizational_structure_type_organizational_structure_type_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.organizational_structure_type_organizational_structure_type_seq', 3, true);
+
+
+--
+-- TOC entry 6165 (class 0 OID 0)
+-- Dependencies: 323
 -- Name: person_reports_problem_on_asset_included_consumable_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4779,8 +6198,8 @@ SELECT pg_catalog.setval('public.person_reports_problem_on_asset_included_consum
 
 
 --
--- TOC entry 6142 (class 0 OID 0)
--- Dependencies: 317
+-- TOC entry 6166 (class 0 OID 0)
+-- Dependencies: 326
 -- Name: person_reports_problem_on_asset_included_stock_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -4788,7 +6207,7 @@ SELECT pg_catalog.setval('public.person_reports_problem_on_asset_included_stock_
 
 
 --
--- TOC entry 5346 (class 2606 OID 38980)
+-- TOC entry 5356 (class 2606 OID 44303)
 -- Name: acceptance_report acceptance_report_delivery_note_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4797,7 +6216,7 @@ ALTER TABLE ONLY public.acceptance_report
 
 
 --
--- TOC entry 5348 (class 2606 OID 38982)
+-- TOC entry 5358 (class 2606 OID 44305)
 -- Name: acceptance_report acceptance_report_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4806,7 +6225,7 @@ ALTER TABLE ONLY public.acceptance_report
 
 
 --
--- TOC entry 5350 (class 2606 OID 38984)
+-- TOC entry 5360 (class 2606 OID 44307)
 -- Name: administrative_certificate administrative_certificate_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4815,7 +6234,7 @@ ALTER TABLE ONLY public.administrative_certificate
 
 
 --
--- TOC entry 5354 (class 2606 OID 38986)
+-- TOC entry 5364 (class 2606 OID 44309)
 -- Name: asset_attribute_definition asset_attribute_definition_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4824,7 +6243,7 @@ ALTER TABLE ONLY public.asset_attribute_definition
 
 
 --
--- TOC entry 5356 (class 2606 OID 38988)
+-- TOC entry 5366 (class 2606 OID 44311)
 -- Name: asset_attribute_value asset_attribute_value_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4833,7 +6252,7 @@ ALTER TABLE ONLY public.asset_attribute_value
 
 
 --
--- TOC entry 5358 (class 2606 OID 38990)
+-- TOC entry 5368 (class 2606 OID 44313)
 -- Name: asset_brand asset_brand_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4842,7 +6261,7 @@ ALTER TABLE ONLY public.asset_brand
 
 
 --
--- TOC entry 5360 (class 2606 OID 38992)
+-- TOC entry 5370 (class 2606 OID 44315)
 -- Name: asset_condition_history asset_condition_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4851,7 +6270,7 @@ ALTER TABLE ONLY public.asset_condition_history
 
 
 --
--- TOC entry 5364 (class 2606 OID 38994)
+-- TOC entry 5374 (class 2606 OID 44317)
 -- Name: asset_destruction_certificate_asset asset_destruction_certificate_asset_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4860,7 +6279,7 @@ ALTER TABLE ONLY public.asset_destruction_certificate_asset
 
 
 --
--- TOC entry 5362 (class 2606 OID 38996)
+-- TOC entry 5372 (class 2606 OID 44319)
 -- Name: asset_destruction_certificate asset_destruction_certificate_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4869,7 +6288,7 @@ ALTER TABLE ONLY public.asset_destruction_certificate
 
 
 --
--- TOC entry 5368 (class 2606 OID 38998)
+-- TOC entry 5378 (class 2606 OID 44321)
 -- Name: asset_failed_external_maintenance asset_failed_external_maintenance_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4878,7 +6297,7 @@ ALTER TABLE ONLY public.asset_failed_external_maintenance
 
 
 --
--- TOC entry 5615 (class 2606 OID 40364)
+-- TOC entry 5382 (class 2606 OID 44323)
 -- Name: asset_incident_report_consumable asset_incident_report_consumable_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4887,7 +6306,7 @@ ALTER TABLE ONLY public.asset_incident_report_consumable
 
 
 --
--- TOC entry 5610 (class 2606 OID 40346)
+-- TOC entry 5380 (class 2606 OID 44325)
 -- Name: asset_incident_report asset_incident_report_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4896,7 +6315,7 @@ ALTER TABLE ONLY public.asset_incident_report
 
 
 --
--- TOC entry 5612 (class 2606 OID 40355)
+-- TOC entry 5385 (class 2606 OID 44327)
 -- Name: asset_incident_report_stock_item asset_incident_report_stock_item_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4905,7 +6324,7 @@ ALTER TABLE ONLY public.asset_incident_report_stock_item
 
 
 --
--- TOC entry 5370 (class 2606 OID 39000)
+-- TOC entry 5388 (class 2606 OID 44329)
 -- Name: asset_is_assigned_to_person asset_is_assigned_to_person_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4914,7 +6333,7 @@ ALTER TABLE ONLY public.asset_is_assigned_to_person
 
 
 --
--- TOC entry 5372 (class 2606 OID 39002)
+-- TOC entry 5390 (class 2606 OID 44331)
 -- Name: asset_is_composed_of_consumable_history asset_is_composed_of_consumable_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4923,7 +6342,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_consumable_history
 
 
 --
--- TOC entry 5374 (class 2606 OID 39004)
+-- TOC entry 5392 (class 2606 OID 44333)
 -- Name: asset_is_composed_of_stock_item_history asset_is_composed_of_stock_item_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4932,7 +6351,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_stock_item_history
 
 
 --
--- TOC entry 5378 (class 2606 OID 39006)
+-- TOC entry 5396 (class 2606 OID 44335)
 -- Name: asset_model_attribute_value asset_model_attribute_value_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4941,7 +6360,7 @@ ALTER TABLE ONLY public.asset_model_attribute_value
 
 
 --
--- TOC entry 5380 (class 2606 OID 39008)
+-- TOC entry 5398 (class 2606 OID 44337)
 -- Name: asset_model_default_consumable asset_model_default_consumable_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4950,7 +6369,7 @@ ALTER TABLE ONLY public.asset_model_default_consumable
 
 
 --
--- TOC entry 5384 (class 2606 OID 39010)
+-- TOC entry 5402 (class 2606 OID 44339)
 -- Name: asset_model_default_stock_item asset_model_default_stock_item_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4959,7 +6378,7 @@ ALTER TABLE ONLY public.asset_model_default_stock_item
 
 
 --
--- TOC entry 5376 (class 2606 OID 39012)
+-- TOC entry 5394 (class 2606 OID 44341)
 -- Name: asset_model asset_model_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4968,7 +6387,7 @@ ALTER TABLE ONLY public.asset_model
 
 
 --
--- TOC entry 5388 (class 2606 OID 39014)
+-- TOC entry 5406 (class 2606 OID 44343)
 -- Name: asset_movement asset_movement_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4977,7 +6396,7 @@ ALTER TABLE ONLY public.asset_movement
 
 
 --
--- TOC entry 5352 (class 2606 OID 39016)
+-- TOC entry 5362 (class 2606 OID 44345)
 -- Name: asset asset_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4986,7 +6405,7 @@ ALTER TABLE ONLY public.asset
 
 
 --
--- TOC entry 5392 (class 2606 OID 39018)
+-- TOC entry 5410 (class 2606 OID 44347)
 -- Name: asset_type_attribute asset_type_attribute_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4995,7 +6414,7 @@ ALTER TABLE ONLY public.asset_type_attribute
 
 
 --
--- TOC entry 5390 (class 2606 OID 39020)
+-- TOC entry 5408 (class 2606 OID 44349)
 -- Name: asset_type asset_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5004,7 +6423,7 @@ ALTER TABLE ONLY public.asset_type
 
 
 --
--- TOC entry 5396 (class 2606 OID 39022)
+-- TOC entry 5414 (class 2606 OID 44351)
 -- Name: attribution_order_asset_consumable_accessory attribution_order_asset_consumable_accessory_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5013,7 +6432,7 @@ ALTER TABLE ONLY public.attribution_order_asset_consumable_accessory
 
 
 --
--- TOC entry 5403 (class 2606 OID 39024)
+-- TOC entry 5421 (class 2606 OID 44353)
 -- Name: attribution_order_asset_stock_item_accessory attribution_order_asset_stock_item_accessory_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5022,7 +6441,7 @@ ALTER TABLE ONLY public.attribution_order_asset_stock_item_accessory
 
 
 --
--- TOC entry 5394 (class 2606 OID 39026)
+-- TOC entry 5412 (class 2606 OID 44355)
 -- Name: attribution_order attribution_order_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5031,7 +6450,7 @@ ALTER TABLE ONLY public.attribution_order
 
 
 --
--- TOC entry 5411 (class 2606 OID 39028)
+-- TOC entry 5429 (class 2606 OID 44357)
 -- Name: auth_group auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5040,7 +6459,7 @@ ALTER TABLE ONLY public.auth_group
 
 
 --
--- TOC entry 5416 (class 2606 OID 39030)
+-- TOC entry 5434 (class 2606 OID 44359)
 -- Name: auth_group_permissions auth_group_permissions_group_id_permission_id_0cd325b0_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5049,7 +6468,7 @@ ALTER TABLE ONLY public.auth_group_permissions
 
 
 --
--- TOC entry 5419 (class 2606 OID 39032)
+-- TOC entry 5437 (class 2606 OID 44361)
 -- Name: auth_group_permissions auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5058,7 +6477,7 @@ ALTER TABLE ONLY public.auth_group_permissions
 
 
 --
--- TOC entry 5413 (class 2606 OID 39034)
+-- TOC entry 5431 (class 2606 OID 44363)
 -- Name: auth_group auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5067,7 +6486,7 @@ ALTER TABLE ONLY public.auth_group
 
 
 --
--- TOC entry 5422 (class 2606 OID 39036)
+-- TOC entry 5440 (class 2606 OID 44365)
 -- Name: auth_permission auth_permission_content_type_id_codename_01ab375a_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5076,7 +6495,7 @@ ALTER TABLE ONLY public.auth_permission
 
 
 --
--- TOC entry 5424 (class 2606 OID 39038)
+-- TOC entry 5442 (class 2606 OID 44367)
 -- Name: auth_permission auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5085,7 +6504,7 @@ ALTER TABLE ONLY public.auth_permission
 
 
 --
--- TOC entry 5432 (class 2606 OID 39040)
+-- TOC entry 5450 (class 2606 OID 44369)
 -- Name: auth_user_groups auth_user_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5094,7 +6513,7 @@ ALTER TABLE ONLY public.auth_user_groups
 
 
 --
--- TOC entry 5435 (class 2606 OID 39042)
+-- TOC entry 5453 (class 2606 OID 44371)
 -- Name: auth_user_groups auth_user_groups_user_id_group_id_94350c0c_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5103,7 +6522,7 @@ ALTER TABLE ONLY public.auth_user_groups
 
 
 --
--- TOC entry 5426 (class 2606 OID 39044)
+-- TOC entry 5444 (class 2606 OID 44373)
 -- Name: auth_user auth_user_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5112,7 +6531,7 @@ ALTER TABLE ONLY public.auth_user
 
 
 --
--- TOC entry 5438 (class 2606 OID 39046)
+-- TOC entry 5456 (class 2606 OID 44375)
 -- Name: auth_user_user_permissions auth_user_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5121,7 +6540,7 @@ ALTER TABLE ONLY public.auth_user_user_permissions
 
 
 --
--- TOC entry 5441 (class 2606 OID 39048)
+-- TOC entry 5459 (class 2606 OID 44377)
 -- Name: auth_user_user_permissions auth_user_user_permissions_user_id_permission_id_14a6b632_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5130,7 +6549,7 @@ ALTER TABLE ONLY public.auth_user_user_permissions
 
 
 --
--- TOC entry 5429 (class 2606 OID 39050)
+-- TOC entry 5447 (class 2606 OID 44379)
 -- Name: auth_user auth_user_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5139,7 +6558,7 @@ ALTER TABLE ONLY public.auth_user
 
 
 --
--- TOC entry 5443 (class 2606 OID 39052)
+-- TOC entry 5461 (class 2606 OID 44381)
 -- Name: authentication_log authentication_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5148,7 +6567,7 @@ ALTER TABLE ONLY public.authentication_log
 
 
 --
--- TOC entry 5447 (class 2606 OID 39054)
+-- TOC entry 5465 (class 2606 OID 44383)
 -- Name: backorder_report_consumable_model_line backorder_report_consumable_model_line_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5157,7 +6576,7 @@ ALTER TABLE ONLY public.backorder_report_consumable_model_line
 
 
 --
--- TOC entry 5445 (class 2606 OID 39056)
+-- TOC entry 5463 (class 2606 OID 44385)
 -- Name: backorder_report backorder_report_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5166,7 +6585,7 @@ ALTER TABLE ONLY public.backorder_report
 
 
 --
--- TOC entry 5450 (class 2606 OID 39058)
+-- TOC entry 5468 (class 2606 OID 44387)
 -- Name: backorder_report_stock_item_model_line backorder_report_stock_item_model_line_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5175,7 +6594,7 @@ ALTER TABLE ONLY public.backorder_report_stock_item_model_line
 
 
 --
--- TOC entry 5453 (class 2606 OID 39060)
+-- TOC entry 5471 (class 2606 OID 44389)
 -- Name: broken_item_report broken_item_report_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5184,7 +6603,7 @@ ALTER TABLE ONLY public.broken_item_report
 
 
 --
--- TOC entry 5469 (class 2606 OID 39062)
+-- TOC entry 5487 (class 2606 OID 44391)
 -- Name: consumable_is_compatible_with_asset c_is_compatible_with_a_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5193,7 +6612,7 @@ ALTER TABLE ONLY public.consumable_is_compatible_with_asset
 
 
 --
--- TOC entry 5471 (class 2606 OID 39064)
+-- TOC entry 5489 (class 2606 OID 44393)
 -- Name: consumable_is_compatible_with_stock_item c_is_compatible_with_si_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5202,7 +6621,7 @@ ALTER TABLE ONLY public.consumable_is_compatible_with_stock_item
 
 
 --
--- TOC entry 5455 (class 2606 OID 39066)
+-- TOC entry 5473 (class 2606 OID 44395)
 -- Name: company_asset_request company_asset_request_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5211,7 +6630,7 @@ ALTER TABLE ONLY public.company_asset_request
 
 
 --
--- TOC entry 5459 (class 2606 OID 39068)
+-- TOC entry 5477 (class 2606 OID 44397)
 -- Name: consumable_attribute_definition consumable_attribute_definition_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5220,7 +6639,7 @@ ALTER TABLE ONLY public.consumable_attribute_definition
 
 
 --
--- TOC entry 5461 (class 2606 OID 39070)
+-- TOC entry 5479 (class 2606 OID 44399)
 -- Name: consumable_attribute_value consumable_attribute_value_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5229,7 +6648,7 @@ ALTER TABLE ONLY public.consumable_attribute_value
 
 
 --
--- TOC entry 5463 (class 2606 OID 39072)
+-- TOC entry 5481 (class 2606 OID 44401)
 -- Name: consumable_brand consumable_brand_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5238,7 +6657,7 @@ ALTER TABLE ONLY public.consumable_brand
 
 
 --
--- TOC entry 5465 (class 2606 OID 39074)
+-- TOC entry 5483 (class 2606 OID 44403)
 -- Name: consumable_condition_history consumable_condition_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5247,7 +6666,7 @@ ALTER TABLE ONLY public.consumable_condition_history
 
 
 --
--- TOC entry 5467 (class 2606 OID 39076)
+-- TOC entry 5485 (class 2606 OID 44405)
 -- Name: consumable_is_assigned_to_person consumable_is_assigned_to_person_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5256,7 +6675,7 @@ ALTER TABLE ONLY public.consumable_is_assigned_to_person
 
 
 --
--- TOC entry 5473 (class 2606 OID 39078)
+-- TOC entry 5491 (class 2606 OID 44407)
 -- Name: consumable_is_used_in_stock_item_history consumable_is_used_in_stock_item_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5265,7 +6684,7 @@ ALTER TABLE ONLY public.consumable_is_used_in_stock_item_history
 
 
 --
--- TOC entry 5477 (class 2606 OID 39080)
+-- TOC entry 5495 (class 2606 OID 44409)
 -- Name: consumable_model_attribute_value consumable_model_attribute_value_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5274,7 +6693,7 @@ ALTER TABLE ONLY public.consumable_model_attribute_value
 
 
 --
--- TOC entry 5479 (class 2606 OID 39082)
+-- TOC entry 5497 (class 2606 OID 44411)
 -- Name: consumable_model_is_found_in_purchase_order consumable_model_is_found_in_bdc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5283,7 +6702,7 @@ ALTER TABLE ONLY public.consumable_model_is_found_in_purchase_order
 
 
 --
--- TOC entry 5475 (class 2606 OID 39084)
+-- TOC entry 5493 (class 2606 OID 44413)
 -- Name: consumable_model consumable_model_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5292,7 +6711,7 @@ ALTER TABLE ONLY public.consumable_model
 
 
 --
--- TOC entry 5481 (class 2606 OID 39086)
+-- TOC entry 5499 (class 2606 OID 44415)
 -- Name: consumable_movement consumable_movement_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5301,7 +6720,7 @@ ALTER TABLE ONLY public.consumable_movement
 
 
 --
--- TOC entry 5457 (class 2606 OID 39088)
+-- TOC entry 5475 (class 2606 OID 44417)
 -- Name: consumable consumable_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5310,7 +6729,7 @@ ALTER TABLE ONLY public.consumable
 
 
 --
--- TOC entry 5485 (class 2606 OID 39090)
+-- TOC entry 5503 (class 2606 OID 44419)
 -- Name: consumable_type_attribute consumable_type_attribute_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5319,7 +6738,7 @@ ALTER TABLE ONLY public.consumable_type_attribute
 
 
 --
--- TOC entry 5483 (class 2606 OID 39092)
+-- TOC entry 5501 (class 2606 OID 44421)
 -- Name: consumable_type consumable_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5328,7 +6747,7 @@ ALTER TABLE ONLY public.consumable_type
 
 
 --
--- TOC entry 5487 (class 2606 OID 39094)
+-- TOC entry 5505 (class 2606 OID 44423)
 -- Name: delivery_note delivery_note_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5337,7 +6756,7 @@ ALTER TABLE ONLY public.delivery_note
 
 
 --
--- TOC entry 5490 (class 2606 OID 39096)
+-- TOC entry 5508 (class 2606 OID 44425)
 -- Name: django_admin_log django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5346,7 +6765,7 @@ ALTER TABLE ONLY public.django_admin_log
 
 
 --
--- TOC entry 5493 (class 2606 OID 39098)
+-- TOC entry 5511 (class 2606 OID 44427)
 -- Name: django_content_type django_content_type_app_label_model_76bd3d3b_uniq; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5355,7 +6774,7 @@ ALTER TABLE ONLY public.django_content_type
 
 
 --
--- TOC entry 5495 (class 2606 OID 39100)
+-- TOC entry 5513 (class 2606 OID 44429)
 -- Name: django_content_type django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5364,7 +6783,7 @@ ALTER TABLE ONLY public.django_content_type
 
 
 --
--- TOC entry 5497 (class 2606 OID 39102)
+-- TOC entry 5515 (class 2606 OID 44431)
 -- Name: django_migrations django_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5373,7 +6792,7 @@ ALTER TABLE ONLY public.django_migrations
 
 
 --
--- TOC entry 5500 (class 2606 OID 39104)
+-- TOC entry 5518 (class 2606 OID 44433)
 -- Name: django_session django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5382,7 +6801,7 @@ ALTER TABLE ONLY public.django_session
 
 
 --
--- TOC entry 5507 (class 2606 OID 39106)
+-- TOC entry 5525 (class 2606 OID 44435)
 -- Name: external_maintenance_document external_maintenance_document_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5391,7 +6810,7 @@ ALTER TABLE ONLY public.external_maintenance_document
 
 
 --
--- TOC entry 5503 (class 2606 OID 39108)
+-- TOC entry 5521 (class 2606 OID 44437)
 -- Name: external_maintenance external_maintenance_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5400,7 +6819,7 @@ ALTER TABLE ONLY public.external_maintenance
 
 
 --
--- TOC entry 5509 (class 2606 OID 39110)
+-- TOC entry 5527 (class 2606 OID 44439)
 -- Name: external_maintenance_provider external_maintenance_provider_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5409,7 +6828,7 @@ ALTER TABLE ONLY public.external_maintenance_provider
 
 
 --
--- TOC entry 5511 (class 2606 OID 39112)
+-- TOC entry 5529 (class 2606 OID 44441)
 -- Name: external_maintenance_step external_maintenance_step_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5418,7 +6837,7 @@ ALTER TABLE ONLY public.external_maintenance_step
 
 
 --
--- TOC entry 5513 (class 2606 OID 39114)
+-- TOC entry 5531 (class 2606 OID 44443)
 -- Name: external_maintenance_typical_step external_maintenance_typical_step_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5427,7 +6846,7 @@ ALTER TABLE ONLY public.external_maintenance_typical_step
 
 
 --
--- TOC entry 5515 (class 2606 OID 39116)
+-- TOC entry 5533 (class 2606 OID 44445)
 -- Name: invoice invoice_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5436,7 +6855,7 @@ ALTER TABLE ONLY public.invoice
 
 
 --
--- TOC entry 5519 (class 2606 OID 39118)
+-- TOC entry 5537 (class 2606 OID 44447)
 -- Name: location_belongs_to_organizational_structure location_belongs_to_organizational_structure_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5445,7 +6864,7 @@ ALTER TABLE ONLY public.location_belongs_to_organizational_structure
 
 
 --
--- TOC entry 5517 (class 2606 OID 39120)
+-- TOC entry 5535 (class 2606 OID 44449)
 -- Name: location location_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5454,7 +6873,16 @@ ALTER TABLE ONLY public.location
 
 
 --
--- TOC entry 5521 (class 2606 OID 39122)
+-- TOC entry 5539 (class 2606 OID 44451)
+-- Name: location_relation location_relation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.location_relation
+    ADD CONSTRAINT location_relation_pkey PRIMARY KEY (child_location_id, parent_location_id);
+
+
+--
+-- TOC entry 5541 (class 2606 OID 44453)
 -- Name: location_type location_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5463,7 +6891,7 @@ ALTER TABLE ONLY public.location_type
 
 
 --
--- TOC entry 5525 (class 2606 OID 39124)
+-- TOC entry 5545 (class 2606 OID 44455)
 -- Name: maintenance_inspection_leads_to_broken_item_report maintenance_inspection_leads_to_broken_item_report_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5472,7 +6900,7 @@ ALTER TABLE ONLY public.maintenance_inspection_leads_to_broken_item_report
 
 
 --
--- TOC entry 5523 (class 2606 OID 39126)
+-- TOC entry 5543 (class 2606 OID 44457)
 -- Name: maintenance maintenance_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5481,7 +6909,7 @@ ALTER TABLE ONLY public.maintenance
 
 
 --
--- TOC entry 5530 (class 2606 OID 39128)
+-- TOC entry 5550 (class 2606 OID 44459)
 -- Name: maintenance_step_attribute_change maintenance_step_attribute_change_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5490,7 +6918,7 @@ ALTER TABLE ONLY public.maintenance_step_attribute_change
 
 
 --
--- TOC entry 5532 (class 2606 OID 39130)
+-- TOC entry 5552 (class 2606 OID 44461)
 -- Name: maintenance_step_item_request maintenance_step_item_request_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5499,7 +6927,7 @@ ALTER TABLE ONLY public.maintenance_step_item_request
 
 
 --
--- TOC entry 5527 (class 2606 OID 39132)
+-- TOC entry 5547 (class 2606 OID 44463)
 -- Name: maintenance_step maintenance_step_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5508,7 +6936,7 @@ ALTER TABLE ONLY public.maintenance_step
 
 
 --
--- TOC entry 5536 (class 2606 OID 39134)
+-- TOC entry 5556 (class 2606 OID 44465)
 -- Name: maintenance_typical_step maintenance_typical_step_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5517,7 +6945,7 @@ ALTER TABLE ONLY public.maintenance_typical_step
 
 
 --
--- TOC entry 5538 (class 2606 OID 39136)
+-- TOC entry 5558 (class 2606 OID 44467)
 -- Name: organizational_structure organizational_structure_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5526,7 +6954,7 @@ ALTER TABLE ONLY public.organizational_structure
 
 
 --
--- TOC entry 5540 (class 2606 OID 39138)
+-- TOC entry 5560 (class 2606 OID 44469)
 -- Name: organizational_structure_relation organizational_structure_relation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5535,7 +6963,25 @@ ALTER TABLE ONLY public.organizational_structure_relation
 
 
 --
--- TOC entry 5544 (class 2606 OID 39140)
+-- TOC entry 5562 (class 2606 OID 44471)
+-- Name: organizational_structure_type organizational_structure_type_organizational_structure_type_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.organizational_structure_type
+    ADD CONSTRAINT organizational_structure_type_organizational_structure_type_key UNIQUE (organizational_structure_type);
+
+
+--
+-- TOC entry 5564 (class 2606 OID 44473)
+-- Name: organizational_structure_type organizational_structure_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.organizational_structure_type
+    ADD CONSTRAINT organizational_structure_type_pkey PRIMARY KEY (organizational_structure_type_id);
+
+
+--
+-- TOC entry 5568 (class 2606 OID 44475)
 -- Name: person_assignment person_assignment_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5544,7 +6990,7 @@ ALTER TABLE ONLY public.person_assignment
 
 
 --
--- TOC entry 5542 (class 2606 OID 39142)
+-- TOC entry 5566 (class 2606 OID 44477)
 -- Name: person person_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5553,7 +6999,7 @@ ALTER TABLE ONLY public.person
 
 
 --
--- TOC entry 5548 (class 2606 OID 39144)
+-- TOC entry 5572 (class 2606 OID 44479)
 -- Name: person_reports_problem_on_asset_included_consumable person_reports_problem_on_asset_included_consumable_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5562,7 +7008,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_consumable
 
 
 --
--- TOC entry 5550 (class 2606 OID 39146)
+-- TOC entry 5574 (class 2606 OID 44481)
 -- Name: person_reports_problem_on_asset_included_consumable person_reports_problem_on_asset_included_consumable_report_cons; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5571,7 +7017,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_consumable
 
 
 --
--- TOC entry 5552 (class 2606 OID 39148)
+-- TOC entry 5576 (class 2606 OID 44483)
 -- Name: person_reports_problem_on_asset_included_context person_reports_problem_on_asset_included_context_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5580,7 +7026,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_context
 
 
 --
--- TOC entry 5554 (class 2606 OID 39150)
+-- TOC entry 5578 (class 2606 OID 44485)
 -- Name: person_reports_problem_on_asset_included_stock_item person_reports_problem_on_asset_included_stock_item_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5589,7 +7035,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_stock_item
 
 
 --
--- TOC entry 5556 (class 2606 OID 39152)
+-- TOC entry 5580 (class 2606 OID 44487)
 -- Name: person_reports_problem_on_asset_included_stock_item person_reports_problem_on_asset_included_stock_item_report_stoc; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5598,7 +7044,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_stock_item
 
 
 --
--- TOC entry 5546 (class 2606 OID 39154)
+-- TOC entry 5570 (class 2606 OID 44489)
 -- Name: person_reports_problem_on_asset person_reports_problem_on_asset_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5607,7 +7053,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset
 
 
 --
--- TOC entry 5558 (class 2606 OID 39156)
+-- TOC entry 5582 (class 2606 OID 44491)
 -- Name: person_reports_problem_on_consumable person_reports_problem_on_consumable_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5616,7 +7062,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_consumable
 
 
 --
--- TOC entry 5560 (class 2606 OID 39158)
+-- TOC entry 5584 (class 2606 OID 44493)
 -- Name: person_reports_problem_on_stock_item person_reports_problem_on_stock_item_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5625,7 +7071,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_stock_item
 
 
 --
--- TOC entry 5562 (class 2606 OID 39160)
+-- TOC entry 5586 (class 2606 OID 44495)
 -- Name: person_role_mapping person_role_mapping_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5634,7 +7080,7 @@ ALTER TABLE ONLY public.person_role_mapping
 
 
 --
--- TOC entry 5564 (class 2606 OID 39162)
+-- TOC entry 5588 (class 2606 OID 44497)
 -- Name: physical_condition physical_condition_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5643,7 +7089,7 @@ ALTER TABLE ONLY public.physical_condition
 
 
 --
--- TOC entry 5566 (class 2606 OID 39164)
+-- TOC entry 5590 (class 2606 OID 44499)
 -- Name: position position_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5652,7 +7098,7 @@ ALTER TABLE ONLY public."position"
 
 
 --
--- TOC entry 5618 (class 2606 OID 40443)
+-- TOC entry 5592 (class 2606 OID 44501)
 -- Name: position_role_mapping position_role_mapping_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5661,7 +7107,7 @@ ALTER TABLE ONLY public.position_role_mapping
 
 
 --
--- TOC entry 5568 (class 2606 OID 39166)
+-- TOC entry 5594 (class 2606 OID 44503)
 -- Name: purchase_order purchase_order_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5670,7 +7116,7 @@ ALTER TABLE ONLY public.purchase_order
 
 
 --
--- TOC entry 5570 (class 2606 OID 39168)
+-- TOC entry 5596 (class 2606 OID 44505)
 -- Name: receipt_report receipt_report_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5679,7 +7125,7 @@ ALTER TABLE ONLY public.receipt_report
 
 
 --
--- TOC entry 5572 (class 2606 OID 39170)
+-- TOC entry 5598 (class 2606 OID 44507)
 -- Name: role role_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5688,7 +7134,7 @@ ALTER TABLE ONLY public.role
 
 
 --
--- TOC entry 5576 (class 2606 OID 39172)
+-- TOC entry 5602 (class 2606 OID 44509)
 -- Name: stock_item_attribute_definition stock_item_attribute_definition_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5697,7 +7143,7 @@ ALTER TABLE ONLY public.stock_item_attribute_definition
 
 
 --
--- TOC entry 5578 (class 2606 OID 39174)
+-- TOC entry 5604 (class 2606 OID 44511)
 -- Name: stock_item_attribute_value stock_item_attribute_value_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5706,7 +7152,7 @@ ALTER TABLE ONLY public.stock_item_attribute_value
 
 
 --
--- TOC entry 5580 (class 2606 OID 39176)
+-- TOC entry 5606 (class 2606 OID 44513)
 -- Name: stock_item_brand stock_item_brand_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5715,7 +7161,7 @@ ALTER TABLE ONLY public.stock_item_brand
 
 
 --
--- TOC entry 5582 (class 2606 OID 39178)
+-- TOC entry 5608 (class 2606 OID 44515)
 -- Name: stock_item_condition_history stock_item_condition_history_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5724,7 +7170,7 @@ ALTER TABLE ONLY public.stock_item_condition_history
 
 
 --
--- TOC entry 5584 (class 2606 OID 39180)
+-- TOC entry 5610 (class 2606 OID 44517)
 -- Name: stock_item_consumable_destruction_certificate stock_item_consumable_destruction_certificate_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5733,7 +7179,7 @@ ALTER TABLE ONLY public.stock_item_consumable_destruction_certificate
 
 
 --
--- TOC entry 5586 (class 2606 OID 39182)
+-- TOC entry 5612 (class 2606 OID 44519)
 -- Name: stock_item_is_assigned_to_person stock_item_is_assigned_to_person_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5742,7 +7188,7 @@ ALTER TABLE ONLY public.stock_item_is_assigned_to_person
 
 
 --
--- TOC entry 5588 (class 2606 OID 39184)
+-- TOC entry 5614 (class 2606 OID 44521)
 -- Name: stock_item_is_compatible_with_asset stock_item_is_compatible_with_asset_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5751,7 +7197,7 @@ ALTER TABLE ONLY public.stock_item_is_compatible_with_asset
 
 
 --
--- TOC entry 5592 (class 2606 OID 39186)
+-- TOC entry 5618 (class 2606 OID 44523)
 -- Name: stock_item_model_attribute_value stock_item_model_attribute_value_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5760,7 +7206,7 @@ ALTER TABLE ONLY public.stock_item_model_attribute_value
 
 
 --
--- TOC entry 5594 (class 2606 OID 39188)
+-- TOC entry 5620 (class 2606 OID 44525)
 -- Name: stock_item_model_is_found_in_purchase_order stock_item_model_is_found_in_bdc_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5769,7 +7215,7 @@ ALTER TABLE ONLY public.stock_item_model_is_found_in_purchase_order
 
 
 --
--- TOC entry 5590 (class 2606 OID 39190)
+-- TOC entry 5616 (class 2606 OID 44527)
 -- Name: stock_item_model stock_item_model_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5778,7 +7224,7 @@ ALTER TABLE ONLY public.stock_item_model
 
 
 --
--- TOC entry 5596 (class 2606 OID 39192)
+-- TOC entry 5622 (class 2606 OID 44529)
 -- Name: stock_item_movement stock_item_movement_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5787,7 +7233,7 @@ ALTER TABLE ONLY public.stock_item_movement
 
 
 --
--- TOC entry 5574 (class 2606 OID 39194)
+-- TOC entry 5600 (class 2606 OID 44531)
 -- Name: stock_item stock_item_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5796,7 +7242,7 @@ ALTER TABLE ONLY public.stock_item
 
 
 --
--- TOC entry 5600 (class 2606 OID 39196)
+-- TOC entry 5626 (class 2606 OID 44533)
 -- Name: stock_item_type_attribute stock_item_type_attribute_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5805,7 +7251,7 @@ ALTER TABLE ONLY public.stock_item_type_attribute
 
 
 --
--- TOC entry 5598 (class 2606 OID 39198)
+-- TOC entry 5624 (class 2606 OID 44535)
 -- Name: stock_item_type stock_item_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5814,7 +7260,7 @@ ALTER TABLE ONLY public.stock_item_type
 
 
 --
--- TOC entry 5602 (class 2606 OID 39200)
+-- TOC entry 5628 (class 2606 OID 44537)
 -- Name: supplier supplier_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5823,7 +7269,7 @@ ALTER TABLE ONLY public.supplier
 
 
 --
--- TOC entry 5366 (class 2606 OID 39202)
+-- TOC entry 5376 (class 2606 OID 44539)
 -- Name: asset_destruction_certificate_asset uq_adca_asset; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5832,7 +7278,7 @@ ALTER TABLE ONLY public.asset_destruction_certificate_asset
 
 
 --
--- TOC entry 5382 (class 2606 OID 39204)
+-- TOC entry 5400 (class 2606 OID 44541)
 -- Name: asset_model_default_consumable uq_amdc_composition; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5841,7 +7287,7 @@ ALTER TABLE ONLY public.asset_model_default_consumable
 
 
 --
--- TOC entry 5386 (class 2606 OID 39206)
+-- TOC entry 5404 (class 2606 OID 44543)
 -- Name: asset_model_default_stock_item uq_amdsi_composition; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5850,7 +7296,7 @@ ALTER TABLE ONLY public.asset_model_default_stock_item
 
 
 --
--- TOC entry 5401 (class 2606 OID 39208)
+-- TOC entry 5419 (class 2606 OID 44545)
 -- Name: attribution_order_asset_consumable_accessory uq_ao_aca_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5859,7 +7305,7 @@ ALTER TABLE ONLY public.attribution_order_asset_consumable_accessory
 
 
 --
--- TOC entry 5408 (class 2606 OID 39210)
+-- TOC entry 5426 (class 2606 OID 44547)
 -- Name: attribution_order_asset_stock_item_accessory uq_ao_assa_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5868,7 +7314,7 @@ ALTER TABLE ONLY public.attribution_order_asset_stock_item_accessory
 
 
 --
--- TOC entry 5604 (class 2606 OID 39212)
+-- TOC entry 5630 (class 2606 OID 44549)
 -- Name: user_account user_account_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5877,7 +7323,7 @@ ALTER TABLE ONLY public.user_account
 
 
 --
--- TOC entry 5606 (class 2606 OID 39214)
+-- TOC entry 5632 (class 2606 OID 44551)
 -- Name: user_session user_session_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5886,7 +7332,7 @@ ALTER TABLE ONLY public.user_session
 
 
 --
--- TOC entry 5608 (class 2606 OID 39216)
+-- TOC entry 5634 (class 2606 OID 44553)
 -- Name: warehouse warehouse_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5895,7 +7341,7 @@ ALTER TABLE ONLY public.warehouse
 
 
 --
--- TOC entry 5409 (class 1259 OID 39217)
+-- TOC entry 5427 (class 1259 OID 44554)
 -- Name: auth_group_name_a6ea08ec_like; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5903,7 +7349,7 @@ CREATE INDEX auth_group_name_a6ea08ec_like ON public.auth_group USING btree (nam
 
 
 --
--- TOC entry 5414 (class 1259 OID 39218)
+-- TOC entry 5432 (class 1259 OID 44555)
 -- Name: auth_group_permissions_group_id_b120cbf9; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5911,7 +7357,7 @@ CREATE INDEX auth_group_permissions_group_id_b120cbf9 ON public.auth_group_permi
 
 
 --
--- TOC entry 5417 (class 1259 OID 39219)
+-- TOC entry 5435 (class 1259 OID 44556)
 -- Name: auth_group_permissions_permission_id_84c5c92e; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5919,7 +7365,7 @@ CREATE INDEX auth_group_permissions_permission_id_84c5c92e ON public.auth_group_
 
 
 --
--- TOC entry 5420 (class 1259 OID 39220)
+-- TOC entry 5438 (class 1259 OID 44557)
 -- Name: auth_permission_content_type_id_2f476e4b; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5927,7 +7373,7 @@ CREATE INDEX auth_permission_content_type_id_2f476e4b ON public.auth_permission 
 
 
 --
--- TOC entry 5430 (class 1259 OID 39221)
+-- TOC entry 5448 (class 1259 OID 44558)
 -- Name: auth_user_groups_group_id_97559544; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5935,7 +7381,7 @@ CREATE INDEX auth_user_groups_group_id_97559544 ON public.auth_user_groups USING
 
 
 --
--- TOC entry 5433 (class 1259 OID 39222)
+-- TOC entry 5451 (class 1259 OID 44559)
 -- Name: auth_user_groups_user_id_6a12ed8b; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5943,7 +7389,7 @@ CREATE INDEX auth_user_groups_user_id_6a12ed8b ON public.auth_user_groups USING 
 
 
 --
--- TOC entry 5436 (class 1259 OID 39223)
+-- TOC entry 5454 (class 1259 OID 44560)
 -- Name: auth_user_user_permissions_permission_id_1fbb5f2c; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5951,7 +7397,7 @@ CREATE INDEX auth_user_user_permissions_permission_id_1fbb5f2c ON public.auth_us
 
 
 --
--- TOC entry 5439 (class 1259 OID 39224)
+-- TOC entry 5457 (class 1259 OID 44561)
 -- Name: auth_user_user_permissions_user_id_a95ead1b; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5959,7 +7405,7 @@ CREATE INDEX auth_user_user_permissions_user_id_a95ead1b ON public.auth_user_use
 
 
 --
--- TOC entry 5427 (class 1259 OID 39225)
+-- TOC entry 5445 (class 1259 OID 44562)
 -- Name: auth_user_username_6821ab7c_like; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5967,7 +7413,7 @@ CREATE INDEX auth_user_username_6821ab7c_like ON public.auth_user USING btree (u
 
 
 --
--- TOC entry 5488 (class 1259 OID 39226)
+-- TOC entry 5506 (class 1259 OID 44563)
 -- Name: django_admin_log_content_type_id_c4bce8eb; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5975,7 +7421,7 @@ CREATE INDEX django_admin_log_content_type_id_c4bce8eb ON public.django_admin_lo
 
 
 --
--- TOC entry 5491 (class 1259 OID 39227)
+-- TOC entry 5509 (class 1259 OID 44564)
 -- Name: django_admin_log_user_id_c564eba6; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5983,7 +7429,7 @@ CREATE INDEX django_admin_log_user_id_c564eba6 ON public.django_admin_log USING 
 
 
 --
--- TOC entry 5498 (class 1259 OID 39228)
+-- TOC entry 5516 (class 1259 OID 44565)
 -- Name: django_session_expire_date_a5c62663; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5991,7 +7437,7 @@ CREATE INDEX django_session_expire_date_a5c62663 ON public.django_session USING 
 
 
 --
--- TOC entry 5501 (class 1259 OID 39229)
+-- TOC entry 5519 (class 1259 OID 44566)
 -- Name: django_session_session_key_c0390e0f_like; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5999,7 +7445,7 @@ CREATE INDEX django_session_session_key_c0390e0f_like ON public.django_session U
 
 
 --
--- TOC entry 5397 (class 1259 OID 39230)
+-- TOC entry 5415 (class 1259 OID 44567)
 -- Name: idx_ao_aca_asset; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6007,7 +7453,7 @@ CREATE INDEX idx_ao_aca_asset ON public.attribution_order_asset_consumable_acces
 
 
 --
--- TOC entry 5398 (class 1259 OID 39231)
+-- TOC entry 5416 (class 1259 OID 44568)
 -- Name: idx_ao_aca_consumable; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6015,7 +7461,7 @@ CREATE INDEX idx_ao_aca_consumable ON public.attribution_order_asset_consumable_
 
 
 --
--- TOC entry 5399 (class 1259 OID 39232)
+-- TOC entry 5417 (class 1259 OID 44569)
 -- Name: idx_ao_aca_order; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6023,7 +7469,7 @@ CREATE INDEX idx_ao_aca_order ON public.attribution_order_asset_consumable_acces
 
 
 --
--- TOC entry 5404 (class 1259 OID 39233)
+-- TOC entry 5422 (class 1259 OID 44570)
 -- Name: idx_ao_assa_asset; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6031,7 +7477,7 @@ CREATE INDEX idx_ao_assa_asset ON public.attribution_order_asset_stock_item_acce
 
 
 --
--- TOC entry 5405 (class 1259 OID 39234)
+-- TOC entry 5423 (class 1259 OID 44571)
 -- Name: idx_ao_assa_order; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6039,7 +7485,7 @@ CREATE INDEX idx_ao_assa_order ON public.attribution_order_asset_stock_item_acce
 
 
 --
--- TOC entry 5406 (class 1259 OID 39235)
+-- TOC entry 5424 (class 1259 OID 44572)
 -- Name: idx_ao_assa_stock_item; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6047,7 +7493,7 @@ CREATE INDEX idx_ao_assa_stock_item ON public.attribution_order_asset_stock_item
 
 
 --
--- TOC entry 5448 (class 1259 OID 39236)
+-- TOC entry 5466 (class 1259 OID 44573)
 -- Name: idx_brcml_backorder_report_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6055,7 +7501,7 @@ CREATE INDEX idx_brcml_backorder_report_id ON public.backorder_report_consumable
 
 
 --
--- TOC entry 5451 (class 1259 OID 39237)
+-- TOC entry 5469 (class 1259 OID 44574)
 -- Name: idx_brsiml_backorder_report_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6063,7 +7509,7 @@ CREATE INDEX idx_brsiml_backorder_report_id ON public.backorder_report_stock_ite
 
 
 --
--- TOC entry 5504 (class 1259 OID 39238)
+-- TOC entry 5522 (class 1259 OID 44575)
 -- Name: idx_external_maintenance_provider_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6071,7 +7517,7 @@ CREATE INDEX idx_external_maintenance_provider_id ON public.external_maintenance
 
 
 --
--- TOC entry 5505 (class 1259 OID 39239)
+-- TOC entry 5523 (class 1259 OID 44576)
 -- Name: idx_external_maintenance_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6079,7 +7525,7 @@ CREATE INDEX idx_external_maintenance_status ON public.external_maintenance USIN
 
 
 --
--- TOC entry 5528 (class 1259 OID 39240)
+-- TOC entry 5548 (class 1259 OID 44577)
 -- Name: maintenance_step_attribute_change_maintenance_step_id_34ad2442; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6087,7 +7533,7 @@ CREATE INDEX maintenance_step_attribute_change_maintenance_step_id_34ad2442 ON p
 
 
 --
--- TOC entry 5533 (class 1259 OID 39241)
+-- TOC entry 5553 (class 1259 OID 44578)
 -- Name: maintenance_step_item_request_status_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6095,7 +7541,7 @@ CREATE INDEX maintenance_step_item_request_status_idx ON public.maintenance_step
 
 
 --
--- TOC entry 5534 (class 1259 OID 39242)
+-- TOC entry 5554 (class 1259 OID 44579)
 -- Name: maintenance_step_item_request_step_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6103,7 +7549,7 @@ CREATE INDEX maintenance_step_item_request_step_id_idx ON public.maintenance_ste
 
 
 --
--- TOC entry 5616 (class 1259 OID 40408)
+-- TOC entry 5383 (class 1259 OID 44580)
 -- Name: uq_airc_report_consumable; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6111,7 +7557,7 @@ CREATE UNIQUE INDEX uq_airc_report_consumable ON public.asset_incident_report_co
 
 
 --
--- TOC entry 5613 (class 1259 OID 40407)
+-- TOC entry 5386 (class 1259 OID 44581)
 -- Name: uq_airsi_report_stock_item; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -6119,7 +7565,7 @@ CREATE UNIQUE INDEX uq_airsi_report_stock_item ON public.asset_incident_report_s
 
 
 --
--- TOC entry 5635 (class 2606 OID 39243)
+-- TOC entry 5659 (class 2606 OID 44582)
 -- Name: asset_is_assigned_to_person asset_is_assigned_to_person_is_confirmed_by_exploitation_c_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6128,7 +7574,7 @@ ALTER TABLE ONLY public.asset_is_assigned_to_person
 
 
 --
--- TOC entry 5669 (class 2606 OID 39248)
+-- TOC entry 5693 (class 2606 OID 44587)
 -- Name: auth_group_permissions auth_group_permissio_permission_id_84c5c92e_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6137,7 +7583,7 @@ ALTER TABLE ONLY public.auth_group_permissions
 
 
 --
--- TOC entry 5670 (class 2606 OID 39253)
+-- TOC entry 5694 (class 2606 OID 44592)
 -- Name: auth_group_permissions auth_group_permissions_group_id_b120cbf9_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6146,7 +7592,7 @@ ALTER TABLE ONLY public.auth_group_permissions
 
 
 --
--- TOC entry 5671 (class 2606 OID 39258)
+-- TOC entry 5695 (class 2606 OID 44597)
 -- Name: auth_permission auth_permission_content_type_id_2f476e4b_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6155,7 +7601,7 @@ ALTER TABLE ONLY public.auth_permission
 
 
 --
--- TOC entry 5672 (class 2606 OID 39263)
+-- TOC entry 5696 (class 2606 OID 44602)
 -- Name: auth_user_groups auth_user_groups_group_id_97559544_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6164,7 +7610,7 @@ ALTER TABLE ONLY public.auth_user_groups
 
 
 --
--- TOC entry 5673 (class 2606 OID 39268)
+-- TOC entry 5697 (class 2606 OID 44607)
 -- Name: auth_user_groups auth_user_groups_user_id_6a12ed8b_fk_auth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6173,7 +7619,7 @@ ALTER TABLE ONLY public.auth_user_groups
 
 
 --
--- TOC entry 5674 (class 2606 OID 39273)
+-- TOC entry 5698 (class 2606 OID 44612)
 -- Name: auth_user_user_permissions auth_user_user_permi_permission_id_1fbb5f2c_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6182,7 +7628,7 @@ ALTER TABLE ONLY public.auth_user_user_permissions
 
 
 --
--- TOC entry 5675 (class 2606 OID 39278)
+-- TOC entry 5699 (class 2606 OID 44617)
 -- Name: auth_user_user_permissions auth_user_user_permissions_user_id_a95ead1b_fk_auth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6191,7 +7637,7 @@ ALTER TABLE ONLY public.auth_user_user_permissions
 
 
 --
--- TOC entry 5686 (class 2606 OID 39283)
+-- TOC entry 5710 (class 2606 OID 44622)
 -- Name: consumable_is_assigned_to_person consumable_is_assigned_to_per_is_confirmed_by_exploitation_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6200,7 +7646,7 @@ ALTER TABLE ONLY public.consumable_is_assigned_to_person
 
 
 --
--- TOC entry 5712 (class 2606 OID 39288)
+-- TOC entry 5736 (class 2606 OID 44627)
 -- Name: django_admin_log django_admin_log_content_type_id_c4bce8eb_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6209,7 +7655,7 @@ ALTER TABLE ONLY public.django_admin_log
 
 
 --
--- TOC entry 5713 (class 2606 OID 39293)
+-- TOC entry 5737 (class 2606 OID 44632)
 -- Name: django_admin_log django_admin_log_user_id_c564eba6_fk_auth_user_id; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6218,7 +7664,7 @@ ALTER TABLE ONLY public.django_admin_log
 
 
 --
--- TOC entry 5619 (class 2606 OID 39298)
+-- TOC entry 5635 (class 2606 OID 44637)
 -- Name: acceptance_report fk_acceptance_report_delivery_note; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6227,7 +7673,7 @@ ALTER TABLE ONLY public.acceptance_report
 
 
 --
--- TOC entry 5630 (class 2606 OID 39303)
+-- TOC entry 5646 (class 2606 OID 44642)
 -- Name: asset_destruction_certificate_asset fk_adca_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6236,7 +7682,7 @@ ALTER TABLE ONLY public.asset_destruction_certificate_asset
 
 
 --
--- TOC entry 5631 (class 2606 OID 39308)
+-- TOC entry 5647 (class 2606 OID 44647)
 -- Name: asset_destruction_certificate_asset fk_adca_cert; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6245,7 +7691,7 @@ ALTER TABLE ONLY public.asset_destruction_certificate_asset
 
 
 --
--- TOC entry 5632 (class 2606 OID 39313)
+-- TOC entry 5648 (class 2606 OID 44652)
 -- Name: asset_destruction_certificate_asset fk_adca_external_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6254,7 +7700,7 @@ ALTER TABLE ONLY public.asset_destruction_certificate_asset
 
 
 --
--- TOC entry 5620 (class 2606 OID 39318)
+-- TOC entry 5636 (class 2606 OID 44657)
 -- Name: administrative_certificate fk_administ_ac_is_lin_receipt_; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6263,7 +7709,7 @@ ALTER TABLE ONLY public.administrative_certificate
 
 
 --
--- TOC entry 5621 (class 2606 OID 39323)
+-- TOC entry 5637 (class 2606 OID 44662)
 -- Name: administrative_certificate fk_administ_ad_is_bro_warehous; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6272,7 +7718,7 @@ ALTER TABLE ONLY public.administrative_certificate
 
 
 --
--- TOC entry 5622 (class 2606 OID 39328)
+-- TOC entry 5638 (class 2606 OID 44667)
 -- Name: administrative_certificate fk_administ_ao_leads__attribut; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6281,7 +7727,7 @@ ALTER TABLE ONLY public.administrative_certificate
 
 
 --
--- TOC entry 5633 (class 2606 OID 39333)
+-- TOC entry 5649 (class 2606 OID 44672)
 -- Name: asset_failed_external_maintenance fk_afem_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6290,7 +7736,7 @@ ALTER TABLE ONLY public.asset_failed_external_maintenance
 
 
 --
--- TOC entry 5634 (class 2606 OID 39338)
+-- TOC entry 5650 (class 2606 OID 44677)
 -- Name: asset_failed_external_maintenance fk_afem_external_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6299,7 +7745,7 @@ ALTER TABLE ONLY public.asset_failed_external_maintenance
 
 
 --
--- TOC entry 5636 (class 2606 OID 39343)
+-- TOC entry 5660 (class 2606 OID 44682)
 -- Name: asset_is_assigned_to_person fk_aiatp_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6308,7 +7754,7 @@ ALTER TABLE ONLY public.asset_is_assigned_to_person
 
 
 --
--- TOC entry 5639 (class 2606 OID 39348)
+-- TOC entry 5663 (class 2606 OID 44687)
 -- Name: asset_is_composed_of_consumable_history fk_aicoc_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6317,7 +7763,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_consumable_history
 
 
 --
--- TOC entry 5640 (class 2606 OID 39353)
+-- TOC entry 5664 (class 2606 OID 44692)
 -- Name: asset_is_composed_of_consumable_history fk_aicoc_maintenance_step; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6326,7 +7772,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_consumable_history
 
 
 --
--- TOC entry 5643 (class 2606 OID 39358)
+-- TOC entry 5667 (class 2606 OID 44697)
 -- Name: asset_is_composed_of_stock_item_history fk_aicosi_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6335,7 +7781,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_stock_item_history
 
 
 --
--- TOC entry 5644 (class 2606 OID 39363)
+-- TOC entry 5668 (class 2606 OID 44702)
 -- Name: asset_is_composed_of_stock_item_history fk_aicosi_maintenance_step; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6344,7 +7790,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_stock_item_history
 
 
 --
--- TOC entry 5792 (class 2606 OID 40367)
+-- TOC entry 5651 (class 2606 OID 44707)
 -- Name: asset_incident_report fk_air_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6353,7 +7799,7 @@ ALTER TABLE ONLY public.asset_incident_report
 
 
 --
--- TOC entry 5793 (class 2606 OID 40382)
+-- TOC entry 5652 (class 2606 OID 44712)
 -- Name: asset_incident_report fk_air_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6362,7 +7808,7 @@ ALTER TABLE ONLY public.asset_incident_report
 
 
 --
--- TOC entry 5794 (class 2606 OID 40372)
+-- TOC entry 5653 (class 2606 OID 44717)
 -- Name: asset_incident_report fk_air_owner_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6371,7 +7817,7 @@ ALTER TABLE ONLY public.asset_incident_report
 
 
 --
--- TOC entry 5795 (class 2606 OID 40377)
+-- TOC entry 5654 (class 2606 OID 44722)
 -- Name: asset_incident_report fk_air_school_hq_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6380,7 +7826,7 @@ ALTER TABLE ONLY public.asset_incident_report
 
 
 --
--- TOC entry 5798 (class 2606 OID 40402)
+-- TOC entry 5655 (class 2606 OID 44727)
 -- Name: asset_incident_report_consumable fk_airc_consumable; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6389,7 +7835,7 @@ ALTER TABLE ONLY public.asset_incident_report_consumable
 
 
 --
--- TOC entry 5799 (class 2606 OID 40397)
+-- TOC entry 5656 (class 2606 OID 44732)
 -- Name: asset_incident_report_consumable fk_airc_report; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6398,7 +7844,7 @@ ALTER TABLE ONLY public.asset_incident_report_consumable
 
 
 --
--- TOC entry 5796 (class 2606 OID 40387)
+-- TOC entry 5657 (class 2606 OID 44737)
 -- Name: asset_incident_report_stock_item fk_airsi_report; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6407,7 +7853,7 @@ ALTER TABLE ONLY public.asset_incident_report_stock_item
 
 
 --
--- TOC entry 5797 (class 2606 OID 40392)
+-- TOC entry 5658 (class 2606 OID 44742)
 -- Name: asset_incident_report_stock_item fk_airsi_stock_item; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6416,7 +7862,7 @@ ALTER TABLE ONLY public.asset_incident_report_stock_item
 
 
 --
--- TOC entry 5651 (class 2606 OID 39368)
+-- TOC entry 5675 (class 2606 OID 44747)
 -- Name: asset_model_default_consumable fk_amdc_asset_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6425,7 +7871,7 @@ ALTER TABLE ONLY public.asset_model_default_consumable
 
 
 --
--- TOC entry 5652 (class 2606 OID 39373)
+-- TOC entry 5676 (class 2606 OID 44752)
 -- Name: asset_model_default_consumable fk_amdc_consumable_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6434,7 +7880,7 @@ ALTER TABLE ONLY public.asset_model_default_consumable
 
 
 --
--- TOC entry 5653 (class 2606 OID 39378)
+-- TOC entry 5677 (class 2606 OID 44757)
 -- Name: asset_model_default_stock_item fk_amdsi_asset_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6443,7 +7889,7 @@ ALTER TABLE ONLY public.asset_model_default_stock_item
 
 
 --
--- TOC entry 5654 (class 2606 OID 39383)
+-- TOC entry 5678 (class 2606 OID 44762)
 -- Name: asset_model_default_stock_item fk_amdsi_stock_item_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6452,7 +7898,7 @@ ALTER TABLE ONLY public.asset_model_default_stock_item
 
 
 --
--- TOC entry 5663 (class 2606 OID 39388)
+-- TOC entry 5687 (class 2606 OID 44767)
 -- Name: attribution_order_asset_consumable_accessory fk_ao_aca_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6461,7 +7907,7 @@ ALTER TABLE ONLY public.attribution_order_asset_consumable_accessory
 
 
 --
--- TOC entry 5664 (class 2606 OID 39393)
+-- TOC entry 5688 (class 2606 OID 44772)
 -- Name: attribution_order_asset_consumable_accessory fk_ao_aca_attribution_order; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6470,7 +7916,7 @@ ALTER TABLE ONLY public.attribution_order_asset_consumable_accessory
 
 
 --
--- TOC entry 5665 (class 2606 OID 39398)
+-- TOC entry 5689 (class 2606 OID 44777)
 -- Name: attribution_order_asset_consumable_accessory fk_ao_aca_consumable; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6479,7 +7925,7 @@ ALTER TABLE ONLY public.attribution_order_asset_consumable_accessory
 
 
 --
--- TOC entry 5666 (class 2606 OID 39403)
+-- TOC entry 5690 (class 2606 OID 44782)
 -- Name: attribution_order_asset_stock_item_accessory fk_ao_assa_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6488,7 +7934,7 @@ ALTER TABLE ONLY public.attribution_order_asset_stock_item_accessory
 
 
 --
--- TOC entry 5667 (class 2606 OID 39408)
+-- TOC entry 5691 (class 2606 OID 44787)
 -- Name: attribution_order_asset_stock_item_accessory fk_ao_assa_attribution_order; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6497,7 +7943,7 @@ ALTER TABLE ONLY public.attribution_order_asset_stock_item_accessory
 
 
 --
--- TOC entry 5668 (class 2606 OID 39413)
+-- TOC entry 5692 (class 2606 OID 44792)
 -- Name: attribution_order_asset_stock_item_accessory fk_ao_assa_stock_item; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6506,7 +7952,7 @@ ALTER TABLE ONLY public.attribution_order_asset_stock_item_accessory
 
 
 --
--- TOC entry 5623 (class 2606 OID 39418)
+-- TOC entry 5639 (class 2606 OID 44797)
 -- Name: asset fk_asset_asset_destruction_certificate; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6515,7 +7961,7 @@ ALTER TABLE ONLY public.asset
 
 
 --
--- TOC entry 5624 (class 2606 OID 39423)
+-- TOC entry 5640 (class 2606 OID 44802)
 -- Name: asset fk_asset_asset_is__asset_mo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6524,7 +7970,7 @@ ALTER TABLE ONLY public.asset
 
 
 --
--- TOC entry 5625 (class 2606 OID 39428)
+-- TOC entry 5641 (class 2606 OID 44807)
 -- Name: asset fk_asset_asset_is__attribut; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6533,7 +7979,7 @@ ALTER TABLE ONLY public.asset
 
 
 --
--- TOC entry 5626 (class 2606 OID 39433)
+-- TOC entry 5642 (class 2606 OID 44812)
 -- Name: asset_attribute_value fk_asset_at_asset_att_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6542,7 +7988,7 @@ ALTER TABLE ONLY public.asset_attribute_value
 
 
 --
--- TOC entry 5627 (class 2606 OID 39438)
+-- TOC entry 5643 (class 2606 OID 44817)
 -- Name: asset_attribute_value fk_asset_at_asset_att_asset_at; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6551,7 +7997,7 @@ ALTER TABLE ONLY public.asset_attribute_value
 
 
 --
--- TOC entry 5628 (class 2606 OID 39443)
+-- TOC entry 5644 (class 2606 OID 44822)
 -- Name: asset_condition_history fk_asset_co_asset_con_physical; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6560,7 +8006,7 @@ ALTER TABLE ONLY public.asset_condition_history
 
 
 --
--- TOC entry 5629 (class 2606 OID 39448)
+-- TOC entry 5645 (class 2606 OID 44827)
 -- Name: asset_condition_history fk_asset_co_asset_has_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6569,7 +8015,7 @@ ALTER TABLE ONLY public.asset_condition_history
 
 
 --
--- TOC entry 5641 (class 2606 OID 39453)
+-- TOC entry 5665 (class 2606 OID 44832)
 -- Name: asset_is_composed_of_consumable_history fk_asset_cons_attribution_order; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6578,7 +8024,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_consumable_history
 
 
 --
--- TOC entry 5642 (class 2606 OID 39458)
+-- TOC entry 5666 (class 2606 OID 44837)
 -- Name: asset_is_composed_of_consumable_history fk_asset_is_asset_is__consumab; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6587,7 +8033,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_consumable_history
 
 
 --
--- TOC entry 5637 (class 2606 OID 39463)
+-- TOC entry 5661 (class 2606 OID 44842)
 -- Name: asset_is_assigned_to_person fk_asset_is_asset_is__person_assigned; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6596,7 +8042,7 @@ ALTER TABLE ONLY public.asset_is_assigned_to_person
 
 
 --
--- TOC entry 5638 (class 2606 OID 39468)
+-- TOC entry 5662 (class 2606 OID 44847)
 -- Name: asset_is_assigned_to_person fk_asset_is_asset_is__person_assigner; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6605,7 +8051,7 @@ ALTER TABLE ONLY public.asset_is_assigned_to_person
 
 
 --
--- TOC entry 5645 (class 2606 OID 39473)
+-- TOC entry 5669 (class 2606 OID 44852)
 -- Name: asset_is_composed_of_stock_item_history fk_asset_is_asset_is__stock_it; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6614,7 +8060,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_stock_item_history
 
 
 --
--- TOC entry 5649 (class 2606 OID 39478)
+-- TOC entry 5673 (class 2606 OID 44857)
 -- Name: asset_model_attribute_value fk_asset_mo_asset_mod_asset_at; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6623,7 +8069,7 @@ ALTER TABLE ONLY public.asset_model_attribute_value
 
 
 --
--- TOC entry 5647 (class 2606 OID 39483)
+-- TOC entry 5671 (class 2606 OID 44862)
 -- Name: asset_model fk_asset_mo_asset_mod_asset_br; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6632,7 +8078,7 @@ ALTER TABLE ONLY public.asset_model
 
 
 --
--- TOC entry 5650 (class 2606 OID 39488)
+-- TOC entry 5674 (class 2606 OID 44867)
 -- Name: asset_model_attribute_value fk_asset_mo_asset_mod_asset_mo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6641,7 +8087,7 @@ ALTER TABLE ONLY public.asset_model_attribute_value
 
 
 --
--- TOC entry 5655 (class 2606 OID 39493)
+-- TOC entry 5679 (class 2606 OID 44872)
 -- Name: asset_movement fk_asset_mo_asset_mov_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6650,7 +8096,7 @@ ALTER TABLE ONLY public.asset_movement
 
 
 --
--- TOC entry 5656 (class 2606 OID 39498)
+-- TOC entry 5680 (class 2606 OID 44877)
 -- Name: asset_movement fk_asset_mo_asset_mov_external; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6659,7 +8105,7 @@ ALTER TABLE ONLY public.asset_movement
 
 
 --
--- TOC entry 5657 (class 2606 OID 39503)
+-- TOC entry 5681 (class 2606 OID 44882)
 -- Name: asset_movement fk_asset_mo_asset_mov_location_dest; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6668,7 +8114,7 @@ ALTER TABLE ONLY public.asset_movement
 
 
 --
--- TOC entry 5658 (class 2606 OID 39508)
+-- TOC entry 5682 (class 2606 OID 44887)
 -- Name: asset_movement fk_asset_mo_asset_mov_location_source; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6677,7 +8123,7 @@ ALTER TABLE ONLY public.asset_movement
 
 
 --
--- TOC entry 5659 (class 2606 OID 39513)
+-- TOC entry 5683 (class 2606 OID 44892)
 -- Name: asset_movement fk_asset_mo_asset_mov_maintena; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6686,7 +8132,7 @@ ALTER TABLE ONLY public.asset_movement
 
 
 --
--- TOC entry 5648 (class 2606 OID 39518)
+-- TOC entry 5672 (class 2606 OID 44897)
 -- Name: asset_model fk_asset_mo_asset_typ_asset_ty; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6695,7 +8141,7 @@ ALTER TABLE ONLY public.asset_model
 
 
 --
--- TOC entry 5646 (class 2606 OID 39523)
+-- TOC entry 5670 (class 2606 OID 44902)
 -- Name: asset_is_composed_of_stock_item_history fk_asset_si_attribution_order; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6704,7 +8150,7 @@ ALTER TABLE ONLY public.asset_is_composed_of_stock_item_history
 
 
 --
--- TOC entry 5660 (class 2606 OID 39528)
+-- TOC entry 5684 (class 2606 OID 44907)
 -- Name: asset_type_attribute fk_asset_ty_asset_typ_asset_at; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6713,7 +8159,7 @@ ALTER TABLE ONLY public.asset_type_attribute
 
 
 --
--- TOC entry 5661 (class 2606 OID 39533)
+-- TOC entry 5685 (class 2606 OID 44912)
 -- Name: asset_type_attribute fk_asset_ty_asset_typ_asset_ty; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6722,7 +8168,7 @@ ALTER TABLE ONLY public.asset_type_attribute
 
 
 --
--- TOC entry 5662 (class 2606 OID 39538)
+-- TOC entry 5686 (class 2606 OID 44917)
 -- Name: attribution_order fk_attribut_shipment__warehous; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6731,7 +8177,7 @@ ALTER TABLE ONLY public.attribution_order
 
 
 --
--- TOC entry 5676 (class 2606 OID 39543)
+-- TOC entry 5700 (class 2606 OID 44922)
 -- Name: authentication_log fk_authenti_user_has__user_acc; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6740,7 +8186,7 @@ ALTER TABLE ONLY public.authentication_log
 
 
 --
--- TOC entry 5761 (class 2606 OID 39548)
+-- TOC entry 5790 (class 2606 OID 44927)
 -- Name: purchase_order fk_bon_de_c_bdc_is_ma_supplier; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6749,7 +8195,7 @@ ALTER TABLE ONLY public.purchase_order
 
 
 --
--- TOC entry 5677 (class 2606 OID 39553)
+-- TOC entry 5701 (class 2606 OID 44932)
 -- Name: backorder_report fk_bon_de_r_bdc_has_b_bon_de_c; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6758,7 +8204,7 @@ ALTER TABLE ONLY public.backorder_report
 
 
 --
--- TOC entry 5678 (class 2606 OID 39558)
+-- TOC entry 5702 (class 2606 OID 44937)
 -- Name: backorder_report_consumable_model_line fk_brcml_backorder_report; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6767,7 +8213,7 @@ ALTER TABLE ONLY public.backorder_report_consumable_model_line
 
 
 --
--- TOC entry 5679 (class 2606 OID 39563)
+-- TOC entry 5703 (class 2606 OID 44942)
 -- Name: backorder_report_stock_item_model_line fk_brsiml_backorder_report; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6776,7 +8222,7 @@ ALTER TABLE ONLY public.backorder_report_stock_item_model_line
 
 
 --
--- TOC entry 5690 (class 2606 OID 39568)
+-- TOC entry 5714 (class 2606 OID 44947)
 -- Name: consumable_is_compatible_with_asset fk_c_is_com_c_is_comp_asset_mo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6785,7 +8231,7 @@ ALTER TABLE ONLY public.consumable_is_compatible_with_asset
 
 
 --
--- TOC entry 5692 (class 2606 OID 39573)
+-- TOC entry 5716 (class 2606 OID 44952)
 -- Name: consumable_is_compatible_with_stock_item fk_c_is_com_c_is_comp_stock_it; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6794,7 +8240,7 @@ ALTER TABLE ONLY public.consumable_is_compatible_with_stock_item
 
 
 --
--- TOC entry 5683 (class 2606 OID 39578)
+-- TOC entry 5707 (class 2606 OID 44957)
 -- Name: consumable_attribute_value fk_cav_attribute_def; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6803,7 +8249,7 @@ ALTER TABLE ONLY public.consumable_attribute_value
 
 
 --
--- TOC entry 5684 (class 2606 OID 39583)
+-- TOC entry 5708 (class 2606 OID 44962)
 -- Name: consumable_attribute_value fk_cav_consumable; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6812,7 +8258,7 @@ ALTER TABLE ONLY public.consumable_attribute_value
 
 
 --
--- TOC entry 5687 (class 2606 OID 39588)
+-- TOC entry 5711 (class 2606 OID 44967)
 -- Name: consumable_is_assigned_to_person fk_ciatp_consumable; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6821,7 +8267,7 @@ ALTER TABLE ONLY public.consumable_is_assigned_to_person
 
 
 --
--- TOC entry 5691 (class 2606 OID 39593)
+-- TOC entry 5715 (class 2606 OID 44972)
 -- Name: consumable_is_compatible_with_asset fk_cicwa_consumable_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6830,7 +8276,7 @@ ALTER TABLE ONLY public.consumable_is_compatible_with_asset
 
 
 --
--- TOC entry 5693 (class 2606 OID 39598)
+-- TOC entry 5717 (class 2606 OID 44977)
 -- Name: consumable_is_compatible_with_stock_item fk_cicwsi_consumable_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6839,7 +8285,7 @@ ALTER TABLE ONLY public.consumable_is_compatible_with_stock_item
 
 
 --
--- TOC entry 5694 (class 2606 OID 39603)
+-- TOC entry 5718 (class 2606 OID 44982)
 -- Name: consumable_is_used_in_stock_item_history fk_ciuisih_consumable; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6848,7 +8294,7 @@ ALTER TABLE ONLY public.consumable_is_used_in_stock_item_history
 
 
 --
--- TOC entry 5695 (class 2606 OID 39608)
+-- TOC entry 5719 (class 2606 OID 44987)
 -- Name: consumable_is_used_in_stock_item_history fk_ciuisih_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6857,7 +8303,7 @@ ALTER TABLE ONLY public.consumable_is_used_in_stock_item_history
 
 
 --
--- TOC entry 5698 (class 2606 OID 39613)
+-- TOC entry 5722 (class 2606 OID 44992)
 -- Name: consumable_model fk_cm_brand; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6866,7 +8312,7 @@ ALTER TABLE ONLY public.consumable_model
 
 
 --
--- TOC entry 5704 (class 2606 OID 39618)
+-- TOC entry 5728 (class 2606 OID 44997)
 -- Name: consumable_movement fk_cm_consumable; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6875,7 +8321,7 @@ ALTER TABLE ONLY public.consumable_movement
 
 
 --
--- TOC entry 5705 (class 2606 OID 39623)
+-- TOC entry 5729 (class 2606 OID 45002)
 -- Name: consumable_movement fk_cm_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6884,7 +8330,7 @@ ALTER TABLE ONLY public.consumable_movement
 
 
 --
--- TOC entry 5699 (class 2606 OID 39628)
+-- TOC entry 5723 (class 2606 OID 45007)
 -- Name: consumable_model fk_cm_type; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6893,7 +8339,7 @@ ALTER TABLE ONLY public.consumable_model
 
 
 --
--- TOC entry 5700 (class 2606 OID 39633)
+-- TOC entry 5724 (class 2606 OID 45012)
 -- Name: consumable_model_attribute_value fk_cmav_attribute_def; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6902,7 +8348,7 @@ ALTER TABLE ONLY public.consumable_model_attribute_value
 
 
 --
--- TOC entry 5701 (class 2606 OID 39638)
+-- TOC entry 5725 (class 2606 OID 45017)
 -- Name: consumable_model_attribute_value fk_cmav_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6911,7 +8357,7 @@ ALTER TABLE ONLY public.consumable_model_attribute_value
 
 
 --
--- TOC entry 5702 (class 2606 OID 39643)
+-- TOC entry 5726 (class 2606 OID 45022)
 -- Name: consumable_model_is_found_in_purchase_order fk_cmifib_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6920,7 +8366,7 @@ ALTER TABLE ONLY public.consumable_model_is_found_in_purchase_order
 
 
 --
--- TOC entry 5680 (class 2606 OID 39648)
+-- TOC entry 5704 (class 2606 OID 45027)
 -- Name: company_asset_request fk_company__ao_leads__attribut; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6929,7 +8375,7 @@ ALTER TABLE ONLY public.company_asset_request
 
 
 --
--- TOC entry 5696 (class 2606 OID 39653)
+-- TOC entry 5720 (class 2606 OID 45032)
 -- Name: consumable_is_used_in_stock_item_history fk_cons_si_attribution_order; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6938,7 +8384,7 @@ ALTER TABLE ONLY public.consumable_is_used_in_stock_item_history
 
 
 --
--- TOC entry 5685 (class 2606 OID 39658)
+-- TOC entry 5709 (class 2606 OID 45037)
 -- Name: consumable_condition_history fk_consumab_associati_consumab; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6947,7 +8393,7 @@ ALTER TABLE ONLY public.consumable_condition_history
 
 
 --
--- TOC entry 5703 (class 2606 OID 39663)
+-- TOC entry 5727 (class 2606 OID 45042)
 -- Name: consumable_model_is_found_in_purchase_order fk_consumab_consumabl_bon_de_c; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6956,7 +8402,7 @@ ALTER TABLE ONLY public.consumable_model_is_found_in_purchase_order
 
 
 --
--- TOC entry 5706 (class 2606 OID 39668)
+-- TOC entry 5730 (class 2606 OID 45047)
 -- Name: consumable_movement fk_consumab_consumabl_external; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6965,7 +8411,7 @@ ALTER TABLE ONLY public.consumable_movement
 
 
 --
--- TOC entry 5707 (class 2606 OID 39673)
+-- TOC entry 5731 (class 2606 OID 45052)
 -- Name: consumable_movement fk_consumab_consumabl_location_dest; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6974,7 +8420,7 @@ ALTER TABLE ONLY public.consumable_movement
 
 
 --
--- TOC entry 5708 (class 2606 OID 39678)
+-- TOC entry 5732 (class 2606 OID 45057)
 -- Name: consumable_movement fk_consumab_consumabl_location_source; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6983,7 +8429,7 @@ ALTER TABLE ONLY public.consumable_movement
 
 
 --
--- TOC entry 5688 (class 2606 OID 39683)
+-- TOC entry 5712 (class 2606 OID 45062)
 -- Name: consumable_is_assigned_to_person fk_consumab_consumabl_person_assigned; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -6992,7 +8438,7 @@ ALTER TABLE ONLY public.consumable_is_assigned_to_person
 
 
 --
--- TOC entry 5689 (class 2606 OID 39688)
+-- TOC entry 5713 (class 2606 OID 45067)
 -- Name: consumable_is_assigned_to_person fk_consumab_consumabl_person_assigner; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7001,7 +8447,7 @@ ALTER TABLE ONLY public.consumable_is_assigned_to_person
 
 
 --
--- TOC entry 5697 (class 2606 OID 39693)
+-- TOC entry 5721 (class 2606 OID 45072)
 -- Name: consumable_is_used_in_stock_item_history fk_consumab_consumabl_stock_it; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7010,7 +8456,7 @@ ALTER TABLE ONLY public.consumable_is_used_in_stock_item_history
 
 
 --
--- TOC entry 5681 (class 2606 OID 39698)
+-- TOC entry 5705 (class 2606 OID 45077)
 -- Name: consumable fk_consumable_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7019,7 +8465,7 @@ ALTER TABLE ONLY public.consumable
 
 
 --
--- TOC entry 5682 (class 2606 OID 39703)
+-- TOC entry 5706 (class 2606 OID 45082)
 -- Name: consumable fk_consumable_stock_item_consumable_destruction_certificate; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7028,7 +8474,7 @@ ALTER TABLE ONLY public.consumable
 
 
 --
--- TOC entry 5709 (class 2606 OID 39708)
+-- TOC entry 5733 (class 2606 OID 45087)
 -- Name: consumable_type_attribute fk_cta_attribute_def; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7037,7 +8483,7 @@ ALTER TABLE ONLY public.consumable_type_attribute
 
 
 --
--- TOC entry 5710 (class 2606 OID 39713)
+-- TOC entry 5734 (class 2606 OID 45092)
 -- Name: consumable_type_attribute fk_cta_type; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7046,7 +8492,7 @@ ALTER TABLE ONLY public.consumable_type_attribute
 
 
 --
--- TOC entry 5711 (class 2606 OID 39718)
+-- TOC entry 5735 (class 2606 OID 45097)
 -- Name: delivery_note fk_delivery_note_purchase_order; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7055,7 +8501,7 @@ ALTER TABLE ONLY public.delivery_note
 
 
 --
--- TOC entry 5715 (class 2606 OID 39723)
+-- TOC entry 5739 (class 2606 OID 45102)
 -- Name: external_maintenance_document fk_emd_external_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7064,7 +8510,7 @@ ALTER TABLE ONLY public.external_maintenance_document
 
 
 --
--- TOC entry 5716 (class 2606 OID 39728)
+-- TOC entry 5740 (class 2606 OID 45107)
 -- Name: external_maintenance_step fk_ems_external_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7073,7 +8519,7 @@ ALTER TABLE ONLY public.external_maintenance_step
 
 
 --
--- TOC entry 5717 (class 2606 OID 39733)
+-- TOC entry 5741 (class 2606 OID 45112)
 -- Name: external_maintenance_step fk_external_ems_is_a__external; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7082,7 +8528,7 @@ ALTER TABLE ONLY public.external_maintenance_step
 
 
 --
--- TOC entry 5714 (class 2606 OID 39738)
+-- TOC entry 5738 (class 2606 OID 45117)
 -- Name: external_maintenance fk_external_maintenan_maintena; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7091,7 +8537,7 @@ ALTER TABLE ONLY public.external_maintenance
 
 
 --
--- TOC entry 5718 (class 2606 OID 39743)
+-- TOC entry 5742 (class 2606 OID 45122)
 -- Name: invoice fk_invoice_delivery_note; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7100,7 +8546,7 @@ ALTER TABLE ONLY public.invoice
 
 
 --
--- TOC entry 5720 (class 2606 OID 39748)
+-- TOC entry 5744 (class 2606 OID 45127)
 -- Name: location_belongs_to_organizational_structure fk_location_bel_location_belo_location; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7109,7 +8555,25 @@ ALTER TABLE ONLY public.location_belongs_to_organizational_structure
 
 
 --
--- TOC entry 5729 (class 2606 OID 39753)
+-- TOC entry 5746 (class 2606 OID 45132)
+-- Name: location_relation fk_location_relation_child_location; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.location_relation
+    ADD CONSTRAINT fk_location_relation_child_location FOREIGN KEY (child_location_id) REFERENCES public.location(location_id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 5747 (class 2606 OID 45137)
+-- Name: location_relation fk_location_relation_parent_location; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.location_relation
+    ADD CONSTRAINT fk_location_relation_parent_location FOREIGN KEY (parent_location_id) REFERENCES public.location(location_id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 5755 (class 2606 OID 45142)
 -- Name: maintenance_step fk_maintena_asset_con_asset_co; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7118,7 +8582,7 @@ ALTER TABLE ONLY public.maintenance_step
 
 
 --
--- TOC entry 5722 (class 2606 OID 39758)
+-- TOC entry 5748 (class 2606 OID 45147)
 -- Name: maintenance fk_maintena_asset_is__asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7127,7 +8591,7 @@ ALTER TABLE ONLY public.maintenance
 
 
 --
--- TOC entry 5730 (class 2606 OID 39763)
+-- TOC entry 5756 (class 2606 OID 45152)
 -- Name: maintenance_step fk_maintena_consumabl_consumab; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7136,7 +8600,7 @@ ALTER TABLE ONLY public.maintenance_step
 
 
 --
--- TOC entry 5727 (class 2606 OID 39768)
+-- TOC entry 5753 (class 2606 OID 45157)
 -- Name: maintenance_inspection_leads_to_broken_item_report fk_maintena_maintenan_broken_i; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7145,7 +8609,7 @@ ALTER TABLE ONLY public.maintenance_inspection_leads_to_broken_item_report
 
 
 --
--- TOC entry 5723 (class 2606 OID 39773)
+-- TOC entry 5749 (class 2606 OID 45162)
 -- Name: maintenance fk_maintena_maintenan_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7154,7 +8618,7 @@ ALTER TABLE ONLY public.maintenance
 
 
 --
--- TOC entry 5724 (class 2606 OID 39778)
+-- TOC entry 5750 (class 2606 OID 45167)
 -- Name: maintenance fk_maintena_person_as_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7163,7 +8627,7 @@ ALTER TABLE ONLY public.maintenance
 
 
 --
--- TOC entry 5731 (class 2606 OID 39783)
+-- TOC entry 5757 (class 2606 OID 45172)
 -- Name: maintenance_step fk_maintena_stock_ite_stock_it; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7172,7 +8636,7 @@ ALTER TABLE ONLY public.maintenance_step
 
 
 --
--- TOC entry 5728 (class 2606 OID 39788)
+-- TOC entry 5754 (class 2606 OID 45177)
 -- Name: maintenance_inspection_leads_to_broken_item_report fk_milbir_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7181,7 +8645,7 @@ ALTER TABLE ONLY public.maintenance_inspection_leads_to_broken_item_report
 
 
 --
--- TOC entry 5732 (class 2606 OID 39793)
+-- TOC entry 5758 (class 2606 OID 45182)
 -- Name: maintenance_step fk_ms_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7190,7 +8654,7 @@ ALTER TABLE ONLY public.maintenance_step
 
 
 --
--- TOC entry 5733 (class 2606 OID 39798)
+-- TOC entry 5759 (class 2606 OID 45187)
 -- Name: maintenance_step fk_ms_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7199,7 +8663,7 @@ ALTER TABLE ONLY public.maintenance_step
 
 
 --
--- TOC entry 5734 (class 2606 OID 39803)
+-- TOC entry 5760 (class 2606 OID 45192)
 -- Name: maintenance_step fk_ms_typical_step; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7208,7 +8672,7 @@ ALTER TABLE ONLY public.maintenance_step
 
 
 --
--- TOC entry 5743 (class 2606 OID 39808)
+-- TOC entry 5770 (class 2606 OID 45197)
 -- Name: organizational_structure_relation fk_organiza_organizat_organiza_child; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7217,7 +8681,7 @@ ALTER TABLE ONLY public.organizational_structure_relation
 
 
 --
--- TOC entry 5744 (class 2606 OID 39813)
+-- TOC entry 5771 (class 2606 OID 45202)
 -- Name: organizational_structure_relation fk_organiza_organizat_organiza_parent; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7226,7 +8690,16 @@ ALTER TABLE ONLY public.organizational_structure_relation
 
 
 --
--- TOC entry 5745 (class 2606 OID 39818)
+-- TOC entry 5769 (class 2606 OID 45207)
+-- Name: organizational_structure fk_organizational_structure_type; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.organizational_structure
+    ADD CONSTRAINT fk_organizational_structure_type FOREIGN KEY (structure_type_id) REFERENCES public.organizational_structure_type(organizational_structure_type_id);
+
+
+--
+-- TOC entry 5772 (class 2606 OID 45212)
 -- Name: person_assignment fk_person_a_person_ha_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7235,7 +8708,7 @@ ALTER TABLE ONLY public.person_assignment
 
 
 --
--- TOC entry 5746 (class 2606 OID 39823)
+-- TOC entry 5773 (class 2606 OID 45217)
 -- Name: person_assignment fk_person_a_person_is_position; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7244,7 +8717,7 @@ ALTER TABLE ONLY public.person_assignment
 
 
 --
--- TOC entry 5747 (class 2606 OID 39828)
+-- TOC entry 5774 (class 2606 OID 45222)
 -- Name: person_reports_problem_on_asset fk_person_r_person_re_asset; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7253,7 +8726,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset
 
 
 --
--- TOC entry 5755 (class 2606 OID 39833)
+-- TOC entry 5782 (class 2606 OID 45227)
 -- Name: person_reports_problem_on_consumable fk_person_r_person_re_consumab; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7262,7 +8735,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_consumable
 
 
 --
--- TOC entry 5757 (class 2606 OID 39838)
+-- TOC entry 5784 (class 2606 OID 45232)
 -- Name: person_reports_problem_on_stock_item fk_person_r_person_re_stock_it; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7271,7 +8744,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_stock_item
 
 
 --
--- TOC entry 5759 (class 2606 OID 39843)
+-- TOC entry 5786 (class 2606 OID 45237)
 -- Name: person_role_mapping fk_person_role_mapping_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7280,7 +8753,7 @@ ALTER TABLE ONLY public.person_role_mapping
 
 
 --
--- TOC entry 5760 (class 2606 OID 39848)
+-- TOC entry 5787 (class 2606 OID 45242)
 -- Name: person_role_mapping fk_person_role_mapping_role; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7289,7 +8762,7 @@ ALTER TABLE ONLY public.person_role_mapping
 
 
 --
--- TOC entry 5800 (class 2606 OID 40444)
+-- TOC entry 5788 (class 2606 OID 45247)
 -- Name: position_role_mapping fk_position_role_mapping_position; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7298,7 +8771,7 @@ ALTER TABLE ONLY public.position_role_mapping
 
 
 --
--- TOC entry 5801 (class 2606 OID 40449)
+-- TOC entry 5789 (class 2606 OID 45252)
 -- Name: position_role_mapping fk_position_role_mapping_role; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7307,7 +8780,7 @@ ALTER TABLE ONLY public.position_role_mapping
 
 
 --
--- TOC entry 5748 (class 2606 OID 39853)
+-- TOC entry 5775 (class 2606 OID 45257)
 -- Name: person_reports_problem_on_asset fk_prpoa_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7316,7 +8789,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset
 
 
 --
--- TOC entry 5756 (class 2606 OID 39858)
+-- TOC entry 5783 (class 2606 OID 45262)
 -- Name: person_reports_problem_on_consumable fk_prpoc_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7325,7 +8798,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_consumable
 
 
 --
--- TOC entry 5758 (class 2606 OID 39863)
+-- TOC entry 5785 (class 2606 OID 45267)
 -- Name: person_reports_problem_on_stock_item fk_prposi_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7334,7 +8807,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_stock_item
 
 
 --
--- TOC entry 5721 (class 2606 OID 39868)
+-- TOC entry 5745 (class 2606 OID 45272)
 -- Name: location_belongs_to_organizational_structure fk_room_bel_room_belo_organiza; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7343,7 +8816,7 @@ ALTER TABLE ONLY public.location_belongs_to_organizational_structure
 
 
 --
--- TOC entry 5719 (class 2606 OID 39873)
+-- TOC entry 5743 (class 2606 OID 45277)
 -- Name: location fk_room_room_type; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7352,7 +8825,7 @@ ALTER TABLE ONLY public.location
 
 
 --
--- TOC entry 5765 (class 2606 OID 39878)
+-- TOC entry 5794 (class 2606 OID 45282)
 -- Name: stock_item_attribute_value fk_siav_attribute_def; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7361,7 +8834,7 @@ ALTER TABLE ONLY public.stock_item_attribute_value
 
 
 --
--- TOC entry 5766 (class 2606 OID 39883)
+-- TOC entry 5795 (class 2606 OID 45287)
 -- Name: stock_item_attribute_value fk_siav_stock_item; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7370,7 +8843,7 @@ ALTER TABLE ONLY public.stock_item_attribute_value
 
 
 --
--- TOC entry 5767 (class 2606 OID 39888)
+-- TOC entry 5796 (class 2606 OID 45292)
 -- Name: stock_item_condition_history fk_sich_stock_item; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7379,7 +8852,7 @@ ALTER TABLE ONLY public.stock_item_condition_history
 
 
 --
--- TOC entry 5769 (class 2606 OID 39893)
+-- TOC entry 5798 (class 2606 OID 45297)
 -- Name: stock_item_is_assigned_to_person fk_siiatp_stock_item; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7388,7 +8861,7 @@ ALTER TABLE ONLY public.stock_item_is_assigned_to_person
 
 
 --
--- TOC entry 5773 (class 2606 OID 39898)
+-- TOC entry 5802 (class 2606 OID 45302)
 -- Name: stock_item_is_compatible_with_asset fk_siicwa_stock_item_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7397,7 +8870,7 @@ ALTER TABLE ONLY public.stock_item_is_compatible_with_asset
 
 
 --
--- TOC entry 5775 (class 2606 OID 39903)
+-- TOC entry 5804 (class 2606 OID 45307)
 -- Name: stock_item_model fk_sim_brand; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7406,7 +8879,7 @@ ALTER TABLE ONLY public.stock_item_model
 
 
 --
--- TOC entry 5781 (class 2606 OID 39908)
+-- TOC entry 5810 (class 2606 OID 45312)
 -- Name: stock_item_movement fk_sim_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7415,7 +8888,7 @@ ALTER TABLE ONLY public.stock_item_movement
 
 
 --
--- TOC entry 5782 (class 2606 OID 39913)
+-- TOC entry 5811 (class 2606 OID 45317)
 -- Name: stock_item_movement fk_sim_stock_item; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7424,7 +8897,7 @@ ALTER TABLE ONLY public.stock_item_movement
 
 
 --
--- TOC entry 5776 (class 2606 OID 39918)
+-- TOC entry 5805 (class 2606 OID 45322)
 -- Name: stock_item_model fk_sim_type; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7433,7 +8906,7 @@ ALTER TABLE ONLY public.stock_item_model
 
 
 --
--- TOC entry 5777 (class 2606 OID 39923)
+-- TOC entry 5806 (class 2606 OID 45327)
 -- Name: stock_item_model_attribute_value fk_simav_attribute_def; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7442,7 +8915,7 @@ ALTER TABLE ONLY public.stock_item_model_attribute_value
 
 
 --
--- TOC entry 5778 (class 2606 OID 39928)
+-- TOC entry 5807 (class 2606 OID 45332)
 -- Name: stock_item_model_attribute_value fk_simav_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7451,7 +8924,7 @@ ALTER TABLE ONLY public.stock_item_model_attribute_value
 
 
 --
--- TOC entry 5779 (class 2606 OID 39933)
+-- TOC entry 5808 (class 2606 OID 45337)
 -- Name: stock_item_model_is_found_in_purchase_order fk_simifib_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7460,7 +8933,7 @@ ALTER TABLE ONLY public.stock_item_model_is_found_in_purchase_order
 
 
 --
--- TOC entry 5786 (class 2606 OID 39938)
+-- TOC entry 5815 (class 2606 OID 45342)
 -- Name: stock_item_type_attribute fk_sita_attribute_def; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7469,7 +8942,7 @@ ALTER TABLE ONLY public.stock_item_type_attribute
 
 
 --
--- TOC entry 5787 (class 2606 OID 39943)
+-- TOC entry 5816 (class 2606 OID 45347)
 -- Name: stock_item_type_attribute fk_sita_type; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7478,7 +8951,7 @@ ALTER TABLE ONLY public.stock_item_type_attribute
 
 
 --
--- TOC entry 5774 (class 2606 OID 39948)
+-- TOC entry 5803 (class 2606 OID 45352)
 -- Name: stock_item_is_compatible_with_asset fk_stock_it_stock_ite_asset_mo; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7487,7 +8960,7 @@ ALTER TABLE ONLY public.stock_item_is_compatible_with_asset
 
 
 --
--- TOC entry 5780 (class 2606 OID 39953)
+-- TOC entry 5809 (class 2606 OID 45357)
 -- Name: stock_item_model_is_found_in_purchase_order fk_stock_it_stock_ite_bon_de_c; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7496,7 +8969,7 @@ ALTER TABLE ONLY public.stock_item_model_is_found_in_purchase_order
 
 
 --
--- TOC entry 5783 (class 2606 OID 39958)
+-- TOC entry 5812 (class 2606 OID 45362)
 -- Name: stock_item_movement fk_stock_it_stock_ite_external; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7505,7 +8978,7 @@ ALTER TABLE ONLY public.stock_item_movement
 
 
 --
--- TOC entry 5784 (class 2606 OID 39963)
+-- TOC entry 5813 (class 2606 OID 45367)
 -- Name: stock_item_movement fk_stock_it_stock_ite_location_dest; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7514,7 +8987,7 @@ ALTER TABLE ONLY public.stock_item_movement
 
 
 --
--- TOC entry 5785 (class 2606 OID 39968)
+-- TOC entry 5814 (class 2606 OID 45372)
 -- Name: stock_item_movement fk_stock_it_stock_ite_location_source; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7523,7 +8996,7 @@ ALTER TABLE ONLY public.stock_item_movement
 
 
 --
--- TOC entry 5770 (class 2606 OID 39973)
+-- TOC entry 5799 (class 2606 OID 45377)
 -- Name: stock_item_is_assigned_to_person fk_stock_it_stock_ite_person_assigned; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7532,7 +9005,7 @@ ALTER TABLE ONLY public.stock_item_is_assigned_to_person
 
 
 --
--- TOC entry 5771 (class 2606 OID 39978)
+-- TOC entry 5800 (class 2606 OID 45382)
 -- Name: stock_item_is_assigned_to_person fk_stock_it_stock_ite_person_assigner; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7541,7 +9014,7 @@ ALTER TABLE ONLY public.stock_item_is_assigned_to_person
 
 
 --
--- TOC entry 5768 (class 2606 OID 39983)
+-- TOC entry 5797 (class 2606 OID 45387)
 -- Name: stock_item_condition_history fk_stock_it_stock_ite_physical; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7550,7 +9023,7 @@ ALTER TABLE ONLY public.stock_item_condition_history
 
 
 --
--- TOC entry 5762 (class 2606 OID 39988)
+-- TOC entry 5791 (class 2606 OID 45392)
 -- Name: stock_item fk_stock_item_maintenance; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7559,7 +9032,7 @@ ALTER TABLE ONLY public.stock_item
 
 
 --
--- TOC entry 5763 (class 2606 OID 39993)
+-- TOC entry 5792 (class 2606 OID 45397)
 -- Name: stock_item fk_stock_item_model; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7568,7 +9041,7 @@ ALTER TABLE ONLY public.stock_item
 
 
 --
--- TOC entry 5764 (class 2606 OID 39998)
+-- TOC entry 5793 (class 2606 OID 45402)
 -- Name: stock_item fk_stock_item_stock_item_consumable_destruction_certificate; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7577,7 +9050,7 @@ ALTER TABLE ONLY public.stock_item
 
 
 --
--- TOC entry 5788 (class 2606 OID 40003)
+-- TOC entry 5817 (class 2606 OID 45407)
 -- Name: user_account fk_user_acc_created_by_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7586,7 +9059,7 @@ ALTER TABLE ONLY public.user_account
 
 
 --
--- TOC entry 5789 (class 2606 OID 40008)
+-- TOC entry 5818 (class 2606 OID 45412)
 -- Name: user_account fk_user_acc_modified_by_user; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7595,7 +9068,7 @@ ALTER TABLE ONLY public.user_account
 
 
 --
--- TOC entry 5790 (class 2606 OID 40013)
+-- TOC entry 5819 (class 2606 OID 45417)
 -- Name: user_account fk_user_acc_person_ha_person; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7604,7 +9077,7 @@ ALTER TABLE ONLY public.user_account
 
 
 --
--- TOC entry 5791 (class 2606 OID 40018)
+-- TOC entry 5820 (class 2606 OID 45422)
 -- Name: user_session fk_user_ses_user_has__user_acc; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7613,7 +9086,7 @@ ALTER TABLE ONLY public.user_session
 
 
 --
--- TOC entry 5725 (class 2606 OID 40023)
+-- TOC entry 5751 (class 2606 OID 45427)
 -- Name: maintenance maintenance_consumable_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7622,7 +9095,7 @@ ALTER TABLE ONLY public.maintenance
 
 
 --
--- TOC entry 5735 (class 2606 OID 40028)
+-- TOC entry 5761 (class 2606 OID 45432)
 -- Name: maintenance_step_attribute_change maintenance_step_att_maintenance_step_id_34ad2442_fk_maintenan; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7631,7 +9104,7 @@ ALTER TABLE ONLY public.maintenance_step_attribute_change
 
 
 --
--- TOC entry 5736 (class 2606 OID 40033)
+-- TOC entry 5762 (class 2606 OID 45437)
 -- Name: maintenance_step_item_request maintenance_step_item_request_rejected_by_person_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7640,7 +9113,7 @@ ALTER TABLE ONLY public.maintenance_step_item_request
 
 
 --
--- TOC entry 5726 (class 2606 OID 40038)
+-- TOC entry 5752 (class 2606 OID 45442)
 -- Name: maintenance maintenance_stock_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7649,7 +9122,7 @@ ALTER TABLE ONLY public.maintenance
 
 
 --
--- TOC entry 5737 (class 2606 OID 40043)
+-- TOC entry 5763 (class 2606 OID 45447)
 -- Name: maintenance_step_item_request msir_consumable_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7658,7 +9131,7 @@ ALTER TABLE ONLY public.maintenance_step_item_request
 
 
 --
--- TOC entry 5738 (class 2606 OID 40048)
+-- TOC entry 5764 (class 2606 OID 45452)
 -- Name: maintenance_step_item_request msir_destination_location_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7667,7 +9140,7 @@ ALTER TABLE ONLY public.maintenance_step_item_request
 
 
 --
--- TOC entry 5739 (class 2606 OID 40053)
+-- TOC entry 5765 (class 2606 OID 45457)
 -- Name: maintenance_step_item_request msir_maintenance_step_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7676,7 +9149,7 @@ ALTER TABLE ONLY public.maintenance_step_item_request
 
 
 --
--- TOC entry 5740 (class 2606 OID 40058)
+-- TOC entry 5766 (class 2606 OID 45462)
 -- Name: maintenance_step_item_request msir_requested_by_person_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7685,7 +9158,7 @@ ALTER TABLE ONLY public.maintenance_step_item_request
 
 
 --
--- TOC entry 5741 (class 2606 OID 40063)
+-- TOC entry 5767 (class 2606 OID 45467)
 -- Name: maintenance_step_item_request msir_source_location_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7694,7 +9167,7 @@ ALTER TABLE ONLY public.maintenance_step_item_request
 
 
 --
--- TOC entry 5742 (class 2606 OID 40068)
+-- TOC entry 5768 (class 2606 OID 45472)
 -- Name: maintenance_step_item_request msir_stock_item_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7703,7 +9176,7 @@ ALTER TABLE ONLY public.maintenance_step_item_request
 
 
 --
--- TOC entry 5751 (class 2606 OID 40073)
+-- TOC entry 5778 (class 2606 OID 45477)
 -- Name: person_reports_problem_on_asset_included_context person_reports_problem_on_asset_includ_destination_location_id_; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7712,7 +9185,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_context
 
 
 --
--- TOC entry 5749 (class 2606 OID 40078)
+-- TOC entry 5776 (class 2606 OID 45482)
 -- Name: person_reports_problem_on_asset_included_consumable person_reports_problem_on_asset_included_con_consumable_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7721,7 +9194,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_consumable
 
 
 --
--- TOC entry 5750 (class 2606 OID 40083)
+-- TOC entry 5777 (class 2606 OID 45487)
 -- Name: person_reports_problem_on_asset_included_consumable person_reports_problem_on_asset_included_consuma_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7730,7 +9203,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_consumable
 
 
 --
--- TOC entry 5752 (class 2606 OID 40088)
+-- TOC entry 5779 (class 2606 OID 45492)
 -- Name: person_reports_problem_on_asset_included_context person_reports_problem_on_asset_included_context_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7739,7 +9212,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_context
 
 
 --
--- TOC entry 5753 (class 2606 OID 40093)
+-- TOC entry 5780 (class 2606 OID 45497)
 -- Name: person_reports_problem_on_asset_included_stock_item person_reports_problem_on_asset_included_sto_stock_item_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7748,7 +9221,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_stock_item
 
 
 --
--- TOC entry 5754 (class 2606 OID 40098)
+-- TOC entry 5781 (class 2606 OID 45502)
 -- Name: person_reports_problem_on_asset_included_stock_item person_reports_problem_on_asset_included_stock_i_report_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7757,7 +9230,7 @@ ALTER TABLE ONLY public.person_reports_problem_on_asset_included_stock_item
 
 
 --
--- TOC entry 5772 (class 2606 OID 40103)
+-- TOC entry 5801 (class 2606 OID 45507)
 -- Name: stock_item_is_assigned_to_person stock_item_is_assigned_to_per_is_confirmed_by_exploitation_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -7765,11 +9238,11 @@ ALTER TABLE ONLY public.stock_item_is_assigned_to_person
     ADD CONSTRAINT stock_item_is_assigned_to_per_is_confirmed_by_exploitation_fkey FOREIGN KEY (is_confirmed_by_exploitation_chief_id) REFERENCES public.person(person_id);
 
 
--- Completed on 2026-04-13 21:19:42
+-- Completed on 2026-04-18 20:33:08
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 3Kg7QpELsJtA8iAIrt89uqxyXAogI7LTeFslOAv7l2XWiGruwVSBhExNKsATkwf
+\unrestrict trQtfBe7hC5G5fDbs8VZTrv0IEq91DYyUmn0WFfvqoPquLCM7X9xHz9cdHtqZd2
 

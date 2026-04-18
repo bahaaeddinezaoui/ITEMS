@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const DashboardHome = () => {
     const { user, isSuperuser } = useAuth();
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const getFullName = () => {
@@ -28,8 +30,8 @@ const DashboardHome = () => {
         const all = [
             {
                 key: 'persons',
-                title: 'Persons',
-                subtitle: 'Manage registered personnel',
+                title: t('nav.persons'),
+                subtitle: t('persons.title'),
                 to: '/dashboard/persons',
                 visible: isSuperuser,
                 icon: (
@@ -42,8 +44,8 @@ const DashboardHome = () => {
             },
             {
                 key: 'assets',
-                title: 'Assets',
-                subtitle: 'Track equipment & assets',
+                title: t('nav.assets'),
+                subtitle: t('assets.title'),
                 to: '/dashboard/assets',
                 visible: isAssetResponsible || isExploitationChief || isItBureauChief,
                 icon: (
@@ -56,8 +58,8 @@ const DashboardHome = () => {
             },
             {
                 key: 'stock_items',
-                title: 'Stock Items',
-                subtitle: 'Manage stock items inventory',
+                title: t('nav.stockItems'),
+                subtitle: t('stockItems.title'),
                 to: '/dashboard/stock-items',
                 visible: isStockConsumableResponsible || isExploitationChief || isItBureauChief,
                 icon: (
@@ -71,8 +73,8 @@ const DashboardHome = () => {
             },
             {
                 key: 'consumables',
-                title: 'Consumables',
-                subtitle: 'Manage consumables inventory',
+                title: t('nav.consumables'),
+                subtitle: t('consumables.title'),
                 to: '/dashboard/consumables',
                 visible: isStockConsumableResponsible || isExploitationChief || isItBureauChief,
                 icon: (
@@ -84,8 +86,8 @@ const DashboardHome = () => {
             },
             {
                 key: 'attribution_orders',
-                title: 'Attribution Orders',
-                subtitle: 'Create and consult attribution orders',
+                title: t('nav.attributionOrders'),
+                subtitle: t('nav.attributionOrders'),
                 to: '/dashboard/attribution-orders',
                 visible: isAssetResponsible,
                 icon: (
@@ -101,8 +103,8 @@ const DashboardHome = () => {
             },
             {
                 key: 'reports',
-                title: 'Reports',
-                subtitle: 'Consult and manage problem reports',
+                title: t('nav.reports'),
+                subtitle: t('reports.title'),
                 to: '/dashboard/reports',
                 visible: isMaintenanceChief || isExploitationChief || isItBureauChief,
                 icon: (
@@ -117,8 +119,8 @@ const DashboardHome = () => {
             },
             {
                 key: 'maintenance',
-                title: 'Maintenance',
-                subtitle: 'Schedule & track repairs',
+                title: t('nav.maintenances'),
+                subtitle: t('maintenances.title'),
                 to: '/dashboard/maintenances',
                 visible: isMaintenanceChief || isMaintenanceTechnician || isItBureauChief,
                 icon: (
@@ -130,8 +132,8 @@ const DashboardHome = () => {
             },
             {
                 key: 'my_items',
-                title: 'My Items',
-                subtitle: 'View what you own and report problems',
+                title: t('nav.myItems'),
+                subtitle: t('assets.myItems'),
                 to: '/dashboard/my-items',
                 visible: true,
                 icon: (
@@ -150,8 +152,8 @@ const DashboardHome = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Welcome, {getFullName()}!</h1>
-                <p className="page-subtitle">Here's your Equipment Management System dashboard</p>
+                <h1 className="page-title">{t('common.welcome')}, {getFullName()}!</h1>
+                <p className="page-subtitle">{t('app.title')}</p>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-6)' }}>

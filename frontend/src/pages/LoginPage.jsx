@@ -1,80 +1,83 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
-const features = [
-    {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-        ),
-        title: 'Asset Tracking',
-        description: 'Track all your equipment in real-time with comprehensive asset management tools.',
-    },
-    {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-            </svg>
-        ),
-        title: 'Maintenance Scheduling',
-        description: 'Schedule and track maintenance activities to keep your equipment in optimal condition.',
-    },
-    {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-        ),
-        title: 'Team Collaboration',
-        description: 'Assign tasks, share updates, and collaborate seamlessly with your team members.',
-    },
-    {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-                <path d="M22 12A10 10 0 0 0 12 2"/>
-                <path d="M22 12h-4.12"/>
-                <path d="M22 12l-3-3"/>
-                <path d="M22 12l3-3"/>
-            </svg>
-        ),
-        title: 'Real-time Updates',
-        description: 'Get instant notifications and updates on equipment status and maintenance progress.',
-    },
-    {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <polyline points="10 9 9 9 8 9"/>
-            </svg>
-        ),
-        title: 'Detailed Reports',
-        description: 'Generate comprehensive reports on equipment usage, maintenance history, and costs.',
-    },
-    {
-        icon: (
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-        ),
-        title: 'Secure Access',
-        description: 'Role-based permissions ensure only authorized personnel can access sensitive data.',
-    },
-];
-
 const LoginPage = () => {
+    const { t } = useTranslation();
+
+    const features = [
+        {
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+            ),
+            title: t('landing.assetTrackingTitle'),
+            description: t('landing.assetTrackingDesc'),
+        },
+        {
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            ),
+            title: t('landing.maintenanceSchedulingTitle'),
+            description: t('landing.maintenanceSchedulingDesc'),
+        },
+        {
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            ),
+            title: t('landing.teamCollaborationTitle'),
+            description: t('landing.teamCollaborationDesc'),
+        },
+        {
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                    <path d="M22 12A10 10 0 0 0 12 2"/>
+                    <path d="M22 12h-4.12"/>
+                    <path d="M22 12l-3-3"/>
+                    <path d="M22 12l3-3"/>
+                </svg>
+            ),
+            title: t('landing.realTimeUpdatesTitle'),
+            description: t('landing.realTimeUpdatesDesc'),
+        },
+        {
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+            ),
+            title: t('landing.detailedReportsTitle'),
+            description: t('landing.detailedReportsDesc'),
+        },
+        {
+            icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+            ),
+            title: t('landing.secureAccessTitle'),
+            description: t('landing.secureAccessDesc'),
+        },
+    ];
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -98,7 +101,7 @@ const LoginPage = () => {
         const status = err?.response?.status;
 
         if (status === 401 || status === 400) {
-            return 'Invalid username or password.';
+            return t('auth.invalidCredentials');
         }
 
         const apiError = err?.response?.data?.error;
@@ -106,7 +109,7 @@ const LoginPage = () => {
             return apiError;
         }
 
-        return 'Login failed. Please try again.';
+        return t('messages.operationFailed');
     };
 
     const handleSubmit = async (e) => {
@@ -121,7 +124,7 @@ const LoginPage = () => {
         } catch (err) {
             const errorMessage = getLoginErrorMessage(err);
             setError(errorMessage);
-            if (errorMessage === 'Invalid username or password.') {
+            if (errorMessage === t('auth.invalidCredentials')) {
                 setShouldShake(true);
                 setTimeout(() => setShouldShake(false), 500);
             }
@@ -142,8 +145,8 @@ const LoginPage = () => {
                                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                             </svg>
                         </div>
-                        <h1 className="login-title">Equipment Management</h1>
-                        <p className="login-subtitle">Sign in to your account</p>
+                        <h1 className="login-title">{t('app.title')}</h1>
+                        <p className="login-subtitle">{t('auth.login')}</p>
                     </div>
 
                     <form onSubmit={handleSubmit}>
@@ -151,13 +154,13 @@ const LoginPage = () => {
 
                         <div className="form-group">
                             <label htmlFor="username" className="form-label">
-                                Username
+                                {t('auth.username')}
                             </label>
                             <input
                                 type="text"
                                 id="username"
                                 className="form-input"
-                                placeholder="Enter your username"
+                                placeholder={t('auth.username')}
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                                 required
@@ -167,14 +170,14 @@ const LoginPage = () => {
 
                         <div className="form-group">
                             <label htmlFor="password" className="form-label">
-                                Password
+                                {t('auth.password')}
                             </label>
                             <div className="password-input-container">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     id="password"
                                     className="form-input"
-                                    placeholder="Enter your password"
+                                    placeholder={t('auth.password')}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -208,10 +211,10 @@ const LoginPage = () => {
                             {loading ? (
                                 <>
                                     <span className="loading-spinner" />
-                                    Signing in...
+                                    {t('common.loading')}
                                 </>
                             ) : (
-                                'Sign In'
+                                t('auth.login')
                             )}
                         </button>
                     </form>
@@ -223,8 +226,8 @@ const LoginPage = () => {
             <div className="login-right">
                 <div className="feature-carousel">
                     <div className="feature-header">
-                        <h2>Why Choose I.T.E.M.S?</h2>
-                        <p>Discover the powerful features that make equipment management effortless.</p>
+                        <h2>{t('landing.whyChoose')}</h2>
+                        <p>{t('landing.discoverFeatures')}</p>
                     </div>
                     <div className="feature-ticker">
                         <div

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, X, XCircle, Settings2, Tag, Hash, Database, CheckCircle2, Calendar } from 'lucide-react';
 import { stockItemAttributeDefinitionService } from '../services/api';
 
 const StockItemsAttributeDefinitionsPage = () => {
+    const { t } = useTranslation();
     const [attributeDefinitions, setAttributeDefinitions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -27,7 +29,7 @@ const StockItemsAttributeDefinitionsPage = () => {
             const data = await stockItemAttributeDefinitionService.getAll();
             setAttributeDefinitions(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch stock item attribute definitions: ' + err.message);
+            setError(t('stockItemAttributes.fetchError') + ': ' + err.message);
             setAttributeDefinitions([]);
         } finally {
             setLoading(false);
@@ -54,19 +56,19 @@ const StockItemsAttributeDefinitionsPage = () => {
             setShowForm(false);
             await fetchAttributeDefinitions();
         } catch (err) {
-            setError('Failed to create stock item attribute definition: ' + err.message);
+            setError(t('stockItemAttributes.createError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Delete this attribute definition?')) return;
+        if (!window.confirm(t('stockItemAttributes.confirmDelete'))) return;
         try {
             await stockItemAttributeDefinitionService.delete(id);
             await fetchAttributeDefinitions();
         } catch (err) {
-            setError('Failed to delete stock item attribute definition: ' + err.message);
+            setError(t('stockItemAttributes.deleteError') + ': ' + err.message);
         }
     };
 
@@ -86,10 +88,10 @@ const StockItemsAttributeDefinitionsPage = () => {
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div>
                     <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)' }}>
-                        Stock Item Attribute Definitions
+                        {t('stockItemAttributes.title')}
                     </h1>
                     <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
-                        Define and manage attribute templates for stock item types
+                        {t('stockItemAttributes.subtitle')}
                     </p>
                 </div>
             </div>
@@ -118,7 +120,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                     }}
                 >
                     <Plus size={20} />
-                    <span>Add New Attribute Definition</span>
+                    <span>{t('stockItemAttributes.addDefinition')}</span>
                 </button>
             </div>
 
@@ -174,10 +176,10 @@ const StockItemsAttributeDefinitionsPage = () => {
                                 </div>
                                 <div>
                                     <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                        Add New Attribute Definition
+                                        {t('stockItemAttributes.addDefinition')}
                                     </h3>
                                     <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', margin: 0, marginTop: '2px' }}>
-                                        Create a new attribute template
+                                        {t('stockItemAttributes.createTemplate')}
                                     </p>
                                 </div>
                             </div>
@@ -204,12 +206,12 @@ const StockItemsAttributeDefinitionsPage = () => {
                             <form onSubmit={handleSubmit}>
                                 <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
                                     <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
-                                        Description <span style={{ color: 'var(--color-error)' }}>*</span>
+                                        {t('common.description')} <span style={{ color: 'var(--color-error)' }}>*</span>
                                     </label>
                                     <input
                                         type="text"
                                         name="description"
-                                        placeholder="Enter attribute description (e.g., Batch Number, Expiry Date)"
+                                        placeholder={t('stockItemAttributes.descriptionPlaceholder')}
                                         value={form.description}
                                         onChange={handleChange}
                                         required
@@ -221,7 +223,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
                                     <div className="form-group">
                                         <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
-                                            Data Type
+                                            {t('stockItemAttributes.dataType')}
                                         </label>
                                         <select
                                             name="data_type"
@@ -230,22 +232,22 @@ const StockItemsAttributeDefinitionsPage = () => {
                                             className="form-input"
                                             style={{ width: '100%', height: '44px' }}
                                         >
-                                            <option value="">Select data type...</option>
-                                            <option value="string">String (Text)</option>
-                                            <option value="number">Number</option>
-                                            <option value="bool">Boolean (Yes/No)</option>
-                                            <option value="date">Date</option>
+                                            <option value="">{t('stockItemAttributes.selectDataType')}</option>
+                                            <option value="string">{t('stockItemAttributes.string')}</option>
+                                            <option value="number">{t('stockItemAttributes.number')}</option>
+                                            <option value="bool">{t('stockItemAttributes.boolean')}</option>
+                                            <option value="date">{t('stockItemAttributes.date')}</option>
                                         </select>
                                     </div>
 
                                     <div className="form-group">
                                         <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
-                                            Unit (Optional)
+                                            {t('stockItemAttributes.unitOptional')}
                                         </label>
                                         <input
                                             type="text"
                                             name="unit"
-                                            placeholder="e.g., kg, liters, boxes"
+                                            placeholder={t('stockItemAttributes.unitPlaceholder')}
                                             value={form.unit}
                                             onChange={handleChange}
                                             className="form-input"
@@ -269,7 +271,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                                             fontWeight: '500'
                                         }}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </button>
                                     <button
                                         type="submit"
@@ -280,12 +282,12 @@ const StockItemsAttributeDefinitionsPage = () => {
                                         {saving ? (
                                             <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                                 <span className="loading-spinner" style={{ width: '16px', height: '16px' }}></span>
-                                                Saving...
+                                                {t('common.saving')}
                                             </span>
                                         ) : (
                                             <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                                 <Plus size={18} />
-                                                Save Definition
+                                                {t('stockItemAttributes.saveDefinition')}
                                             </span>
                                         )}
                                     </button>
@@ -308,7 +310,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                 }}>
                     <Settings2 size={20} style={{ color: 'var(--color-accent-primary)' }} />
                     <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                        Attribute Definitions
+                        {t('stockItemAttributes.attributeDefinitions')}
                     </h2>
                     <span style={{
                         marginLeft: 'auto',
@@ -318,7 +320,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                         padding: 'var(--space-1) var(--space-3)',
                         borderRadius: 'var(--radius-full)'
                     }}>
-                        {attributeDefinitions.length} total
+                        {attributeDefinitions.length} {t('common.total')}
                     </span>
                 </div>
 
@@ -326,7 +328,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                     {loading ? (
                         <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
                             <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                            <span>Loading definitions...</span>
+                            <span>{t('stockItemAttributes.loadingDefinitions')}</span>
                         </div>
                     ) : attributeDefinitions.length === 0 ? (
                         <div style={{
@@ -335,8 +337,8 @@ const StockItemsAttributeDefinitionsPage = () => {
                             color: 'var(--color-text-muted)'
                         }}>
                             <Database size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.5 }} />
-                            <p style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--space-2)' }}>No attribute definitions yet</p>
-                            <p style={{ fontSize: 'var(--font-size-sm)' }}>Click "Add New Attribute Definition" above to create one</p>
+                            <p style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--space-2)' }}>{t('stockItemAttributes.noDefinitions')}</p>
+                            <p style={{ fontSize: 'var(--font-size-sm)' }}>{t('stockItemAttributes.clickToCreate')}</p>
                         </div>
                     ) : (
                         <div style={{ padding: 'var(--space-2)' }}>
@@ -431,7 +433,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                                             e.currentTarget.style.background = 'var(--color-bg-card)';
                                             e.currentTarget.style.color = 'var(--color-text-muted)';
                                         }}
-                                        title="Delete definition"
+                                        title={t('stockItemAttributes.deleteDefinition')}
                                     >
                                         <Trash2 size={18} />
                                     </button>

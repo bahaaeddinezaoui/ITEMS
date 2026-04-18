@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     assetTypeService,
@@ -16,6 +17,7 @@ import {
 } from '../services/api';
 
 const AssetsPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -429,7 +431,7 @@ const AssetsPage = () => {
             setShowTypeForm(false);
             await fetchAssetTypes();
         } catch (err) {
-            setError('Failed to create asset type: ' + (err.response?.data?.error || err.message));
+            setError(t('assets.createTypeError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -442,7 +444,7 @@ const AssetsPage = () => {
             return;
         }
         if (!modelFormData.asset_brand) {
-            setError('Please select a brand');
+            setError(t('assets.selectBrand'));
             return;
         }
         setSaving(true);
@@ -477,7 +479,7 @@ const AssetsPage = () => {
             const errorMsg = err.response?.data ?
                 (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) :
                 err.message;
-            setError('Failed to create asset model: ' + errorMsg);
+            setError(t('assets.createModelError') + ': ' + errorMsg);
         } finally {
             setSaving(false);
         }
@@ -829,8 +831,8 @@ const AssetsPage = () => {
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">Assets Explorer</h1>
-                <p className="page-subtitle">Manage asset types, models, and inventory</p>
+                <h1 className="page-title">{t('nav.assets')}</h1>
+                <p className="page-subtitle">{t('assets.subtitle')}</p>
             </div>
 
             {isExploitationChief && pendingConfirmations.length > 0 && (
@@ -842,7 +844,7 @@ const AssetsPage = () => {
                     marginBottom: 'var(--space-4)'
                 }}>
                     <h3 style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--color-primary)', marginBottom: 'var(--space-2)' }}>
-                        Pending Confirmations ({pendingConfirmations.length})
+                        {t('assets.pendingConfirmations')} ({pendingConfirmations.length})
                     </h3>
                     <div style={{ display: 'flex', gap: 'var(--space-4)', overflowX: 'auto', paddingBottom: 'var(--space-2)' }}>
                         {pendingConfirmations.map(a => (
@@ -855,8 +857,8 @@ const AssetsPage = () => {
                                 minWidth: '250px',
                                 fontSize: 'var(--font-size-xs)'
                             }}>
-                                <div style={{ fontWeight: '600' }}>{a.asset?.asset_name || 'Asset'} (ID: {a.asset?.asset_id})</div>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>Assignee ID: {a.person}</div>
+                                <div style={{ fontWeight: '600' }}>{a.asset?.asset_name || t('assets.asset')} (ID: {a.asset?.asset_id})</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('assets.assigneeId')}: {a.person}</div>
                                 <div style={{ marginTop: 'var(--space-2)', display: 'flex', justifyContent: 'flex-end' }}>
                                     <button
                                         onClick={() => handleConfirmAssignment(a.assignment_id)}
@@ -869,7 +871,7 @@ const AssetsPage = () => {
                                             cursor: 'pointer'
                                         }}
                                     >
-                                        Confirm
+                                        {t('assets.confirm')}
                                     </button>
                                 </div>
                             </div>
@@ -913,7 +915,7 @@ const AssetsPage = () => {
                         alignItems: 'center',
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Library</h2>
+                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assets.library')}</h2>
                         <button
                             onClick={() => setShowTypeForm(!showTypeForm)}
                             style={{
@@ -924,7 +926,7 @@ const AssetsPage = () => {
                                 color: 'var(--color-primary)',
                                 padding: '0 var(--space-2)'
                             }}
-                            title="Add Asset Type"
+                            title={t('assets.addAssetType')}
                         >
                             +
                         </button>

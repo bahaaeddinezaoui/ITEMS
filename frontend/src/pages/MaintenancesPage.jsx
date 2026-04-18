@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { assetService, maintenanceService, personService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 const MaintenancesPage = () => {
+    const { t } = useTranslation();
     const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
     const [maintenances, setMaintenances] = useState([]);
@@ -47,7 +49,7 @@ const MaintenancesPage = () => {
             const data = await maintenanceService.getAll();
             setMaintenances(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch maintenances: ' + err.message);
+            setError(t('maintenances.fetchError') + ': ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -339,8 +341,8 @@ const MaintenancesPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Maintenance</h1>
-                <p className="page-subtitle">Manage maintenance tasks and assignments</p>
+                <h1 className="page-title">{t('nav.maintenances')}</h1>
+                <p className="page-subtitle">{t('maintenances.subtitle')}</p>
             </div>
 
             <div className="card">
@@ -356,7 +358,7 @@ const MaintenancesPage = () => {
                         }}
                     >
                         <h2 className="card-title" style={{ margin: 0, flex: '1 1 auto', minWidth: 0 }}>
-                            {isChief ? 'All Maintenances' : 'My Maintenances'}
+                            {isChief ? t('maintenances.allMaintenances') : t('maintenances.myMaintenances')}
                         </h2>
                         {isChief && (
                             <button
@@ -364,7 +366,7 @@ const MaintenancesPage = () => {
                                 onClick={openCreateMaintenance}
                                 style={{ width: 'auto', whiteSpace: 'nowrap', flex: '0 0 auto' }}
                             >
-                                Create Maintenance
+                                {t('maintenances.createMaintenance')}
                             </button>
                         )}
                     </div>
@@ -373,35 +375,35 @@ const MaintenancesPage = () => {
                 <div className="card-body">
                     {/* Sort Controls */}
                     <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>Sort by:</span>
+                        <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>{t('common.sortBy')}:</span>
                         <select
                             className="form-input"
                             style={{ width: 'auto', minWidth: '140px', padding: '0.35rem 0.75rem', fontSize: 'var(--font-size-sm)' }}
                             value={sortKey}
                             onChange={(e) => { setSortKey(e.target.value); setSortDirection('desc'); }}
                         >
-                            <option value="start_datetime">Start Date</option>
-                            <option value="end_datetime">End Date</option>
+                            <option value="start_datetime">{t('maintenances.startDate')}</option>
+                            <option value="end_datetime">{t('maintenances.endDate')}</option>
                             <option value="maintenance_id">ID</option>
-                            <option value="asset">Asset</option>
-                            <option value="description">Description</option>
-                            <option value="maintenance_status">Status</option>
-                            <option value="performed_by_person_name">Technician</option>
+                            <option value="asset">{t('assets.asset')}</option>
+                            <option value="description">{t('common.description')}</option>
+                            <option value="maintenance_status">{t('common.status')}</option>
+                            <option value="performed_by_person_name">{t('maintenances.technician')}</option>
                         </select>
                         <button
                             className="btn btn-sm btn-secondary"
                             style={{ padding: '0.35rem 0.55rem' }}
                             onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
-                            title={sortDirection === 'asc' ? 'Oldest first' : 'Newest first'}
+                            title={sortDirection === 'asc' ? t('maintenances.oldestFirst') : t('maintenances.newestFirst')}
                         >
-                            {sortDirection === 'asc' ? '▲ Ascending' : '▼ Descending'}
+                            {sortDirection === 'asc' ? `▲ ${t('maintenances.ascending')}` : `▼ ${t('maintenances.descending')}`}
                         </button>
                     </div>
 
                     {loading ? (
                         <div className="empty-state">
                             <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>Loading maintenances...</p>
+                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('maintenances.loading')}</p>
                         </div>
                     ) : error ? (
                         <div className="empty-state">
@@ -409,7 +411,7 @@ const MaintenancesPage = () => {
                         </div>
                     ) : maintenances.length === 0 ? (
                         <div className="empty-state">
-                            <h3 className="empty-state-title">No maintenances found</h3>
+                            <h3 className="empty-state-title">{t('maintenances.noMaintenances')}</h3>
                         </div>
                     ) : (
                         <div className="maintenances-timeline">

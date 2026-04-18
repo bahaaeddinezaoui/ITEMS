@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { authService, personService, roleService, userAccountService } from '../services/api';
 
 const PersonsPage = () => {
+    const { t } = useTranslation();
     const [persons, setPersons] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -36,7 +38,7 @@ const PersonsPage = () => {
             const data = await personService.getAll();
             setPersons(data);
         } catch {
-            setError('Failed to load persons');
+            setError(t('persons.loadError'));
         } finally {
             setLoading(false);
         }
@@ -84,7 +86,7 @@ const PersonsPage = () => {
             });
             loadPersons();
         } catch {
-            setError('Failed to create person');
+            setError(t('persons.createError'));
         } finally {
             setSubmitting(false);
         }
@@ -124,7 +126,7 @@ const PersonsPage = () => {
             const msg =
                 err?.response?.data?.error ||
                 err?.response?.data?.detail ||
-                'Failed to create account';
+                t('persons.createAccountError');
             setError(msg);
         } finally {
             setSubmittingAccount(false);
@@ -132,7 +134,7 @@ const PersonsPage = () => {
     };
 
     const formatDate = (dateString) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
+        return new Date(dateString).toLocaleDateString(t('common.locale') || 'en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -142,19 +144,19 @@ const PersonsPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Persons</h1>
-                <p className="page-subtitle">Manage all registered persons in the system</p>
+                <h1 className="page-title">{t('nav.persons')}</h1>
+                <p className="page-subtitle">{t('persons.subtitle')}</p>
             </div>
 
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title">All Persons</h2>
+                    <h2 className="card-title">{t('persons.allPersons')}</h2>
                     <button className="btn btn-primary" onClick={() => setShowModal(true)}>
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                             <line x1="12" y1="5" x2="12" y2="19" />
                             <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
-                        Add Person
+                        {t('persons.addPerson')}
                     </button>
                 </div>
 
@@ -162,7 +164,7 @@ const PersonsPage = () => {
                     {loading ? (
                         <div className="empty-state">
                             <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>Loading persons...</p>
+                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('persons.loading')}</p>
                         </div>
                     ) : error ? (
                         <div className="empty-state">
@@ -176,19 +178,19 @@ const PersonsPage = () => {
                                 <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                                 <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                             </svg>
-                            <h3 className="empty-state-title">No persons yet</h3>
-                            <p className="empty-state-text">Get started by adding your first person</p>
+                            <h3 className="empty-state-title">{t('persons.noPersons')}</h3>
+                            <p className="empty-state-text">{t('persons.getStarted')}</p>
                         </div>
                     ) : (
                         <table className="data-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>Name</th>
-                                    <th>Sex</th>
-                                    <th>Birth Date</th>
-                                    <th>Status</th>
-                                    {authService.isSuperuser() && <th>Actions</th>}
+                                    <th>{t('persons.name')}</th>
+                                    <th>{t('persons.sex')}</th>
+                                    <th>{t('persons.birthDate')}</th>
+                                    <th>{t('common.status')}</th>
+                                    {authService.isSuperuser() && <th>{t('common.actions')}</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -202,13 +204,13 @@ const PersonsPage = () => {
                                         <td>{formatDate(person.birth_date)}</td>
                                         <td>
                                             <span className={`badge ${person.is_approved ? 'badge-success' : 'badge-warning'}`}>
-                                                {person.is_approved ? 'Approved' : 'Pending'}
+                                                {person.is_approved ? t('persons.approved') : t('persons.pending')}
                                             </span>
                                         </td>
                                         {authService.isSuperuser() && (
                                             <td>
                                                 <button className="btn btn-secondary" onClick={() => openCreateAccountModal(person)}>
-                                                    Create Account
+                                                    {t('persons.createAccount')}
                                                 </button>
                                             </td>
                                         )}
@@ -225,7 +227,7 @@ const PersonsPage = () => {
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3 className="modal-title">Add New Person</h3>
+                            <h3 className="modal-title">{t('persons.addNewPerson')}</h3>
                             <button className="modal-close" onClick={() => setShowModal(false)}>
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -238,7 +240,7 @@ const PersonsPage = () => {
                             <div className="modal-body">
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label htmlFor="first_name" className="form-label">First Name</label>
+                                        <label htmlFor="first_name" className="form-label">{t('persons.firstName')}</label>
                                         <input
                                             type="text"
                                             id="first_name"
@@ -250,7 +252,7 @@ const PersonsPage = () => {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="last_name" className="form-label">Last Name</label>
+                                        <label htmlFor="last_name" className="form-label">{t('persons.lastName')}</label>
                                         <input
                                             type="text"
                                             id="last_name"
@@ -265,7 +267,7 @@ const PersonsPage = () => {
 
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label htmlFor="sex" className="form-label">Sex</label>
+                                        <label htmlFor="sex" className="form-label">{t('persons.sex')}</label>
                                         <select
                                             id="sex"
                                             name="sex"
@@ -274,12 +276,12 @@ const PersonsPage = () => {
                                             onChange={handleInputChange}
                                             required
                                         >
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
+                                            <option value="Male">{t('persons.male')}</option>
+                                            <option value="Female">{t('persons.female')}</option>
                                         </select>
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="birth_date" className="form-label">Birth Date</label>
+                                        <label htmlFor="birth_date" className="form-label">{t('persons.birthDate')}</label>
                                         <input
                                             type="date"
                                             id="birth_date"
@@ -300,23 +302,23 @@ const PersonsPage = () => {
                                             checked={formData.is_approved}
                                             onChange={handleInputChange}
                                         />
-                                        Approved
+                                        {t('persons.approved')}
                                     </label>
                                 </div>
                             </div>
 
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={submitting}>
                                     {submitting ? (
                                         <>
                                             <span className="loading-spinner" />
-                                            Creating...
+                                            {t('common.saving')}
                                         </>
                                     ) : (
-                                        'Create Person'
+                                        t('persons.createPerson')
                                     )}
                                 </button>
                             </div>
@@ -330,7 +332,7 @@ const PersonsPage = () => {
                 <div className="modal-overlay" onClick={() => setShowAccountModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3 className="modal-title">Create Account</h3>
+                            <h3 className="modal-title">{t('persons.createAccount')}</h3>
                             <button className="modal-close" onClick={() => setShowAccountModal(false)}>
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -342,12 +344,12 @@ const PersonsPage = () => {
                         <form onSubmit={handleAccountSubmit}>
                             <div className="modal-body">
                                 <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
-                                    Creating an account for <strong>{selectedPersonForAccount?.first_name} {selectedPersonForAccount?.last_name}</strong>
+                                    {t('persons.creatingAccountFor')} <strong>{selectedPersonForAccount?.first_name} {selectedPersonForAccount?.last_name}</strong>
                                 </p>
 
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label htmlFor="username" className="form-label">Username</label>
+                                        <label htmlFor="username" className="form-label">{t('auth.username')}</label>
                                         <input
                                             type="text"
                                             id="username"
@@ -359,7 +361,7 @@ const PersonsPage = () => {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="account_status" className="form-label">Account Status</label>
+                                        <label htmlFor="account_status" className="form-label">{t('persons.accountStatus')}</label>
                                         <select
                                             id="account_status"
                                             name="account_status"
@@ -367,15 +369,15 @@ const PersonsPage = () => {
                                             value={accountFormData.account_status}
                                             onChange={handleAccountInputChange}
                                         >
-                                            <option value="active">Active</option>
-                                            <option value="disabled">Disabled</option>
+                                            <option value="active">{t('common.active')}</option>
+                                            <option value="disabled">{t('common.inactive')}</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div className="form-row">
                                     <div className="form-group">
-                                        <label htmlFor="password" className="form-label">Password</label>
+                                        <label htmlFor="password" className="form-label">{t('auth.password')}</label>
                                         <input
                                             type="password"
                                             id="password"
@@ -387,7 +389,7 @@ const PersonsPage = () => {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label htmlFor="role_code" className="form-label">Role (optional)</label>
+                                        <label htmlFor="role_code" className="form-label">{t('persons.roleOptional')}</label>
                                         <select
                                             id="role_code"
                                             name="role_code"
@@ -395,7 +397,7 @@ const PersonsPage = () => {
                                             value={accountFormData.role_code}
                                             onChange={handleAccountInputChange}
                                         >
-                                            <option value="">No role</option>
+                                            <option value="">{t('persons.noRole')}</option>
                                             {roles.map((role) => (
                                                 <option key={role.role_id} value={role.role_code}>
                                                     {role.role_label} ({role.role_code})
@@ -408,16 +410,16 @@ const PersonsPage = () => {
 
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowAccountModal(false)}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={submittingAccount}>
                                     {submittingAccount ? (
                                         <>
                                             <span className="loading-spinner" />
-                                            Creating...
+                                            {t('common.saving')}
                                         </>
                                     ) : (
-                                        'Create Account'
+                                        t('persons.createAccount')
                                     )}
                                 </button>
                             </div>

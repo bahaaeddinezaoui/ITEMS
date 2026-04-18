@@ -1,6 +1,50 @@
 @import url('./fonts.css');
 
 /* ========================================
+   RTL Support for Arabic
+   ======================================== */
+
+[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+[dir="rtl"] .sidebar {
+    left: auto;
+    right: 0;
+}
+
+[dir="rtl"] .main-content {
+    margin-left: 0;
+    margin-right: var(--sidebar-width, 260px);
+}
+
+[dir="rtl"] .nav-link svg {
+    margin-right: 0;
+    margin-left: var(--space-3);
+}
+
+[dir="rtl"] .page-header {
+    text-align: right;
+}
+
+[dir="rtl"] .form-label {
+    text-align: right;
+}
+
+[dir="rtl"] .form-input {
+    text-align: right;
+}
+
+[dir="rtl"] .login-left {
+    order: 2;
+}
+
+[dir="rtl"] .login-right {
+    order: 1;
+}
+
+/* ========================================
    EMS Design System - Modern Dark Theme
    ======================================== */
 
