@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { assetService, personService, problemReportService, locationService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const ReportsPage = () => {
     const { user, isSuperuser } = useAuth();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [reports, setReports] = useState([]);
@@ -73,7 +75,7 @@ const ReportsPage = () => {
         if (Number.isNaN(ts)) return '';
         const diff = Date.now() - ts;
         const mins = Math.round(diff / 60000);
-        if (mins < 1) return 'just now';
+        if (mins < 1) return t('common.justNow');
         if (mins < 60) return `${mins}m`;
         const hours = Math.round(mins / 60);
         if (hours < 24) return `${hours}h`;
@@ -103,7 +105,7 @@ const ReportsPage = () => {
             const data = await problemReportService.getAll();
             setReports(Array.isArray(data) ? data : []);
         } catch {
-            setError('Failed to load reports');
+            setError(t('reports.loadError'));
         } finally {
             setLoading(false);
         }
@@ -220,7 +222,7 @@ const ReportsPage = () => {
             setSelectedAsset(asset);
             setShowAssetModal(true);
         } catch {
-            setError('Failed to load asset details');
+            setError(t('reports.loadAssetError'));
         } finally {
             setLoadingAsset(false);
         }
@@ -230,11 +232,11 @@ const ReportsPage = () => {
         e.preventDefault();
         if (!selectedReport) return;
         if (!selectedTechnician) {
-            setError('Please select a technician');
+            setError(t('reports.selectTechnician'));
             return;
         }
         if (!maintenanceDescription.trim()) {
-            setError('Please enter a maintenance description');
+            setError(t('reports.enterDescription'));
             return;
         }
 
@@ -242,7 +244,7 @@ const ReportsPage = () => {
             if (destinationMode === 'asset_current') {
                 // No destination required
             } else if (!selectedMaintenanceLocationId) {
-                setError('Please select the maintenance location to send the asset to');
+                setError(t('reports.selectMaintenanceLocation'));
                 return;
             }
         }
@@ -265,8 +267,8 @@ const ReportsPage = () => {
             setMaintenanceDescription('');
             setSelectedMaintenanceLocationId('');
         } catch (err) {
-            const msg = err?.response?.data?.error || err?.message || 'Failed to create maintenance';
-            setError(typeof msg === 'string' ? msg : 'Failed to create maintenance');
+            const msg = err?.response?.data?.error || err?.message || t('reports.createError');
+            setError(typeof msg === 'string' ? msg : t('reports.createError'));
         } finally {
             setSubmitting(false);
         }
@@ -276,12 +278,12 @@ const ReportsPage = () => {
         return (
             <>
                 <div className="page-header">
-                    <h1 className="page-title">Reports</h1>
-                    <p className="page-subtitle">Problem reports</p>
+                    <h1 className="page-title">{t('reports.title')}</h1>
+                    <p className="page-subtitle">{t('reports.subtitle')}</p>
                 </div>
 
                 <div className="card">
-                    <div style={{ padding: 'var(--space-4)' }}>Forbidden</div>
+                    <div style={{ padding: 'var(--space-4)' }}>{t('common.forbidden')}</div>
                 </div>
             </>
         );
@@ -290,8 +292,8 @@ const ReportsPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Reports</h1>
-                <p className="page-subtitle">View reported problems on owned items</p>
+                <h1 className="page-title">{t('reports.title')}</h1>
+                <p className="page-subtitle">{t('reports.subtitle')}</p>
             </div>
 
             {error && (
@@ -312,11 +314,11 @@ const ReportsPage = () => {
                     }}
                 >
                     <div style={{ display: 'grid', gap: '0.25rem' }}>
-                        <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>All reports</h2>
+                        <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>{t('reports.allReports')}</h2>
                         <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
-                            {filteredReports.length} shown
+                            {t('reports.shown', { count: filteredReports.length })}
                             {typeFilter ? ` • ${typeFilter.replace('_', ' ')}` : ''}
-                            {query.trim() ? ' • search applied' : ''}
+                            {query.trim() ? ` • ${t('reports.searchApplied')}` : ''}
                         </div>
                     </div>
 
@@ -325,7 +327,7 @@ const ReportsPage = () => {
                             className="form-input"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
-                            placeholder="Search reports…"
+                            placeholder={t('reports.searchPlaceholder')}
                             style={{ width: 320, maxWidth: '100%' }}
                         />
                         <select
@@ -333,15 +335,15 @@ const ReportsPage = () => {
                             value={typeFilter}
                             onChange={(e) => setTypeFilter(e.target.value)}
                             style={{ width: 180 }}
-                            aria-label="Filter by type"
+                            aria-label={t('reports.filterByType')}
                         >
-                            <option value="">All types</option>
-                            <option value="asset">Asset</option>
-                            <option value="stock_item">Stock item</option>
-                            <option value="consumable">Consumable</option>
+                            <option value="">{t('reports.allTypes')}</option>
+                            <option value="asset">{t('reports.asset')}</option>
+                            <option value="stock_item">{t('reports.stockItem')}</option>
+                            <option value="consumable">{t('reports.consumable')}</option>
                         </select>
                         <button className="btn btn-secondary" onClick={loadReports} disabled={loading}>
-                            Refresh
+                            {t('common.refresh')}
                         </button>
                     </div>
                 </div>
@@ -350,12 +352,12 @@ const ReportsPage = () => {
                     {loading ? (
                         <div className="empty-state">
                             <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>Loading...</p>
+                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('common.loading')}</p>
                         </div>
                     ) : filteredReports.length === 0 ? (
                         <div className="empty-state">
-                            <h3 className="empty-state-title">No results</h3>
-                            <p className="empty-state-text">Try adjusting filters or search.</p>
+                            <h3 className="empty-state-title">{t('reports.noResults')}</h3>
+                            <p className="empty-state-text">{t('reports.tryAdjusting')}</p>
                         </div>
                     ) : (
                         <div
@@ -386,7 +388,7 @@ const ReportsPage = () => {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
                                             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                                 <span style={{ ...chipStyle, borderColor: 'rgba(99, 102, 241, 0.35)', color: 'var(--color-text-primary)' }}>
-                                                    {typeLabel || 'item'}
+                                                    {typeLabel || t('reports.item')}
                                                 </span>
                                                 <span style={chipStyle}>#{r?.report_id}</span>
                                                 <span style={chipStyle}>
@@ -404,7 +406,7 @@ const ReportsPage = () => {
                                         </div>
 
                                         <div style={{ marginTop: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.92rem' }}>
-                                            <span style={{ color: 'var(--color-text-muted)' }}>by</span> {who}
+                                            <span style={{ color: 'var(--color-text-muted)' }}>{t('reports.by')}</span> {who}
                                         </div>
 
                                         <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -415,13 +417,13 @@ const ReportsPage = () => {
                                                     disabled={loadingAsset}
                                                     style={{ padding: '0.5rem 0.75rem' }}
                                                 >
-                                                    View asset
+                                                    {t('reports.viewAsset')}
                                                 </button>
                                             )}
 
                                             {canCreateMaintenance && (
                                                 <button className="btn btn-primary" onClick={() => openCreateMaintenance(r)} style={{ padding: '0.5rem 0.75rem' }}>
-                                                    Create maintenance
+                                                    {t('reports.createMaintenance')}
                                                 </button>
                                             )}
 
@@ -441,7 +443,7 @@ const ReportsPage = () => {
                 <div className="modal-overlay" onClick={() => !submitting && setShowCreateMaintenanceModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3 className="modal-title">Create Maintenance</h3>
+                            <h3 className="modal-title">{t('reports.createMaintenance')}</h3>
                             <button className="modal-close" onClick={() => !submitting && setShowCreateMaintenanceModal(false)}>
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -453,7 +455,7 @@ const ReportsPage = () => {
                         <form onSubmit={submitCreateMaintenance}>
                             <div className="modal-body">
                                 <div className="form-group">
-                                    <label className="form-label">Report</label>
+                                    <label className="form-label">{t('reports.report')}</label>
                                     <div className="form-input">
                                         #{selectedReport?.report_id} ({selectedReport?.item_type} #{selectedReport?.item_id})
                                     </div>
@@ -461,7 +463,7 @@ const ReportsPage = () => {
 
                                 {selectedReport?.item_type === 'asset' && (
                                     <div className="form-group">
-                                        <label htmlFor="maintenance-location" className="form-label">Destination maintenance location</label>
+                                        <label htmlFor="maintenance-location" className="form-label">{t('reports.destMaintenanceLocation')}</label>
                                         <select
                                             id="maintenance-location"
                                             className="form-input"
@@ -471,12 +473,12 @@ const ReportsPage = () => {
                                         >
                                             <option value="">
                                                 {(destinationMode === 'maintenance_room' || destinationMode === 'asset_current')
-                                                    ? (loadingMaintenanceLocations ? '-- Loading Maintenance Locations --' : '-- Select Maintenance Location --')
-                                                    : (loadingAllLocations ? '-- Loading Locations --' : '-- Select Location --')}
+                                                    ? (loadingMaintenanceLocations ? t('reports.loadingMaintenanceLocations') : t('reports.selectMaintenanceLocationOption'))
+                                                    : (loadingAllLocations ? t('reports.loadingLocations') : t('reports.selectLocation'))}
                                             </option>
                                             {destinationMode === 'asset_current' && (
                                                 <option value="asset_current">
-                                                    Asset current location {assetCurrentLocation ? `(${assetCurrentLocation.location_name})` : ''}
+                                                    {t('reports.assetCurrentLocation')} {assetCurrentLocation ? `(${assetCurrentLocation.location_name})` : ''}
                                                 </option>
                                             )}
                                             {(destinationMode === 'maintenance_room' || destinationMode === 'asset_current') && maintenanceLocations.map((r) => (
@@ -494,14 +496,14 @@ const ReportsPage = () => {
                                 )}
 
                                 <div className="form-group">
-                                    <label htmlFor="technician" className="form-label">Technician</label>
+                                    <label htmlFor="technician" className="form-label">{t('reports.technician')}</label>
                                     <select
                                         id="technician"
                                         className="form-input"
                                         value={selectedTechnician}
                                         onChange={(e) => setSelectedTechnician(e.target.value)}
                                     >
-                                        <option value="">-- Select Technician --</option>
+                                        <option value="">{t('reports.selectTechnicianOption')}</option>
                                         {technicians.map((tech) => (
                                             <option key={tech.person_id} value={tech.person_id}>
                                                 {tech.first_name} {tech.last_name}
@@ -511,31 +513,31 @@ const ReportsPage = () => {
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Owner observation</label>
+                                    <label className="form-label">{t('reports.ownerObservation')}</label>
                                     <div className="form-input" style={{ whiteSpace: 'pre-wrap' }}>
                                         {selectedReport?.owner_observation || '-'}
                                     </div>
                                 </div>
 
                                 <div className="form-group">
-                                    <label htmlFor="description" className="form-label">Maintenance description</label>
+                                    <label htmlFor="description" className="form-label">{t('reports.maintenanceDescription')}</label>
                                     <textarea
                                         id="description"
                                         className="form-input"
                                         rows={4}
                                         value={maintenanceDescription}
                                         onChange={(e) => setMaintenanceDescription(e.target.value)}
-                                        placeholder="Describe the maintenance action plan / diagnosis..."
+                                        placeholder={t('reports.descriptionPlaceholder')}
                                     />
                                 </div>
                             </div>
 
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => !submitting && setShowCreateMaintenanceModal(false)}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={submitting}>
-                                    {submitting ? 'Creating...' : 'Create'}
+                                    {submitting ? t('common.creating') : t('common.create')}
                                 </button>
                             </div>
                         </form>
@@ -549,7 +551,7 @@ const ReportsPage = () => {
                         <div className="modal-header">
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap' }}>
                                 <h3 className="modal-title" style={{ margin: 0 }}>
-                                    {selectedAsset.asset_name || 'Asset'}
+                                    {selectedAsset.asset_name || t('reports.asset')}
                                 </h3>
                                 <span
                                     style={{
@@ -599,37 +601,37 @@ const ReportsPage = () => {
                                 }}
                             >
                                 <div>
-                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Type</div>
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('assets.assetType')}</div>
                                     <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
                                         {selectedAsset.asset_type_label || '-'}
                                     </div>
                                 </div>
                                 <div>
-                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Model</div>
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('assets.assetModel')}</div>
                                     <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
                                         {selectedAsset.asset_model_name || selectedAsset.asset_model || '-'}
                                     </div>
                                 </div>
                                 <div>
-                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Brand</div>
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('assets.brand')}</div>
                                     <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
                                         {selectedAsset.brand_name || '-'}
                                     </div>
                                 </div>
                                 <div>
-                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Service tag</div>
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('assets.serviceTag')}</div>
                                     <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
                                         {selectedAsset.asset_service_tag || '-'}
                                     </div>
                                 </div>
                                 <div>
-                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Serial</div>
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('assets.serialNumber')}</div>
                                     <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
                                         {selectedAsset.asset_serial_number || '-'}
                                     </div>
                                 </div>
                                 <div>
-                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>Inventory</div>
+                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('assets.inventoryNumber')}</div>
                                     <div style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
                                         {selectedAsset.asset_inventory_number || '-'}
                                     </div>
@@ -639,7 +641,7 @@ const ReportsPage = () => {
 
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" onClick={() => setShowAssetModal(false)}>
-                                Close
+                                {t('common.close')}
                             </button>
                         </div>
                     </div>

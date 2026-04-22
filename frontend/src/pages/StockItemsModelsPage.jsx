@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Plus, Search, Pencil, Sliders, Link2, Layers, Box, X, XCircle, Tag, Image, ChevronUp, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { stockItemAttributeDefinitionService, stockItemBrandService, stockItemModelAttributeService, stockItemModelService, stockItemTypeService, authService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const StockItemsModelsPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const { t } = useTranslation();
     const typeId = searchParams.get('typeId');
 
     const formatModelLabel = (model) => {
@@ -22,7 +25,8 @@ const StockItemsModelsPage = () => {
     const [editingModel, setEditingModel] = useState(null);
     const [modelForm, setModelForm] = useState({
         stock_item_brand: '',
-        model_name: '',
+        model_name_en: '',
+        model_name_ar: '',
         model_code: ''
     });
     const [showModelAttributeForm, setShowModelAttributeForm] = useState(false);
@@ -44,6 +48,13 @@ const StockItemsModelsPage = () => {
         brand_photo: null
     });
     const [brandPhotoPreview, setBrandPhotoPreview] = useState(null);
+
+    const [showAttributesModal, setShowAttributesModal] = useState(false);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortField, setSortField] = useState('model_name');
+    const [sortDirection, setSortDirection] = useState('asc');
+    const [brandFilter, setBrandFilter] = useState('');
 
     const toBrandCode = (name) => {
         const code = String(name || '')
@@ -94,7 +105,7 @@ const StockItemsModelsPage = () => {
             setStockItemModels(Array.isArray(models) ? models : []);
             setSelectedStockItemModel(null);
         } catch (err) {
-            setError('Failed to fetch stock item models: ' + err.message);
+            setError(t('stockItemModels.fetchError') + ': ' + err.message);
             setStockItemType(null);
             setStockItemModels([]);
             setSelectedStockItemModel(null);
@@ -119,7 +130,7 @@ const StockItemsModelsPage = () => {
         if (!authService.isSuperuser()) return;
         const brandName = brandForm.brand_name?.trim();
         if (!brandName) {
-            setError('Please enter a brand name');
+            setError(t('stockItemModels.enterBrandName'));
             return;
         }
 
@@ -139,7 +150,7 @@ const StockItemsModelsPage = () => {
             setShowBrandForm(false);
             await fetchStockItemBrands();
         } catch (err) {
-            setError('Failed to create stock item brand: ' + (err.response?.data?.error || err.message));
+            setError(t('stockItemModels.createBrandError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setBrandSaving(false);
         }
@@ -168,7 +179,7 @@ const StockItemsModelsPage = () => {
             const data = await stockItemModelAttributeService.getByStockItemModel(stockItemModelId);
             setStockItemModelAttributes(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch stock item model attributes: ' + err.message);
+            setError(t('stockItemModels.fetchAttributesError') + ': ' + err.message);
             setStockItemModelAttributes([]);
         }
     };
@@ -190,32 +201,53 @@ const StockItemsModelsPage = () => {
         e.preventDefault();
         if (!typeId) return;
         if (!modelForm.stock_item_brand) {
-            setError('Please select a brand');
+            setError(t('stockItemModels.selectBrand'));
             return;
         }
 
         setModelSaving(true);
         setError(null);
         try {
+            const modelNameEn = modelForm.model_name_en?.trim() || null;
+            const modelNameAr = modelForm.model_name_ar?.trim() || null;
             const payload = {
                 stock_item_type: Number(typeId),
                 stock_item_brand: Number(modelForm.stock_item_brand),
-                model_name: modelForm.model_name || null,
+                model_name: modelNameEn,
                 model_code: modelForm.model_code || null,
+                translations: {
+                    en: { model_name: modelNameEn },
+                    ar: { model_name: modelNameAr },
+                }
             };
             if (editingModel) {
                 await stockItemModelService.update(editingModel.stock_item_model_id, payload);
             } else {
                 await stockItemModelService.create(payload);
             }
-            setModelForm({ stock_item_brand: '', model_name: '', model_code: '' });
+            setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '' });
             setShowModelForm(false);
             setEditingModel(null);
             await fetchTypeAndModels(typeId);
         } catch (err) {
-            setError(`Failed to ${editingModel ? 'update' : 'create'} stock item model: ` + (err.response?.data?.error || err.message));
+            setError(t('stockItemModels.saveModelError', { action: editingModel ? t('stockItemModels.update') : t('stockItemModels.create') }) + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setModelSaving(false);
+        }
+    };
+
+    const handleDeleteModel = async (model) => {
+        if (!authService.isSuperuser()) return;
+        const label = formatModelLabel(model) || model.model_name || `${t('stockItemModels.model')} ${model.stock_item_model_id}`;
+        if (!window.confirm(t('stockItemModels.confirmDeleteModel', 'Are you sure you want to delete model "{{name}}"?', { name: label }))) return;
+        try {
+            await stockItemModelService.delete(model.stock_item_model_id);
+            if (selectedStockItemModel?.stock_item_model_id === model.stock_item_model_id) {
+                setSelectedStockItemModel(null);
+            }
+            await fetchTypeAndModels(typeId);
+        } catch (err) {
+            setError(t('stockItemModels.deleteModelError', 'Failed to delete model') + ': ' + (err.response?.data?.error || err.message));
         }
     };
 
@@ -223,7 +255,8 @@ const StockItemsModelsPage = () => {
         setEditingModel(model);
         setModelForm({
             stock_item_brand: model.stock_item_brand,
-            model_name: model.model_name || '',
+            model_name_en: model.model_name_en || model.model_name || '',
+            model_name_ar: model.model_name_ar || '',
             model_code: model.model_code || ''
         });
         setShowModelForm(true);
@@ -232,17 +265,17 @@ const StockItemsModelsPage = () => {
     const handleCancelModelForm = () => {
         setShowModelForm(false);
         setEditingModel(null);
-        setModelForm({ stock_item_brand: '', model_name: '', model_code: '' });
+        setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '' });
     };
 
     const handleModelAttributeSubmit = async (e) => {
         e.preventDefault();
         if (!selectedStockItemModel) {
-            setError('Please select a stock item model first');
+            setError(t('stockItemModels.selectModelFirst'));
             return;
         }
         if (!modelAttributeForm.stock_item_attribute_definition) {
-            setError('Please select an attribute definition');
+            setError(t('stockItemModels.selectDefinition'));
             return;
         }
 
@@ -268,21 +301,21 @@ const StockItemsModelsPage = () => {
             setShowModelAttributeForm(false);
             await fetchStockItemModelAttributes(selectedStockItemModel.stock_item_model_id);
         } catch (err) {
-            setError('Failed to add model attribute value: ' + err.message);
+            setError(t('stockItemModels.addAttributeError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
     };
 
     const handleDeleteModelAttribute = async (stockItemModelId, definitionId) => {
-        if (window.confirm('Remove this attribute value from the stock item model?')) {
+        if (window.confirm(t('stockItemModels.confirmRemoveAttribute'))) {
             try {
                 await stockItemModelAttributeService.delete(stockItemModelId, definitionId);
                 if (selectedStockItemModel) {
                     await fetchStockItemModelAttributes(selectedStockItemModel.stock_item_model_id);
                 }
             } catch (err) {
-                setError('Failed to remove stock item model attribute: ' + err.message);
+                setError(t('stockItemModels.removeAttributeError') + ': ' + err.message);
             }
         }
     };
@@ -301,6 +334,40 @@ const StockItemsModelsPage = () => {
         return (Array.isArray(stockItemAttributeDefinitions) ? stockItemAttributeDefinitions : []).filter((d) => !used.has(d.stock_item_attribute_definition_id));
     }, [selectedStockItemModel, stockItemAttributeDefinitions, stockItemModelAttributes]);
 
+    const filteredModels = useMemo(() => {
+        let result = [...stockItemModels];
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(m =>
+                m.model_name?.toLowerCase().includes(term) ||
+                m.model_code?.toLowerCase().includes(term) ||
+                m.brand_name?.toLowerCase().includes(term)
+            );
+        }
+        if (brandFilter) {
+            result = result.filter(m => String(m.stock_item_brand) === String(brandFilter));
+        }
+        result.sort((a, b) => {
+            let aVal, bVal;
+            switch (sortField) {
+                case 'model_code':
+                    aVal = a.model_code || '';
+                    bVal = b.model_code || '';
+                    break;
+                case 'brand_name':
+                    aVal = a.brand_name || '';
+                    bVal = b.brand_name || '';
+                    break;
+                default:
+                    aVal = a.model_name || '';
+                    bVal = b.model_name || '';
+            }
+            const cmp = aVal.localeCompare(bVal);
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
+        return result;
+    }, [stockItemModels, searchTerm, brandFilter, sortField, sortDirection]);
+
     const goBack = () => {
         navigate('/dashboard/stock-items/types');
     };
@@ -315,427 +382,384 @@ const StockItemsModelsPage = () => {
 
     if (!typeId) {
         return (
-            <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
-                <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                    <h1 className="page-title">Stock Items</h1>
-                    <p className="page-subtitle">Select a type first</p>
-                </div>
-
-                <div className="card" style={{ padding: 'var(--space-6)' }}>
-                    <button
-                        onClick={goBack}
-                        style={{
-                            padding: 'var(--space-2) var(--space-4)',
-                            border: '1px solid var(--color-border)',
-                            background: 'var(--color-bg-tertiary)',
-                            color: 'var(--color-text)',
-                            borderRadius: 'var(--radius-sm)',
-                            cursor: 'pointer',
-                            width: 'fit-content'
-                        }}
-                        title="Back to types"
-                        aria-label="Back to types"
-                    >
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M15 18l-6-6 6-6" />
-                        </svg>
+            <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
+                <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
+                    <div>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)' }}>{t('stockItemModels.title', 'Stock Item Models')}</h1>
+                        <p className="page-subtitle">{t('stockItemModels.selectTypeFirst')}</p>
+                    </div>
+                    <button className="btn btn-secondary" onClick={goBack} style={{ padding: 'var(--space-3) var(--space-4)' }}>
+                        <ArrowLeft size={18} />
+                        <span>{t('stockItemModels.backToTypes')}</span>
                     </button>
+                </div>
+                <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
+                    <Layers size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.3 }} />
+                    <p style={{ color: 'var(--color-text-muted)' }}>{t('stockItemModels.selectTypeFirst')}</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
-            <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">Stock Items</h1>
-                <p className="page-subtitle">Select a model{stockItemType?.stock_item_type_label ? ` for ${stockItemType.stock_item_type_label}` : ''}</p>
+        <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                    <button className="btn btn-secondary" onClick={goBack} style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                        <ArrowLeft size={18} />
+                    </button>
+                    <div>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
+                            {t('stockItemModels.models', 'Stock Item Models')}
+                        </h1>
+                        <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                            <Tag size={14} />
+                            {stockItemType?.stock_item_type_label || `Type #${typeId}`}
+                        </p>
+                    </div>
+                </div>
+                {authService.isSuperuser() && (
+                    <button className="btn btn-primary" onClick={() => { setEditingModel(null); setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '' }); setShowModelForm(true); }} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                        <Plus size={18} />
+                        <span>{t('stockItemModels.addModel')}</span>
+                    </button>
+                )}
             </div>
 
+            {/* Error */}
             {error && (
-                <div style={{
-                    backgroundColor: '#fee',
-                    color: '#c33',
-                    padding: 'var(--space-4)',
-                    borderRadius: 'var(--radius-sm)',
-                    marginBottom: 'var(--space-4)',
-                    border: '1px solid #fcc'
-                }}>
-                    {error}
+                <div className="error-message" style={{ marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <XCircle size={20} />
+                    <span>{error}</span>
+                    <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                        <X size={18} />
+                    </button>
                 </div>
             )}
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: 'var(--space-6)',
-                flex: 1,
-                minHeight: 0
-            }}>
-                <div className="card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                    <div className="card-header" style={{
-                        padding: 'var(--space-4)',
-                        borderBottom: '1px solid var(--color-border)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        backgroundColor: 'var(--color-bg-secondary)'
-                    }}>
-                        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                            <button
-                                onClick={goBack}
-                                style={{
-                                    padding: 'var(--space-2) var(--space-3)',
-                                    border: '1px solid var(--color-border)',
-                                    background: 'var(--color-bg-tertiary)',
-                                    color: 'var(--color-text)',
-                                    borderRadius: 'var(--radius-sm)',
-                                    cursor: 'pointer'
-                                }}
-                                title="Back"
-                                aria-label="Back"
-                            >
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M15 18l-6-6 6-6" />
-                                </svg>
+            {/* Add/Edit Model Modal */}
+            {showModelForm && (
+                <div className="modal-overlay" onClick={handleCancelModelForm}>
+                    <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <Plus size={18} style={{ color: 'var(--color-accent-primary)' }} />
+                                <h3 className="modal-title" style={{ margin: 0 }}>
+                                    {editingModel ? t('stockItemModels.editModel') : t('stockItemModels.addNewModel')}
+                                </h3>
+                            </div>
+                            <button className="modal-close" onClick={handleCancelModelForm} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)' }}>
+                                <X size={18} />
                             </button>
-                            <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Models</h2>
                         </div>
-                        {authService.isSuperuser() && (
-                            <button
-                                onClick={() => {
-                                    setEditingModel(null);
-                                    setModelForm({ stock_item_brand: '', model_name: '', model_code: '' });
-                                    setShowModelForm((v) => !v);
-                                }}
-                                style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: 'var(--font-size-lg)',
-                                    color: 'var(--color-primary)',
-                                    padding: '0 var(--space-2)'
-                                }}
-                                title="Add Model"
-                            >
-                                +
-                            </button>
-                        )}
-                    </div>
-
-                    {showModelForm && (
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
-                            <h3 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-3)' }}>{editingModel ? 'Edit Model' : 'Add New Model'}</h3>
-                            <form onSubmit={handleModelSubmit}>
-                                <select
-                                    name="stock_item_brand"
-                                    value={modelForm.stock_item_brand}
-                                    onChange={handleModelInputChange}
-                                    required
-                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                >
-                                    <option value="">Select brand...</option>
+                        <form onSubmit={handleModelSubmit} className="modal-body" style={{ padding: 'var(--space-5)' }}>
+                            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                    {t('stockItemModels.selectBrandPlaceholder')} *
+                                </label>
+                                <select name="stock_item_brand" value={modelForm.stock_item_brand} onChange={handleModelInputChange} required className="form-input" style={{ height: '44px' }}>
+                                    <option value="">{t('stockItemModels.selectBrandPlaceholder')}</option>
                                     {stockItemBrands.map((b) => (
-                                        <option key={b.stock_item_brand_id} value={b.stock_item_brand_id}>
-                                            {b.brand_name}
-                                        </option>
+                                        <option key={b.stock_item_brand_id} value={b.stock_item_brand_id}>{b.brand_name}</option>
                                     ))}
                                 </select>
-                                <input
-                                    type="text"
-                                    name="model_name"
-                                    value={modelForm.model_name}
-                                    onChange={handleModelInputChange}
-                                    placeholder="Model Name"
-                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                />
-                                <input
-                                    type="text"
-                                    name="model_code"
-                                    value={modelForm.model_code}
-                                    onChange={handleModelInputChange}
-                                    placeholder="Model Code"
-                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                />
-                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                    <button type="submit" disabled={modelSaving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>
-                                        {editingModel ? 'Update' : 'Save'}
-                                    </button>
-                                    <button type="button" onClick={handleCancelModelForm} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                            </div>
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                    {t('stockItemModels.modelName')} (EN) *
+                                </label>
+                                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                                    <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-accent-primary)', background: 'var(--color-accent-glow)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}>EN</span>
+                                    <input type="text" name="model_name_en" value={modelForm.model_name_en} onChange={handleModelInputChange} placeholder={t('stockItemModels.modelNameEnPlaceholder', 'Model name in English')} className="form-input" style={{ height: '44px', flex: 1 }} required />
                                 </div>
-                            </form>
+                            </div>
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                    {t('stockItemModels.modelName')} (AR)
+                                </label>
+                                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                                    <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-accent-tertiary)', background: 'var(--color-accent-glow)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}>AR</span>
+                                    <input type="text" name="model_name_ar" value={modelForm.model_name_ar} onChange={handleModelInputChange} placeholder={t('stockItemModels.modelNameArPlaceholder', 'Model name in Arabic')} className="form-input" style={{ height: '44px', flex: 1, direction: 'rtl' }} />
+                                </div>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                    {t('stockItemModels.modelCode')}
+                                </label>
+                                <input type="text" name="model_code" value={modelForm.model_code} onChange={handleModelInputChange} placeholder={t('stockItemModels.modelCode')} className="form-input" style={{ height: '44px' }} />
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)' }}>
+                                <button type="button" onClick={handleCancelModelForm} className="btn btn-secondary" style={{ padding: 'var(--space-3) var(--space-5)' }}>
+                                    {t('common.cancel')}
+                                </button>
+                                <button type="submit" disabled={modelSaving} className="btn btn-primary" style={{ padding: 'var(--space-3) var(--space-5)' }}>
+                                    {modelSaving ? t('common.saving', 'Saving...') : (editingModel ? t('stockItemModels.update') : t('common.save'))}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Layout */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                {/* Models Panel */}
+                <div className="card" style={{ overflow: 'hidden' }}>
+                    {/* Toolbar */}
+                    <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                        <div style={{ position: 'relative', flex: '0 1 320px', minWidth: '180px' }}>
+                            <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                            <input type="text" placeholder={t('stockItemModels.searchPlaceholder', 'Search models...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
                         </div>
-                    )}
+                        <select className="form-input" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={{ height: '40px', minWidth: '130px' }}>
+                            <option value="">{t('stockItemModels.allBrands', 'All Brands')}</option>
+                            {stockItemBrands.map(b => <option key={b.stock_item_brand_id} value={b.stock_item_brand_id}>{b.brand_name}</option>)}
+                        </select>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', minWidth: '110px' }}>
+                                <option value="model_name">{t('stockItemModels.sortByName', 'Name')}</option>
+                                <option value="model_code">{t('stockItemModels.sortByCode', 'Code')}</option>
+                                <option value="brand_name">{t('stockItemModels.sortByBrand', 'Brand')}</option>
+                            </select>
+                            <button className="btn btn-secondary" onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
+                                {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
+                            {filteredModels.length}
+                        </span>
+                    </div>
 
-                    <div style={{ overflowY: 'auto', flex: 1 }}>
-                        {stockItemModels.map((model) => (
-                            <div
-                                key={model.stock_item_model_id}
-                                style={{
-                                    padding: 'var(--space-3) var(--space-4)',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    borderBottom: '1px solid var(--color-border)'
-                                }}
-                            >
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                    <span style={{ fontWeight: '500' }}>{formatModelLabel(model) || `Model ${model.stock_item_model_id}`}</span>
-                                    <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>{model.model_code}</span>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                    {authService.isSuperuser() && (
-                                        <button
-                                            onClick={() => handleEditModel(model)}
-                                            style={{
-                                                padding: 'var(--space-1) var(--space-2)',
-                                                border: '1px solid var(--color-border)',
-                                                background: 'var(--color-bg-tertiary)',
-                                                color: 'var(--color-primary)',
-                                                borderRadius: 'var(--radius-sm)',
-                                                cursor: 'pointer'
-                                            }}
-                                            title="Edit model"
-                                        >
-                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                            </svg>
+                    {/* Model List */}
+                    <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
+                        {loading ? (
+                            <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
+                                <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
+                                <span>{t('stockItemModels.loading', 'Loading...')}</span>
+                            </div>
+                        ) : filteredModels.length === 0 ? (
+                            <div className="empty-state" style={{ padding: 'var(--space-12)' }}>
+                                <Layers size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.3 }} />
+                                <p style={{ color: 'var(--color-text-muted)' }}>
+                                    {searchTerm || brandFilter ? t('stockItemModels.noMatchingModels', 'No matching models') : t('stockItemModels.noModels')}
+                                </p>
+                            </div>
+                        ) : (
+                            filteredModels.map(model => (
+                                <div
+                                    key={model.stock_item_model_id}
+                                    style={{
+                                        padding: 'var(--space-4) var(--space-5)',
+                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                        borderBottom: '1px solid var(--color-border)',
+                                        background: selectedStockItemModel?.stock_item_model_id === model.stock_item_model_id ? 'var(--color-accent-glow)' : 'transparent',
+                                        cursor: 'pointer', transition: 'background 0.15s ease'
+                                    }}
+                                    onClick={() => setSelectedStockItemModel(model)}
+                                    onMouseEnter={(e) => { if (selectedStockItemModel?.stock_item_model_id !== model.stock_item_model_id) e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }}
+                                    onMouseLeave={(e) => { if (selectedStockItemModel?.stock_item_model_id !== model.stock_item_model_id) e.currentTarget.style.background = 'transparent'; }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flex: 1, minWidth: 0 }}>
+                                        <div style={{
+                                            width: '36px', height: '36px', borderRadius: 'var(--radius-md)',
+                                            background: 'var(--color-accent-glow)', border: '1px solid var(--color-border)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 'var(--font-size-sm)', fontWeight: '700', color: 'var(--color-accent-tertiary)', flexShrink: 0
+                                        }}>
+                                            {(model.brand_name || '?')[0].toUpperCase()}
+                                        </div>
+                                        <div style={{ minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                                                <span style={{ fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {model.model_name || `${t('stockItemModels.model')} ${model.stock_item_model_id}`}
+                                                </span>
+                                                {model.brand_name && (
+                                                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{model.brand_name}</span>
+                                                )}
+                                                {model.model_code && (
+                                                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', fontFamily: 'monospace', background: 'var(--color-bg-secondary)', padding: '1px 6px', borderRadius: 'var(--radius-sm)' }}>
+                                                        {model.model_code}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', flexShrink: 0 }}>
+                                        {authService.isSuperuser() && (
+                                            <button onClick={(e) => { e.stopPropagation(); handleEditModel(model); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItemModels.editModel')}>
+                                                <Pencil size={14} />
+                                            </button>
+                                        )}
+                                        {authService.isSuperuser() && (
+                                            <button onClick={(e) => { e.stopPropagation(); handleDeleteModel(model); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-error)' }} title={t('common.delete', 'Delete')}>
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                        <button onClick={(e) => { e.stopPropagation(); setSelectedStockItemModel(model); setShowAttributesModal(true); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItemModels.modelAttributes')}>
+                                            <Sliders size={14} />
                                         </button>
-                                    )}
-                                    <button
-                                        onClick={() => setSelectedStockItemModel(model)}
-                                        style={{
-                                            padding: 'var(--space-1) var(--space-2)',
-                                            border: '1px solid var(--color-border)',
-                                            background: selectedStockItemModel?.stock_item_model_id === model.stock_item_model_id ? 'var(--color-bg-secondary)' : 'var(--color-bg-tertiary)',
-                                            color: 'var(--color-text)',
-                                            borderRadius: 'var(--radius-sm)',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        Attributes
-                                    </button>
-                                    <button
-                                        onClick={() => goToCompatibility(model)}
-                                        style={{
-                                            padding: 'var(--space-1) var(--space-2)',
-                                            border: '1px solid var(--color-border)',
-                                            background: 'var(--color-bg-tertiary)',
-                                            color: 'var(--color-text)',
-                                            borderRadius: 'var(--radius-sm)',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        Compatibility
-                                    </button>
-                                    <button
-                                        onClick={() => goToInstances(model)}
-                                        style={{
-                                            padding: 'var(--space-1) var(--space-2)',
-                                            border: '1px solid var(--color-border)',
-                                            background: 'var(--color-bg-tertiary)',
-                                            color: 'var(--color-text)',
-                                            borderRadius: 'var(--radius-sm)',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        Instances
-                                    </button>
+                                        <button onClick={(e) => { e.stopPropagation(); goToCompatibility(model); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItemModels.compatibility')}>
+                                            <Link2 size={14} />
+                                        </button>
+                                        <button onClick={(e) => { e.stopPropagation(); goToInstances(model); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItemModels.instances')}>
+                                            <Box size={14} />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-
-                        {stockItemModels.length === 0 && !loading && (
-                            <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                                No models.
-                            </div>
+                            ))
                         )}
                     </div>
                 </div>
 
-                <div className="card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                    <div className="card-header" style={{
-                        padding: 'var(--space-4)',
-                        borderBottom: '1px solid var(--color-border)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        backgroundColor: 'var(--color-bg-secondary)'
-                    }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>
-                            Model Attributes {selectedStockItemModel ? `• ${formatModelLabel(selectedStockItemModel) || selectedStockItemModel.model_name || ''}` : ''}
-                        </h2>
-                        <button
-                            onClick={() => setShowModelAttributeForm((v) => !v)}
-                            disabled={!selectedStockItemModel}
-                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: selectedStockItemModel ? 'pointer' : 'not-allowed', opacity: selectedStockItemModel ? 1 : 0.6 }}
-                        >
-                            + Add Value
-                        </button>
-                    </div>
+                {/* Attributes Modal */}
+                {showAttributesModal && selectedStockItemModel && (
+                    <div className="modal-overlay" onClick={() => { setShowAttributesModal(false); setShowModelAttributeForm(false); }}>
+                        <div className="modal" style={{ maxWidth: '640px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                    <Sliders size={18} style={{ color: 'var(--color-accent-primary)' }} />
+                                    <div>
+                                        <h3 className="modal-title" style={{ margin: 0 }}>
+                                            {formatModelLabel(selectedStockItemModel) || selectedStockItemModel.model_name || `${t('stockItemModels.model')} ${selectedStockItemModel.stock_item_model_id}`}
+                                        </h3>
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                            {stockItemModelAttributes.length} {t('stockItemModels.attributesCount', 'attributes')}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                    <button onClick={() => setShowModelAttributeForm(v => !v)} className="btn btn-secondary" style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                                        <Plus size={14} />
+                                    </button>
+                                    <button className="modal-close" onClick={() => { setShowAttributesModal(false); setShowModelAttributeForm(false); }} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius-md)' }}>
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                            </div>
 
-                    <div style={{ overflowY: 'auto', flex: 1, padding: 'var(--space-4)' }}>
-                        {!selectedStockItemModel ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>Select a model to view or add values.</div>
-                        ) : (
-                            <>
+                            <div className="modal-body" style={{ padding: 'var(--space-4) var(--space-5)' }}>
                                 {showModelAttributeForm && (
-                                    <form onSubmit={handleModelAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
-                                        <select
-                                            name="stock_item_attribute_definition"
-                                            value={modelAttributeForm.stock_item_attribute_definition}
-                                            onChange={handleModelAttributeInputChange}
-                                            required
-                                            style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                        >
-                                            <option value="">Select attribute definition...</option>
-                                            {availableStockItemAttributeDefinitions.map((def) => (
-                                                <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
-                                                    {def.description || `Attribute ${def.stock_item_attribute_definition_id}`}
-                                                </option>
-                                            ))}
-                                        </select>
+                                    <form onSubmit={handleModelAttributeSubmit} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-accent-primary)' }}>
+                                        <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
+                                            <select name="stock_item_attribute_definition" value={modelAttributeForm.stock_item_attribute_definition} onChange={handleModelAttributeInputChange} required className="form-input" style={{ height: '44px' }}>
+                                                <option value="">{t('stockItemModels.selectAttributeDefinition')}</option>
+                                                {availableStockItemAttributeDefinitions.map((def) => (
+                                                    <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
+                                                        {def.description || `${t('stockItemModels.attribute')} ${def.stock_item_attribute_definition_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                         {(() => {
                                             const selectedDef = definitionLookup.get(Number(modelAttributeForm.stock_item_attribute_definition));
                                             const dataType = selectedDef?.data_type?.toLowerCase();
                                             if (dataType === 'number') {
-                                                return (
-                                                    <input
-                                                        type="number"
-                                                        name="value_number"
-                                                        placeholder="Number value"
-                                                        value={modelAttributeForm.value_number}
-                                                        onChange={handleModelAttributeInputChange}
-                                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                                    />
-                                                );
+                                                return <input type="number" name="value_number" placeholder={t('stockItemModels.numberValue')} value={modelAttributeForm.value_number} onChange={handleModelAttributeInputChange} className="form-input" style={{ height: '44px', marginBottom: 'var(--space-3)' }} />;
                                             }
                                             if (dataType === 'bool' || dataType === 'boolean') {
                                                 return (
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                                                        <input
-                                                            type="checkbox"
-                                                            name="value_bool"
-                                                            checked={modelAttributeForm.value_bool}
-                                                            onChange={handleModelAttributeInputChange}
-                                                        />
-                                                        True
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
+                                                        <input type="checkbox" name="value_bool" checked={modelAttributeForm.value_bool} onChange={handleModelAttributeInputChange} style={{ width: '18px', height: '18px' }} />
+                                                        <span style={{ fontSize: 'var(--font-size-sm)' }}>{t('common.true')}</span>
                                                     </label>
                                                 );
                                             }
                                             if (dataType === 'date') {
-                                                return (
-                                                    <input
-                                                        type="date"
-                                                        name="value_date"
-                                                        value={modelAttributeForm.value_date}
-                                                        onChange={handleModelAttributeInputChange}
-                                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                                    />
-                                                );
+                                                return <input type="date" name="value_date" value={modelAttributeForm.value_date} onChange={handleModelAttributeInputChange} className="form-input" style={{ height: '44px', marginBottom: 'var(--space-3)' }} />;
                                             }
-                                            return (
-                                                <input
-                                                    type="text"
-                                                    name="value_string"
-                                                    placeholder="String value"
-                                                    value={modelAttributeForm.value_string}
-                                                    onChange={handleModelAttributeInputChange}
-                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                                />
-                                            );
+                                            return <input type="text" name="value_string" placeholder={t('stockItemModels.stringValue')} value={modelAttributeForm.value_string} onChange={handleModelAttributeInputChange} className="form-input" style={{ height: '44px', marginBottom: 'var(--space-3)' }} />;
                                         })()}
-                                        <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
-                                            <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                            <button type="button" onClick={() => setShowModelAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                        <div className="form-actions">
+                                            <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: 'var(--space-2) var(--space-4)' }}>{t('common.save')}</button>
+                                            <button type="button" onClick={() => setShowModelAttributeForm(false)} className="btn btn-secondary" style={{ padding: 'var(--space-2) var(--space-4)' }}>{t('common.cancel')}</button>
                                         </div>
                                     </form>
                                 )}
 
                                 {stockItemModelAttributes.length === 0 ? (
-                                    <div style={{ color: 'var(--color-text-secondary)' }}>No model attribute values.</div>
-                                ) : (
-                                    stockItemModelAttributes.map((attr) => {
-                                        const definition = attr.definition || definitionLookup.get(attr.stock_item_attribute_definition);
-                                        const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
-                                        return (
-                                            <div key={`${attr.stock_item_model}-${attr.stock_item_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
-                                                <div>
-                                                    <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.stock_item_attribute_definition}`}</div>
-                                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? 'No value' : String(value)}</div>
-                                                </div>
-                                                <button
-                                                    onClick={() => handleDeleteModelAttribute(attr.stock_item_model, attr.stock_item_attribute_definition)}
-                                                    style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
-                                                >
-                                                    &times;
-                                                </button>
-                                            </div>
-                                        );
-                                    })
-                                )}
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {authService.isSuperuser() && (
-                    <div className="card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gridColumn: '1 / -1' }}>
-                        <div className="card-header" style={{
-                            padding: 'var(--space-4)',
-                            borderBottom: '1px solid var(--color-border)',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            backgroundColor: 'var(--color-bg-secondary)'
-                        }}>
-                            <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Brands</h2>
-                            <button
-                                onClick={() => setShowBrandForm((v) => !v)}
-                                style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
-                                title="Add Brand"
-                            >
-                                + Add Brand
-                            </button>
-                        </div>
-
-                        <div style={{ padding: 'var(--space-4)' }}>
-                            {showBrandForm && (
-                                <form onSubmit={handleBrandSubmit}>
-                                    <input
-                                        type="text"
-                                        name="brand_name"
-                                        value={brandForm.brand_name}
-                                        onChange={handleBrandInputChange}
-                                        placeholder="Brand Name"
-                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                    />
-                                    <input
-                                        type="file"
-                                        name="brand_photo"
-                                        accept="image/*"
-                                        onChange={handleBrandInputChange}
-                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                    />
-                                    {brandPhotoPreview && (
-                                        <div style={{ marginBottom: 'var(--space-2)' }}>
-                                            <img src={brandPhotoPreview} alt="Preview" style={{ maxWidth: '100px', maxHeight: '100px', borderRadius: 'var(--radius-sm)' }} />
-                                        </div>
-                                    )}
-                                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                        <button type="submit" disabled={brandSaving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                        <button type="button" onClick={() => setShowBrandForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                    <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-muted)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)', border: '2px dashed var(--color-border)' }}>
+                                        <Sliders size={32} style={{ marginBottom: 'var(--space-2)', opacity: 0.3 }} />
+                                        <p style={{ margin: 0 }}>{t('stockItemModels.noAttributeValues')}</p>
                                     </div>
-                                </form>
-                            )}
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                                        {stockItemModelAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.stock_item_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            const dataType = definition?.data_type?.toLowerCase() || 'string';
+                                            return (
+                                                <div key={`${attr.stock_item_model}-${attr.stock_item_attribute_definition}`} style={{
+                                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                                    padding: 'var(--space-3) var(--space-4)', background: 'var(--color-bg-card)',
+                                                    borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', transition: 'all 0.15s ease'
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-hover)'; e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'var(--color-bg-card)'; }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flex: 1, minWidth: 0 }}>
+                                                        <span className="badge badge-info" style={{ flexShrink: 0, fontSize: '10px' }}>
+                                                            {dataType.slice(0, 3).toUpperCase()}
+                                                        </span>
+                                                        <div style={{ minWidth: 0 }}>
+                                                            <span style={{ fontWeight: '500', fontSize: 'var(--font-size-sm)' }}>{definition?.description || `${t('stockItemModels.attribute')} ${attr.stock_item_attribute_definition}`}</span>
+                                                            <span style={{ marginLeft: 'var(--space-2)', color: value === '' ? 'var(--color-text-muted)' : 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                                                {value === '' ? '—' : String(value)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteModelAttribute(attr.stock_item_model, attr.stock_item_attribute_definition)}
+                                                        style={{ border: 'none', background: 'var(--color-bg-secondary)', color: 'var(--color-text-muted)', cursor: 'pointer', padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease', flexShrink: 0 }}
+                                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--color-error)'; }}
+                                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-bg-secondary)'; e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+                                                        title={t('stockItemModels.removeAttribute', 'Remove attribute')}
+                                                    >
+                                                        <X size={14} />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
-                            {!showBrandForm && (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>
-                                    Add brands to populate the brand selector when creating models.
-                                </div>
-                            )}
+                {/* Manage Brands Card */}
+                {authService.isSuperuser() && (
+                    <div className="card" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+                        <div
+                            onClick={() => navigate('/dashboard/stock-items/brands')}
+                            style={{
+                                padding: 'var(--space-4) var(--space-5)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-3)',
+                                cursor: 'pointer',
+                                transition: 'background 0.15s ease'
+                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                        >
+                            <div style={{
+                                width: '36px', height: '36px', borderRadius: 'var(--radius-md)',
+                                background: 'var(--color-accent-glow)', border: '1px solid var(--color-border)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: 'var(--color-accent-primary)', flexShrink: 0
+                            }}>
+                                <Tag size={18} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <span style={{ fontWeight: '600', fontSize: 'var(--font-size-md)' }}>
+                                    {t('stockItemModels.manageBrands', 'Manage Brands')}
+                                </span>
+                                <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>
+                                    {t('stockItemModels.manageBrandsHint', 'Add, edit or remove stock item brands')}
+                                </p>
+                            </div>
+                            <ChevronRight size={18} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
                         </div>
                     </div>
                 )}

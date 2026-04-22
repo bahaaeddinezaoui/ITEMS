@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Layers } from 'lucide-react';
+import TranslatableInput from '../components/TranslatableInput';
 import {
     assetTypeService,
     assetModelService,
@@ -75,6 +77,7 @@ const AssetsPage = () => {
         notes: '',
         warranty_expiry_in_months: '',
     });
+    const [formTranslations, setFormTranslations] = useState({});
     const [assetFormData, setAssetFormData] = useState({
         asset_serial_number: '',
         asset_inventory_number: '',
@@ -119,7 +122,11 @@ const AssetsPage = () => {
     const [moveCurrentLocationId, setMoveCurrentLocationId] = useState(null);
     const [moveCurrentLocationLabel, setMoveCurrentLocationLabel] = useState('');
     const [selectedMoveLocationId, setSelectedMoveLocationId] = useState('');
+    const [movementReasonAr, setMovementReasonAr] = useState('');
     const [moveSubmitting, setMoveSubmitting] = useState(false);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
 
     const formatStatusLabel = (value) => {
         const raw = (value || '').toString().trim();
@@ -397,6 +404,10 @@ const AssetsPage = () => {
         setAssetFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleFormTranslationChange = (langCode, value) => {
+        setFormTranslations((prev) => ({ ...prev, [langCode]: { asset_name: value } }));
+    };
+
     const handleTypeAttributeInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setTypeAttributeForm(prev => ({
@@ -500,6 +511,16 @@ const AssetsPage = () => {
                 attribution_order_id: assetFormData.attribution_order_id ? Number(assetFormData.attribution_order_id) : null,
                 destruction_certificate_id: assetFormData.destruction_certificate_id ? Number(assetFormData.destruction_certificate_id) : null,
             };
+            const translations = { ...formTranslations };
+            if (assetFormData.asset_name) {
+                translations['en'] = {
+                    ...(translations['en'] || {}),
+                    asset_name: assetFormData.asset_name,
+                };
+            }
+            if (Object.keys(translations).length > 0) {
+                dataToSubmit.translations = translations;
+            }
             if (editingAsset) {
                 await assetService.update(editingAsset, dataToSubmit);
             } else {
@@ -514,6 +535,7 @@ const AssetsPage = () => {
                 attribution_order_id: '',
                 destruction_certificate_id: ''
             });
+            setFormTranslations({});
             setEditingAsset(null);
             setShowAssetForm(false);
             await fetchAssets(selectedAssetModel.asset_model_id);
@@ -644,6 +666,10 @@ const AssetsPage = () => {
             attribution_order_id: asset.attribution_order_id ?? '',
             destruction_certificate_id: asset.destruction_certificate_id ?? ''
         });
+        const trans = {};
+        if (asset.asset_name_ar) trans['ar'] = { asset_name: asset.asset_name_ar };
+        if (asset.asset_name_en) trans['en'] = { asset_name: asset.asset_name_en };
+        setFormTranslations(trans);
         setShowAssetForm(true);
     };
 
@@ -760,6 +786,7 @@ const AssetsPage = () => {
         setMoveCurrentLocationId(null);
         setMoveCurrentLocationLabel('');
         setSelectedMoveLocationId('');
+        setMovementReasonAr('');
         setMoveSubmitting(false);
     };
 
@@ -769,6 +796,7 @@ const AssetsPage = () => {
         setMoveCurrentLocationId(null);
         setMoveCurrentLocationLabel('');
         setSelectedMoveLocationId('');
+        setMovementReasonAr('');
         setShowMoveModal(true);
         try {
             const [locations, currentLocation] = await Promise.all([
@@ -803,6 +831,7 @@ const AssetsPage = () => {
             setMoveSubmitting(true);
             await assetService.move(movingAsset.asset_id, {
                 destination_location_id: Number(selectedMoveLocationId),
+                movement_reason_ar: movementReasonAr || undefined,
             });
             if (selectedAssetModel) {
                 await fetchAssets(selectedAssetModel.asset_model_id);
@@ -818,7 +847,7 @@ const AssetsPage = () => {
 
     const userAccount = authService.getUser();
     const isSuperuser = userAccount?.is_superuser;
-    const isAssetResponsible = userAccount?.roles?.some(r => r.role_code === 'asset_responsible' || r.role_code === 'exploitation_chief' || r.role_code === 'it_bureau_chief');
+    const isAssetResponsible = isSuperuser || userAccount?.roles?.some(r => r.role_code === 'asset_responsible' || r.role_code === 'exploitation_chief' || r.role_code === 'it_bureau_chief');
     const isExploitationChief = userAccount?.roles?.some(r => r.role_code === 'exploitation_chief') || isSuperuser;
     const isMaintenanceChief = userAccount?.roles?.some(r => r.role_code === 'maintenance_chief') || isSuperuser;
     const canMoveAssets = isAssetResponsible || isExploitationChief;
@@ -827,6 +856,547 @@ const AssetsPage = () => {
     const canSuggestAssetForDestruction = isMaintenanceChief;
 
     const pendingConfirmations = assignments.filter(a => !a.is_confirmed_by_exploitation_chief && a.is_active);
+
+    const filteredAssets = useMemo(() => {
+        let result = assets;
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(a =>
+                (a.asset_name || '').toLowerCase().includes(term) ||
+                (a.asset_inventory_number || '').toLowerCase().includes(term) ||
+                (a.asset_serial_number || '').toLowerCase().includes(term)
+            );
+        }
+        if (statusFilter) {
+            result = result.filter(a => a.asset_status === statusFilter);
+        }
+        return result;
+    }, [assets, searchTerm, statusFilter]);
+
+    if (isInstancesMode) {
+        return (
+            <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                        <button className="btn btn-secondary" onClick={() => {
+                            if (typeIdParam) {
+                                navigate(`/dashboard/assets/models?typeId=${typeIdParam}`);
+                            } else {
+                                navigate('/dashboard/assets/types');
+                            }
+                        }} style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                            <ArrowLeft size={18} />
+                        </button>
+                        <div>
+                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
+                                {t('nav.assets')}
+                            </h1>
+                            <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                <Tag size={14} />
+                                {selectedAssetType?.asset_type_label || `Type #${typeIdParam || ''}`} • {formatModelLabel(selectedAssetModel) || selectedAssetModel?.model_name || `Model #${modelIdParam || ''}`}
+                            </p>
+                        </div>
+                    </div>
+                    <button className="btn btn-primary" onClick={() => {
+                        setEditingAsset(null);
+                        setFormTranslations({});
+                        setAssetFormData({
+                            asset_serial_number: '',
+                            asset_inventory_number: '',
+                            asset_service_tag: '',
+                            asset_name: '',
+                            asset_status: 'not_delivered_to_company',
+                            attribution_order_id: 0,
+                            destruction_certificate_id: 0
+                        });
+                        setShowAssetForm(true);
+                    }} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                        <Plus size={18} />
+                        <span>{t('assets.addAsset')}</span>
+                    </button>
+                </div>
+
+                {/* Error */}
+                {error && (
+                    <div className="error-message" style={{ marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <XCircle size={20} />
+                        <span>{error}</span>
+                        <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                            <X size={18} />
+                        </button>
+                    </div>
+                )}
+
+                {/* Add/Edit Asset Modal */}
+                {showAssetForm && (
+                    <div className="modal-overlay" onClick={() => setShowAssetForm(false)}>
+                        <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{editingAsset ? t('assets.editAsset') : t('assets.addAsset')}</h3>
+                                <button className="modal-close" onClick={() => setShowAssetForm(false)}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <form onSubmit={handleAssetSubmit} className="form">
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <TranslatableInput
+                                                label={t('assets.assetName')}
+                                                baseFieldName="asset_name"
+                                                value={assetFormData.asset_name}
+                                                onChange={(name, value) => handleAssetInputChange({ target: { name, value } })}
+                                                translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.asset_name]))}
+                                                onTranslationChange={handleFormTranslationChange}
+                                                placeholder={t('assets.assetName')}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <select name="asset_status" value={assetFormData.asset_status} onChange={handleAssetInputChange} className="form-input" style={{ height: '44px' }}>
+                                                <option value="not_delivered_to_company">{t('assets.notDelivered')}</option>
+                                                <option value="in_stock">{t('assets.inStock')}</option>
+                                                <option value="assigned">{t('assets.assigned')}</option>
+                                                <option value="maintenance">{t('assets.maintenance')}</option>
+                                                <option value="failed">{t('assets.failed')}</option>
+                                                <option value="lost">{t('assets.lost')}</option>
+                                                <option value="stolen">{t('assets.stolen')}</option>
+                                                <option value="irrecoverably_damaged">{t('assets.irrecoverablyDamaged')}</option>
+                                                <option value="destroyed">{t('assets.destroyed')}</option>
+                                                <option value="inactive">{t('assets.inactive')}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <input type="text" name="asset_serial_number" value={assetFormData.asset_serial_number} onChange={handleAssetInputChange} placeholder={t('assets.serialNumber')} className="form-input" style={{ height: '44px' }} />
+                                        </div>
+                                        <div className="form-group">
+                                            <input type="text" name="asset_inventory_number" value={assetFormData.asset_inventory_number} onChange={handleAssetInputChange} placeholder={t('assets.inventoryNumber')} className="form-input" style={{ height: '44px' }} />
+                                        </div>
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                                            {editingAsset ? t('common.update') : t('common.save')}
+                                        </button>
+                                        <button type="button" onClick={() => setShowAssetForm(false)} className="btn btn-secondary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                                            {t('common.cancel')}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Layout */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                    {/* Assets Panel */}
+                    <div className="card" style={{ overflow: 'hidden' }}>
+                        {/* Toolbar */}
+                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                            <div style={{ position: 'relative', flex: '0 1 320px', minWidth: '180px' }}>
+                                <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                                <input type="text" placeholder={t('assets.searchPlaceholder', 'Search assets...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
+                            </div>
+                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', minWidth: '130px' }}>
+                                <option value="">{t('assets.allStatuses', 'All Statuses')}</option>
+                                <option value="in_stock">{t('assets.inStock')}</option>
+                                <option value="assigned">{t('assets.assigned')}</option>
+                                <option value="maintenance">{t('assets.maintenance')}</option>
+                                <option value="failed">{t('assets.failed')}</option>
+                                <option value="not_delivered_to_company">{t('assets.notDelivered')}</option>
+                                <option value="lost">{t('assets.lost')}</option>
+                                <option value="stolen">{t('assets.stolen')}</option>
+                                <option value="destroyed">{t('assets.destroyed')}</option>
+                                <option value="inactive">{t('assets.inactive')}</option>
+                            </select>
+                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
+                                {filteredAssets.length}
+                            </span>
+                        </div>
+
+                        {/* Asset List */}
+                        <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
+                            {loading ? (
+                                <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
+                                    <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
+                                    <span>{t('assets.loading', 'Loading...')}</span>
+                                </div>
+                            ) : filteredAssets.length === 0 ? (
+                                <div className="empty-state" style={{ padding: 'var(--space-12)' }}>
+                                    <Box size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.3 }} />
+                                    <p style={{ color: 'var(--color-text-muted)' }}>
+                                        {searchTerm || statusFilter ? t('assets.noMatchingAssets', 'No matching assets') : t('assets.noAssets', 'No assets found')}
+                                    </p>
+                                </div>
+                            ) : (
+                                filteredAssets.map(asset => (
+                                    <div
+                                        key={asset.asset_id}
+                                        style={{
+                                            padding: 'var(--space-4) var(--space-5)',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            borderBottom: '1px solid var(--color-border)',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.15s ease'
+                                        }}
+                                        onClick={() => openAssetDetailsModal(asset)}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flex: 1, minWidth: 0 }}>
+                                            <div style={{
+                                                width: '36px', height: '36px', borderRadius: 'var(--radius-md)',
+                                                background: 'var(--color-accent-glow)', border: '1px solid var(--color-border)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: 'var(--font-size-sm)', fontWeight: '700', color: 'var(--color-accent-tertiary)',
+                                                flexShrink: 0
+                                            }}>
+                                                {(asset.asset_name || '?')[0].toUpperCase()}
+                                            </div>
+                                            <div style={{ minWidth: 0 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                                                    <span style={{ fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                        {asset.asset_name || t('assets.unnamedAsset', 'Unnamed Asset')}
+                                                    </span>
+                                                    {asset.asset_inventory_number && (
+                                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                            {asset.asset_inventory_number}
+                                                        </span>
+                                                    )}
+                                                    {asset.asset_serial_number && (
+                                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', fontFamily: 'monospace', background: 'var(--color-bg-secondary)', padding: '1px 6px', borderRadius: 'var(--radius-sm)' }}>
+                                                            {asset.asset_serial_number}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: '2px' }}>
+                                                    <span style={{
+                                                        padding: '1px 6px', borderRadius: '12px', fontSize: 'var(--font-size-xs)',
+                                                        backgroundColor: asset.asset_status === 'in_stock' ? 'rgba(16, 185, 129, 0.15)' :
+                                                                         asset.asset_status === 'not_delivered_to_company' ? 'rgba(245, 158, 11, 0.15)' : 'var(--color-bg-secondary)',
+                                                        color: asset.asset_status === 'in_stock' ? 'var(--color-success)' :
+                                                               asset.asset_status === 'not_delivered_to_company' ? 'var(--color-warning)' : 'var(--color-text-secondary)'
+                                                    }}>
+                                                        {formatStatusLabel(asset.asset_status)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', flexShrink: 0 }}>
+                                            <button onClick={(e) => { e.stopPropagation(); openAssetDetailsModal(asset); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('assets.attributes')}>
+                                                <Sliders size={14} />
+                                            </button>
+                                            <button onClick={(e) => { e.stopPropagation(); handleEditAsset(asset); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('common.edit')}>
+                                                <Pencil size={14} />
+                                            </button>
+                                            {canMoveAssets && (
+                                                <button onClick={(e) => { e.stopPropagation(); openMoveModal(asset); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('assets.move')}>
+                                                    <Box size={14} />
+                                                </button>
+                                            )}
+                                            {canAssignAssets && (
+                                                (() => {
+                                                    const activeAssignment = activeAssignmentsByAsset.get(asset.asset_id);
+                                                    return activeAssignment ? (
+                                                        <button onClick={(e) => { e.stopPropagation(); setDischargingAssignment(activeAssignment); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-error)' }} title={t('assets.discharge')}>
+                                                            <X size={14} />
+                                                        </button>
+                                                    ) : (
+                                                        <button onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setAssigningAsset(asset);
+                                                            const now = new Date();
+                                                            const tzOffset = now.getTimezoneOffset() * 60000;
+                                                            const localISOTime = new Date(now - tzOffset).toISOString().slice(0, 16);
+                                                            setAssignFormData({
+                                                                person: '',
+                                                                start_datetime: localISOTime,
+                                                                end_datetime: '',
+                                                                condition_on_assignment: asset.asset_status === 'in_stock' ? 'Good' : 'Needs Repair'
+                                                            });
+                                                            setShowAssignForm(true);
+                                                        }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-success)' }} title={t('assets.assign')}>
+                                                            <Plus size={14} />
+                                                        </button>
+                                                    );
+                                                })()
+                                            )}
+                                            <button onClick={(e) => { e.stopPropagation(); handleDeleteAsset(asset.asset_id); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-error)' }} title={t('common.delete')}>
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Assign Form Modal */}
+                {showAssignForm && assigningAsset && (
+                    <div className="modal-overlay" onClick={() => setShowAssignForm(false)}>
+                        <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('assets.assignAsset')}</h3>
+                                <button className="modal-close" onClick={() => setShowAssignForm(false)}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <form onSubmit={submitAssign}>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('assets.person')}</label>
+                                        <select name="person" value={assignFormData.person} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
+                                            <option value="">{t('assets.selectPerson')}</option>
+                                            {persons.map(p => <option key={p.person_id} value={p.person_id}>{p.person_name || `Person ${p.person_id}`}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">{t('assets.startDatetime')}</label>
+                                            <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">{t('assets.endDatetime')}</label>
+                                            <input type="datetime-local" name="end_datetime" value={assignFormData.end_datetime} onChange={handleAssignInputChange} className="form-input" style={{ height: '44px' }} />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('assets.conditionOnAssignment')}</label>
+                                        <select name="condition_on_assignment" value={assignFormData.condition_on_assignment} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
+                                            <option value="New">{t('assets.conditionNew')}</option>
+                                            <option value="Good">{t('assets.conditionGood')}</option>
+                                            <option value="Needs Repair">{t('assets.conditionNeedsRepair')}</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="submit" disabled={saving} className="btn btn-primary">{t('assets.assign')}</button>
+                                        <button type="button" onClick={() => setShowAssignForm(false)} className="btn btn-secondary">{t('common.cancel')}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Asset Details Modal */}
+                {showAssetDetailsModal && selectedAsset && (
+                    <div className="modal-overlay" onClick={closeAssetDetailsModal}>
+                        <div className="modal" style={{ maxWidth: '720px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <div>
+                                    <h3 className="modal-title" style={{ margin: 0 }}>
+                                        {selectedAsset.asset_name || t('assets.assetWithId', { id: selectedAsset.asset_id })}
+                                    </h3>
+                                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                        {t('assets.inventory')}: {selectedAsset.asset_inventory_number || '—'} • {t('assets.status')}: {formatStatusLabel(selectedAsset.asset_status)}
+                                    </span>
+                                </div>
+                                <button className="modal-close" onClick={closeAssetDetailsModal}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                {canSuggestAssetForDestruction && (selectedAsset.asset_status || '').toLowerCase() === 'failed' && (
+                                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                                        <button
+                                            type="button"
+                                            onClick={submitSuggestAssetForDestruction}
+                                            disabled={saving}
+                                            className="btn btn-secondary"
+                                        >
+                                            {saving ? t('assets.saving') : t('assets.suggestForDestruction')}
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div style={{
+                                    marginBottom: 'var(--space-6)',
+                                    padding: 'var(--space-4)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--color-bg-secondary)'
+                                }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                        <div>
+                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{t('assets.serialNumber')}</div>
+                                            <div style={{ fontWeight: 600 }}>{selectedAsset.asset_serial_number || '—'}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{t('assets.assignedTo')}</div>
+                                            {(() => {
+                                                const activeAssignment = activeAssignmentsByAsset.get(selectedAsset.asset_id);
+                                                return (
+                                                    <div style={{ fontWeight: 600 }}>
+                                                        {activeAssignment?.person_name || '—'}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>{t('assets.assetAttributes')}</div>
+                                        <button
+                                            onClick={() => setShowAssetAttributeForm(!showAssetAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + {t('assets.addValue')}
+                                        </button>
+                                    </div>
+                                    {showAssetAttributeForm && (
+                                        <form onSubmit={handleAssetAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="asset_attribute_definition"
+                                                value={assetAttributeForm.asset_attribute_definition}
+                                                onChange={handleAssetAttributeInputChange}
+                                                required
+                                                className="form-input"
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }}
+                                            >
+                                                <option value="">{t('assets.selectAttrDefPlaceholder')}</option>
+                                                {attributeDefinitions.map((def) => (
+                                                    <option key={def.asset_attribute_definition_id} value={def.asset_attribute_definition_id}>
+                                                        {def.description || t('assets.attributeWithId', { id: def.asset_attribute_definition_id })}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {(() => {
+                                                const selectedDef = definitionLookup.get(Number(assetAttributeForm.asset_attribute_definition));
+                                                const dataType = selectedDef?.data_type?.toLowerCase();
+                                                if (dataType === 'number') {
+                                                    return <input type="number" name="value_number" placeholder={t('assets.numberValue')} value={assetAttributeForm.value_number} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                                }
+                                                if (dataType === 'bool' || dataType === 'boolean') {
+                                                    return (
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <input type="checkbox" name="value_bool" checked={assetAttributeForm.value_bool} onChange={handleAssetAttributeInputChange} />
+                                                            {t('assets.true')}
+                                                        </label>
+                                                    );
+                                                }
+                                                if (dataType === 'date') {
+                                                    return <input type="date" name="value_date" value={assetAttributeForm.value_date} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                                }
+                                                return <input type="text" name="value_string" placeholder={t('assets.stringValue')} value={assetAttributeForm.value_string} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                            })()}
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1 }}>{t('assets.save')}</button>
+                                                <button type="button" onClick={() => setShowAssetAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1 }}>{t('assets.cancel')}</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {assetAttributes.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('assets.noAttrValues')}</div>
+                                    ) : (
+                                        assetAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.asset_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            return (
+                                                <div key={`${attr.asset}-${attr.asset_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{definition?.description || t('assets.attributeWithId', { id: attr.asset_attribute_definition })}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? t('assets.noValue') : String(value)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteAssetAttribute(attr.asset, attr.asset_attribute_definition)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Discharge Assignment Modal */}
+                {dischargingAssignment && (
+                    <div className="modal-overlay" onClick={() => setDischargingAssignment(null)}>
+                        <div className="modal" style={{ maxWidth: '480px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('assets.dischargeAsset')}</h3>
+                                <button className="modal-close" onClick={() => setDischargingAssignment(null)}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>{t('assets.dischargeConfirm')}</p>
+                                <div className="form-actions">
+                                    <button onClick={() => submitDischarge(dischargingAssignment.assignment_id)} disabled={saving} className="btn btn-primary">{t('assets.discharge')}</button>
+                                    <button onClick={() => setDischargingAssignment(null)} className="btn btn-secondary">{t('common.cancel')}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Move Asset Modal */}
+                {showMoveModal && movingAsset && (
+                    <div className="modal-overlay" onClick={() => !moveSubmitting && closeMoveModal()}>
+                        <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('assets.moveAssetTitle')}: {movingAsset.asset_name || t('assets.assetWithId', { id: movingAsset.asset_id })}</h3>
+                                <button className="modal-close" onClick={closeMoveModal} disabled={moveSubmitting}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <form onSubmit={submitMove}>
+                                    <div className="form-group">
+                                        <div style={{
+                                            marginBottom: 'var(--space-3)',
+                                            padding: 'var(--space-3)',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-sm)',
+                                            background: 'var(--color-bg-secondary)'
+                                        }}>
+                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>{t('assets.currentLocation')}</div>
+                                            <div style={{ fontWeight: 600 }}>{moveCurrentLocationLabel || t('assets.unknown')}</div>
+                                        </div>
+                                        <label className="form-label">{t('assets.destinationLocation')}</label>
+                                        <select
+                                            value={selectedMoveLocationId}
+                                            onChange={(e) => setSelectedMoveLocationId(e.target.value)}
+                                            required
+                                            disabled={moveSubmitting}
+                                            className="form-input"
+                                            style={{ height: '44px' }}
+                                        >
+                                            <option value="">{t('assets.selectLocation')}</option>
+                                            {moveLocations.map((r) => (
+                                                <option key={r.location_id} value={r.location_id}>
+                                                    {r.location_name || `Location ${r.location_id}`}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('assets.movementReasonAr')}</label>
+                                        <input
+                                            type="text"
+                                            value={movementReasonAr}
+                                            onChange={(e) => setMovementReasonAr(e.target.value)}
+                                            disabled={moveSubmitting}
+                                            className="form-input"
+                                            placeholder={t('assets.movementReasonArPlaceholder')}
+                                            dir="rtl"
+                                        />
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="submit" disabled={moveSubmitting || !selectedMoveLocationId} className="btn btn-primary">
+                                            {moveSubmitting ? t('assets.moving') : t('assets.move')}
+                                        </button>
+                                        <button type="button" onClick={closeMoveModal} disabled={moveSubmitting} className="btn btn-secondary">{t('common.cancel')}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
@@ -1123,6 +1693,7 @@ const AssetsPage = () => {
                                 <button
                                     onClick={() => {
                                         setEditingAsset(null);
+                                        setFormTranslations({});
                                         setAssetFormData({
                                             asset_serial_number: '',
                                             asset_inventory_number: '',
@@ -1346,8 +1917,15 @@ const AssetsPage = () => {
                                         <form onSubmit={handleAssetSubmit}>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Name</label>
-                                                    <input type="text" name="asset_name" value={assetFormData.asset_name} onChange={handleAssetInputChange} placeholder="Asset Name" style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+                                                    <TranslatableInput
+                                                        label="Name"
+                                                        baseFieldName="asset_name"
+                                                        value={assetFormData.asset_name}
+                                                        onChange={(name, value) => handleAssetInputChange({ target: { name, value } })}
+                                                        translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.asset_name]))}
+                                                        onTranslationChange={handleFormTranslationChange}
+                                                        placeholder="Asset Name"
+                                                    />
                                                 </div>
                                                 <div>
                                                     <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Status</label>
@@ -1991,6 +2569,23 @@ const AssetsPage = () => {
                                             </option>
                                         ))}
                                     </select>
+                                    <label style={{ display: 'block', marginBottom: 'var(--space-2)', marginTop: 'var(--space-3)' }}>Movement reason (Arabic)</label>
+                                    <input
+                                        type="text"
+                                        value={movementReasonAr}
+                                        onChange={(e) => setMovementReasonAr(e.target.value)}
+                                        disabled={moveSubmitting}
+                                        placeholder="سبب التنقلة (اختياري)"
+                                        dir="rtl"
+                                        style={{
+                                            width: '100%',
+                                            padding: 'var(--space-2)',
+                                            borderRadius: 'var(--radius-sm)',
+                                            border: '1px solid var(--color-border)',
+                                            background: 'var(--color-surface)',
+                                            color: 'var(--color-text)'
+                                        }}
+                                    />
                                 </div>
                                 <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
                                     <button

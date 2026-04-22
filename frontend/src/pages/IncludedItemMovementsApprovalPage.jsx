@@ -15,10 +15,12 @@ import {
 } from 'lucide-react';
 import { movementApprovalService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const IncludedItemMovementsApprovalPage = () => {
-    const { user } = useAuth();
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const { user, isSuperuser } = useAuth();
+    const { t } = useTranslation();
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
     const [submittingKey, setSubmittingKey] = useState(null);
@@ -40,7 +42,7 @@ const IncludedItemMovementsApprovalPage = () => {
             setPendingStockMoves(Array.isArray(stock) ? stock : []);
             setPendingConsumableMoves(Array.isArray(consumables) ? consumables : []);
         } catch (e) {
-            setError('Failed to load pending movements');
+            setError(t('includedItemMovements.loadError'));
         } finally {
             setLoading(false);
         }
@@ -62,13 +64,13 @@ const IncludedItemMovementsApprovalPage = () => {
             } else if (kind === 'consumable') {
                 await movementApprovalService.decideConsumableMovement(id, decision);
             } else {
-                setError('Invalid movement type');
+                setError(t('includedItemMovements.invalidType'));
                 return;
             }
-            setSuccess(`Movement #${id} ${decision}`);
+            setSuccess(t('includedItemMovements.movementDecision', { id, decision }));
             await loadPending();
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to update movement');
+            setError(e?.response?.data?.error || t('includedItemMovements.updateError'));
         } finally {
             setSubmittingKey(null);
         }
@@ -111,7 +113,7 @@ const IncludedItemMovementsApprovalPage = () => {
                                 style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '36px', height: '36px' }}
                                 onClick={() => handleDecision({ kind, id, decision: 'accepted' })}
                                 disabled={isSubmitting}
-                                title="Accept Movement"
+                                title={t('includedItemMovements.acceptMovement')}
                             >
                                 <Check size={18} />
                             </button>
@@ -120,7 +122,7 @@ const IncludedItemMovementsApprovalPage = () => {
                                 style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '36px', height: '36px' }}
                                 onClick={() => handleDecision({ kind, id, decision: 'rejected' })}
                                 disabled={isSubmitting}
-                                title="Reject Movement"
+                                title={t('includedItemMovements.rejectMovement')}
                             >
                                 <X size={18} />
                             </button>
@@ -128,16 +130,16 @@ const IncludedItemMovementsApprovalPage = () => {
                     </div>
                     
                     <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-4)' }}>
-                        {kind === 'stock_item' ? 'Stock Item' : 'Consumable'} #{itemId}
+                        {kind === 'stock_item' ? t('includedItemMovements.stockItem') : t('includedItemMovements.consumable')} #{itemId}
                         <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginLeft: 'var(--space-2)', fontWeight: 'normal' }}>
-                            Move #{id}
+                            {t('includedItemMovements.move')} #{id}
                         </span>
                     </h3>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
                             <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>From</div>
+                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>{t('includedItemMovements.from')}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text)' }}>
                                     <MapPin size={14} className="text-accent" />
                                     <span style={{ fontWeight: '500' }}>Location #{m.source_location_id}</span>
@@ -145,7 +147,7 @@ const IncludedItemMovementsApprovalPage = () => {
                             </div>
                             <ArrowRightLeft size={16} className="text-muted" style={{ marginTop: 'var(--font-size-xs)' }} />
                             <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>To</div>
+                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1)' }}>{t('includedItemMovements.to')}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text)' }}>
                                     <MapPin size={14} className="text-success" />
                                     <span style={{ fontWeight: '500' }}>Location #{m.destination_location_id}</span>
@@ -170,9 +172,9 @@ const IncludedItemMovementsApprovalPage = () => {
         <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div>
-                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>Included Items Movements Approval</h1>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>{t('includedItemMovements.title')}</h1>
                     <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
-                        Review and decide on pending equipment movements requested in problem reports.
+                        {t('includedItemMovements.subtitle')}
                     </p>
                 </div>
                 <button 
@@ -183,7 +185,7 @@ const IncludedItemMovementsApprovalPage = () => {
                     style={{ padding: 'var(--space-3) var(--space-4)' }}
                 >
                     <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                    <span>Refresh</span>
+                    <span>{t('common.refresh')}</span>
                 </button>
             </div>
 
@@ -210,15 +212,15 @@ const IncludedItemMovementsApprovalPage = () => {
             {loading ? (
                 <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
                     <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                    <span style={{ fontSize: 'var(--font-size-lg)' }}>Loading pending approvals...</span>
+                    <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('includedItemMovements.loadingApprovals')}</span>
                 </div>
             ) : totalPending === 0 ? (
                 <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
                     <div className="empty-state-icon">
                         <CheckCircle2 size={64} className="text-success" />
                     </div>
-                    <h3 className="empty-state-title">All caught up!</h3>
-                    <p className="empty-state-text">There are no pending movements requiring your approval at this time.</p>
+                    <h3 className="empty-state-title">{t('includedItemMovements.allCaughtUp')}</h3>
+                    <p className="empty-state-text">{t('includedItemMovements.noPendingMovements')}</p>
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-10)' }}>
@@ -226,7 +228,7 @@ const IncludedItemMovementsApprovalPage = () => {
                         <section>
                             <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <ShoppingCart size={20} className="text-accent" />
-                                Pending Stock Item Movements
+                                {t('includedItemMovements.pendingStockItemMovements')}
                                 <span className="badge badge-secondary" style={{ marginLeft: 'var(--space-2)' }}>{pendingStockMoves.length}</span>
                             </h2>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 'var(--space-6)' }}>
@@ -239,7 +241,7 @@ const IncludedItemMovementsApprovalPage = () => {
                         <section>
                             <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <Layers size={20} className="text-accent" />
-                                Pending Consumable Movements
+                                {t('includedItemMovements.pendingConsumableMovements')}
                                 <span className="badge badge-secondary" style={{ marginLeft: 'var(--space-2)' }}>{pendingConsumableMoves.length}</span>
                             </h2>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 'var(--space-6)' }}>

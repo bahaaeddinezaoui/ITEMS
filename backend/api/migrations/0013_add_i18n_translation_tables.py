@@ -14,14 +14,31 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ('api', '0012_external_maintenance_provider_and_more'),
+        ('api', '0012_rename_facture_to_invoice'),
     ]
 
     operations = [
         # ============================================================================
+        # SECTION 0: Declare managed=False parent models not yet in migration graph
+        # (required for FK resolution in translation models below)
+        # ============================================================================
+
+        migrations.CreateModel(
+            name='OrganizationalStructureType',
+            fields=[
+                ('organizational_structure_type_id', models.AutoField(primary_key=True, serialize=False, db_column='organizational_structure_type_id')),
+                ('organizational_structure_type', models.CharField(max_length=30, db_column='organizational_structure_type')),
+            ],
+            options={
+                'db_table': 'organizational_structure_type',
+                'managed': False,
+            },
+        ),
+
+        # ============================================================================
         # SECTION 1: REFERENCE/DICTIONARY DATA (UI Labels)
         # ============================================================================
-        
+
         migrations.CreateModel(
             name='AssetTypeTranslation',
             fields=[

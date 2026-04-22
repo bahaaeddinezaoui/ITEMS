@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
     administrativeCertificateService,
@@ -8,19 +9,20 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const SIGNATURE_FIELDS = [
-    { key: 'is_signed_by_warehouse_storage_magaziner', label: 'Magaziner', short: 'M' },
-    { key: 'is_signed_by_warehouse_storage_accountant', label: 'Accountant', short: 'A' },
-    { key: 'is_signed_by_warehouse_storage_marketer', label: 'Marketer', short: 'Mk' },
-    { key: 'is_signed_by_warehouse_it_chief', label: 'IT Chief', short: 'IT' },
-    { key: 'is_signed_by_warehouse_leader', label: 'Leader', short: 'L' },
+const getSignatureFields = (t) => [
+    { key: 'is_signed_by_warehouse_storage_magaziner', label: t('adminCertificates.magaziner'), short: 'M' },
+    { key: 'is_signed_by_warehouse_storage_accountant', label: t('adminCertificates.accountant'), short: 'A' },
+    { key: 'is_signed_by_warehouse_storage_marketer', label: t('adminCertificates.marketer'), short: 'Mk' },
+    { key: 'is_signed_by_warehouse_it_chief', label: t('adminCertificates.itChief'), short: 'IT' },
+    { key: 'is_signed_by_warehouse_leader', label: t('adminCertificates.leader'), short: 'L' },
 ];
 
 const AdministrativeCertificatesPage = () => {
-    const { user } = useAuth();
+    const { t } = useTranslation();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
 
-    const isAssetResponsible = user?.roles?.some((role) => role.role_code === 'asset_responsible' || role.role_code === 'exploitation_chief' || role.role_code === 'it_bureau_chief');
+    const isAssetResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'asset_responsible' || role.role_code === 'exploitation_chief' || role.role_code === 'it_bureau_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -100,7 +102,7 @@ const AdministrativeCertificatesPage = () => {
                 setReportsById(reportsMap);
             }
         } catch {
-            setError('Failed to fetch administrative certificates');
+            setError(t('adminCertificates.fetchError'));
         } finally {
             setLoading(false);
         }
@@ -132,7 +134,7 @@ const AdministrativeCertificatesPage = () => {
         let movedCount = 0;
 
         list.forEach((c) => {
-            const fullySigned = SIGNATURE_FIELDS.every((field) => !!c?.[field.key]);
+            const fullySigned = getSignatureFields(t).every((field) => !!c?.[field.key]);
             if (fullySigned) fullySignedCount += 1;
             if (fullySigned && !c?.are_items_moved) readyToMoveCount += 1;
             if (c?.are_items_moved) movedCount += 1;
@@ -160,20 +162,20 @@ const AdministrativeCertificatesPage = () => {
 
         try {
             if (!createForm.warehouse) {
-                setError('Warehouse is required');
+                setError(t('adminCertificates.warehouseRequired'));
                 return;
             }
             if (!createForm.attribution_order) {
-                setError('Attribution order is required');
+                setError(t('adminCertificates.attributionOrderRequired'));
                 return;
             }
             if (!deducedReceiptReportId) {
-                setError('Receipt report is not found for this attribution order. Create it from the Attribution Orders page first.');
+                setError(t('adminCertificates.receiptReportNotFound'));
                 return;
             }
 
             if (createForm.operation && !['entry', 'exit', 'transfer'].includes(createForm.operation)) {
-                setError('Operation must be entry, exit, or transfer');
+                setError(t('adminCertificates.operationInvalid'));
                 return;
             }
 
@@ -197,7 +199,7 @@ const AdministrativeCertificatesPage = () => {
 
             await fetchData();
 
-            setSuccess('Administrative certificate created successfully');
+            setSuccess(t('adminCertificates.createSuccess'));
             setShowCreateForm(false);
             setCreateForm({
                 warehouse: '',
@@ -235,7 +237,7 @@ const AdministrativeCertificatesPage = () => {
                     : JSON.stringify(data);
                 setError(message);
             } else {
-                setError('Failed to create administrative certificate');
+                setError(t('adminCertificates.createError'));
             }
         } finally {
             setSubmitting(false);
@@ -246,45 +248,45 @@ const AdministrativeCertificatesPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     return (
         <div className="administrative-certificates-page">
             <div className="card administrative-certificates-hero">
                 <div className="administrative-certificates-header">
                     <div>
-                        <h1 className="page-title">Administrative Certificates</h1>
-                        <p className="page-subtitle">Consult, track signature status, and move ready items</p>
+                        <h1 className="page-title">{t('adminCertificates.title')}</h1>
+                        <p className="page-subtitle">{t('adminCertificates.subtitle')}</p>
                     </div>
                     <button
                         className="btn btn-primary administrative-certificates-create-btn"
                         onClick={() => setShowCreateForm(true)}
                     >
-                        + New Certificate
+                        + {t('adminCertificates.newCertificate')}
                     </button>
                 </div>
                 <div className="administrative-certificates-hero-foot">
-                    <span className="badge badge-info">Centralized certificate overview</span>
-                    <span className="badge badge-warning">Move Items unlocks only when all signatures are Yes</span>
+                    <span className="badge badge-info">{t('adminCertificates.centralizedOverview')}</span>
+                    <span className="badge badge-warning">{t('adminCertificates.moveItemsUnlocks')}</span>
                 </div>
             </div>
 
             <div className="stat-grid administrative-certificates-stat-grid">
                 <div className="stat-card">
                     <div className="stat-value">{certificateStats.total}</div>
-                    <div className="stat-label">Total certificates</div>
+                    <div className="stat-label">{t('adminCertificates.totalCertificates')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{certificateStats.fullySignedCount}</div>
-                    <div className="stat-label">Fully signed</div>
+                    <div className="stat-label">{t('adminCertificates.fullySigned')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{certificateStats.readyToMoveCount}</div>
-                    <div className="stat-label">Ready to move items</div>
+                    <div className="stat-label">{t('adminCertificates.readyToMove')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{certificateStats.movedCount}</div>
-                    <div className="stat-label">Items moved</div>
+                    <div className="stat-label">{t('adminCertificates.itemsMoved')}</div>
                 </div>
             </div>
 
@@ -293,80 +295,80 @@ const AdministrativeCertificatesPage = () => {
 
             <div className="card administrative-certificates-list-card">
                 <div className="card-header">
-                    <h2 className="card-title">All Certificates</h2>
-                    <div className="administrative-certificates-subtle-text">{certificates.length} records</div>
+                    <h2 className="card-title">{t('adminCertificates.allCertificates')}</h2>
+                    <div className="administrative-certificates-subtle-text">{certificates.length} {t('adminCertificates.records')}</div>
                 </div>
 
                 <div className="card-body">
                     {certificates.length === 0 ? (
-                        <div className="administrative-certificates-empty-state">No administrative certificates found.</div>
+                        <div className="administrative-certificates-empty-state">{t('adminCertificates.noCertificates')}</div>
                     ) : (
                         <div className="administrative-certificates-list">
                             {certificates.map((c) => {
                                 const w = warehousesById[c.warehouse];
                                 const o = ordersById[c.attribution_order];
                                 const rr = reportsById[c.receipt_report];
-                                const fullySigned = SIGNATURE_FIELDS.every((field) => !!c?.[field.key]);
+                                const fullySigned = getSignatureFields(t).every((field) => !!c?.[field.key]);
                                 const canMoveItems = fullySigned && !c.are_items_moved;
 
                                 return (
                                     <div key={c.administrative_certificate_id} className="administrative-certificates-item">
                                         <div className="administrative-certificates-item-head">
                                             <div>
-                                                <div className="administrative-certificates-item-title">Certificate #{c.administrative_certificate_id}</div>
+                                                <div className="administrative-certificates-item-title">{t('adminCertificates.certificateId', { id: c.administrative_certificate_id })}</div>
                                                 <div className="administrative-certificates-item-subtitle">
                                                     {w?.warehouse_name || (c.warehouse ? `#${c.warehouse}` : '-')}
                                                 </div>
                                             </div>
                                             <div className="administrative-certificates-badges">
                                                 <span className={`badge ${fullySigned ? 'badge-success' : 'badge-warning'}`}>
-                                                    {fullySigned ? 'Fully signed' : 'Pending signatures'}
+                                                    {fullySigned ? t('adminCertificates.fullySigned') : t('adminCertificates.pendingSignatures')}
                                                 </span>
                                                 <span className={`badge ${c.are_items_moved ? 'badge-info' : 'badge-warning'}`}>
-                                                    {c.are_items_moved ? 'Items moved' : 'Items not moved'}
+                                                    {c.are_items_moved ? t('adminCertificates.itemsMoved') : t('adminCertificates.itemsNotMoved')}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <div className="administrative-certificates-item-grid">
                                             <div>
-                                                <div className="administrative-certificates-field-label">Order</div>
+                                                <div className="administrative-certificates-field-label">{t('adminCertificates.orderField')}</div>
                                                 <div className="administrative-certificates-field-value">
                                                     {o?.attribution_order_full_code || (c.attribution_order ? `#${c.attribution_order}` : '-')}
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="administrative-certificates-field-label">Report</div>
+                                                <div className="administrative-certificates-field-label">{t('adminCertificates.reportField')}</div>
                                                 <div className="administrative-certificates-field-value">
                                                     {rr?.report_full_code || (c.receipt_report ? `#${c.receipt_report}` : '-')}
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="administrative-certificates-field-label">Org</div>
+                                                <div className="administrative-certificates-field-label">{t('adminCertificates.orgField')}</div>
                                                 <div className="administrative-certificates-field-value">{c.interested_organization || '-'}</div>
                                             </div>
                                             <div>
-                                                <div className="administrative-certificates-field-label">Op</div>
+                                                <div className="administrative-certificates-field-label">{t('adminCertificates.opField')}</div>
                                                 <div className="administrative-certificates-field-value">{c.operation || '-'}</div>
                                             </div>
                                             <div>
-                                                <div className="administrative-certificates-field-label">Fmt</div>
+                                                <div className="administrative-certificates-field-label">{t('adminCertificates.formatField')}</div>
                                                 <div className="administrative-certificates-field-value">{c.format || '-'}</div>
                                             </div>
                                             <div>
-                                                <div className="administrative-certificates-field-label">Copy</div>
-                                                <div className="administrative-certificates-field-value">{c.digital_copy ? 'Yes' : 'No'}</div>
+                                                <div className="administrative-certificates-field-label">{t('adminCertificates.copyField')}</div>
+                                                <div className="administrative-certificates-field-value">{c.digital_copy ? t('common.yes') : t('common.no')}</div>
                                             </div>
                                         </div>
 
                                         <div className="administrative-certificates-footer">
                                             <div className="administrative-certificates-signature-pill-list">
-                                                {SIGNATURE_FIELDS.map((field) => (
+                                                {getSignatureFields(t).map((field) => (
                                                     <span
                                                         key={`${c.administrative_certificate_id}-${field.key}`}
                                                         className={`badge ${c?.[field.key] ? 'badge-success' : 'badge-error'}`}
                                                     >
-                                                        {field.short}: {c?.[field.key] ? 'Yes' : 'No'}
+                                                        {field.short}: {c?.[field.key] ? t('common.yes') : t('common.no')}
                                                     </span>
                                                 ))}
                                             </div>
@@ -377,10 +379,10 @@ const AdministrativeCertificatesPage = () => {
                                                     style={{ width: 'auto' }}
                                                     onClick={() => navigate(`/dashboard/administrative-certificates/${c.administrative_certificate_id}/move-items`)}
                                                 >
-                                                    Move Items
+                                                    {t('adminCertificates.moveItems')}
                                                 </button>
                                             ) : (
-                                                <span className="administrative-certificates-subtle-text">Move unavailable</span>
+                                                <span className="administrative-certificates-subtle-text">{t('adminCertificates.moveUnavailable')}</span>
                                             )}
                                         </div>
                                     </div>
@@ -404,8 +406,8 @@ const AdministrativeCertificatesPage = () => {
                     >
                         <div className="modal-header administrative-certificates-modal-header">
                             <div>
-                                <div className="modal-title">New Administrative Certificate</div>
-                                <div className="administrative-certificates-subtle-text">Fill all fields and submit once</div>
+                                <div className="modal-title">{t('adminCertificates.newAdminCertificate')}</div>
+                                <div className="administrative-certificates-subtle-text">{t('adminCertificates.fillAllFields')}</div>
                             </div>
                             <button
                                 type="button"
@@ -420,7 +422,7 @@ const AdministrativeCertificatesPage = () => {
                             <form onSubmit={handleCreate}>
                                 {eligibleAttributionOrderIds.size === 0 && (
                                     <div className="administrative-certificates-modal-warning">
-                                        No attribution orders are eligible here yet. Receipt reports are created from the Attribution Orders page.
+                                        {t('adminCertificates.noEligibleOrders')}
                                     </div>
                                 )}
 
@@ -430,9 +432,9 @@ const AdministrativeCertificatesPage = () => {
                                             className="form-input"
                                             value={createForm.warehouse}
                                             onChange={(e) => setCreateForm({ ...createForm, warehouse: e.target.value })}
-                                            aria-label="Warehouse"
+                                            aria-label={t('adminCertificates.warehouse')}
                                         >
-                                            <option value="">Warehouse</option>
+                                            <option value="">{t('adminCertificates.warehouse')}</option>
                                             {Object.values(warehousesById).map((w) => (
                                                 <option key={w.warehouse_id} value={w.warehouse_id}>
                                                     {w.warehouse_name || `#${w.warehouse_id}`}
@@ -446,9 +448,9 @@ const AdministrativeCertificatesPage = () => {
                                             className="form-input"
                                             value={createForm.attribution_order}
                                             onChange={(e) => setCreateForm({ ...createForm, attribution_order: e.target.value })}
-                                            aria-label="Attribution order"
+                                            aria-label={t('adminCertificates.attributionOrder')}
                                         >
-                                            <option value="">Attribution order</option>
+                                            <option value="">{t('adminCertificates.attributionOrder')}</option>
                                             {Object.values(ordersById)
                                                 .filter((o) => eligibleAttributionOrderIds.has(Number(o.attribution_order_id)))
                                                 .map((o) => (
@@ -469,8 +471,8 @@ const AdministrativeCertificatesPage = () => {
                                                     : ''
                                             }
                                             readOnly
-                                            placeholder="Receipt report (auto)"
-                                            aria-label="Receipt report"
+                                            placeholder={t('adminCertificates.receiptReportAuto')}
+                                            aria-label={t('adminCertificates.receiptReport')}
                                         />
                                     </div>
 
@@ -480,8 +482,8 @@ const AdministrativeCertificatesPage = () => {
                                             className="form-input"
                                             value={createForm.interested_organization}
                                             onChange={(e) => setCreateForm({ ...createForm, interested_organization: e.target.value })}
-                                            placeholder="Interested organization"
-                                            aria-label="Interested organization"
+                                            placeholder={t('adminCertificates.interestedOrganization')}
+                                            aria-label={t('adminCertificates.interestedOrganization')}
                                         />
                                     </div>
 
@@ -490,12 +492,12 @@ const AdministrativeCertificatesPage = () => {
                                             className="form-input"
                                             value={createForm.operation}
                                             onChange={(e) => setCreateForm({ ...createForm, operation: e.target.value })}
-                                            aria-label="Operation"
+                                            aria-label={t('adminCertificates.operation')}
                                         >
-                                            <option value="">Operation</option>
-                                            <option value="entry">entry</option>
-                                            <option value="exit">exit</option>
-                                            <option value="transfer">transfer</option>
+                                            <option value="">{t('adminCertificates.operation')}</option>
+                                            <option value="entry">{t('adminCertificates.entry')}</option>
+                                            <option value="exit">{t('adminCertificates.exit')}</option>
+                                            <option value="transfer">{t('adminCertificates.transfer')}</option>
                                         </select>
                                     </div>
 
@@ -505,8 +507,8 @@ const AdministrativeCertificatesPage = () => {
                                             className="form-input"
                                             value={createForm.format}
                                             onChange={(e) => setCreateForm({ ...createForm, format: e.target.value })}
-                                            placeholder="Format"
-                                            aria-label="Format"
+                                            placeholder={t('adminCertificates.format')}
+                                            aria-label={t('adminCertificates.format')}
                                         />
                                     </div>
 
@@ -516,13 +518,13 @@ const AdministrativeCertificatesPage = () => {
                                             className="form-input"
                                             onChange={(e) => setCreateForm({ ...createForm, digital_copy: e.target.files[0] })}
                                             accept="image/*,application/pdf"
-                                            aria-label="Digital copy attachment"
+                                            aria-label={t('adminCertificates.digitalCopyAttachment')}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="administrative-certificates-modal-signatures">
-                                    {SIGNATURE_FIELDS.map((field) => (
+                                    {getSignatureFields(t).map((field) => (
                                         <label key={field.key} className="administrative-certificates-signature-chip">
                                             <input
                                                 type="checkbox"
@@ -547,10 +549,10 @@ const AdministrativeCertificatesPage = () => {
                                         disabled={submitting}
                                         onClick={() => setShowCreateForm(false)}
                                     >
-                                        Cancel
+                                        {t('common.cancel')}
                                     </button>
                                     <button type="submit" className="btn btn-primary administrative-certificates-submit-btn" disabled={submitting}>
-                                        {submitting ? 'Creating...' : 'Create Certificate'}
+                                        {submitting ? t('common.creating') : t('adminCertificates.createCertificate')}
                                     </button>
                                 </div>
                             </form>

@@ -27,15 +27,15 @@ const DashboardLayout = () => {
         if (user?.person) {
             return `${user.person.first_name} ${user.person.last_name}`;
         }
-        return user?.username || 'User';
+        return user?.username || t('common.user');
     };
 
     const getRoleLabel = () => {
-        if (isSuperuser) return 'Superuser';
+        if (isSuperuser) return t('common.superuser');
         if (user?.roles && user.roles.length > 0) {
             return user.roles[0].role_label;
         }
-        return 'User';
+        return t('common.user');
     };
 
     const isChief = useMemo(() => {
@@ -52,13 +52,13 @@ const DashboardLayout = () => {
     const isMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'it_maintenance_technician');
     const isNetworkMaintenanceTechnician = user?.roles?.some(role => role.role_code === 'network_maintenance_technician');
     const isExploitationChief = user?.roles?.some(role => role.role_code === 'exploitation_chief');
-    const isStockConsumableResponsible = user?.roles?.some(role => role.role_code === 'stock_consumable_responsible');
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some(role => role.role_code === 'stock_consumable_responsible');
     const isAssetResponsible = user?.roles?.some(role => role.role_code === 'asset_responsible');
     const isItBureauChief = user?.roles?.some(role => role.role_code === 'it_bureau_chief');
     const isDirectorAdminSupport = user?.roles?.some(role => role.role_code === 'director_admin_support');
     const isProtectionSecurityBureauChief = user?.roles?.some(role => role.role_code === 'protection_and_security_bureau_chief');
     const isSchoolHeadquarter = user?.roles?.some(role => role.role_code === 'school_headquarter');
-    const canViewPurchaseOrders = isStockConsumableResponsible || isExploitationChief || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
+    const canViewPurchaseOrders = isSuperuser || isStockConsumableResponsible || isExploitationChief || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
     const canViewProblemReports = isSuperuser || isMaintenanceChief || isItBureauChief;
     const canViewIncidentReports = isSuperuser || isItBureauChief || isProtectionSecurityBureauChief || isSchoolHeadquarter || !!user?.person?.person_id;
 
@@ -141,30 +141,6 @@ const DashboardLayout = () => {
                                     {t('nav.persons')}
                                 </NavLink>
 
-                                <NavLink to="/dashboard/assets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                                    </svg>
-                                    {t('nav.assets')}
-                                </NavLink>
-
-                                <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <circle cx="9" cy="21" r="1" />
-                                        <circle cx="20" cy="21" r="1" />
-                                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                                    </svg>
-                                    {t('nav.stockItems')}
-                                </NavLink>
-
-                                <NavLink to="/dashboard/consumables" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                                    </svg>
-                                    {t('nav.consumables')}
-                                </NavLink>
-
                                 <NavLink to="/dashboard/locations" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -192,20 +168,20 @@ const DashboardLayout = () => {
                                         <circle cx="20" cy="12" r="1.5" />
                                         <circle cx="4" cy="17" r="1.5" />
                                     </svg>
-                                    Position-Role Links
+                                    {t('nav.positionRoleLinks')}
                                 </NavLink>
                             </div>
                         </>
                     )}
 
                     <div className="nav-section">
-                        <span className="nav-section-title">My</span>
+                        <span className="nav-section-title">{t('navSections.my')}</span>
                         <NavLink to="/dashboard/my-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                 <circle cx="12" cy="7" r="4" />
                             </svg>
-                            My Items
+                            {t('nav.myItems')}
                         </NavLink>
                         <NavLink to="/dashboard/my-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -214,13 +190,13 @@ const DashboardLayout = () => {
                                 <path d="M7 12h10" />
                                 <path d="M7 17h6" />
                             </svg>
-                            My Reports
+                            {t('nav.myReports')}
                         </NavLink>
                     </div>
 
                     {(canViewProblemReports || canViewIncidentReports) && (
                         <div className="nav-section">
-                            <span className="nav-section-title">Reports</span>
+                            <span className="nav-section-title">{t('navSections.reports')}</span>
                             {canViewProblemReports && (
                                 <NavLink to="/dashboard/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -229,7 +205,7 @@ const DashboardLayout = () => {
                                         <path d="M7 12h10" />
                                         <path d="M7 17h6" />
                                     </svg>
-                                    Reports
+                                    {t('nav.reports')}
                                 </NavLink>
                             )}
                             {canViewIncidentReports && (
@@ -240,33 +216,33 @@ const DashboardLayout = () => {
                                         <path d="M7 12h10" />
                                         <path d="M7 17h6" />
                                     </svg>
-                                    Incident Reports
+                                    {t('assetIncidentReports.title')}
                                 </NavLink>
                             )}
                         </div>
                     )}
 
-                    {(isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isMaintenanceChief || isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
+                    {(isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isMaintenanceChief || isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
                         <div className="nav-section">
-                            <span className="nav-section-title">Inventory</span>
+                            <span className="nav-section-title">{t('navSections.inventory')}</span>
 
-                            {(isAssetResponsible || isExploitationChief || isItBureauChief || isMaintenanceChief || isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
+                            {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief || isMaintenanceChief || isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
                                 <NavLink to="/dashboard/location-inventory" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
                                         <circle cx="12" cy="9" r="2.5" />
                                     </svg>
-                                    Location Inventory
+                                    {t('nav.locationInventory')}
                                 </NavLink>
                             )}
 
-                            {(isExploitationChief || isItBureauChief || isAssetResponsible) && (
+                            {(isSuperuser || isExploitationChief || isItBureauChief || isAssetResponsible) && (
                                 <NavLink to="/dashboard/assets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                                     </svg>
-                                    Assets
+                                    {t('nav.assets')}
                                 </NavLink>
                             )}
 
@@ -279,11 +255,11 @@ const DashboardLayout = () => {
                                         <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                         <path d="M15 2v4h4" />
                                     </svg>
-                                    Purchase Orders
+                                    {t('nav.purchaseOrders')}
                                 </NavLink>
                             )}
 
-                            {(isExploitationChief || isItBureauChief || isStockConsumableResponsible) && (
+                            {(isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible) && (
                                 <>
                                     <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -291,19 +267,19 @@ const DashboardLayout = () => {
                                             <circle cx="20" cy="21" r="1" />
                                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                                         </svg>
-                                        Stock Items
+                                        {t('nav.stockItems')}
                                     </NavLink>
 
                                     <NavLink to="/dashboard/consumables" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                                         </svg>
-                                        Consumables
+                                        {t('nav.consumables')}
                                     </NavLink>
                                 </>
                             )}
 
-                            {(isAssetResponsible || isExploitationChief || isItBureauChief) && (
+                            {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
                                 <NavLink to="/dashboard/attribution-orders" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -312,11 +288,11 @@ const DashboardLayout = () => {
                                         <line x1="16" y1="17" x2="8" y2="17" />
                                         <polyline points="10 9 9 9 8 9" />
                                     </svg>
-                                    Attribution Orders
+                                    {t('nav.attributionOrders')}
                                 </NavLink>
                             )}
 
-                            {(isAssetResponsible || isExploitationChief || isItBureauChief) && (
+                            {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
                                 <NavLink to="/dashboard/company-asset-requests" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M9 12h6" />
@@ -325,11 +301,11 @@ const DashboardLayout = () => {
                                         <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                         <path d="M15 2v4h4" />
                                     </svg>
-                                    Company Asset Requests
+                                    {t('nav.companyAssetRequests')}
                                 </NavLink>
                             )}
 
-                            {(isAssetResponsible || isExploitationChief || isItBureauChief) && (
+                            {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
                                 <NavLink to="/dashboard/administrative-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -337,7 +313,7 @@ const DashboardLayout = () => {
                                         <path d="M8 13h8" />
                                         <path d="M8 17h8" />
                                     </svg>
-                                    Administrative Certificates
+                                    {t('nav.administrativeCertificates')}
                                 </NavLink>
                             )}
 
@@ -350,7 +326,7 @@ const DashboardLayout = () => {
                                         <path d="M10 11v6" />
                                         <path d="M14 11v6" />
                                     </svg>
-                                    Destruction Certificates (Stock & Consumable)
+                                    {t('nav.stockConsumableDestructionCertificates')}
                                 </NavLink>
                             )}
 
@@ -363,20 +339,20 @@ const DashboardLayout = () => {
                                         <path d="M10 11v6" />
                                         <path d="M14 11v6" />
                                     </svg>
-                                    Destruction Certificates (Assets)
+                                    {t('assetDestructionCertificates.title')}
                                 </NavLink>
                             )}
 
-                            {(isAssetResponsible || isExploitationChief || isItBureauChief) && (
+                            {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
                                 <NavLink to="/dashboard/external-maintenances" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
                                     </svg>
-                                    External Maintenances
+                                    {t('nav.externalMaintenances')}
                                 </NavLink>
                             )}
 
-                            {(isAssetResponsible || isExploitationChief || isItBureauChief) && (
+                            {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
                                 <NavLink to="/dashboard/asset-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M9 12h6" />
@@ -385,13 +361,13 @@ const DashboardLayout = () => {
                                         <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                         <path d="M15 2v4h4" />
                                     </svg>
-                                    Asset Movements Approvals
+                                    {t('nav.assetMovementsApprovals')}
                                 </NavLink>
                             )}
 
                             
 
-                            {(isStockConsumableResponsible || isExploitationChief) && (
+                            {(isSuperuser || isStockConsumableResponsible || isExploitationChief) && (
                                 <>
                                     <NavLink to="/dashboard/stock-consumables-inventory" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -400,7 +376,7 @@ const DashboardLayout = () => {
                                             <rect x="14" y="14" width="7" height="7" />
                                             <rect x="3" y="14" width="7" height="7" />
                                         </svg>
-                                        Stock & Consumables Inventory
+                                        {t('nav.stockConsumablesInventory')}
                                     </NavLink>
 
                                     <NavLink to="/dashboard/item-requests-inbox" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -411,7 +387,7 @@ const DashboardLayout = () => {
                                             <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                             <path d="M15 2v4h4" />
                                         </svg>
-                                        Item Requests Inbox
+                                        {t('nav.itemRequestsInbox')}
                                     </NavLink>
 
                                     <NavLink to="/dashboard/included-item-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -422,7 +398,7 @@ const DashboardLayout = () => {
                                             <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                             <path d="M15 2v4h4" />
                                         </svg>
-                                        Included Items Approvals
+                                        {t('nav.includedItemsApprovals')}
                                     </NavLink>
                                 </>
                             )}
@@ -433,12 +409,12 @@ const DashboardLayout = () => {
                         ['maintenance_chief', 'it_maintenance_technician', 'it_bureau_chief', 'network_maintenance_technician'].includes(r.role_code)
                     )) && (
                         <div className="nav-section">
-                            <span className="nav-section-title">Maintenance</span>
+                            <span className="nav-section-title">{t('navSections.maintenance')}</span>
                             <NavLink to="/dashboard/maintenances" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
                                 </svg>
-                                Maintenances
+                                {t('nav.maintenances')}
                             </NavLink>
                             {(isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
                                 <NavLink to="/dashboard/my-maintenance-stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -446,7 +422,7 @@ const DashboardLayout = () => {
                                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                         <circle cx="12" cy="7" r="4" />
                                     </svg>
-                                    My Stats
+                                    {t('nav.myMaintenanceStats')}
                                 </NavLink>
                             )}
                             {isMaintenanceChief && (
@@ -458,7 +434,7 @@ const DashboardLayout = () => {
                                         <path d="M8 14h8" />
                                         <path d="M8 18h6" />
                                     </svg>
-                                    Asset Maintenance History
+                                    {t('assetMaintenanceHistory.title')}
                                 </NavLink>
                             )}
                             {(isMaintenanceChief || isItBureauChief || isSuperuser) && (
@@ -468,7 +444,7 @@ const DashboardLayout = () => {
                                         <path d="M12 20V4" />
                                         <path d="M6 20v-6" />
                                     </svg>
-                                    Maintenance Stats
+                                    {t('nav.maintenanceStats')}
                                 </NavLink>
                             )}
                         </div>
@@ -476,9 +452,6 @@ const DashboardLayout = () => {
                 </nav>
 
                 <div className="sidebar-footer">
-                    <div className="flex items-center justify-between px-4 py-2 border-t border-white/10">
-                        <LanguageSwitcher />
-                    </div>
                     <div
                         className="user-info"
                         ref={userMenuRef}
@@ -515,7 +488,7 @@ const DashboardLayout = () => {
                                         navigate('/dashboard/options');
                                     }}
                                 >
-                                    Options
+                                    {t('nav.options')}
                                 </button>
                                 <button
                                     type="button"
@@ -526,7 +499,7 @@ const DashboardLayout = () => {
                                         setIsUserMenuOpen(false);
                                     }}
                                 >
-                                    Profile
+                                    {t('common.profile')}
                                 </button>
                                 <button
                                     type="button"
@@ -538,8 +511,11 @@ const DashboardLayout = () => {
                                         navigate('/dashboard/options');
                                     }}
                                 >
-                                    Security
+                                    {t('common.security')}
                                 </button>
+                                <div className="user-menu-item language-switcher-item">
+                                    <LanguageSwitcher />
+                                </div>
                             </div>
                         )}
                         <button

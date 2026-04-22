@@ -5,10 +5,12 @@ import {
     assetService,
     warehouseService
 } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const AttributionOrderAssetsPage = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [order, setOrder] = useState(null);
     const [assets, setAssets] = useState([]);
@@ -34,7 +36,7 @@ const AttributionOrderAssetsPage = () => {
             setAssets(assetsData.results || assetsData || []);
             setWarehouses(warehousesData);
         } catch (err) {
-            setError('Failed to fetch order assets');
+            setError(t('attributionOrderAssets.fetchError'));
             console.error(err);
         } finally {
             setLoading(false);
@@ -46,25 +48,25 @@ const AttributionOrderAssetsPage = () => {
         return `status-badge status-${normalized}`;
     };
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             {/* Header */}
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">Associated Assets</h1>
+                    <h1 className="page-title">{t('attributionOrderAssets.title')}</h1>
                     <p className="page-subtitle">
                         {order?.attribution_order_full_code 
-                            ? `Order: ${order.attribution_order_full_code}` 
-                            : 'View all assets linked to this attribution order'}
+                            ? `${t('attributionOrderAssets.order')}: ${order.attribution_order_full_code}` 
+                            : t('attributionOrderAssets.subtitle')}
                     </p>
                 </div>
                 <button
                     className="btn btn-secondary"
                     onClick={() => navigate(`/dashboard/attribution-orders?orderId=${orderId}`)}
-                    title="Back to Order"
-                    aria-label="Back to Order"
+                    title={t('attributionOrderAssets.backToOrder')}
+                    aria-label={t('attributionOrderAssets.backToOrder')}
                 >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 18l-6-6 6-6" />
@@ -79,21 +81,21 @@ const AttributionOrderAssetsPage = () => {
                 <div className="card" style={{ padding: 'var(--space-6)', borderLeft: '4px solid var(--color-primary)' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)' }}>
                         <div>
-                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Order Code</div>
+                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{t('attributionOrderAssets.orderCode')}</div>
                             <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600' }}>{order.attribution_order_full_code}</div>
                         </div>
                         <div>
-                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Date</div>
+                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{t('attributionOrderAssets.date')}</div>
                             <div style={{ fontSize: 'var(--font-size-md)' }}>{new Date(order.attribution_order_date).toLocaleDateString()}</div>
                         </div>
                         <div>
-                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Warehouse</div>
+                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{t('attributionOrderAssets.warehouse')}</div>
                             <div style={{ fontSize: 'var(--font-size-md)' }}>
-                                {warehouses.find(w => w.warehouse_id === order.warehouse)?.warehouse_name || 'N/A'}
+                                {warehouses.find(w => w.warehouse_id === order.warehouse)?.warehouse_name || t('common.na')}
                             </div>
                         </div>
                         <div>
-                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Total Assets</div>
+                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{t('attributionOrderAssets.totalAssets')}</div>
                             <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', color: 'var(--color-primary)' }}>{assets.length}</div>
                         </div>
                     </div>
@@ -110,8 +112,8 @@ const AttributionOrderAssetsPage = () => {
                             <line x1="12" y1="17" x2="12" y2="21" />
                         </svg>
                     </div>
-                    <h3 style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>No Assets Found</h3>
-                    <p style={{ color: 'var(--color-text-light)' }}>This attribution order has no linked assets.</p>
+                    <h3 style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-2)' }}>{t('attributionOrderAssets.noAssetsFound')}</h3>
+                    <p style={{ color: 'var(--color-text-light)' }}>{t('attributionOrderAssets.noLinkedAssets')}</p>
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
@@ -148,12 +150,12 @@ const AttributionOrderAssetsPage = () => {
                                 </div>
                                 <div>
                                     <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
-                                        {asset.asset_name || 'Unnamed Asset'}
+                                        {asset.asset_name || t('attributionOrderAssets.unnamedAsset')}
                                     </div>
                                     <div style={{ display: 'flex', gap: 'var(--space-4)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                        <span>ID: #{asset.asset_id}</span>
-                                        {asset.asset_inventory_number && <span>• Inv: {asset.asset_inventory_number}</span>}
-                                        {asset.asset_serial_number && <span>• S/N: {asset.asset_serial_number}</span>}
+                                        <span>{t('common.id')}: #{asset.asset_id}</span>
+                                        {asset.asset_inventory_number && <span>• {t('attributionOrderAssets.inv')}: {asset.asset_inventory_number}</span>}
+                                        {asset.asset_serial_number && <span>• {t('attributionOrders.serialNumber')}: {asset.asset_serial_number}</span>}
                                     </div>
                                 </div>
                             </div>
@@ -162,7 +164,7 @@ const AttributionOrderAssetsPage = () => {
                                     {asset.asset_status}
                                 </span>
                                 <div style={{ color: 'var(--color-primary)', fontWeight: '600' }}>
-                                    Accessories →
+                                    {t('attributionOrderAssets.accessories')} →
                                 </div>
                             </div>
                         </div>

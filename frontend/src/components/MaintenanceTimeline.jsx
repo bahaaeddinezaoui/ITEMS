@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const MaintenanceTimeline = ({ maintenances, steps }) => {
+    const { t } = useTranslation();
     const [expandedMaintenances, setExpandedMaintenances] = useState({});
 
     const toggleMaintenance = (maintenanceId) => {
@@ -78,8 +80,8 @@ const MaintenanceTimeline = ({ maintenances, steps }) => {
     if (timelineData.maintenances.length === 0) {
         return (
             <div className="empty-state">
-                <h3 className="empty-state-title">No Maintenance History</h3>
-                <p className="empty-state-text">No maintenance records found for assets you reported problems on.</p>
+                <h3 className="empty-state-title">{t('maintenanceTimeline.noHistory')}</h3>
+                <p className="empty-state-text">{t('maintenanceTimeline.noHistoryDesc')}</p>
             </div>
         );
     }
@@ -231,7 +233,7 @@ const MaintenanceTimeline = ({ maintenances, steps }) => {
                                         transition: 'transform 0.2s',
                                         transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'
                                     }}>▶</span>
-                                    Maintenance #{m.maintenance_id}
+                                    {t('maintenanceTimeline.maintenance')} #{m.maintenance_id}
                                     {m.description && ` - ${m.description}`}
                                 </h4>
                                 {m.maintenance_status && (
@@ -248,21 +250,21 @@ const MaintenanceTimeline = ({ maintenances, steps }) => {
                             </div>
                             <div className="timeline-times">
                                 <div className="timeline-time-item">
-                                    <span className="timeline-time-label">Started</span>
+                                    <span className="timeline-time-label">{t('maintenanceTimeline.started')}</span>
                                     <span className="timeline-time-value">{formatDateTime(m.start_datetime)}</span>
                                 </div>
                                 <div className="timeline-time-item">
-                                    <span className="timeline-time-label">Ended</span>
+                                    <span className="timeline-time-label">{t('maintenanceTimeline.ended')}</span>
                                     <span className="timeline-time-value">{formatDateTime(m.end_datetime)}</span>
                                 </div>
                             </div>
                             {m.performed_by_person_name && (
                                 <div className="timeline-performer">
-                                    <strong>Technician:</strong> {m.performed_by_person_name}
+                                    <strong>{t('maintenanceTimeline.technician')}:</strong> {m.performed_by_person_name}
                                 </div>
                             )}
                             <div style={{ marginTop: '0.5rem', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                                {maintenanceSteps.length} step{maintenanceSteps.length !== 1 ? 's' : ''} • Click to {isExpanded ? 'collapse' : 'expand'}
+                                {t('maintenanceTimeline.stepCount', { count: maintenanceSteps.length })} • {isExpanded ? t('maintenanceTimeline.collapse') : t('maintenanceTimeline.expand')}
                             </div>
                         </div>
 
@@ -271,7 +273,7 @@ const MaintenanceTimeline = ({ maintenances, steps }) => {
                                 {sortedSteps.map((step) => {
                                     const statusColor = getStatusColor(step.maintenance_step_status);
                                     const statusIcon = getStepStatusIcon(step.maintenance_step_status);
-                                    const description = step.maintenance_typical_step?.description || step.maintenance_step_status || 'Step';
+                                    const description = step.maintenance_typical_step?.description || step.maintenance_step_status || t('maintenanceTimeline.step');
                                     const performerName = step.person?.first_name 
                                         ? `${step.person.first_name} ${step.person.last_name || ''}`.trim()
                                         : null;
@@ -287,7 +289,7 @@ const MaintenanceTimeline = ({ maintenances, steps }) => {
                                             <div className="timeline-content step-content">
                                                 <div className="timeline-header">
                                                     <h4 className="timeline-title">
-                                                        Step #{step.maintenance_step_id}: {description}
+                                                        {t('maintenanceTimeline.step')} #{step.maintenance_step_id}: {description}
                                                     </h4>
                                                     {step.maintenance_step_status && (
                                                         <span 
@@ -303,17 +305,17 @@ const MaintenanceTimeline = ({ maintenances, steps }) => {
                                                 </div>
                                                 <div className="timeline-times">
                                                     <div className="timeline-time-item">
-                                                        <span className="timeline-time-label">Started</span>
+                                                        <span className="timeline-time-label">{t('maintenanceTimeline.started')}</span>
                                                         <span className="timeline-time-value">{formatDateTime(step.start_datetime)}</span>
                                                     </div>
                                                     <div className="timeline-time-item">
-                                                        <span className="timeline-time-label">Ended</span>
+                                                        <span className="timeline-time-label">{t('maintenanceTimeline.ended')}</span>
                                                         <span className="timeline-time-value">{formatDateTime(step.end_datetime)}</span>
                                                     </div>
                                                 </div>
                                                 {performerName && (
                                                     <div className="timeline-performer">
-                                                        <strong>Performer:</strong> {performerName}
+                                                        <strong>{t('maintenanceTimeline.performer')}:</strong> {performerName}
                                                     </div>
                                                 )}
                                             </div>

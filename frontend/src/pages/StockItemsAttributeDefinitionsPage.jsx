@@ -1,22 +1,42 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, X, XCircle, Settings2, Tag, Hash, Database, CheckCircle2, Calendar } from 'lucide-react';
+import { Plus, Trash2, X, XCircle, Settings2, Tag, Hash, Database, CheckCircle2, Calendar, ArrowLeft, Pencil } from 'lucide-react';
 import { stockItemAttributeDefinitionService } from '../services/api';
+import TranslatableInput from '../components/TranslatableInput';
+
+const dataTypeKeyMap = { string: 'string', number: 'number', bool: 'boolean', date: 'date' };
+
+const getBilingualLabel = (arKey, enKey, currentLang) => {
+    if (currentLang === 'ar') {
+        const arVal = arKey;
+        const enVal = enKey;
+        if (arVal && enVal && arVal !== enVal) return `${arVal} (${enVal})`;
+        return arVal || enVal;
+    }
+    const enVal = enKey;
+    const arVal = arKey;
+    if (enVal && arVal && arVal !== enVal) return `${enVal} (${arVal})`;
+    return enVal || arVal;
+};
 
 const StockItemsAttributeDefinitionsPage = () => {
-    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
     const [attributeDefinitions, setAttributeDefinitions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [editingId, setEditingId] = useState(null);
 
     const [form, setForm] = useState({
         description: '',
         data_type: '',
         unit: ''
     });
+    const [formTranslations, setFormTranslations] = useState({});
 
     useEffect(() => {
         fetchAttributeDefinitions();
@@ -36,9 +56,28 @@ const StockItemsAttributeDefinitionsPage = () => {
         }
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
+    const handleChange = (name, value) => {
         setForm(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleFormTranslationChange = (langCode, value) => {
+        setFormTranslations((prev) => ({ ...prev, [langCode]: { ...(prev[langCode] || {}), ...value } }));
+    };
+
+    const handleEdit = (def) => {
+        setEditingId(def.stock_item_attribute_definition_id);
+        setForm({
+            description: def.description || '',
+            data_type: def.data_type || '',
+            unit: def.unit || ''
+        });
+        const trans = {};
+        if (def.description_ar) trans['ar'] = { description: def.description_ar };
+        if (def.description_en) trans['en'] = { description: def.description_en };
+        if (def.unit_ar) { trans['ar'] = { ...(trans['ar'] || {}), unit: def.unit_ar }; }
+        if (def.unit_en) { trans['en'] = { ...(trans['en'] || {}), unit: def.unit_en }; }
+        setFormTranslations(trans);
+        setShowForm(true);
     };
 
     const handleSubmit = async (e) => {
@@ -51,8 +90,25 @@ const StockItemsAttributeDefinitionsPage = () => {
                 data_type: form.data_type || null,
                 unit: form.unit || null,
             };
-            await stockItemAttributeDefinitionService.create(payload);
+            const translations = { ...formTranslations };
+            if (form.description || form.unit) {
+                translations['en'] = {
+                    ...(translations['en'] || {}),
+                    ...(form.description && { description: form.description }),
+                    ...(form.unit && { unit: form.unit }),
+                };
+            }
+            if (Object.keys(translations).length > 0) {
+                payload.translations = translations;
+            }
+            if (editingId) {
+                await stockItemAttributeDefinitionService.update(editingId, payload);
+            } else {
+                await stockItemAttributeDefinitionService.create(payload);
+            }
             setForm({ description: '', data_type: '', unit: '' });
+            setFormTranslations({});
+            setEditingId(null);
             setShowForm(false);
             await fetchAttributeDefinitions();
         } catch (err) {
@@ -86,13 +142,33 @@ const StockItemsAttributeDefinitionsPage = () => {
         <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1200px', margin: '0 auto' }}>
             {/* Page Header */}
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
-                <div>
-                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)' }}>
-                        {t('stockItemAttributes.title')}
-                    </h1>
-                    <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
-                        {t('stockItemAttributes.subtitle')}
-                    </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                    <button
+                        onClick={() => navigate(-1)}
+                        style={{
+                            padding: 'var(--space-2) var(--space-3)',
+                            border: '1px solid var(--color-border)',
+                            background: 'var(--color-bg-tertiary)',
+                            color: 'var(--color-text)',
+                            borderRadius: 'var(--radius-sm)',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-2)'
+                        }}
+                        title={t('common.back')}
+                        aria-label={t('common.back')}
+                    >
+                        <ArrowLeft size={18} />
+                    </button>
+                    <div>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)' }}>
+                            {t('stockItemAttributes.title')}
+                        </h1>
+                        <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
+                            {t('stockItemAttributes.subtitle')}
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -110,7 +186,7 @@ const StockItemsAttributeDefinitionsPage = () => {
             {/* Add New Definition Button */}
             <div style={{ marginBottom: 'var(--space-6)' }}>
                 <button
-                    onClick={() => setShowForm(true)}
+                    onClick={() => { setEditingId(null); setForm({ description: '', data_type: '', unit: '' }); setFormTranslations({}); setShowForm(true); }}
                     className="btn btn-primary"
                     style={{
                         display: 'flex',
@@ -172,19 +248,19 @@ const StockItemsAttributeDefinitionsPage = () => {
                                     justifyContent: 'center',
                                     color: 'var(--color-accent-primary)'
                                 }}>
-                                    <Plus size={20} />
+                                    {editingId ? <Pencil size={20} /> : <Plus size={20} />}
                                 </div>
                                 <div>
                                     <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                        {t('stockItemAttributes.addDefinition')}
+                                        {editingId ? t('stockItemAttributes.editDefinition', 'Edit Attribute Definition') : t('stockItemAttributes.addDefinition')}
                                     </h3>
                                     <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', margin: 0, marginTop: '2px' }}>
-                                        {t('stockItemAttributes.createTemplate')}
+                                        {editingId ? t('stockItemAttributes.editTemplate', 'Modify the attribute definition details') : t('stockItemAttributes.createTemplate')}
                                     </p>
                                 </div>
                             </div>
                             <button
-                                onClick={() => setShowForm(false)}
+                                onClick={() => { setShowForm(false); setEditingId(null); setFormTranslations({}); }}
                                 style={{
                                     background: 'none',
                                     border: 'none',
@@ -205,18 +281,15 @@ const StockItemsAttributeDefinitionsPage = () => {
                         <div style={{ padding: 'var(--space-6)' }}>
                             <form onSubmit={handleSubmit}>
                                 <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
-                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
-                                        {t('common.description')} <span style={{ color: 'var(--color-error)' }}>*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="description"
-                                        placeholder={t('stockItemAttributes.descriptionPlaceholder')}
+                                    <TranslatableInput
+                                        label={t('common.description')}
+                                        baseFieldName="description"
                                         value={form.description}
                                         onChange={handleChange}
+                                        translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.description || '']))}
+                                        onTranslationChange={(langCode, value) => handleFormTranslationChange(langCode, { description: value })}
+                                        placeholder={t('stockItemAttributes.descriptionPlaceholder')}
                                         required
-                                        className="form-input"
-                                        style={{ width: '100%', height: '44px' }}
                                     />
                                 </div>
 
@@ -228,7 +301,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                                         <select
                                             name="data_type"
                                             value={form.data_type}
-                                            onChange={handleChange}
+                                            onChange={(e) => handleChange('data_type', e.target.value)}
                                             className="form-input"
                                             style={{ width: '100%', height: '44px' }}
                                         >
@@ -241,17 +314,14 @@ const StockItemsAttributeDefinitionsPage = () => {
                                     </div>
 
                                     <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
-                                            {t('stockItemAttributes.unitOptional')}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name="unit"
-                                            placeholder={t('stockItemAttributes.unitPlaceholder')}
+                                        <TranslatableInput
+                                            label={t('stockItemAttributes.unitOptional')}
+                                            baseFieldName="unit"
                                             value={form.unit}
                                             onChange={handleChange}
-                                            className="form-input"
-                                            style={{ width: '100%', height: '44px' }}
+                                            translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.unit || '']))}
+                                            onTranslationChange={(langCode, value) => handleFormTranslationChange(langCode, { unit: value })}
+                                            placeholder={t('stockItemAttributes.unitPlaceholder')}
                                         />
                                     </div>
                                 </div>
@@ -259,7 +329,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                                 <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                                     <button
                                         type="button"
-                                        onClick={() => setShowForm(false)}
+                                        onClick={() => { setShowForm(false); setEditingId(null); setFormTranslations({}); }}
                                         className="btn"
                                         style={{
                                             padding: 'var(--space-3) var(--space-5)',
@@ -286,8 +356,8 @@ const StockItemsAttributeDefinitionsPage = () => {
                                             </span>
                                         ) : (
                                             <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                                <Plus size={18} />
-                                                {t('stockItemAttributes.saveDefinition')}
+                                                {editingId ? <Pencil size={18} /> : <Plus size={18} />}
+                                                {editingId ? t('common.save', 'Save') : t('stockItemAttributes.saveDefinition')}
                                             </span>
                                         )}
                                     </button>
@@ -380,7 +450,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                                         </div>
                                         <div>
                                             <div style={{ fontWeight: '600', color: 'var(--color-text-primary)', marginBottom: 'var(--space-1)' }}>
-                                                {def.description}
+                                                {getBilingualLabel(def.description_ar, def.description_en || def.description, i18n.language)}
                                             </div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
                                                 {def.data_type && (
@@ -394,7 +464,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                                                         fontSize: 'var(--font-size-xs)'
                                                     }}>
                                                         {getDataTypeIcon(def.data_type)}
-                                                        {def.data_type}
+                                                        {getBilingualLabel(t('stockItemAttributes.' + (dataTypeKeyMap[def.data_type] || def.data_type)), t('stockItemAttributes.' + (dataTypeKeyMap[def.data_type] || def.data_type), { lng: 'en' }), i18n.language)}
                                                     </span>
                                                 )}
                                                 {def.unit && (
@@ -404,39 +474,68 @@ const StockItemsAttributeDefinitionsPage = () => {
                                                         borderRadius: 'var(--radius-sm)',
                                                         fontSize: 'var(--font-size-xs)'
                                                     }}>
-                                                        {def.unit}
+                                                        {getBilingualLabel(def.unit_ar, def.unit_en || def.unit, i18n.language)}
                                                     </span>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleDelete(def.stock_item_attribute_definition_id)}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '36px',
-                                            height: '36px',
-                                            border: 'none',
-                                            background: 'var(--color-bg-card)',
-                                            color: 'var(--color-text-muted)',
-                                            cursor: 'pointer',
-                                            borderRadius: 'var(--radius-md)',
-                                            transition: 'all var(--transition-fast)'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-                                            e.currentTarget.style.color = 'var(--color-error)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'var(--color-bg-card)';
-                                            e.currentTarget.style.color = 'var(--color-text-muted)';
-                                        }}
-                                        title={t('stockItemAttributes.deleteDefinition')}
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                    <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                        <button
+                                            onClick={() => handleEdit(def)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '36px',
+                                                height: '36px',
+                                                border: 'none',
+                                                background: 'var(--color-bg-card)',
+                                                color: 'var(--color-text-muted)',
+                                                cursor: 'pointer',
+                                                borderRadius: 'var(--radius-md)',
+                                                transition: 'all var(--transition-fast)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                                                e.currentTarget.style.color = 'var(--color-accent-primary)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.background = 'var(--color-bg-card)';
+                                                e.currentTarget.style.color = 'var(--color-text-muted)';
+                                            }}
+                                            title={t('stockItemAttributes.editDefinition', 'Edit Definition')}
+                                        >
+                                            <Pencil size={18} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(def.stock_item_attribute_definition_id)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                width: '36px',
+                                                height: '36px',
+                                                border: 'none',
+                                                background: 'var(--color-bg-card)',
+                                                color: 'var(--color-text-muted)',
+                                                cursor: 'pointer',
+                                                borderRadius: 'var(--radius-md)',
+                                                transition: 'all var(--transition-fast)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                                                e.currentTarget.style.color = 'var(--color-error)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.background = 'var(--color-bg-card)';
+                                                e.currentTarget.style.color = 'var(--color-text-muted)';
+                                            }}
+                                            title={t('stockItemAttributes.deleteDefinition')}
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

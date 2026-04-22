@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { maintenanceService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 import { 
     Users, 
     CheckCircle2, 
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 
 const MaintenanceStatsPage = () => {
+    const { t } = useTranslation();
     const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -28,7 +30,7 @@ const MaintenanceStatsPage = () => {
             setStats(data);
             setError(null);
         } catch (err) {
-            setError('Failed to load technician statistics');
+            setError(t('maintenanceStats.loadError'));
             console.error(err);
         } finally {
             setLoading(false);
@@ -39,7 +41,7 @@ const MaintenanceStatsPage = () => {
         return (
             <div className="loading-state">
                 <div className="loading-spinner"></div>
-                <span>Fetching analytics...</span>
+                <span>{t('maintenanceStats.fetchingAnalytics')}</span>
             </div>
         );
     }
@@ -50,14 +52,14 @@ const MaintenanceStatsPage = () => {
                 <AlertCircle className="w-6 h-6" />
                 <div>
                     <strong>{error}</strong>
-                    <p>There was a problem communicating with the server. Please check your connection.</p>
+                    <p>{t('maintenanceStats.connectionError')}</p>
                 </div>
                 <button 
                     onClick={fetchStats}
                     className="btn btn-secondary"
                     style={{ marginLeft: 'auto', width: 'auto' }}
                 >
-                    <RotateCcw className="w-4 h-4" /> Retry
+                    <RotateCcw className="w-4 h-4" /> {t('maintenanceStats.retry')}
                 </button>
             </div>
         );
@@ -74,43 +76,43 @@ const MaintenanceStatsPage = () => {
         <div className="page-container animate-fade-in-up">
             <header className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">Performance Analytics</h1>
-                    <p className="page-subtitle">Maintenance technician efficiency and workload distribution metrics</p>
+                    <h1 className="page-title">{t('maintenanceStats.title')}</h1>
+                    <p className="page-subtitle">{t('maintenanceStats.subtitle')}</p>
                 </div>
                 <button onClick={fetchStats} className="btn btn-secondary" style={{ width: 'auto' }}>
-                    <RotateCcw className="w-4 h-4" /> Refresh Data
+                    <RotateCcw className="w-4 h-4" /> {t('maintenanceStats.refreshData')}
                 </button>
             </header>
 
             {/* Metric Cards Grid */}
             <section className="metric-grid">
                 <MetricCard 
-                    title="Total Tasks" 
+                    title={t('maintenanceStats.totalTasks')} 
                     value={totalMaintenances} 
                     icon={<Settings size={22} />}
                     color="blue"
-                    subtext="Cumulative operations"
+                    subtext={t('maintenanceStats.cumulativeOps')}
                 />
                 <MetricCard 
-                    title="Avg Success" 
+                    title={t('maintenanceStats.avgSuccess')} 
                     value={`${Math.round(overallSuccessRate)}%`} 
                     icon={<CheckCircle2 size={22} />}
                     color="emerald"
-                    subtext="Completed tasks"
+                    subtext={t('maintenanceStats.completedTasks')}
                 />
                 <MetricCard 
-                    title="Staff" 
+                    title={t('maintenanceStats.staff')} 
                     value={stats.length} 
                     icon={<Users size={22} />}
                     color="violet"
-                    subtext="Active technicians"
+                    subtext={t('maintenanceStats.activeTechnicians')}
                 />
                 <MetricCard 
-                    title="Active" 
+                    title={t('maintenanceStats.active')} 
                     value={stats.reduce((acc, s) => acc + s.pending_maintenances, 0)} 
                     icon={<Activity size={22} />}
                     color="amber"
-                    subtext="Tasks in progress"
+                    subtext={t('maintenanceStats.tasksInProgress')}
                 />
             </section>
 
@@ -120,7 +122,7 @@ const MaintenanceStatsPage = () => {
                     <div className="card-header">
                         <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <TrendingUp size={20} color="var(--color-primary)" />
-                            Staff Efficiency Ranking
+                            {t('maintenanceStats.staffEfficiencyRanking')}
                         </h2>
                     </div>
                     <div className="card-body">
@@ -128,11 +130,11 @@ const MaintenanceStatsPage = () => {
                             <table className="data-table leaderboard-table">
                                 <thead>
                                     <tr>
-                                        <th>Technician</th>
-                                        <th>Volume</th>
-                                        <th>Success Rate</th>
-                                        <th>Avg Time</th>
-                                        <th>Availability</th>
+                                        <th>{t('maintenanceStats.technician')}</th>
+                                        <th>{t('maintenanceStats.volume')}</th>
+                                        <th>{t('maintenanceStats.successRate')}</th>
+                                        <th>{t('maintenanceStats.avgTime')}</th>
+                                        <th>{t('maintenanceStats.availability')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -173,9 +175,9 @@ const MaintenanceStatsPage = () => {
                                             </td>
                                             <td>
                                                 {tech.pending_maintenances > 0 ? (
-                                                    <span className="badge badge-warning">{tech.pending_maintenances} Active</span>
+                                                    <span className="badge badge-warning">{tech.pending_maintenances} {t('maintenanceStats.active')}</span>
                                                 ) : (
-                                                    <span className="badge badge-success">Idle</span>
+                                                    <span className="badge badge-success">{t('maintenanceStats.idle')}</span>
                                                 )}
                                             </td>
                                         </tr>
@@ -191,7 +193,7 @@ const MaintenanceStatsPage = () => {
                     <div className="card-header">
                         <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <BarChart3 size={20} color="var(--color-primary)" />
-                            Workload Ratio
+                            {t('maintenanceStats.workloadRatio')}
                         </h2>
                     </div>
                     <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -222,7 +224,7 @@ const MaintenanceStatsPage = () => {
                         )) : (
                             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)' }}>
                                 <Activity size={48} style={{ opacity: 0.1, marginBottom: '12px' }} />
-                                <p>No data available</p>
+                                <p>{t('maintenanceStats.noData')}</p>
                             </div>
                         )}
                     </div>

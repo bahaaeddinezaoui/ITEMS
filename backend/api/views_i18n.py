@@ -33,6 +33,28 @@ from api.translations import (
     WarehouseTranslation,
     LocationTranslation,
     OrganizationalStructureTranslation,
+    # Operational Text
+    AssetMovementTranslation,
+    ConsumableMovementTranslation,
+    StockItemMovementTranslation,
+    PersonReportsProblemOnAssetTranslation,
+    PersonReportsProblemOnConsumableTranslation,
+    PersonReportsProblemOnStockItemTranslation,
+    MaintenanceTranslation,
+    AssetConditionHistoryTranslation,
+    ConsumableConditionHistoryTranslation,
+    StockItemConditionHistoryTranslation,
+    # Other Human-Facing Text
+    AssetTranslation,
+    ConsumableTranslation,
+    StockItemTranslation,
+    AssetModelTranslation,
+    ConsumableModelTranslation,
+    StockItemModelTranslation,
+    AdministrativeCertificateTranslation,
+    CompanyAssetRequestTranslation,
+    ExternalMaintenanceDocumentTranslation,
+    MaintenanceStepItemRequestTranslation,
 )
 
 
@@ -208,8 +230,116 @@ class OrganizationalStructureTranslationViewSet(BaseTranslationViewSet):
 
 
 # ============================================================================
-# I18N Metadata View
+# Operational Text Views
 # ============================================================================
+
+class AssetMovementTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for AssetMovement translations."""
+    queryset = AssetMovementTranslation.objects.all()
+
+
+class ConsumableMovementTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for ConsumableMovement translations."""
+    queryset = ConsumableMovementTranslation.objects.all()
+
+
+class StockItemMovementTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for StockItemMovement translations."""
+    queryset = StockItemMovementTranslation.objects.all()
+
+
+class PersonReportsProblemOnAssetTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for PersonReportsProblemOnAsset translations."""
+    queryset = PersonReportsProblemOnAssetTranslation.objects.all()
+
+
+class PersonReportsProblemOnConsumableTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for PersonReportsProblemOnConsumable translations."""
+    queryset = PersonReportsProblemOnConsumableTranslation.objects.all()
+
+
+class PersonReportsProblemOnStockItemTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for PersonReportsProblemOnStockItem translations."""
+    queryset = PersonReportsProblemOnStockItemTranslation.objects.all()
+
+
+class MaintenanceTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for Maintenance translations."""
+    queryset = MaintenanceTranslation.objects.all()
+
+
+class AssetConditionHistoryTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for AssetConditionHistory translations."""
+    queryset = AssetConditionHistoryTranslation.objects.all()
+
+
+class ConsumableConditionHistoryTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for ConsumableConditionHistory translations."""
+    queryset = ConsumableConditionHistoryTranslation.objects.all()
+
+
+class StockItemConditionHistoryTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for StockItemConditionHistory translations."""
+    queryset = StockItemConditionHistoryTranslation.objects.all()
+
+
+# ============================================================================
+# Other Human-Facing Text Views
+# ============================================================================
+
+class AssetTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for Asset translations."""
+    queryset = AssetTranslation.objects.all()
+
+
+class ConsumableTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for Consumable translations."""
+    queryset = ConsumableTranslation.objects.all()
+
+
+class StockItemTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for StockItem translations."""
+    queryset = StockItemTranslation.objects.all()
+
+
+class AssetModelTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for AssetModel translations."""
+    queryset = AssetModelTranslation.objects.all()
+
+
+class ConsumableModelTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for ConsumableModel translations."""
+    queryset = ConsumableModelTranslation.objects.all()
+
+
+class StockItemModelTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for StockItemModel translations."""
+    queryset = StockItemModelTranslation.objects.all()
+
+
+class AdministrativeCertificateTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for AdministrativeCertificate translations."""
+    queryset = AdministrativeCertificateTranslation.objects.all()
+
+
+class CompanyAssetRequestTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for CompanyAssetRequest translations."""
+    queryset = CompanyAssetRequestTranslation.objects.all()
+
+
+class ExternalMaintenanceDocumentTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for ExternalMaintenanceDocument translations."""
+    queryset = ExternalMaintenanceDocumentTranslation.objects.all()
+
+
+class MaintenanceStepItemRequestTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for MaintenanceStepItemRequest translations."""
+    queryset = MaintenanceStepItemRequestTranslation.objects.all()
+
+
+# ============================================================================
+# I18N Metadata View
+# =============================================================================
 
 from rest_framework.views import APIView
 

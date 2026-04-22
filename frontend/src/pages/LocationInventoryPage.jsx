@@ -2,6 +2,22 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { locationInventoryService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
+
+const getLocalizedLocationName = (item, currentLang) => {
+    if (currentLang === 'ar') {
+        return item.location_name_ar || item.location_name_en || item.location_name;
+    }
+    return item.location_name_en || item.location_name_ar || item.location_name;
+};
+
+const getLocalizedLocationType = (item, currentLang) => {
+    if (currentLang === 'ar') {
+        return item.location_type_ar || item.location_type_en || item.location_type;
+    }
+    return item.location_type_en || item.location_type_ar || item.location_type;
+};
 
 const LocationInventoryPage = () => {
     const navigate = useNavigate();
@@ -10,6 +26,8 @@ const LocationInventoryPage = () => {
     const [inventoryData, setInventoryData] = useState(null);
     const [locations, setLocations] = useState([]);
     const { user, isSuperuser } = useAuth();
+    const { t } = useTranslation();
+    const currentLang = i18n.language;
     
     const roleCodes = useMemo(() => {
         if (!user || !user.roles) return [];
@@ -27,14 +45,14 @@ const LocationInventoryPage = () => {
     // Status options based on item type
     const statusOptions = useMemo(() => {
         const commonOptions = [
-            { value: 'in_stock', label: 'In Stock' },
-            { value: 'not_delivered_to_company', label: 'Not Delivered to Company' },
-            { value: 'suggested_for_destruction', label: 'Suggested for Destruction' },
-            { value: 'destroyed', label: 'Destroyed' },
-            { value: 'failed', label: 'Failed' },
-            { value: 'stolen', label: 'Stolen' },
-            { value: 'lost', label: 'Lost' },
-            { value: 'irrecoverably_damaged', label: 'Irrecoverably Damaged' },
+            { value: 'in_stock', label: t('locationInventory.inStock') },
+            { value: 'not_delivered_to_company', label: t('locationInventory.notDeliveredToCompany') },
+            { value: 'suggested_for_destruction', label: t('locationInventory.suggestedForDestruction') },
+            { value: 'destroyed', label: t('locationInventory.destroyed') },
+            { value: 'failed', label: t('locationInventory.failed') },
+            { value: 'stolen', label: t('locationInventory.stolen') },
+            { value: 'lost', label: t('locationInventory.lost') },
+            { value: 'irrecoverably_damaged', label: t('locationInventory.irrecoverablyDamaged') },
         ];
 
         if (itemTypeFilter === 'asset') {
@@ -44,17 +62,25 @@ const LocationInventoryPage = () => {
         // Stock Items and Consumables can also be 'Included with Asset'
         return [
             ...commonOptions,
-            { value: 'Included with Asset', label: 'Included with Asset' },
+            { value: 'Included with Asset', label: t('locationInventory.includedWithAsset') },
         ];
     }, [itemTypeFilter]);
 
+    const statusLabelMap = {
+        'in_stock': t('locationInventory.inStock'),
+        'not_delivered_to_company': t('locationInventory.notDeliveredToCompany'),
+        'suggested_for_destruction': t('locationInventory.suggestedForDestruction'),
+        'destroyed': t('locationInventory.destroyed'),
+        'failed': t('locationInventory.failed'),
+        'stolen': t('locationInventory.stolen'),
+        'lost': t('locationInventory.lost'),
+        'irrecoverably_damaged': t('locationInventory.irrecoverablyDamaged'),
+        'Included with Asset': t('locationInventory.includedWithAsset'),
+    };
+
     const formatStatusLabel = (value) => {
         if (!value) return '';
-        if (value === 'Included with Asset') return value;
-        return value
-            .split('_')
-            .map(p => p ? p.charAt(0).toUpperCase() + p.slice(1) : p)
-            .join(' ');
+        return statusLabelMap[value] || value;
     };
 
     const getStatusBadge = (status) => {
@@ -81,7 +107,7 @@ const LocationInventoryPage = () => {
             setError(null);
         } catch (err) {
             console.error('Error fetching inventory:', err);
-            setError('Failed to load inventory data');
+            setError(t('locationInventory.loadError'));
         } finally {
             setLoading(false);
         }
@@ -92,7 +118,16 @@ const LocationInventoryPage = () => {
         try {
             const data = await locationService.getAll();
             if (!hasFullAccess && hasMaintenanceAccess) {
-                const filtered = data.filter(loc => loc.location_type_label === 'Maintenance Room');
+                const filtered = data.filter(loc => {
+                    const typeLabel = loc.location_type_label || '';
+                    const typeAr = loc.location_type_label_ar || '';
+                    const typeEn = loc.location_type_label_en || '';
+                    // Check for Maintenance Room in English or Arabic
+                    return typeLabel === 'Maintenance Room' ||
+                           typeEn === 'Maintenance Room' ||
+                           typeAr === 'غرفة صيانة' ||
+                           typeLabel === 'غرفة صيانة';
+                });
                 setLocations(filtered);
                 // Pre-select first maintenance room if nothing selected
                 if (filtered.length > 0 && !locationFilter) {
@@ -123,7 +158,7 @@ const LocationInventoryPage = () => {
         if (!searchQuery.trim()) return inventoryData.items;
         
         const query = searchQuery.toLowerCase();
-        return inventoryData.items.filter(item => 
+        return inventoryData.items.filter(item =>
             (item.name && item.name.toLowerCase().includes(query)) ||
             (item.inventory_number && item.inventory_number.toLowerCase().includes(query)) ||
             (item.serial_number && item.serial_number.toLowerCase().includes(query)) ||
@@ -131,7 +166,9 @@ const LocationInventoryPage = () => {
             (item.brand && item.brand.toLowerCase().includes(query)) ||
             (item.type && item.type.toLowerCase().includes(query)) ||
             (item.status && item.status.toLowerCase().includes(query)) ||
-            (item.location_name && item.location_name.toLowerCase().includes(query))
+            (item.location_name && item.location_name.toLowerCase().includes(query)) ||
+            (item.location_name_ar && item.location_name_ar.toLowerCase().includes(query)) ||
+            (item.location_name_en && item.location_name_en.toLowerCase().includes(query))
         );
     }, [inventoryData, searchQuery]);
     const getItemTypeIcon = (itemType) => {
@@ -150,16 +187,16 @@ const LocationInventoryPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">📍 Location Inventory</h1>
-                <p className="page-subtitle">View all assets, stock items, and consumables by location</p>
+                <h1 className="page-title">📍 {t('locationInventory.title')}</h1>
+                <p className="page-subtitle">{t('locationInventory.subtitle')}</p>
             </div>
 
             <div className="filters-bar">
                 <div className="filter-item" style={{ maxWidth: 520 }}>
-                    <label className="form-label">Search</label>
+                    <label className="form-label">{t('common.search')}</label>
                     <input
                         type="text"
-                        placeholder="Search by name, inventory number, model..."
+                        placeholder={t('locationInventory.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="form-input"
@@ -167,7 +204,7 @@ const LocationInventoryPage = () => {
                 </div>
 
                 <div className="filter-item" style={{ maxWidth: 240 }}>
-                    <label className="form-label">Item Type</label>
+                    <label className="form-label">{t('locationInventory.itemType')}</label>
                     <select
                         value={itemTypeFilter}
                         onChange={(e) => {
@@ -176,22 +213,22 @@ const LocationInventoryPage = () => {
                         }}
                         className="form-input"
                     >
-                        <option value="">All Items</option>
-                        <option value="asset">Assets</option>
-                        <option value="stock_item">Stock Items</option>
-                        <option value="consumable">Consumables</option>
+                        <option value="">{t('locationInventory.allItems')}</option>
+                        <option value="asset">{t('locationInventory.assets')}</option>
+                        <option value="stock_item">{t('locationInventory.stockItems')}</option>
+                        <option value="consumable">{t('locationInventory.consumables')}</option>
                     </select>
                 </div>
 
                 <div className="filter-item" style={{ maxWidth: 260 }}>
-                    <label className="form-label">Status</label>
+                    <label className="form-label">{t('common.status')}</label>
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                         disabled={statusOptions.length === 0}
                         className="form-input"
                     >
-                        <option value="">All Statuses</option>
+                        <option value="">{t('locationInventory.allStatuses')}</option>
                         {statusOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
@@ -199,16 +236,16 @@ const LocationInventoryPage = () => {
                 </div>
 
                 <div className="filter-item" style={{ maxWidth: 300 }}>
-                    <label className="form-label">Location</label>
+                    <label className="form-label">{t('locationInventory.location')}</label>
                     <select
                         value={locationFilter}
                         onChange={(e) => setLocationFilter(e.target.value)}
                         className="form-input"
                     >
-                        {hasFullAccess ? <option value="">All Locations</option> : (locations.length > 1 ? <option value="">All Maintenance Rooms</option> : null)}
+                        {hasFullAccess ? <option value="">{t('locationInventory.allLocations')}</option> : (locations.length > 1 ? <option value="">{t('locationInventory.allMaintenanceRooms')}</option> : null)}
                         {locations.map(loc => (
                             <option key={loc.location_id} value={loc.location_id}>
-                                {loc.location_name}
+                                {getLocalizedLocationName(loc, currentLang)}
                             </option>
                         ))}
                     </select>
@@ -219,19 +256,19 @@ const LocationInventoryPage = () => {
                 <div className="stat-grid">
                     <div className="stat-card">
                         <div className="stat-value">{inventoryData.summary?.total_assets || 0}</div>
-                        <div className="stat-label">Assets</div>
+                        <div className="stat-label">{t('locationInventory.assets')}</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">{inventoryData.summary?.total_stock_items || 0}</div>
-                        <div className="stat-label">Stock Items</div>
+                        <div className="stat-label">{t('locationInventory.stockItems')}</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">{inventoryData.summary?.total_consumables || 0}</div>
-                        <div className="stat-label">Consumables</div>
+                        <div className="stat-label">{t('locationInventory.consumables')}</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">{inventoryData.locations?.length || 0}</div>
-                        <div className="stat-label">Locations</div>
+                        <div className="stat-label">{t('locationInventory.locations')}</div>
                     </div>
                 </div>
             )}
@@ -239,25 +276,25 @@ const LocationInventoryPage = () => {
             {inventoryData && inventoryData.locations && inventoryData.locations.length > 0 && (
                 <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                     <div className="card-header">
-                        <h2 className="card-title">📊 Items by Location</h2>
+                        <h2 className="card-title">📊 {t('locationInventory.itemsByLocation')}</h2>
                     </div>
                     <div className="table-container">
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Location</th>
-                                    <th>Type</th>
-                                    <th style={{ textAlign: 'center' }}>Assets</th>
-                                    <th style={{ textAlign: 'center' }}>Stock Items</th>
-                                    <th style={{ textAlign: 'center' }}>Consumables</th>
-                                    <th style={{ textAlign: 'center' }}>Total</th>
+                                    <th>{t('locationInventory.location')}</th>
+                                    <th>{t('locationInventory.itemType')}</th>
+                                    <th style={{ textAlign: 'center' }}>{t('locationInventory.assets')}</th>
+                                    <th style={{ textAlign: 'center' }}>{t('locationInventory.stockItems')}</th>
+                                    <th style={{ textAlign: 'center' }}>{t('locationInventory.consumables')}</th>
+                                    <th style={{ textAlign: 'center' }}>{t('common.total')}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {inventoryData.locations.map(loc => (
                                     <tr key={loc.location_id}>
-                                        <td><strong>{loc.location_name}</strong></td>
-                                        <td style={{ color: 'var(--color-text-secondary)' }}>{loc.location_type || 'Unknown'}</td>
+                                        <td><strong>{getLocalizedLocationName(loc, currentLang)}</strong></td>
+                                        <td style={{ color: 'var(--color-text-secondary)' }}>{getLocalizedLocationType(loc, currentLang) || t('common.unknown')}</td>
                                         <td style={{ textAlign: 'center' }}>
                                             <span className="badge badge-info">{loc.asset_count}</span>
                                         </td>
@@ -281,13 +318,13 @@ const LocationInventoryPage = () => {
             <div className="card">
                 <div className="card-header">
                     <h2 className="card-title">
-                        📋 Item Details {filteredItems.length > 0 ? <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>({filteredItems.length} items)</span> : null}
+                        📋 {t('locationInventory.itemDetails')} {filteredItems.length > 0 ? <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>({filteredItems.length} {t('locationInventory.items')})</span> : null}
                     </h2>
                 </div>
                 {loading ? (
                     <div className="loading-state">
                         <div className="loading-spinner" />
-                        <span>Loading inventory data...</span>
+                        <span>{t('locationInventory.loadingInventory')}</span>
                     </div>
                 ) : error ? (
                     <div className="card-body">
@@ -295,21 +332,21 @@ const LocationInventoryPage = () => {
                     </div>
                 ) : filteredItems.length === 0 ? (
                     <div className="empty-state">
-                        <div className="empty-state-title">No items found</div>
-                        <div className="empty-state-text">No items match the selected criteria.</div>
+                        <div className="empty-state-title">{t('locationInventory.noItemsFound')}</div>
+                        <div className="empty-state-text">{t('locationInventory.noItemsMatchCriteria')}</div>
                     </div>
                 ) : (
                     <div className="table-container">
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Type</th>
-                                    <th>Name</th>
-                                    <th>Inventory #</th>
-                                    <th>Model/Brand</th>
-                                    <th>Category</th>
-                                    <th>Status</th>
-                                    <th>Location</th>
+                                    <th>{t('locationInventory.itemType')}</th>
+                                    <th>{t('common.name')}</th>
+                                    <th>{t('locationInventory.inventoryNumber')}</th>
+                                    <th>{t('locationInventory.modelBrand')}</th>
+                                    <th>{t('locationInventory.category')}</th>
+                                    <th>{t('common.status')}</th>
+                                    <th>{t('locationInventory.location')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -322,7 +359,7 @@ const LocationInventoryPage = () => {
                                             <strong>{item.name}</strong>
                                             {item.serial_number && (
                                                 <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                                                    S/N: {item.serial_number}
+                                                    {t('locationInventory.serialNumber')}: {item.serial_number}
                                                 </div>
                                             )}
                                         </td>
@@ -341,7 +378,7 @@ const LocationInventoryPage = () => {
                                                 {formatStatusLabel(item.status)}
                                             </span>
                                         </td>
-                                        <td>{item.location_name || '-'}</td>
+                                        <td>{getLocalizedLocationName(item, currentLang) || '-'}</td>
                                     </tr>
                                 ))}
                             </tbody>

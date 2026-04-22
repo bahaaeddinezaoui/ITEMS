@@ -8,14 +8,16 @@ import {
     consumableTypeService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const PurchaseOrderCreatePage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const DRAFT_KEY = 'purchase_order_create_draft_v1';
 
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -146,7 +148,7 @@ const PurchaseOrderCreatePage = () => {
                 setSuppliers(Array.isArray(data) ? data : (data?.results || []));
             } catch (e) {
                 setSuppliers([]);
-                setError(e?.response?.data?.error || 'Failed to load suppliers');
+                setError(e?.response?.data?.error || t('poCreate.loadSuppliersError'));
             } finally {
                 setSuppliersLoading(false);
             }
@@ -165,7 +167,7 @@ const PurchaseOrderCreatePage = () => {
                 setStockTypes(Array.isArray(data) ? data : (data?.results || []));
             } catch (e) {
                 setStockTypes([]);
-                setError(e?.response?.data?.error || 'Failed to load stock item types');
+                setError(e?.response?.data?.error || t('poCreate.loadStockTypesError'));
             } finally {
                 setStockTypesLoading(false);
             }
@@ -176,7 +178,7 @@ const PurchaseOrderCreatePage = () => {
                 setConsumableTypes(Array.isArray(data) ? data : (data?.results || []));
             } catch (e) {
                 setConsumableTypes([]);
-                setError(e?.response?.data?.error || 'Failed to load consumable types');
+                setError(e?.response?.data?.error || t('poCreate.loadConsumableTypesError'));
             } finally {
                 setConsumableTypesLoading(false);
             }
@@ -264,7 +266,7 @@ const PurchaseOrderCreatePage = () => {
             setStockModelsByType((prev) => ({ ...prev, [String(stockItemTypeId)]: list }));
         } catch (e) {
             setStockModelsByType((prev) => ({ ...prev, [String(stockItemTypeId)]: [] }));
-            setError(e?.response?.data?.error || 'Failed to load stock item models');
+            setError(e?.response?.data?.error || t('poCreate.loadStockModelsError'));
         }
     };
 
@@ -291,7 +293,7 @@ const PurchaseOrderCreatePage = () => {
             setConsumableModelsByType((prev) => ({ ...prev, [String(consumableTypeId)]: list }));
         } catch (e) {
             setConsumableModelsByType((prev) => ({ ...prev, [String(consumableTypeId)]: [] }));
-            setError(e?.response?.data?.error || 'Failed to load consumable models');
+            setError(e?.response?.data?.error || t('poCreate.loadConsumableModelsError'));
         }
     };
 
@@ -396,7 +398,7 @@ const PurchaseOrderCreatePage = () => {
                     if (!l?.stock_item_type_id || !l?.stock_item_model_id) continue;
                     const k = `${String(l.stock_item_type_id)}::${String(l.stock_item_model_id)}`;
                     if (seen.has(k)) {
-                        setError('Duplicate stock item line (same Type + Model). Please keep each tuple unique.');
+                        setError(t('poCreate.duplicateStockLine'));
                         return;
                     }
                     seen.add(k);
@@ -409,7 +411,7 @@ const PurchaseOrderCreatePage = () => {
                     if (!l?.consumable_type_id || !l?.consumable_model_id) continue;
                     const k = `${String(l.consumable_type_id)}::${String(l.consumable_model_id)}`;
                     if (seen.has(k)) {
-                        setError('Duplicate consumable line (same Type + Model). Please keep each tuple unique.');
+                        setError(t('poCreate.duplicateConsumableLine'));
                         return;
                     }
                     seen.add(k);
@@ -438,7 +440,7 @@ const PurchaseOrderCreatePage = () => {
 
             const res = await purchaseOrderService.create(payload);
             const newId = res?.purchase_order_id;
-            setSuccess(newId ? `Purchase order #${newId} created` : 'Purchase order created');
+            setSuccess(newId ? t('poCreate.createdWithId', { id: newId }) : t('poCreate.created'));
 
             clearDraft();
 
@@ -448,7 +450,7 @@ const PurchaseOrderCreatePage = () => {
                 navigate('/dashboard/purchase-orders');
             }
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to create purchase order');
+            setError(e?.response?.data?.error || t('poCreate.createError'));
         } finally {
             setSubmitting(false);
         }
@@ -458,8 +460,8 @@ const PurchaseOrderCreatePage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">Create Purchase Order</h1>
-                    <p className="page-subtitle">Create a new purchase order with stock item/consumable model lines.</p>
+                    <h1 className="page-title">{t('poCreate.title')}</h1>
+                    <p className="page-subtitle">{t('poCreate.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <button
@@ -473,10 +475,10 @@ const PurchaseOrderCreatePage = () => {
                         }}
                         disabled={submitting}
                     >
-                        Clear draft
+                        {t('poCreate.clearDraft')}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')} disabled={submitting}>
-                        Back
+                        {t('common.back')}
                     </button>
                 </div>
             </div>
@@ -495,18 +497,18 @@ const PurchaseOrderCreatePage = () => {
 
             <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                 <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>Header</h2>
+                    <h2 className="card-title" style={{ margin: 0 }}>{t('poCreate.header')}</h2>
                 </div>
                 <div className="card-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
                     <div className="form-group">
-                        <label className="form-label">Supplier</label>
+                        <label className="form-label">{t('poCreate.supplier')}</label>
                         <select
                             className="form-input"
                             value={form.supplier_id}
                             onChange={(e) => updateForm({ supplier_id: e.target.value })}
                             disabled={submitting || suppliersLoading}
                         >
-                            <option value="">{suppliersLoading ? 'Loading...' : 'Select supplier'}</option>
+                            <option value="">{suppliersLoading ? t('common.loading') : t('poCreate.selectSupplier')}</option>
                             {suppliers.map((s) => (
                                 <option key={s.supplier_id} value={s.supplier_id}>
                                     {s.supplier_name} (#{s.supplier_id})
@@ -516,12 +518,12 @@ const PurchaseOrderCreatePage = () => {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Purchase order code</label>
+                        <label className="form-label">{t('poCreate.purchaseOrderCode')}</label>
                         <input
                             className="form-input"
                             value={form.purchase_order_code}
                             onChange={(e) => updateForm({ purchase_order_code: e.target.value })}
-                            placeholder="e.g. PO-2026-001"
+                            placeholder={t('poCreate.codePlaceholder')}
                         />
                     </div>
 
@@ -532,7 +534,7 @@ const PurchaseOrderCreatePage = () => {
                                 checked={!!form.is_signed_by_finance}
                                 onChange={(e) => updateForm({ is_signed_by_finance: e.target.checked })}
                             />
-                            Signed by finance
+                            {t('poCreate.signedByFinance')}
                         </label>
                     </div>
                 </div>
@@ -541,14 +543,14 @@ const PurchaseOrderCreatePage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
                 <div className="card">
                     <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 className="card-title" style={{ margin: 0 }}>Stock item model lines</h2>
+                        <h2 className="card-title" style={{ margin: 0 }}>{t('poCreate.stockModelLines')}</h2>
                         <button type="button" className="btn btn-secondary" onClick={addStockLine} disabled={submitting}>
-                            Add line
+                            {t('poCreate.addLine')}
                         </button>
                     </div>
                     <div className="card-body">
                         {stockLines.length === 0 ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>No lines.</div>
+                            <div style={{ color: 'var(--color-text-secondary)' }}>{t('poCreate.noLines')}</div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                                 {stockLines.map((l, idx) => (
@@ -563,7 +565,7 @@ const PurchaseOrderCreatePage = () => {
                                             }}
                                         >
                                             <div className="form-group">
-                                                <label className="form-label">Type</label>
+                                                <label className="form-label">{t('poCreate.type')}</label>
                                                 <select
                                                     className="form-input"
                                                     value={l.stock_item_type_id || ''}
@@ -574,7 +576,7 @@ const PurchaseOrderCreatePage = () => {
                                                     }}
                                                     disabled={submitting || stockTypesLoading || l.instances_added}
                                                 >
-                                                    <option value="">{stockTypesLoading ? 'Loading...' : 'Select type'}</option>
+                                                    <option value="">{stockTypesLoading ? t('common.loading') : t('poCreate.selectType')}</option>
                                                     {stockTypes
                                                         .filter((t) => {
                                                             const tid = t.stock_item_type_id;
@@ -590,14 +592,14 @@ const PurchaseOrderCreatePage = () => {
                                             </div>
 
                                             <div className="form-group">
-                                                <label className="form-label">Model</label>
+                                                <label className="form-label">{t('poCreate.model')}</label>
                                                 <select
                                                     className="form-input"
                                                     value={l.stock_item_model_id || ''}
                                                     onChange={(e) => {
                                                         const v = e.target.value;
                                                         if (isDuplicateStockTuple(stockLines, idx, l.stock_item_type_id, v)) {
-                                                            setError('Duplicate stock item line (same Type + Model).');
+                                                            setError(t('poCreate.duplicateStockLineShort'));
                                                             updateStockLine(idx, { stock_item_model_id: '' });
                                                             return;
                                                         }
@@ -606,7 +608,7 @@ const PurchaseOrderCreatePage = () => {
                                                     onFocus={() => ensureStockModelsLoaded(l.stock_item_type_id)}
                                                     disabled={submitting || !l.stock_item_type_id || l.instances_added}
                                                 >
-                                                    <option value="">Select model</option>
+                                                    <option value="">{t('poCreate.selectModel')}</option>
                                                     {(stockModelsByType[String(l.stock_item_type_id)] || [])
                                                         .filter((m) => {
                                                             const used = usedStockModelIdsForType(stockLines, idx, l.stock_item_type_id);
@@ -621,11 +623,11 @@ const PurchaseOrderCreatePage = () => {
                                             </div>
 
                                             <div className="form-group">
-                                                <label className="form-label">Qty ordered</label>
+                                                <label className="form-label">{t('poCreate.qtyOrdered')}</label>
                                                 <input className="form-input" value={l.quantity_ordered} onChange={(e) => updateStockLine(idx, { quantity_ordered: e.target.value })} disabled={l.instances_added} />
                                             </div>
                                             <div className="form-group">
-                                                <label className="form-label">Unit price</label>
+                                                <label className="form-label">{t('poCreate.unitPrice')}</label>
                                                 <input className="form-input" value={l.unit_price} onChange={(e) => updateStockLine(idx, { unit_price: e.target.value })} disabled={l.instances_added} />
                                             </div>
 
@@ -636,18 +638,18 @@ const PurchaseOrderCreatePage = () => {
                                                         className="btn btn-secondary"
                                                         onClick={() => openStockInstances(l.stock_item_type_id, l.stock_item_model_id, l.quantity_ordered, idx)}
                                                         disabled={submitting || !l.stock_item_type_id || !l.stock_item_model_id}
-                                                        title={!l.stock_item_type_id || !l.stock_item_model_id ? 'Select type and model first' : undefined}
+                                                        title={!l.stock_item_type_id || !l.stock_item_model_id ? t('poCreate.selectTypeModelFirst') : undefined}
                                                     >
-                                                        Add instances
+                                                        {t('poCreate.addInstances')}
                                                     </button>
                                                 )}
                                                 {l.instances_added && (
-                                                    <div style={{ color: 'var(--color-success)', fontWeight: 600, padding: 'var(--space-2) 0' }}>Instances added</div>
+                                                    <div style={{ color: 'var(--color-success)', fontWeight: 600, padding: 'var(--space-2) 0' }}>{t('poCreate.instancesAdded')}</div>
                                                 )}
                                             </div>
                                             <div className="form-group" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'end', margin: 0 }}>
                                                 <button type="button" className="btn btn-secondary" onClick={() => removeStockLine(idx)} disabled={submitting || l.instances_added}>
-                                                    Remove
+                                                    {t('common.remove')}
                                                 </button>
                                             </div>
                                         </div>
@@ -660,14 +662,14 @@ const PurchaseOrderCreatePage = () => {
 
                 <div className="card">
                     <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 className="card-title" style={{ margin: 0 }}>Consumable model lines</h2>
+                        <h2 className="card-title" style={{ margin: 0 }}>{t('poCreate.consumableModelLines')}</h2>
                         <button type="button" className="btn btn-secondary" onClick={addConsumableLine} disabled={submitting}>
-                            Add line
+                            {t('poCreate.addLine')}
                         </button>
                     </div>
                     <div className="card-body">
                         {consumableLines.length === 0 ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>No lines.</div>
+                            <div style={{ color: 'var(--color-text-secondary)' }}>{t('poCreate.noLines')}</div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                                 {consumableLines.map((l, idx) => (
@@ -682,7 +684,7 @@ const PurchaseOrderCreatePage = () => {
                                             }}
                                         >
                                             <div className="form-group">
-                                                <label className="form-label">Type</label>
+                                                <label className="form-label">{t('poCreate.type')}</label>
                                                 <select
                                                     className="form-input"
                                                     value={l.consumable_type_id || ''}
@@ -693,7 +695,7 @@ const PurchaseOrderCreatePage = () => {
                                                     }}
                                                     disabled={submitting || consumableTypesLoading || l.instances_added}
                                                 >
-                                                    <option value="">{consumableTypesLoading ? 'Loading...' : 'Select type'}</option>
+                                                    <option value="">{consumableTypesLoading ? t('common.loading') : t('poCreate.selectType')}</option>
                                                     {consumableTypes
                                                         .filter((t) => {
                                                             const tid = t.consumable_type_id;
@@ -709,14 +711,14 @@ const PurchaseOrderCreatePage = () => {
                                             </div>
 
                                             <div className="form-group">
-                                                <label className="form-label">Model</label>
+                                                <label className="form-label">{t('poCreate.model')}</label>
                                                 <select
                                                     className="form-input"
                                                     value={l.consumable_model_id || ''}
                                                     onChange={(e) => {
                                                         const v = e.target.value;
                                                         if (isDuplicateConsumableTuple(consumableLines, idx, l.consumable_type_id, v)) {
-                                                            setError('Duplicate consumable line (same Type + Model).');
+                                                            setError(t('poCreate.duplicateConsumableLineShort'));
                                                             updateConsumableLine(idx, { consumable_model_id: '' });
                                                             return;
                                                         }
@@ -725,7 +727,7 @@ const PurchaseOrderCreatePage = () => {
                                                     onFocus={() => ensureConsumableModelsLoaded(l.consumable_type_id)}
                                                     disabled={submitting || !l.consumable_type_id || l.instances_added}
                                                 >
-                                                    <option value="">Select model</option>
+                                                    <option value="">{t('poCreate.selectModel')}</option>
                                                     {(consumableModelsByType[String(l.consumable_type_id)] || [])
                                                         .filter((m) => {
                                                             const used = usedConsumableModelIdsForType(consumableLines, idx, l.consumable_type_id);
@@ -740,11 +742,11 @@ const PurchaseOrderCreatePage = () => {
                                             </div>
 
                                             <div className="form-group">
-                                                <label className="form-label">Qty ordered</label>
+                                                <label className="form-label">{t('poCreate.qtyOrdered')}</label>
                                                 <input className="form-input" value={l.quantity_ordered} onChange={(e) => updateConsumableLine(idx, { quantity_ordered: e.target.value })} disabled={l.instances_added} />
                                             </div>
                                             <div className="form-group">
-                                                <label className="form-label">Unit price</label>
+                                                <label className="form-label">{t('poCreate.unitPrice')}</label>
                                                 <input className="form-input" value={l.unit_price} onChange={(e) => updateConsumableLine(idx, { unit_price: e.target.value })} disabled={l.instances_added} />
                                             </div>
 
@@ -755,18 +757,18 @@ const PurchaseOrderCreatePage = () => {
                                                         className="btn btn-secondary"
                                                         onClick={() => openConsumableInstances(l.consumable_type_id, l.consumable_model_id, l.quantity_ordered, idx)}
                                                         disabled={submitting || !l.consumable_type_id || !l.consumable_model_id}
-                                                        title={!l.consumable_type_id || !l.consumable_model_id ? 'Select type and model first' : undefined}
+                                                        title={!l.consumable_type_id || !l.consumable_model_id ? t('poCreate.selectTypeModelFirst') : undefined}
                                                     >
-                                                        Add instances
+                                                        {t('poCreate.addInstances')}
                                                     </button>
                                                 )}
                                                 {l.instances_added && (
-                                                    <div style={{ color: 'var(--color-success)', fontWeight: 600, padding: 'var(--space-2) 0' }}>Instances added</div>
+                                                    <div style={{ color: 'var(--color-success)', fontWeight: 600, padding: 'var(--space-2) 0' }}>{t('poCreate.instancesAdded')}</div>
                                                 )}
                                             </div>
                                             <div className="form-group" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'end', margin: 0 }}>
                                                 <button type="button" className="btn btn-secondary" onClick={() => removeConsumableLine(idx)} disabled={submitting || l.instances_added}>
-                                                    Remove
+                                                    {t('common.remove')}
                                                 </button>
                                             </div>
                                         </div>
@@ -780,7 +782,7 @@ const PurchaseOrderCreatePage = () => {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-5)' }}>
                 <button type="button" className="btn btn-primary" onClick={submit} disabled={submitting}>
-                    {submitting ? 'Creating...' : 'Create Purchase Order'}
+                    {submitting ? t('poCreate.creating') : t('poCreate.createOrder')}
                 </button>
             </div>
         </div>

@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
 import { companyAssetRequestService, attributionOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const REQUEST_SIGNATURE_FIELDS = [
-    { key: 'is_signed_by_company', label: 'Company', fullLabel: 'Signed by company', short: 'C' },
-    { key: 'is_signed_by_company_leader', label: 'Leader', fullLabel: 'Signed by company leader', short: 'L' },
-    { key: 'is_signed_by_regional_provider', label: 'Regional', fullLabel: 'Signed by regional provider', short: 'R' },
-    { key: 'is_signed_by_company_representative', label: 'Representative', fullLabel: 'Signed by company representative', short: 'Rep' },
+const getRequestSignatureFields = (t) => [
+    { key: 'is_signed_by_company', label: t('companyAssetRequests.company'), fullLabel: t('companyAssetRequests.signedByCompany'), short: 'C' },
+    { key: 'is_signed_by_company_leader', label: t('companyAssetRequests.leader'), fullLabel: t('companyAssetRequests.signedByLeader'), short: 'L' },
+    { key: 'is_signed_by_regional_provider', label: t('companyAssetRequests.regional'), fullLabel: t('companyAssetRequests.signedByRegional'), short: 'R' },
+    { key: 'is_signed_by_company_representative', label: t('companyAssetRequests.representative'), fullLabel: t('companyAssetRequests.signedByRepresentative'), short: 'Rep' },
 ];
 
 const CompanyAssetRequestsPage = () => {
-    const { user } = useAuth();
+    const { t } = useTranslation();
+    const { user, isSuperuser } = useAuth();
 
-    const isAssetResponsible = user?.roles?.some(role => role.role_code === 'asset_responsible' || role.role_code === 'exploitation_chief' || role.role_code === 'it_bureau_chief');
+    const isAssetResponsible = isSuperuser || user?.roles?.some(role => role.role_code === 'asset_responsible' || role.role_code === 'exploitation_chief' || role.role_code === 'it_bureau_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -37,7 +39,7 @@ const CompanyAssetRequestsPage = () => {
         let withDigitalCopyCount = 0;
 
         list.forEach((r) => {
-            const fullySigned = REQUEST_SIGNATURE_FIELDS.every((field) => !!r?.[field.key]);
+            const fullySigned = getRequestSignatureFields(t).every((field) => !!r?.[field.key]);
             if (fullySigned) fullySignedCount += 1;
             if (r?.digital_copy) withDigitalCopyCount += 1;
         });
@@ -150,17 +152,17 @@ const CompanyAssetRequestsPage = () => {
             if (allEstablished) {
                 setShowAllSignaturesModal(true);
             } else {
-                setSuccess('Signatures updated successfully');
+                setSuccess(t('companyAssetRequests.signaturesUpdated'));
                 closeEditModal();
             }
         } catch (err) {
-            setError(err?.response?.data?.error || 'Failed to update signatures');
+            setError(err?.response?.data?.error || t('companyAssetRequests.updateSignaturesFailed'));
         } finally {
             setSubmitting(false);
         }
     };
 
-    const signatureFieldLabel = (field) => REQUEST_SIGNATURE_FIELDS.find((f) => f.key === field)?.fullLabel || field;
+    const signatureFieldLabel = (field) => getRequestSignatureFields(t).find((f) => f.key === field)?.fullLabel || field;
 
     const handleSaveSignatures = async (e) => {
         e.preventDefault();
@@ -217,7 +219,7 @@ const CompanyAssetRequestsPage = () => {
                 });
                 setOrdersById(map);
             } catch (err) {
-                setError('Failed to fetch company asset requests');
+                setError(t('companyAssetRequests.fetchError'));
             } finally {
                 setLoading(false);
             }
@@ -234,11 +236,11 @@ const CompanyAssetRequestsPage = () => {
         try {
             const selectedOrderId = Number(createForm.attribution_order);
             if (!Number.isFinite(selectedOrderId) || selectedOrderId <= 0) {
-                setError('Attribution order is required');
+                setError(t('companyAssetRequests.attributionOrderRequired'));
                 return;
             }
             if (attributionOrdersWithRequest.has(selectedOrderId)) {
-                setError('This attribution order already has a company asset request');
+                setError(t('companyAssetRequests.orderAlreadyHasRequest'));
                 return;
             }
 
@@ -265,7 +267,7 @@ const CompanyAssetRequestsPage = () => {
             const reqList = data?.results || data || [];
             setRequests(reqList);
 
-            setSuccess('Company asset request created successfully');
+            setSuccess(t('companyAssetRequests.createSuccess'));
             setShowCreateForm(false);
             setCreateForm({
                 attribution_order: '',
@@ -281,7 +283,7 @@ const CompanyAssetRequestsPage = () => {
                 digital_copy: null,
             });
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to create company asset request');
+            setError(err.response?.data?.error || t('companyAssetRequests.createError'));
         } finally {
             setSubmitting(false);
         }
@@ -291,42 +293,42 @@ const CompanyAssetRequestsPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     return (
         <div className="company-asset-requests-page">
             <div className="card company-asset-requests-hero">
                 <div className="company-asset-requests-header">
                     <div>
-                        <h1 className="page-title">Company Asset Requests</h1>
-                        <p className="page-subtitle">Consult requests, verify signatures, and update approval status</p>
+                        <h1 className="page-title">{t('companyAssetRequests.title')}</h1>
+                        <p className="page-subtitle">{t('companyAssetRequests.subtitle')}</p>
                     </div>
                     <button className="btn btn-primary company-asset-requests-create-btn" onClick={() => setShowCreateForm(true)}>
-                        + New Request
+                        {t('companyAssetRequests.newRequest')}
                     </button>
                 </div>
                 <div className="company-asset-requests-hero-foot">
-                    <span className="badge badge-info">Click any request card to edit signatures</span>
-                    <span className="badge badge-warning">Signature set to Yes cannot be reverted</span>
+                    <span className="badge badge-info">{t('companyAssetRequests.clickToEditSignatures')}</span>
+                    <span className="badge badge-warning">{t('companyAssetRequests.signatureCannotBeReverted')}</span>
                 </div>
             </div>
 
             <div className="stat-grid company-asset-requests-stat-grid">
                 <div className="stat-card">
                     <div className="stat-value">{requestStats.total}</div>
-                    <div className="stat-label">Total requests</div>
+                    <div className="stat-label">{t('companyAssetRequests.totalRequests')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{requestStats.fullySignedCount}</div>
-                    <div className="stat-label">Fully signed</div>
+                    <div className="stat-label">{t('companyAssetRequests.fullySigned')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{requestStats.pendingSignaturesCount}</div>
-                    <div className="stat-label">Pending signatures</div>
+                    <div className="stat-label">{t('companyAssetRequests.pendingSignatures')}</div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{requestStats.withDigitalCopyCount}</div>
-                    <div className="stat-label">With digital copy</div>
+                    <div className="stat-label">{t('companyAssetRequests.withDigitalCopy')}</div>
                 </div>
             </div>
 
@@ -335,78 +337,78 @@ const CompanyAssetRequestsPage = () => {
 
             <div className="card company-asset-requests-list-card">
                 <div className="card-header">
-                    <h2 className="card-title">All Requests</h2>
-                    <div className="company-asset-requests-subtle-text">{requests.length} records</div>
+                    <h2 className="card-title">{t('companyAssetRequests.allRequests')}</h2>
+                    <div className="company-asset-requests-subtle-text">{t('companyAssetRequests.recordCount', { count: requests.length })}</div>
                 </div>
                 <div className="card-body">
                     {requests.length === 0 ? (
-                        <div className="company-asset-requests-empty-state">No company asset requests found.</div>
+                        <div className="company-asset-requests-empty-state">{t('companyAssetRequests.noRequestsFound')}</div>
                     ) : (
                         <div className="company-asset-requests-list">
                             {requests.map((r) => {
                                 const orderId = r.attribution_order;
                                 const order = ordersById[orderId];
-                                const fullySigned = REQUEST_SIGNATURE_FIELDS.every((field) => !!r?.[field.key]);
+                                const fullySigned = getRequestSignatureFields(t).every((field) => !!r?.[field.key]);
                                 return (
                                     <button
                                         key={r.company_asset_request_id}
                                         type="button"
                                         className="company-asset-requests-item"
                                         onClick={() => openEditModal(r)}
-                                        title="Click to edit signatures"
+                                        title={t('companyAssetRequests.clickToEditSignatures')}
                                     >
                                         <div className="company-asset-requests-item-head">
                                             <div>
-                                                <div className="company-asset-requests-item-title">Request #{r.company_asset_request_id}</div>
+                                                <div className="company-asset-requests-item-title">{t('companyAssetRequests.requestId', { id: r.company_asset_request_id })}</div>
                                                 <div className="company-asset-requests-item-subtitle">
                                                     {order?.attribution_order_full_code || `#${orderId}`}
                                                 </div>
                                             </div>
                                             <div className="company-asset-requests-badges">
                                                 <span className={`badge ${fullySigned ? 'badge-success' : 'badge-warning'}`}>
-                                                    {fullySigned ? 'Fully signed' : 'Pending signatures'}
+                                                    {fullySigned ? t('companyAssetRequests.fullySigned') : t('companyAssetRequests.pendingSignatures')}
                                                 </span>
                                                 <span className={`badge ${r.digital_copy ? 'badge-info' : 'badge-warning'}`}>
-                                                    {r.digital_copy ? 'Copy attached' : 'No copy'}
+                                                    {r.digital_copy ? t('companyAssetRequests.copyAttached') : t('companyAssetRequests.noCopy')}
                                                 </span>
                                             </div>
                                         </div>
 
                                         <div className="company-asset-requests-item-grid">
                                             <div>
-                                                <div className="company-asset-requests-field-label">Administrative #</div>
+                                                <div className="company-asset-requests-field-label">{t('companyAssetRequests.administrativeNumber')}</div>
                                                 <div className="company-asset-requests-field-value">{r.administrative_serial_number || '-'}</div>
                                             </div>
                                             <div>
-                                                <div className="company-asset-requests-field-label">Title</div>
+                                                <div className="company-asset-requests-field-label">{t('companyAssetRequests.titleField')}</div>
                                                 <div className="company-asset-requests-field-value">{r.title_of_demand || '-'}</div>
                                             </div>
                                             <div>
-                                                <div className="company-asset-requests-field-label">Body</div>
+                                                <div className="company-asset-requests-field-label">{t('companyAssetRequests.organizationBody')}</div>
                                                 <div className="company-asset-requests-field-value">{r.organization_body_designation || '-'}</div>
                                             </div>
                                             <div>
-                                                <div className="company-asset-requests-field-label">Reg (Corpse)</div>
+                                                <div className="company-asset-requests-field-label">{t('companyAssetRequests.regCorpse')}</div>
                                                 <div className="company-asset-requests-field-value">{r.register_number_or_book_journal_of_corpse || '-'}</div>
                                             </div>
                                             <div>
-                                                <div className="company-asset-requests-field-label">Reg (Est.)</div>
+                                                <div className="company-asset-requests-field-label">{t('companyAssetRequests.regEstablishment')}</div>
                                                 <div className="company-asset-requests-field-value">{r.register_number_or_book_journal_of_establishment || '-'}</div>
                                             </div>
                                         </div>
 
                                         <div className="company-asset-requests-footer">
                                             <div className="company-asset-requests-signature-pill-list">
-                                                {REQUEST_SIGNATURE_FIELDS.map((field) => (
+                                                {getRequestSignatureFields(t).map((field) => (
                                                     <span
                                                         key={`${r.company_asset_request_id}-${field.key}`}
                                                         className={`badge ${r?.[field.key] ? 'badge-success' : 'badge-error'}`}
                                                     >
-                                                        {field.short}: {r?.[field.key] ? 'Yes' : 'No'}
+                                                        {field.short}: {r?.[field.key] ? t('common.yes') : t('common.no')}
                                                     </span>
                                                 ))}
                                             </div>
-                                            <span className="company-asset-requests-subtle-text">Edit signatures</span>
+                                            <span className="company-asset-requests-subtle-text">{t('companyAssetRequests.editSignatures')}</span>
                                         </div>
                                     </button>
                                 );
@@ -421,8 +423,8 @@ const CompanyAssetRequestsPage = () => {
                     <div className="modal company-asset-requests-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header company-asset-requests-modal-header">
                             <div>
-                                <div className="modal-title">New Company Asset Request</div>
-                                <div className="company-asset-requests-subtle-text">Complete request metadata and signatures</div>
+                                <div className="modal-title">{t('companyAssetRequests.newCompanyAssetRequest')}</div>
+                                <div className="company-asset-requests-subtle-text">{t('companyAssetRequests.completeRequestMetadata')}</div>
                             </div>
                             <button type="button" className="modal-close" disabled={submitting} onClick={() => setShowCreateForm(false)}>
                                 ✕
@@ -432,7 +434,7 @@ const CompanyAssetRequestsPage = () => {
                             <form onSubmit={handleCreate}>
                                 {Object.keys(ordersById).length > 0 && attributionOrdersWithRequest.size >= Object.keys(ordersById).length && (
                                     <div className="company-asset-requests-modal-warning">
-                                        All attribution orders already have a company asset request.
+                                        {t('companyAssetRequests.allOrdersHaveRequest')}
                                     </div>
                                 )}
 
@@ -443,9 +445,9 @@ const CompanyAssetRequestsPage = () => {
                                             value={createForm.attribution_order}
                                             onChange={(e) => setCreateForm({ ...createForm, attribution_order: e.target.value })}
                                             required
-                                            aria-label="Attribution order"
+                                            aria-label={t('companyAssetRequests.attributionOrder')}
                                         >
-                                            <option value="">Attribution order</option>
+                                            <option value="">{t('companyAssetRequests.attributionOrder')}</option>
                                             {Object.values(ordersById)
                                                 .filter((o) => !attributionOrdersWithRequest.has(Number(o.attribution_order_id)))
                                                 .map((o) => (
@@ -462,8 +464,8 @@ const CompanyAssetRequestsPage = () => {
                                             className="form-input"
                                             value={createForm.administrative_serial_number}
                                             onChange={(e) => setCreateForm({ ...createForm, administrative_serial_number: e.target.value })}
-                                            placeholder="Administrative serial number"
-                                            aria-label="Administrative serial number"
+                                            placeholder={t('companyAssetRequests.administrativeSerialNumber')}
+                                            aria-label={t('companyAssetRequests.administrativeSerialNumber')}
                                         />
                                     </div>
 
@@ -473,8 +475,8 @@ const CompanyAssetRequestsPage = () => {
                                             className="form-input"
                                             value={createForm.title_of_demand}
                                             onChange={(e) => setCreateForm({ ...createForm, title_of_demand: e.target.value })}
-                                            placeholder="Title of demand"
-                                            aria-label="Title of demand"
+                                            placeholder={t('companyAssetRequests.titleOfDemand')}
+                                            aria-label={t('companyAssetRequests.titleOfDemand')}
                                         />
                                     </div>
 
@@ -484,8 +486,8 @@ const CompanyAssetRequestsPage = () => {
                                             className="form-input"
                                             value={createForm.organization_body_designation}
                                             onChange={(e) => setCreateForm({ ...createForm, organization_body_designation: e.target.value })}
-                                            placeholder="Organization body designation"
-                                            aria-label="Organization body designation"
+                                            placeholder={t('companyAssetRequests.organizationBodyDesignation')}
+                                            aria-label={t('companyAssetRequests.organizationBodyDesignation')}
                                         />
                                     </div>
 
@@ -495,8 +497,8 @@ const CompanyAssetRequestsPage = () => {
                                             className="form-input"
                                             value={createForm.register_number_or_book_journal_of_corpse}
                                             onChange={(e) => setCreateForm({ ...createForm, register_number_or_book_journal_of_corpse: e.target.value })}
-                                            placeholder="Register / journal (corpse)"
-                                            aria-label="Register number or book journal of corpse"
+                                            placeholder={t('companyAssetRequests.registerCorpse')}
+                                            aria-label={t('companyAssetRequests.registerCorpse')}
                                         />
                                     </div>
 
@@ -506,8 +508,8 @@ const CompanyAssetRequestsPage = () => {
                                             className="form-input"
                                             value={createForm.register_number_or_book_journal_of_establishment}
                                             onChange={(e) => setCreateForm({ ...createForm, register_number_or_book_journal_of_establishment: e.target.value })}
-                                            placeholder="Register / journal (establishment)"
-                                            aria-label="Register number or book journal of establishment"
+                                            placeholder={t('companyAssetRequests.registerEstablishment')}
+                                            aria-label={t('companyAssetRequests.registerEstablishment')}
                                         />
                                     </div>
 
@@ -517,13 +519,13 @@ const CompanyAssetRequestsPage = () => {
                                             className="form-input"
                                             onChange={(e) => setCreateForm({ ...createForm, digital_copy: e.target.files[0] })}
                                             accept="image/*,application/pdf"
-                                            aria-label="Digital copy attachment"
+                                            aria-label={t('companyAssetRequests.digitalCopyAttachment')}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="company-asset-requests-modal-signatures">
-                                    {REQUEST_SIGNATURE_FIELDS.map((field) => (
+                                    {getRequestSignatureFields(t).map((field) => (
                                         <label key={field.key} className="company-asset-requests-signature-chip">
                                             <input
                                                 type="checkbox"
@@ -542,10 +544,10 @@ const CompanyAssetRequestsPage = () => {
 
                                 <div className="company-asset-requests-modal-footer">
                                     <button type="button" className="btn btn-secondary" style={{ width: 'auto' }} disabled={submitting} onClick={() => setShowCreateForm(false)}>
-                                        Cancel
+                                        {t('common.cancel')}
                                     </button>
                                     <button type="submit" className="btn btn-primary company-asset-requests-submit-btn" disabled={submitting}>
-                                        {submitting ? 'Creating...' : 'Create Request'}
+                                        {submitting ? t('common.creating') : t('companyAssetRequests.createRequest')}
                                     </button>
                                 </div>
                             </form>
@@ -559,8 +561,8 @@ const CompanyAssetRequestsPage = () => {
                     <div className="modal company-asset-requests-edit-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header company-asset-requests-modal-header">
                             <div>
-                                <div className="modal-title">Edit Signatures</div>
-                                <div className="company-asset-requests-subtle-text">Request #{editingRequest?.company_asset_request_id}</div>
+                                <div className="modal-title">{t('companyAssetRequests.editSignaturesTitle')}</div>
+                                <div className="company-asset-requests-subtle-text">{t('companyAssetRequests.requestId', { id: editingRequest?.company_asset_request_id })}</div>
                             </div>
                             <button type="button" className="modal-close" onClick={closeEditModal}>
                                 ✕
@@ -569,7 +571,7 @@ const CompanyAssetRequestsPage = () => {
                         <div className="modal-body company-asset-requests-modal-body">
                             <form onSubmit={handleSaveSignatures}>
                                 <div className="company-asset-requests-modal-signatures">
-                                    {REQUEST_SIGNATURE_FIELDS.map((field) => (
+                                    {getRequestSignatureFields(t).map((field) => (
                                         <label key={field.key} className="company-asset-requests-signature-chip">
                                             <input
                                                 type="checkbox"
@@ -584,10 +586,10 @@ const CompanyAssetRequestsPage = () => {
 
                                 <div className="company-asset-requests-modal-footer">
                                     <button type="button" className="btn btn-secondary" style={{ width: 'auto' }} onClick={closeEditModal} disabled={submitting}>
-                                        Cancel
+                                        {t('common.cancel')}
                                     </button>
                                     <button type="submit" className="btn btn-primary company-asset-requests-submit-btn" disabled={submitting}>
-                                        {submitting ? 'Saving...' : 'Save'}
+                                        {submitting ? t('companyAssetRequests.saving') : t('common.save')}
                                     </button>
                                 </div>
                             </form>
@@ -600,11 +602,11 @@ const CompanyAssetRequestsPage = () => {
                 <div className="modal-overlay company-asset-requests-modal-overlay" onClick={cancelSaveSignatures}>
                     <div className="modal company-asset-requests-confirm-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header company-asset-requests-modal-header">
-                            <div className="modal-title">Confirm Save</div>
+                            <div className="modal-title">{t('companyAssetRequests.confirmSave')}</div>
                         </div>
                         <div className="modal-body company-asset-requests-modal-body">
                             <div className="company-asset-requests-subtle-text">
-                                You are about to set the following signature(s) to Yes. This is irreversible.
+                                {t('companyAssetRequests.irreversibleWarning')}
                             </div>
 
                             <div className="company-asset-requests-confirm-list">
@@ -617,10 +619,10 @@ const CompanyAssetRequestsPage = () => {
 
                             <div className="company-asset-requests-modal-footer">
                                 <button type="button" className="btn btn-secondary" style={{ width: 'auto' }} onClick={cancelSaveSignatures} disabled={submitting}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="button" className="btn btn-primary company-asset-requests-submit-btn" onClick={confirmSaveSignatures} disabled={submitting}>
-                                    Confirm
+                                    {t('common.confirm')}
                                 </button>
                             </div>
                         </div>
@@ -632,15 +634,15 @@ const CompanyAssetRequestsPage = () => {
                 <div className="modal-overlay company-asset-requests-modal-overlay" onClick={closeAllSignaturesModal}>
                     <div className="modal company-asset-requests-confirm-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header company-asset-requests-modal-header">
-                            <div className="modal-title">All signatures are established</div>
+                            <div className="modal-title">{t('companyAssetRequests.allSignaturesEstablished')}</div>
                         </div>
                         <div className="modal-body company-asset-requests-modal-body">
                             <div className="company-asset-requests-subtle-text">
-                                All required signatures have been set to Yes.
+                                {t('companyAssetRequests.allSignaturesSetToYes')}
                             </div>
                             <div className="company-asset-requests-modal-footer">
                                 <button type="button" className="btn btn-primary company-asset-requests-submit-btn" onClick={closeAllSignaturesModal} disabled={submitting}>
-                                    OK
+                                    {t('common.ok')}
                                 </button>
                             </div>
                         </div>

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { assetModelService, authService, consumableModelService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const ConsumableModelCompatibilityPage = () => {
     const navigate = useNavigate();
     const { modelId } = useParams();
     const [searchParams] = useSearchParams();
+    const { t } = useTranslation();
     const typeId = searchParams.get('typeId');
 
     const [consumableModel, setConsumableModel] = useState(null);
@@ -41,7 +43,7 @@ const ConsumableModelCompatibilityPage = () => {
             setCompatibleAssetModels(Array.isArray(compat) ? compat : []);
             setAllAssetModels(Array.isArray(allAssets) ? allAssets : []);
         } catch (err) {
-            setError('Failed to fetch compatibility: ' + err.message);
+            setError(t('consumableModelCompatibility.fetchError') + ': ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -68,7 +70,7 @@ const ConsumableModelCompatibilityPage = () => {
             setShowAddForm(false);
             await fetchAll();
         } catch (err) {
-            setError('Failed to add compatible asset model: ' + err.message);
+            setError(t('consumableModelCompatibility.addError') + ': ' + err.message);
         }
     };
 
@@ -78,15 +80,15 @@ const ConsumableModelCompatibilityPage = () => {
             await consumableModelService.removeCompatibleAssetModel(modelId, assetModelId);
             await fetchAll();
         } catch (err) {
-            setError('Failed to remove compatible asset model: ' + err.message);
+            setError(t('consumableModelCompatibility.removeError') + ': ' + err.message);
         }
     };
 
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">Consumables</h1>
-                <p className="page-subtitle">Compatibility {consumableModel?.model_name ? `• ${consumableModel.model_name}` : ''}</p>
+                <h1 className="page-title">{t('consumables.title')}</h1>
+                <p className="page-subtitle">{t('consumableModelCompatibility.compatibility')} {consumableModel?.model_name ? `• ${consumableModel.model_name}` : ''}</p>
             </div>
 
             {error && (
@@ -113,8 +115,8 @@ const ConsumableModelCompatibilityPage = () => {
                         borderRadius: 'var(--radius-sm)',
                         cursor: 'pointer'
                     }}
-                    title="Back"
-                    aria-label="Back"
+                    title={t('common.back')}
+                    aria-label={t('common.back')}
                 >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 18l-6-6 6-6" />
@@ -131,13 +133,13 @@ const ConsumableModelCompatibilityPage = () => {
                     alignItems: 'center',
                     backgroundColor: 'var(--color-bg-secondary)'
                 }}>
-                    <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Compatible Asset Models</h2>
+                    <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('consumableModelCompatibility.compatibleAssetModels')}</h2>
                     {isSuperuser && !showAddForm && (
                         <button
                             onClick={() => setShowAddForm(true)}
                             style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                         >
-                            Add compatible model
+                            {t('consumableModelCompatibility.addCompatibleModel')}
                         </button>
                     )}
                 </div>
@@ -150,7 +152,7 @@ const ConsumableModelCompatibilityPage = () => {
                                 onChange={(e) => setSelectedAssetModelId(e.target.value)}
                                 style={{ flex: 1, padding: 'var(--space-2)' }}
                             >
-                                <option value="">Select asset model...</option>
+                                <option value="">{t('consumableModelCompatibility.selectAssetModel')}</option>
                                 {availableAssetModels.map((m) => (
                                     <option key={m.asset_model_id} value={m.asset_model_id}>
                                         {m.model_name || `Model ${m.asset_model_id}`}
@@ -162,7 +164,7 @@ const ConsumableModelCompatibilityPage = () => {
                                 disabled={!selectedAssetModelId || loading}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                             >
-                                Add
+                                {t('common.add')}
                             </button>
                             <button
                                 onClick={() => {
@@ -171,7 +173,7 @@ const ConsumableModelCompatibilityPage = () => {
                                 }}
                                 style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                             >
-                                Cancel
+                                {t('common.cancel')}
                             </button>
                         </div>
                     </div>
@@ -194,7 +196,7 @@ const ConsumableModelCompatibilityPage = () => {
 
                     {compatibleAssetModels.length === 0 && !loading && (
                         <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                            No compatible asset models.
+                            {t('consumableModelCompatibility.noCompatibleAssetModels')}
                         </div>
                     )}
                 </div>

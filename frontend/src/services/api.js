@@ -33,7 +33,13 @@ api.interceptors.request.use(
 
 // Handle token refresh on 401
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Unwrap DRF paginated responses: { count, results, ... } → results
+        if (response.data && !Array.isArray(response.data) && Array.isArray(response.data.results)) {
+            response.data = response.data.results;
+        }
+        return response;
+    },
     async (error) => {
         if (error.response?.status === 401) {
             const requestUrl = error?.config?.url || '';
@@ -237,6 +243,11 @@ export const externalMaintenanceTypicalStepService = {
         const response = await api.get('external-maintenance-typical-steps/');
         return response.data;
     },
+
+    create: async (data) => {
+        const response = await api.post('external-maintenance-typical-steps/', data);
+        return response.data;
+    },
 };
 
 export const externalMaintenanceService = {
@@ -391,8 +402,11 @@ export const movementApprovalService = {
         const response = await api.post(`consumable-movements-approval/${movementId}/decide/`, { decision });
         return response.data;
     },
-    getPendingAssetMovements: async () => {
-        const response = await api.get('asset-movements-approval/pending/');
+    getPendingAssetMovements: async (lang, status) => {
+        const params = {};
+        if (lang && lang !== 'en') params.lang = lang;
+        if (status) params.status = status;
+        const response = await api.get('asset-movements-approval/pending/', { params });
         return response.data;
     },
     decideAssetMovement: async (movementId, decision) => {
@@ -503,8 +517,8 @@ export const backorderReportService = {
 
 // Asset Type service
 export const assetTypeService = {
-    getAll: async () => {
-        const response = await api.get('asset-types/');
+    getAll: async (params) => {
+        const response = await api.get('asset-types/', { params });
         return response.data;
     },
 
@@ -530,8 +544,8 @@ export const assetTypeService = {
 
 // Asset Brand service
 export const assetBrandService = {
-    getAll: async () => {
-        const response = await api.get('asset-brands/');
+    getAll: async (params) => {
+        const response = await api.get('asset-brands/', { params });
         return response.data;
     },
 
@@ -549,7 +563,10 @@ export const assetBrandService = {
     },
 
     update: async (id, assetBrandData) => {
-        const response = await api.put(`asset-brands/${id}/`, assetBrandData);
+        const isFormData = typeof FormData !== 'undefined' && assetBrandData instanceof FormData;
+        const response = isFormData
+            ? await api.patch(`asset-brands/${id}/`, assetBrandData, { headers: { 'Content-Type': 'multipart/form-data' } })
+            : await api.put(`asset-brands/${id}/`, assetBrandData);
         return response.data;
     },
 
@@ -560,8 +577,8 @@ export const assetBrandService = {
 
 // Asset Model service
 export const assetModelService = {
-    getAll: async () => {
-        const response = await api.get('asset-models/');
+    getAll: async (params) => {
+        const response = await api.get('asset-models/', { params });
         return response.data;
     },
 
@@ -1002,7 +1019,10 @@ export const stockItemBrandService = {
     },
 
     update: async (id, stockItemBrandData) => {
-        const response = await api.put(`stock-item-brands/${id}/`, stockItemBrandData);
+        const isFormData = typeof FormData !== 'undefined' && stockItemBrandData instanceof FormData;
+        const response = isFormData
+            ? await api.patch(`stock-item-brands/${id}/`, stockItemBrandData, { headers: { 'Content-Type': 'multipart/form-data' } })
+            : await api.put(`stock-item-brands/${id}/`, stockItemBrandData);
         return response.data;
     },
 
@@ -1108,7 +1128,10 @@ export const consumableBrandService = {
     },
 
     update: async (id, consumableBrandData) => {
-        const response = await api.put(`consumable-brands/${id}/`, consumableBrandData);
+        const isFormData = typeof FormData !== 'undefined' && consumableBrandData instanceof FormData;
+        const response = isFormData
+            ? await api.patch(`consumable-brands/${id}/`, consumableBrandData, { headers: { 'Content-Type': 'multipart/form-data' } })
+            : await api.put(`consumable-brands/${id}/`, consumableBrandData);
         return response.data;
     },
 
@@ -1195,8 +1218,8 @@ export const locationTypeService = {
 
 // Location service
 export const locationService = {
-    getAll: async () => {
-        const response = await api.get('locations/');
+    getAll: async (params) => {
+        const response = await api.get('locations/', { params });
         return response.data;
     },
 
@@ -1719,14 +1742,17 @@ export const maintenanceStepItemRequestService = {
 // Maintenance Typical Step service
 export const maintenanceTypicalStepService = {
     getAll: async () => {
-        const response = await api.get('maintenance-typical-steps/'); // Assuming this endpoint exists or will exist. If not, I might need to create it or fetching typical steps might be different.
-        // Wait, I didn't check if TypicalStep has a viewset. 
-        // Let's check backend/api/urls.py again mentally. 
-        // It wasn't in the list I saw earlier. 
-        // I should probably check if I need to create it or if I can just use raw data/hardcode for now or if I missed it.
-        // Re-reading urls.py content from earlier log... 
-        // It was NOT in urls.py. 
-        // I'll add the service but might need to implement the backend endpoint if it's missing.
+        const response = await api.get('maintenance-typical-steps/');
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('maintenance-typical-steps/', data);
+        return response.data;
+    },
+
+    getFieldChoices: async () => {
+        const response = await api.get('maintenance-typical-steps/field-choices/');
         return response.data;
     },
 };

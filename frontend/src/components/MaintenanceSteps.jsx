@@ -24,6 +24,23 @@ import {
     consumableAttributeValueService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
+import {
+    Power,
+    Box,
+    PlusSquare,
+    Plus,
+    FileText,
+    Pencil,
+    ListChecks,
+    Lightbulb,
+    Trash2,
+    User,
+    Clock,
+    Calendar,
+    ArrowRightLeft,
+    X,
+} from 'lucide-react';
 
 const MaintenanceSteps = ({
     maintenanceId,
@@ -39,6 +56,7 @@ const MaintenanceSteps = ({
     onTriggerReturnModalAfterEndHandled,
 }) => {
     const { user } = useAuth();
+    const { t, i18n } = useTranslation();
     const [steps, setSteps] = useState([]);
     const [externalSteps, setExternalSteps] = useState([]);
     const [typicalSteps, setTypicalSteps] = useState([]);
@@ -134,6 +152,7 @@ const MaintenanceSteps = ({
     // New Step Form State
     const [newStepTypicalId, setNewStepTypicalId] = useState('');
     const [newStepPersonId, setNewStepPersonId] = useState('');
+    const [newStepNote, setNewStepNote] = useState('');
 
     const stepStatusOptions = useMemo(() => (
         [
@@ -200,29 +219,48 @@ const MaintenanceSteps = ({
         return user?.roles?.some(role => role.role_code === 'network_maintenance_technician');
     }, [user]);
 
+    const isAssignedTechnician = useMemo(() => {
+        if (isChief || isMainTechnician) return true;
+        const myPersonId = user?.person?.person_id;
+        if (!myPersonId) return false;
+        return steps.some(step => step.person?.person_id === myPersonId);
+    }, [isChief, isMainTechnician, user, steps]);
+
     const canOperateStep = (step) => {
         if (isChief) return true;
-        if (!isMainTechnician) return false;
-        
-        const stepDomain = step.maintenance_typical_step?.maintenance_domain;
-        if (isNetworkMaintenanceTechnician) {
-            return stepDomain === 'network';
+        if (isMainTechnician) {
+            const stepDomain = step.maintenance_typical_step?.maintenance_domain;
+            if (isNetworkMaintenanceTechnician) {
+                return stepDomain === 'network';
+            }
+            if (isItMaintenanceTechnician) {
+                return stepDomain === 'it';
+            }
+            return true;
         }
-        
-        if (isItMaintenanceTechnician) {
-            return stepDomain === 'it';
+        // Assigned technician can operate steps matching their domain
+        if (isAssignedTechnician) {
+            const stepDomain = step.maintenance_typical_step?.maintenance_domain;
+            if (isNetworkMaintenanceTechnician) {
+                return stepDomain === 'network';
+            }
+            if (isItMaintenanceTechnician) {
+                return stepDomain === 'it';
+            }
         }
-        
         return false;
     };
 
-    const canManageSteps = isChief || isMainTechnician;
+    const canManageSteps = isChief || isAssignedTechnician;
 
     const canAddStep = useMemo(() => {
         if (isChief) return true;
-        if (!isMainTechnician) return false;
-        return true;
-    }, [isChief, isMainTechnician]);
+        if (isAssignedTechnician) return true;
+        return false;
+    }, [isChief, isAssignedTechnician]);
+
+    // Only the main technician (performed_by_person) and chiefs can create external maintenances/steps
+    const canCreateExternalMaintenance = isChief || isMainTechnician;
 
     const hasOngoingExternalMaintenance = useMemo(() => {
         if (!Array.isArray(externalMaintenances) || externalMaintenances.length === 0) return false;
@@ -277,11 +315,11 @@ const MaintenanceSteps = ({
 
         const em = Array.isArray(externalMaintenances) ? externalMaintenances[0] : null;
         if (!em?.external_maintenance_id) {
-            setExternalStepMessage({ type: 'error', text: 'No external maintenance found for this maintenance.' });
+            setExternalStepMessage({ type: 'error', text: t('mSteps.noExternalMaintenance') });
             return;
         }
         if (!externalStepTypicalStepId) {
-            setExternalStepMessage({ type: 'error', text: 'Please select typical step.' });
+            setExternalStepMessage({ type: 'error', text: t('mSteps.selectTypicalStep') });
             return;
         }
 
@@ -292,11 +330,11 @@ const MaintenanceSteps = ({
                 Number(em.external_maintenance_id),
                 Number(externalStepTypicalStepId),
             );
-            setExternalStepMessage({ type: 'success', text: 'External maintenance step created successfully.' });
+            setExternalStepMessage({ type: 'success', text: t('mSteps.extStepCreated') });
             await loadData();
         } catch (err) {
             console.error(err);
-            setExternalStepMessage({ type: 'error', text: err.response?.data?.error || 'Failed to create external maintenance step.' });
+            setExternalStepMessage({ type: 'error', text: err.response?.data?.error || t('mSteps.createExtStepError') });
         } finally {
             setExternalStepSubmitting(false);
         }
@@ -306,6 +344,7 @@ const MaintenanceSteps = ({
         setAddingStep(false);
         setNewStepTypicalId('');
         setNewStepPersonId('');
+        setNewStepNote('');
     };
 
     const closeExternalStepModal = () => {
@@ -327,7 +366,7 @@ const MaintenanceSteps = ({
 
     const openReturnEditor = async (step) => {
         if (maintenanceEnded) {
-            setError('Maintenance is ended');
+            setError(t('mSteps.maintenanceEnded'));
             return;
         }
         setReturnEditorOpen(true);
@@ -345,7 +384,7 @@ const MaintenanceSteps = ({
             });
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to load components');
+            setError(err.response?.data?.error || t('mSteps.loadComponentsError'));
             closeReturnEditor();
         } finally {
             setReturnLoading(false);
@@ -355,7 +394,7 @@ const MaintenanceSteps = ({
     const submitReturnEditor = async () => {
         if (!returnEditorStep) return;
         if (!returnSelectedType || !returnSelectedId) {
-            setError('Please select a component to return');
+            setError(t('mSteps.selectComponentToReturn'));
             return;
         }
         try {
@@ -368,7 +407,7 @@ const MaintenanceSteps = ({
             closeReturnEditor();
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to return component to owner');
+            setError(err.response?.data?.error || t('mSteps.returnComponentError'));
         } finally {
             setReturnSubmitting(false);
         }
@@ -403,7 +442,7 @@ const MaintenanceSteps = ({
 
     const openAttributeEditor = async (step) => {
         if (maintenanceEnded) {
-            setError('Maintenance is ended');
+            setError(t('mSteps.maintenanceEnded'));
             return;
         }
 
@@ -469,19 +508,19 @@ const MaintenanceSteps = ({
     const addPendingAttributeChange = () => {
         const def = getSelectedAttributeDefinition();
         if (!def) {
-            setAttributeMessage({ type: 'error', text: 'Please select an attribute.' });
+            setAttributeMessage({ type: 'error', text: t('mSteps.selectAttribute') });
             return;
         }
 
         let targetId = null;
         if (attributeTargetValue === 'stock_item' || attributeTargetValue === 'consumable') {
             if (!attributeComponentValue) {
-                setAttributeMessage({ type: 'error', text: 'Please select a component.' });
+                setAttributeMessage({ type: 'error', text: t('mSteps.selectComponent') });
                 return;
             }
             targetId = Number(attributeComponentValue);
             if (!targetId || Number.isNaN(targetId)) {
-                setAttributeMessage({ type: 'error', text: 'Invalid component.' });
+                setAttributeMessage({ type: 'error', text: t('mSteps.invalidComponent') });
                 return;
             }
         }
@@ -503,37 +542,37 @@ const MaintenanceSteps = ({
             change.value_bool = Boolean(attributeValueBool);
         } else if (dt === 'date') {
             if (!attributeValueDate) {
-                setAttributeMessage({ type: 'error', text: 'Please select a date.' });
+                setAttributeMessage({ type: 'error', text: t('mSteps.selectDate') });
                 return;
             }
             change.value_date = attributeValueDate;
         } else if (dt === 'number') {
             if (attributeValueNumber === '' || attributeValueNumber == null) {
-                setAttributeMessage({ type: 'error', text: 'Please enter a number.' });
+                setAttributeMessage({ type: 'error', text: t('mSteps.enterNumber') });
                 return;
             }
             const n = Number(attributeValueNumber);
             if (Number.isNaN(n)) {
-                setAttributeMessage({ type: 'error', text: 'Invalid number.' });
+                setAttributeMessage({ type: 'error', text: t('mSteps.invalidNumber') });
                 return;
             }
             change.value_number = n;
         } else {
             if (!attributeValueString) {
-                setAttributeMessage({ type: 'error', text: 'Please enter a value.' });
+                setAttributeMessage({ type: 'error', text: t('mSteps.enterValue') });
                 return;
             }
             change.value_string = attributeValueString;
         }
 
         setAttributePendingChanges((prev) => [...prev, change]);
-        setAttributeMessage({ type: 'success', text: 'Change added to queue.' });
+        setAttributeMessage({ type: 'success', text: t('mSteps.changeAddedToQueue') });
     };
 
     const submitAttributeEditorChanges = async () => {
         if (!attributeEditorStep) return;
         if (!Array.isArray(attributePendingChanges) || attributePendingChanges.length === 0) {
-            setAttributeMessage({ type: 'error', text: 'No changes to submit.' });
+            setAttributeMessage({ type: 'error', text: t('mSteps.noChangesToSubmit') });
             return;
         }
 
@@ -541,11 +580,11 @@ const MaintenanceSteps = ({
             setAttributeSubmitting(true);
             setAttributeMessage(null);
             await maintenanceStepService.addAttributeChanges(attributeEditorStep.maintenance_step_id, attributePendingChanges);
-            setAttributeMessage({ type: 'success', text: 'Attribute changes queued. They will apply when the step is done.' });
+            setAttributeMessage({ type: 'success', text: t('mSteps.attrChangesQueued') });
             setAttributePendingChanges([]);
         } catch (err) {
             console.error(err);
-            setAttributeMessage({ type: 'error', text: err.response?.data?.error || 'Failed to queue attribute changes.' });
+            setAttributeMessage({ type: 'error', text: err.response?.data?.error || t('mSteps.queueAttrChangesError') });
         } finally {
             setAttributeSubmitting(false);
         }
@@ -597,11 +636,11 @@ const MaintenanceSteps = ({
             setExternalMaintenanceSubmitting(true);
             setExternalMaintenanceMessage(null);
             await externalMaintenanceService.createForMaintenance(Number(maintenanceId));
-            setExternalMaintenanceMessage({ type: 'success', text: 'External maintenance created successfully.' });
+            setExternalMaintenanceMessage({ type: 'success', text: t('mSteps.extMaintenanceCreated') });
             setExternalMaintenanceCreated(true);
         } catch (err) {
             console.error(err);
-            setExternalMaintenanceMessage({ type: 'error', text: err.response?.data?.error || 'Failed to create external maintenance.' });
+            setExternalMaintenanceMessage({ type: 'error', text: err.response?.data?.error || t('mSteps.createExtMaintenanceError') });
         } finally {
             setExternalMaintenanceSubmitting(false);
         }
@@ -622,9 +661,42 @@ const MaintenanceSteps = ({
         return [...internal, ...external];
     }, [steps, externalSteps]);
 
+    const translateStepStatus = (status) => {
+        if (!status) return '';
+        const s = status.toLowerCase().trim();
+        const map = {
+            'pending': 'mSteps.statusPending',
+            'started': 'mSteps.statusStarted',
+            'in_progress': 'mSteps.statusInProgress',
+            'in progress': 'mSteps.statusInProgress',
+            'done': 'mSteps.statusDone',
+            'failed': 'mSteps.statusFailed',
+            'failed (to be sent to a higher level)': 'mSteps.statusFailedHigherLevel',
+            'cancelled': 'mSteps.statusCancelled',
+            'pending (waiting for stock item)': 'mSteps.statusWaitingStock',
+            'pending (waiting for consumable)': 'mSteps.statusWaitingConsumable',
+        };
+        const key = map[s];
+        if (key) return t(key);
+        if (s.includes('progress')) return t('mSteps.statusInProgress');
+        if (s.includes('pending') || s.includes('wait')) return t('mSteps.statusPending');
+        if (s.includes('fail')) return t('mSteps.statusFailed');
+        if (s.includes('cancel')) return t('mSteps.statusCancelled');
+        if (s.includes('done') || s.includes('complet')) return t('mSteps.statusDone');
+        return status;
+    };
+
     const getExternalStatusLabel = (step) => {
         if (!step) return '-';
-        if (!step.end_datetime) return 'In Progress';
+        if (!step.end_datetime) return t('mSteps.statusInProgress');
+        if (step.is_successful === true) return t('mSteps.statusDone');
+        if (step.is_successful === false) return t('mSteps.statusFailed');
+        return t('mSteps.statusDone');
+    };
+
+    const getExternalStatusLabelRaw = (step) => {
+        if (!step) return '-';
+        if (!step.end_datetime) return 'in progress';
         if (step.is_successful === true) return 'done';
         if (step.is_successful === false) return 'failed';
         return 'done';
@@ -642,13 +714,35 @@ const MaintenanceSteps = ({
 
     const formatDateTime = (dateString) => {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleString('en-US', {
+        const locale = i18n.language === 'ar' ? 'ar-DZ' : 'en-US';
+        return new Date(dateString).toLocaleString(locale, {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
         });
+    };
+
+    const getLocalizedField = (obj, fieldName) => {
+        const lang = i18n.language;
+        if (lang === 'ar') {
+            return obj?.[fieldName + '_ar'] || obj?.[fieldName] || '';
+        }
+        return obj?.[fieldName + '_en'] || obj?.[fieldName] || '';
+    };
+
+    const getLocalizedPersonName = (person) => {
+        if (!person) return '';
+        const lang = i18n.language;
+        if (lang === 'ar') {
+            const first = person.first_name_ar || person.first_name || '';
+            const last = person.last_name_ar || person.last_name || '';
+            return `${first} ${last}`.trim();
+        }
+        const first = person.first_name_en || person.first_name || '';
+        const last = person.last_name_en || person.last_name || '';
+        return `${first} ${last}`.trim();
     };
 
     const loadData = async () => {
@@ -718,7 +812,7 @@ const MaintenanceSteps = ({
             setConsumableTypes(Array.isArray(consumableTypesData) ? consumableTypesData : []);
         } catch (err) {
             console.error(err);
-            setError('Failed to load steps data');
+            setError(t('mSteps.loadStepsError'));
         } finally {
             setLoading(false);
         }
@@ -737,6 +831,7 @@ const MaintenanceSteps = ({
                 maintenance: maintenanceId,
                 maintenance_typical_step_id: newStepTypicalId,
                 person_id: newStepPersonId || (isMainTechnician ? user.person.person_id : null),
+                note: newStepNote || undefined,
                 // Default to current user if they are the main tech and didn't select anyone?
                 // Actually, if it's main tech adding, they might assign themselves or someone else.
                 // If person_id is empty, backend might complain or we should handle it.
@@ -749,14 +844,14 @@ const MaintenanceSteps = ({
         } catch (err) {
             console.error(err);
             const apiMsg = err?.response?.data?.error;
-            setError(apiMsg || 'Failed to add step');
+            setError(apiMsg || t('mSteps.addStepError'));
         }
     };
 
     const handleUpdateStatus = async (step, statusValue) => {
         try {
             if (maintenanceEnded) {
-                setError('Maintenance is ended');
+                setError(t('mSteps.maintenanceEnded'));
                 return;
             }
             await maintenanceStepService.patch(step.maintenance_step_id, {
@@ -765,13 +860,13 @@ const MaintenanceSteps = ({
             loadData();
         } catch (err) {
             console.error(err);
-            setError('Failed to update step status');
+            setError(t('mSteps.updateStatusError'));
         }
     };
 
     const openStatusEditor = (step) => {
         if (maintenanceEnded) {
-            setError('Maintenance is ended');
+            setError(t('mSteps.maintenanceEnded'));
             return;
         }
         setStatusEditorStepId(step.maintenance_step_id);
@@ -822,7 +917,7 @@ const MaintenanceSteps = ({
     const openReturnMaintenance = async (opts = {}) => {
         const ignoreEnded = Boolean(opts.ignoreMaintenanceEnded);
         if (maintenanceEnded && !ignoreEnded) {
-            setError('Maintenance is ended');
+            setError(t('mSteps.maintenanceEnded'));
             return;
         }
         setReturnMaintenanceOpen(true);
@@ -841,7 +936,7 @@ const MaintenanceSteps = ({
             }
         } catch (err) {
             console.error(err);
-            setError('Failed to load locations');
+            setError(t('mSteps.loadLocationsError'));
             closeReturnMaintenance();
         } finally {
             setReturnMaintenanceLoading(false);
@@ -851,7 +946,7 @@ const MaintenanceSteps = ({
     const submitReturnMaintenance = async () => {
         if (!maintenanceId) return;
         if (!returnMaintenanceDestinationLocationId) {
-            setError('Please select destination location');
+            setError(t('mSteps.selectDestinationLocation'));
             return;
         }
         try {
@@ -864,7 +959,7 @@ const MaintenanceSteps = ({
             closeReturnMaintenance();
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to request return');
+            setError(err.response?.data?.error || t('mSteps.requestReturnError'));
         } finally {
             setReturnMaintenanceSubmitting(false);
         }
@@ -906,7 +1001,7 @@ const MaintenanceSteps = ({
 
     const openAssetConditionEditor = (step) => {
         if (maintenanceEnded) {
-            setError('Maintenance is ended');
+            setError(t('mSteps.maintenanceEnded'));
             return;
         }
         setAssetConditionEditorOpen(true);
@@ -922,7 +1017,7 @@ const MaintenanceSteps = ({
     const submitAssetConditionEditor = async () => {
         if (!assetConditionEditorStep) return;
         if (!selectedConditionId) {
-            setError('Please select a condition');
+            setError(t('mSteps.selectCondition'));
             return;
         }
         try {
@@ -938,7 +1033,7 @@ const MaintenanceSteps = ({
             closeAssetConditionEditor();
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to update asset condition');
+            setError(err.response?.data?.error || t('mSteps.updateConditionError'));
         } finally {
             setAssetConditionSubmitting(false);
         }
@@ -946,7 +1041,7 @@ const MaintenanceSteps = ({
 
     const openRemoveEditor = async (step) => {
         if (maintenanceEnded) {
-            setError('Maintenance is ended');
+            setError(t('mSteps.maintenanceEnded'));
             return;
         }
         setRemoveEditorOpen(true);
@@ -971,7 +1066,7 @@ const MaintenanceSteps = ({
             setRemoveLocations(Array.isArray(locations) ? locations : []);
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to load components');
+            setError(err.response?.data?.error || t('mSteps.loadComponentsError'));
             closeRemoveEditor();
         } finally {
             setRemoveLoading(false);
@@ -981,7 +1076,7 @@ const MaintenanceSteps = ({
     const submitRemoveEditor = async () => {
         if (!removeEditorStep) return;
         if (!removeSelectedType || !removeSelectedId) {
-            setError('Please select a component to remove');
+            setError(t('mSteps.selectComponentToRemove'));
             return;
         }
         try {
@@ -998,7 +1093,7 @@ const MaintenanceSteps = ({
             closeRemoveEditor();
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to remove component');
+            setError(err.response?.data?.error || t('mSteps.removeComponentError'));
         } finally {
             setRemoveSubmitting(false);
         }
@@ -1006,7 +1101,7 @@ const MaintenanceSteps = ({
 
     const openRequestEditor = (step, requestType) => {
         if (stepsWithItemRequest.includes(step?.maintenance_step_id)) {
-            setError('This maintenance step already has an item request');
+            setError(t('mSteps.alreadyHasItemRequest'));
             return;
         }
         setRequestEditorOpen(true);
@@ -1065,11 +1160,11 @@ const MaintenanceSteps = ({
     const submitRequestEditor = async () => {
         if (!requestEditorStep || !requestEditorType) return;
         if (stepsWithItemRequest.includes(requestEditorStep.maintenance_step_id)) {
-            setRequestMessage({ type: 'error', text: 'This maintenance step already has an item request.' });
+            setRequestMessage({ type: 'error', text: t('mSteps.alreadyHasItemRequest') });
             return;
         }
         if (!requestModelId) {
-            setRequestMessage({ type: 'error', text: 'Please select a model.' });
+            setRequestMessage({ type: 'error', text: t('mSteps.selectModel') });
             return;
         }
 
@@ -1086,11 +1181,11 @@ const MaintenanceSteps = ({
                     requested_consumable_model_id: Number(requestModelId),
                 });
             } else {
-                setRequestMessage({ type: 'error', text: 'Invalid request type.' });
+                setRequestMessage({ type: 'error', text: t('mSteps.invalidRequestType') });
                 return;
             }
 
-            setRequestMessage({ type: 'success', text: 'Request created successfully.' });
+            setRequestMessage({ type: 'success', text: t('mSteps.requestCreated') });
             setStepsWithItemRequest((prev) => {
                 const stepId = requestEditorStep.maintenance_step_id;
                 if (!stepId) return prev;
@@ -1100,7 +1195,7 @@ const MaintenanceSteps = ({
             await loadData();
         } catch (err) {
             console.error(err);
-            setRequestMessage({ type: 'error', text: err.response?.data?.error || 'Failed to create request.' });
+            setRequestMessage({ type: 'error', text: err.response?.data?.error || t('mSteps.createRequestError') });
         } finally {
             setRequestSubmitting(false);
         }
@@ -1119,21 +1214,21 @@ const MaintenanceSteps = ({
 
     const requestStockItem = async (step) => {
         if (stepsWithItemRequest.includes(step?.maintenance_step_id)) {
-            setError('This maintenance step already has an item request');
+            setError(t('mSteps.alreadyHasItemRequest'));
             return;
         }
         try {
             const stockItemTypeId = promptFromList(
-                'Stock item type',
+                t('mSteps.stockItemTypePrompt'),
                 stockItemTypes,
                 (t) => t.stock_item_type_id,
-                (t) => t.stock_item_type_label,
+                (t) => getLocalizedField(t, 'stock_item_type_label'),
             );
             if (!stockItemTypeId) return;
 
             const models = await stockItemModelService.getByStockItemType(Number(stockItemTypeId));
             const requestedModelId = promptFromList(
-                'Stock item model',
+                t('mSteps.stockItemModelPrompt'),
                 Array.isArray(models) ? models : [],
                 (m) => m.stock_item_model_id,
                 (m) => `${m.model_name}${m.model_code ? ` (${m.model_code})` : ''}`,
@@ -1146,27 +1241,27 @@ const MaintenanceSteps = ({
             loadData();
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to request stock item');
+            setError(err.response?.data?.error || t('mSteps.requestStockItemError'));
         }
     };
 
     const requestConsumable = async (step) => {
         if (stepsWithItemRequest.includes(step?.maintenance_step_id)) {
-            setError('This maintenance step already has an item request');
+            setError(t('mSteps.alreadyHasItemRequest'));
             return;
         }
         try {
             const consumableTypeId = promptFromList(
-                'Consumable type',
+                t('mSteps.consumableTypePrompt'),
                 consumableTypes,
                 (t) => t.consumable_type_id,
-                (t) => t.consumable_type_label,
+                (t) => getLocalizedField(t, 'consumable_type_label'),
             );
             if (!consumableTypeId) return;
 
             const models = await consumableModelService.getByConsumableType(Number(consumableTypeId));
             const requestedModelId = promptFromList(
-                'Consumable model',
+                t('mSteps.consumableModelPrompt'),
                 Array.isArray(models) ? models : [],
                 (m) => m.consumable_model_id,
                 (m) => `${m.model_name}${m.model_code ? ` (${m.model_code})` : ''}`,
@@ -1179,7 +1274,7 @@ const MaintenanceSteps = ({
             loadData();
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to request consumable');
+            setError(err.response?.data?.error || t('mSteps.requestConsumableError'));
         }
     };
 
@@ -1191,7 +1286,7 @@ const MaintenanceSteps = ({
             loadData();
         } catch (err) {
             console.error(err);
-            setError('Failed to reassign step');
+            setError(t('mSteps.reassignStepError'));
         }
     };
 
@@ -1203,8 +1298,11 @@ const MaintenanceSteps = ({
                         className="d-flex justify-content-between align-items-center mb-3"
                         style={{ display: 'flex', alignItems: 'center', width: '100%' }}
                     >
-                        <h3 className="text-lg font-bold mb-0">Maintenance Steps</h3>
-                        <div style={{ display: 'flex', gap: 8, marginLeft: 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <h3 className="text-lg font-bold mb-0" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <ListChecks size={18} style={{ color: 'var(--color-primary)' }} />
+                            {t('mSteps.title')}
+                        </h3>
+                        <div style={{ display: 'flex', gap: 6, marginInlineStart: 'auto', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                             {!!canShowEndMaintenanceButton && (
                                 <button
                                     className="btn btn-secondary btn-sm"
@@ -1214,86 +1312,70 @@ const MaintenanceSteps = ({
                                         }
                                     }}
                                     disabled={!!endMaintenanceDisabled}
-                                    style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
-                                    title="End maintenance"
-                                    aria-label="End maintenance"
+                                    style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                                    title={t('mSteps.endMaintenance')}
+                                    aria-label={t('mSteps.endMaintenance')}
                                 >
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M12 2v10" />
-                                        <path d="M18.4 6.6a9 9 0 1 1-12.8 0" />
-                                    </svg>
+                                    <Power size={14} />
                                 </button>
                             )}
 
+                            {canCreateExternalMaintenance && (
+                                <button
+                                    className="btn btn-secondary btn-sm"
+                                    onClick={() => {
+                                        if (hasOpenExternalMaintenance) {
+                                            setError(t('mSteps.cannotCreateOpenExt'));
+                                            return;
+                                        }
+                                        openExternalMaintenanceModal();
+                                    }}
+                                    disabled={loading || hasOpenExternalMaintenance}
+                                    style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                                    title={t('mSteps.createExtMaintenance')}
+                                    aria-label={t('mSteps.createExtMaintenance')}
+                                >
+                                    <Box size={14} />
+                                </button>
+                            )}
+                            {canCreateExternalMaintenance && Array.isArray(externalMaintenances) && externalMaintenances.length > 0 && (
+                                <button
+                                    className="btn btn-secondary btn-sm"
+                                    onClick={() => openExternalStepModal()}
+                                    disabled={loading}
+                                    style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                                    title={t('mSteps.createExtStep')}
+                                    aria-label={t('mSteps.createExtStep')}
+                                >
+                                    <PlusSquare size={14} />
+                                </button>
+                            )}
                             {canManageSteps && (
-                                <>
-                                    <button
-                                        className="btn btn-secondary btn-sm"
-                                        onClick={() => {
-                                            if (hasOpenExternalMaintenance) {
-                                                setError('Cannot create a new external maintenance while there is an open one.');
-                                                return;
-                                            }
-                                            openExternalMaintenanceModal();
-                                        }}
-                                        disabled={loading || hasOpenExternalMaintenance}
-                                        style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
-                                        title="Create external maintenance"
-                                        aria-label="Create external maintenance"
-                                    >
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                                            <path d="M12 8v8" />
-                                            <path d="M8 12h8" />
-                                        </svg>
-                                    </button>
-                                    {Array.isArray(externalMaintenances) && externalMaintenances.length > 0 && (
-                                        <button
-                                            className="btn btn-secondary btn-sm"
-                                            onClick={() => openExternalStepModal()}
-                                            disabled={loading}
-                                            style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
-                                            title="Create new external maintenance step"
-                                            aria-label="Create new external maintenance step"
-                                        >
-                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                                <path d="M12 8v8" />
-                                                <path d="M8 12h8" />
-                                            </svg>
-                                        </button>
-                                    )}
-                                    <button
-                                        className="btn btn-primary btn-sm"
-                                        onClick={() => {
-                                            if (maintenanceEnded) {
-                                                setError('Maintenance is ended');
-                                                return;
-                                            }
-                                            if (hasOngoingExternalMaintenance) {
-                                                setError('Cannot create maintenance steps while the asset has an ongoing external maintenance.');
-                                                return;
-                                            }
-                                            setAddingStep(true);
-                                        }}
-                                        disabled={loading || hasOngoingExternalMaintenance || maintenanceEnded}
-                                        style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem' }}
-                                        title="Create new maintenance step"
-                                        aria-label="Create new maintenance step"
-                                    >
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                            <path d="M14 2v6h6" />
-                                            <path d="M12 11v6" />
-                                            <path d="M9 14h6" />
-                                        </svg>
-                                    </button>
-                                </>
+                                <button
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => {
+                                        if (maintenanceEnded) {
+                                            setError(t('mSteps.maintenanceEnded'));
+                                            return;
+                                        }
+                                        if (hasOngoingExternalMaintenance) {
+                                            setError(t('mSteps.cannotCreateStepOngoingExt'));
+                                            return;
+                                        }
+                                        setAddingStep(true);
+                                    }}
+                                    disabled={loading || hasOngoingExternalMaintenance || maintenanceEnded}
+                                    style={{ width: 'auto', whiteSpace: 'nowrap', padding: '0.35rem 0.55rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                                    title={t('mSteps.createStep')}
+                                    aria-label={t('mSteps.createStep')}
+                                >
+                                    <Plus size={14} />
+                                </button>
                             )}
                         </div>
                     </div>
 
-                    {externalMaintenanceModalOpen && canManageSteps && (
+                    {externalMaintenanceModalOpen && canCreateExternalMaintenance && (
                         createPortal(
                             <div className="modal-overlay" onClick={() => closeExternalMaintenanceModal()}>
                                 <div
@@ -1302,14 +1384,14 @@ const MaintenanceSteps = ({
                                     style={{
                                         maxHeight: '95vh',
                                         width: '90%',
-                                        maxWidth: '1000px',
+                                        maxWidth: '480px',
                                         overflow: 'hidden',
                                         display: 'flex',
                                         flexDirection: 'column',
                                     }}
                                 >
                                     <div className="modal-header">
-                                        <h3 className="modal-title">Create external maintenance</h3>
+                                        <h3 className="modal-title">{t('mSteps.createExtMaintenance')}</h3>
                                         <button className="modal-close" onClick={() => closeExternalMaintenanceModal()}>
                                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -1319,27 +1401,27 @@ const MaintenanceSteps = ({
                                     </div>
 
                                     <form onSubmit={submitExternalMaintenance} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                                        <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
+                                        <div className="modal-body" style={{ overflowY: 'visible', flex: 1 }}>
                                             {externalMaintenanceMessage && (
                                                 <div className={`alert ${externalMaintenanceMessage.type === 'error' ? 'alert-error' : 'alert-success'} mb-4`}>
                                                     {externalMaintenanceMessage.text}
                                                 </div>
                                             )}
                                             <div className="alert alert-info mb-0">
-                                                This will create the external maintenance record. The asset responsible will later select the external maintenance provider and send the asset.
+                                                {t('mSteps.extMaintenanceInfo')}
                                             </div>
                                         </div>
 
                                         <div className="modal-footer">
                                             <button type="button" className="btn btn-secondary" onClick={() => closeExternalMaintenanceModal()}>
-                                                Cancel
+                                                {t('mSteps.cancel')}
                                             </button>
                                             <button
                                                 type="submit"
                                                 className="btn btn-primary"
                                                 disabled={externalMaintenanceSubmitting || externalMaintenanceCreated}
                                             >
-                                                Create
+                                                {t('mSteps.create')}
                                             </button>
                                         </div>
                                     </form>
@@ -1349,7 +1431,7 @@ const MaintenanceSteps = ({
                         )
                     )}
 
-                    {externalStepModalOpen && canManageSteps && (
+                    {externalStepModalOpen && canCreateExternalMaintenance && (
                         createPortal(
                             <div className="modal-overlay" onClick={() => closeExternalStepModal()}>
                                 <div
@@ -1358,14 +1440,14 @@ const MaintenanceSteps = ({
                                     style={{
                                         maxHeight: '95vh',
                                         width: '90%',
-                                        maxWidth: '1000px',
+                                        maxWidth: '480px',
                                         overflow: 'hidden',
                                         display: 'flex',
                                         flexDirection: 'column',
                                     }}
                                 >
                                     <div className="modal-header">
-                                        <h3 className="modal-title">Create new external maintenance step</h3>
+                                        <h3 className="modal-title">{t('mSteps.createExtStep')}</h3>
                                         <button className="modal-close" onClick={() => closeExternalStepModal()}>
                                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -1375,7 +1457,7 @@ const MaintenanceSteps = ({
                                     </div>
 
                                     <form onSubmit={submitCreateExternalStep} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                                        <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
+                                        <div className="modal-body" style={{ overflowY: 'visible', flex: 1 }}>
                                             {externalStepMessage && (
                                                 <div className={`alert ${externalStepMessage.type === 'error' ? 'alert-error' : 'alert-success'} mb-4`}>
                                                     {externalStepMessage.text}
@@ -1383,7 +1465,7 @@ const MaintenanceSteps = ({
                                             )}
 
                                             <div className="form-group">
-                                                <label className="form-label">Typical step</label>
+                                                <label className="form-label">{t('mSteps.typicalStep')}</label>
                                                 <select
                                                     className="form-input"
                                                     value={externalStepTypicalStepId}
@@ -1391,10 +1473,10 @@ const MaintenanceSteps = ({
                                                     disabled={externalStepSubmitting}
                                                     required
                                                 >
-                                                    <option value="">Select typical step...</option>
+                                                    <option value="">{t('mSteps.selectTypicalStepPlaceholder')}</option>
                                                     {externalMaintenanceTypicalSteps.map((ts) => (
                                                         <option key={ts.external_maintenance_typical_step_id} value={ts.external_maintenance_typical_step_id}>
-                                                            {ts.description}
+                                                            {getLocalizedField(ts, 'description')}
                                                         </option>
                                                     ))}
                                                 </select>
@@ -1403,10 +1485,10 @@ const MaintenanceSteps = ({
 
                                         <div className="modal-footer">
                                             <button type="button" className="btn btn-secondary" onClick={() => closeExternalStepModal()}>
-                                                Cancel
+                                                {t('mSteps.cancel')}
                                             </button>
                                             <button type="submit" className="btn btn-primary" disabled={externalStepSubmitting}>
-                                                {externalStepSubmitting ? 'Creating...' : 'Create'}
+                                                {externalStepSubmitting ? t('mSteps.creating') : t('mSteps.create')}
                                             </button>
                                         </div>
                                     </form>
@@ -1432,14 +1514,14 @@ const MaintenanceSteps = ({
                             style={{
                                 maxHeight: '95vh',
                                 width: '90%',
-                                maxWidth: '1000px',
+                                maxWidth: '560px',
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
                             }}
                         >
                             <div className="modal-header">
-                                <h3 className="modal-title">Create new maintenance step</h3>
+                                <h3 className="modal-title">{t('mSteps.createStep')}</h3>
                                 <button className="modal-close" onClick={() => closeAddStepModal()}>
                                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -1449,9 +1531,9 @@ const MaintenanceSteps = ({
                             </div>
 
                             <form onSubmit={handleAddStep} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                                <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
+                                <div className="modal-body" style={{ overflowY: 'visible', flex: 1 }}>
                                     <div className="form-group">
-                                        <label className="form-label">Typical Step</label>
+                                        <label className="form-label">{t('mSteps.typicalStep')}</label>
                                         <SearchableSelect
                                             value={newStepTypicalId}
                                             onChange={(e) => setNewStepTypicalId(e.target.value)}
@@ -1464,22 +1546,22 @@ const MaintenanceSteps = ({
                                                 })
                                                 .map((ts) => ({
                                                     value: ts.maintenance_typical_step_id,
-                                                    label: ts.description,
+                                                    label: getLocalizedField(ts, 'description'),
                                                 }))}
-                                            placeholder="Select Task..."
+                                            placeholder={t('mSteps.selectTask')}
                                             className="w-full"
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label className="form-label">Assign To</label>
+                                        <label className="form-label">{t('mSteps.assignTo')}</label>
                                         <select
                                             className="form-input"
                                             value={newStepPersonId}
                                             onChange={(e) => setNewStepPersonId(e.target.value)}
                                             required
                                         >
-                                            <option value="">Select Person...</option>
+                                            <option value="">{t('mSteps.selectPerson')}</option>
                                             {technicians
                                                 .filter(tech => {
                                                     if (isChief) return true;
@@ -1495,20 +1577,32 @@ const MaintenanceSteps = ({
                                                 })
                                                 .map((tech) => (
                                                     <option key={tech.person_id} value={tech.person_id}>
-                                                        {tech.first_name} {tech.last_name}
-                                                        {tech.role_code === 'maintenance_chief' ? ' (Chief)' : ''}
+                                                        {getLocalizedPersonName(tech)}
+                                                        {tech.role_code === 'maintenance_chief' ? ` (${t('mSteps.chief')})` : ''}
                                                     </option>
                                                 ))}
                                         </select>
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label">{t('mSteps.note')}</label>
+                                        <textarea
+                                            className="form-input"
+                                            rows={3}
+                                            value={newStepNote}
+                                            onChange={(e) => setNewStepNote(e.target.value)}
+                                            maxLength={1024}
+                                            placeholder={t('mSteps.notePlaceholder')}
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="modal-footer">
                                     <button type="button" className="btn btn-secondary" onClick={() => closeAddStepModal()}>
-                                        Cancel
+                                        {t('mSteps.cancel')}
                                     </button>
                                     <button type="submit" className="btn btn-primary" disabled={loading}>
-                                        Create
+                                        {t('mSteps.create')}
                                     </button>
                                 </div>
                             </form>
@@ -1518,228 +1612,161 @@ const MaintenanceSteps = ({
                 )
             )}
 
-                    {/* Steps List - Timeline View */}
+                    {/* Steps List - Compact Row View */}
                     {loading && combinedSteps.length === 0 ? (
-                        <div className="text-center py-4" style={{ color: 'var(--color-text-secondary)', marginTop: 12 }}>Loading steps...</div>
+                        <div className="text-center py-4" style={{ color: 'var(--color-text-secondary)', marginTop: 12 }}>{t('mSteps.loadingSteps')}</div>
                     ) : combinedSteps.length === 0 ? (
                         <div className="empty-state p-4 text-center rounded border" style={{ color: 'var(--color-text-secondary)', backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)', marginTop: 12 }}>
-                            <p>No steps added yet.</p>
+                            <p>{t('mSteps.noStepsYet')}</p>
                         </div>
                     ) : (
-                        <div className="steps-timeline" style={{ position: 'relative', paddingLeft: '2rem', marginTop: 12 }}>
-                            <style>{`
-                                .steps-timeline::before {
-                                    content: '';
-                                    position: absolute;
-                                    left: 0.75rem;
-                                    top: 0;
-                                    bottom: 0;
-                                    width: 2px;
-                                    background: var(--color-border);
-                                }
-                                .step-timeline-entry {
-                                    position: relative;
-                                    padding-bottom: 1.5rem;
-                                }
-                                .step-timeline-entry:last-child {
-                                    padding-bottom: 0;
-                                }
-                                .step-timeline-marker {
-                                    position: absolute;
-                                    left: -1.5rem;
-                                    top: 0.25rem;
-                                    width: 1.5rem;
-                                    height: 1.5rem;
-                                    border-radius: 50%;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    font-size: 0.75rem;
-                                    font-weight: 600;
-                                    background: var(--color-bg-primary);
-                                    border: 2px solid var(--color-border);
-                                    z-index: 1;
-                                }
-                                .step-timeline-marker.internal {
-                                    background: var(--color-info);
-                                    border-color: var(--color-info);
-                                    color: white;
-                                }
-                                .step-timeline-marker.external {
-                                    background: var(--color-warning);
-                                    border-color: var(--color-warning);
-                                    color: white;
-                                }
-                                .step-timeline-content {
-                                    background: var(--color-bg-secondary);
-                                    border: 1px solid var(--color-border);
-                                    border-radius: var(--radius-md);
-                                    padding: 1rem;
-                                    margin-left: 0.5rem;
-                                }
-                                .step-timeline-header {
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: flex-start;
-                                    margin-bottom: 0.5rem;
-                                    flex-wrap: wrap;
-                                    gap: 0.5rem;
-                                }
-                                .step-timeline-title {
-                                    font-weight: 600;
-                                    font-size: var(--font-size-md);
-                                    color: var(--color-text-primary);
-                                    margin: 0;
-                                }
-                                .step-timeline-header-right {
-                                    display: flex;
-                                    flex-direction: column;
-                                    align-items: flex-end;
-                                    gap: 0.5rem;
-                                }
-                                .step-timeline-meta {
-                                    display: flex;
-                                    flex-wrap: wrap;
-                                    align-items: center;
-                                    gap: 0.75rem;
-                                    font-size: var(--font-size-sm);
-                                    color: var(--color-text-secondary);
-                                    margin-top: 0.5rem;
-                                }
-                                .step-timeline-meta-item {
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 0.25rem;
-                                }
-                                .step-timeline-actions {
-                                    display: flex;
-                                    gap: 0.35rem;
-                                    flex-wrap: wrap;
-                                    margin-left: auto;
-                                }
-                            `}</style>
-
-                            {combinedSteps.map((step) => {
+                        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 12 }}>
+                            {combinedSteps.map((step, idx) => {
                                 const isInternal = step.__step_type === 'internal';
                                 const description = isInternal
-                                    ? (step.maintenance_typical_step?.description || `Step ${step.maintenance_step_id}`)
-                                    : (step.external_maintenance_typical_step_description || `External step ${step.external_maintenance_step_id}`);
+                                    ? (getLocalizedField(step.maintenance_typical_step, 'description') || `${t('mSteps.step')} ${step.maintenance_step_id}`)
+                                    : (getLocalizedField(step, 'external_maintenance_typical_step_description') || `${t('mSteps.externalStep')} ${step.external_maintenance_step_id}`);
                                 const assignedTo = isInternal
-                                    ? `${step.person?.first_name || ''} ${step.person?.last_name || ''}`.trim()
-                                    : (step.external_maintenance_provider_name || 'External provider');
-                                const status = isInternal
+                                    ? (getLocalizedPersonName(step.person) || t('mSteps.noPerson'))
+                                    : (step.external_maintenance_provider_name || t('mSteps.externalProvider'));
+                                const statusRaw = isInternal
                                     ? (step.maintenance_step_status || '-')
+                                    : getExternalStatusLabelRaw(step);
+                                const status = isInternal
+                                    ? translateStepStatus(step.maintenance_step_status)
                                     : getExternalStatusLabel(step);
                                 const statusColor = isInternal
                                     ? getStatusColor(step.maintenance_step_status)
-                                    : getStatusColor(getExternalStatusLabel(step));
+                                    : getStatusColor(getExternalStatusLabelRaw(step));
+                                const isActive = ['in_progress', 'started', 'pending', 'waiting'].some(s => (statusRaw || '').toLowerCase().includes(s));
+                                const typeColor = isInternal ? 'var(--color-info)' : 'var(--color-warning)';
 
                                 return (
-                                    <div key={step.__key} className="step-timeline-entry">
-                                        <div className={`step-timeline-marker ${isInternal ? 'internal' : 'external'}`}>
-                                            {isInternal ? 'I' : 'E'}
+                                    <div
+                                        key={step.__key}
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: '0.75rem',
+                                            padding: '0.75rem 0.75rem',
+                                            borderBottom: idx < combinedSteps.length - 1 ? '1px solid var(--color-border)' : 'none',
+                                            borderInlineStart: `3px solid ${statusColor}`,
+                                            transition: 'background 0.15s ease',
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-secondary)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                    >
+                                        {/* Status dot + type indicator */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '0.15rem', minWidth: 32, gap: '0.2rem' }}>
+                                            <div style={{
+                                                width: 10, height: 10, borderRadius: '50%',
+                                                background: statusColor,
+                                                boxShadow: isActive ? `0 0 0 3px ${statusColor}33` : 'none',
+                                                flexShrink: 0,
+                                            }} />
+                                            <span style={{
+                                                fontSize: 'var(--font-size-xs)', fontWeight: 600,
+                                                color: typeColor, lineHeight: 1,
+                                            }}>
+                                                {isInternal ? t('mSteps.intLabel') : t('mSteps.extLabel')}
+                                            </span>
                                         </div>
-                                        <div className="step-timeline-content">
-                                            <div className="step-timeline-header">
-                                                <h4 className="step-timeline-title">{description}</h4>
-                                                <span 
-                                                    className="badge badge-info"
-                                                    style={{ 
-                                                        backgroundColor: statusColor,
-                                                        color: 'white'
-                                                    }}
-                                                >
+
+                                        {/* Main content */}
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            {/* Row 1: Description + Status pill */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
+                                                <span style={{ fontWeight: 600, fontSize: 'var(--font-size-md)', color: 'var(--color-text-primary)' }}>
+                                                    {description}
+                                                </span>
+                                                <span style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+                                                    padding: '0.1rem 0.5rem', borderRadius: '9999px',
+                                                    fontSize: 'var(--font-size-xs)', fontWeight: 600,
+                                                    color: statusColor, background: `${statusColor}18`,
+                                                }}>
+                                                    {isActive && <span style={{ width: 5, height: 5, borderRadius: '50%', background: statusColor, animation: 'pulse 2s infinite' }} />}
                                                     {status}
                                                 </span>
                                             </div>
-                                            <div className="step-timeline-meta">
-                                                <div className="step-timeline-meta-item">
-                                                    <span className="badge badge-info">
-                                                        {isInternal ? 'Internal' : 'External'}
-                                                    </span>
-                                                </div>
-                                                <div className="step-timeline-meta-item">
-                                                    <strong>Assigned to:</strong> {assignedTo || '-'}
-                                                </div>
+
+                                            {/* Row 2: Icon-based inline meta */}
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                    <User size={13} style={{ opacity: 0.6 }} />
+                                                    {assignedTo || '-'}
+                                                </span>
                                                 {isInternal && step.start_datetime && (
-                                                    <div className="step-timeline-meta-item">
-                                                        <strong>Started:</strong> {formatDateTime(step.start_datetime)}
-                                                    </div>
-                                                )}
-                                                {isInternal && step.end_datetime && (
-                                                    <div className="step-timeline-meta-item">
-                                                        <strong>Ended:</strong> {formatDateTime(step.end_datetime)}
-                                                    </div>
-                                                )}
-                                                {isInternal && !maintenanceEnded && (user?.person?.person_id === step.person?.person_id || isChief) && canOperateStep(step) && (
-                                                    <div className="step-timeline-actions">
-                                                        {step.maintenance_step_status !== 'done' && (
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                                        <Calendar size={13} style={{ opacity: 0.6 }} />
+                                                        {formatDateTime(step.start_datetime)}
+                                                        {step.end_datetime && (
                                                             <>
-                                                                <button
-                                                                    className="btn btn-xs btn-secondary"
-                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                    onClick={() => openStatusEditor(step)}
-                                                                    title="Update status"
-                                                                    aria-label="Update status"
-                                                                >
-                                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                        <path d="M12 20h9" />
-                                                                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                                                                    </svg>
-                                                                </button>
-                                                                <button
-                                                                    className="btn btn-xs btn-secondary"
-                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                    onClick={() => openAttributeEditor(step)}
-                                                                    title="Queue attribute changes"
-                                                                    aria-label="Queue attribute changes"
-                                                                >
-                                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                        <path d="M12 20h9" />
-                                                                        <path d="M12 4h9" />
-                                                                        <path d="M4 9h6" />
-                                                                        <path d="M4 15h6" />
-                                                                        <path d="M9 7l-2 2 2 2" />
-                                                                        <path d="M9 13l-2 2 2 2" />
-                                                                    </svg>
-                                                                </button>
-                                                                <button
-                                                                    className="btn btn-xs btn-secondary"
-                                                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                    onClick={() => openAssetConditionEditor(step)}
-                                                                    title="Update asset condition"
-                                                                    aria-label="Update asset condition"
-                                                                >
-                                                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                        <path d="M9 18h6" />
-                                                                        <path d="M10 22h4" />
-                                                                        <path d="M12 2a7 7 0 0 0-4 12.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26A7 7 0 0 0 12 2z" />
-                                                                    </svg>
-                                                                </button>
+                                                                <span style={{ opacity: 0.4, margin: '0 0.1rem' }}>→</span>
+                                                                {formatDateTime(step.end_datetime)}
                                                             </>
                                                         )}
-                                                        {step.maintenance_step_status !== 'done' && step.maintenance_typical_step?.operation_type === 'remove' && (
-                                                            <button
-                                                                className="btn btn-xs btn-danger"
-                                                                style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                                                onClick={() => openRemoveEditor(step)}
-                                                                disabled={removeLoading || removeSubmitting}
-                                                                title="Remove component"
-                                                                aria-label="Remove component"
-                                                            >
-                                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <polyline points="3 6 5 6 21 6" />
-                                                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                                                    <path d="M10 11v6" />
-                                                                    <path d="M14 11v6" />
-                                                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                                                                </svg>
-                                                            </button>
-                                                        )}
-                                                    </div>
+                                                    </span>
                                                 )}
                                             </div>
+
+                                            {/* Row 3: Note (if present) */}
+                                            {step.note && (
+                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.3rem', marginTop: '0.25rem', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', opacity: 0.85 }}>
+                                                    <FileText size={13} style={{ flexShrink: 0, marginTop: '0.1rem', opacity: 0.6 }} />
+                                                    <span style={{ overflowWrap: 'break-word' }}>{step.note}</span>
+                                                </div>
+                                            )}
                                         </div>
+
+                                        {/* Actions */}
+                                        {isInternal && !maintenanceEnded && (isAssignedTechnician || isChief) && canOperateStep(step) && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', flexShrink: 0, paddingTop: '0.1rem' }}>
+                                                {step.maintenance_step_status !== 'done' && (
+                                                    <>
+                                                        <button
+                                                            className="btn btn-xs btn-secondary"
+                                                            style={{ padding: '0.3rem', border: 'none', background: 'transparent', color: 'var(--color-text-secondary)' }}
+                                                            onClick={() => openStatusEditor(step)}
+                                                            title={t('mSteps.updateStatus')}
+                                                            aria-label={t('mSteps.updateStatus')}
+                                                        >
+                                                            <Pencil size={15} />
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-xs btn-secondary"
+                                                            style={{ padding: '0.3rem', border: 'none', background: 'transparent', color: 'var(--color-text-secondary)' }}
+                                                            onClick={() => openAttributeEditor(step)}
+                                                            title={t('mSteps.queueAttrChanges')}
+                                                            aria-label={t('mSteps.queueAttrChanges')}
+                                                        >
+                                                            <ListChecks size={15} />
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-xs btn-secondary"
+                                                            style={{ padding: '0.3rem', border: 'none', background: 'transparent', color: 'var(--color-text-secondary)' }}
+                                                            onClick={() => openAssetConditionEditor(step)}
+                                                            title={t('mSteps.updateAssetCondition')}
+                                                            aria-label={t('mSteps.updateAssetCondition')}
+                                                        >
+                                                            <Lightbulb size={15} />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {step.maintenance_step_status !== 'done' && step.maintenance_typical_step?.operation_type === 'remove' && (
+                                                    <button
+                                                        className="btn btn-xs btn-danger"
+                                                        style={{ padding: '0.3rem', border: 'none', background: 'transparent', color: 'var(--color-error)' }}
+                                                        onClick={() => openRemoveEditor(step)}
+                                                        disabled={removeLoading || removeSubmitting}
+                                                        title={t('mSteps.removeComponent')}
+                                                        aria-label={t('mSteps.removeComponent')}
+                                                    >
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -1753,7 +1780,7 @@ const MaintenanceSteps = ({
                     className="card"
                     style={{
                         position: 'fixed',
-                        right: 20,
+                        insetInlineEnd: 20,
                         bottom: 20,
                         zIndex: 50,
                         width: 420,
@@ -1764,7 +1791,7 @@ const MaintenanceSteps = ({
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
                         <div style={{ fontWeight: 700 }}>
-                            {requestEditorType === 'stock_item' ? 'Request stock item' : 'Request consumable'}
+                            {requestEditorType === 'stock_item' ? t('mSteps.requestStockItem') : t('mSteps.requestConsumable')}
                         </div>
                         <button
                             className="btn btn-xs btn-secondary"
@@ -1772,16 +1799,16 @@ const MaintenanceSteps = ({
                             onClick={closeRequestEditor}
                             disabled={requestSubmitting}
                         >
-                            Close
+                            {t('mSteps.close')}
                         </button>
                     </div>
 
                     <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
-                        Step: <b>{requestEditorStep.maintenance_step_id}</b>
+                        {t('mSteps.step')}: <b>{requestEditorStep.maintenance_step_id}</b>
                     </div>
 
                     <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">Type</label>
+                        <label className="form-label">{t('mSteps.type')}</label>
                         <select
                             className="form-input"
                             value={requestTypeId}
@@ -1794,20 +1821,20 @@ const MaintenanceSteps = ({
                             }}
                             disabled={requestSubmitting}
                         >
-                            <option value="">Select type...</option>
+                            <option value="">{t('mSteps.selectType')}</option>
                             {(requestEditorType === 'stock_item' ? stockItemTypes : consumableTypes).map((t) => (
                                 <option
                                     key={requestEditorType === 'stock_item' ? t.stock_item_type_id : t.consumable_type_id}
                                     value={requestEditorType === 'stock_item' ? t.stock_item_type_id : t.consumable_type_id}
                                 >
-                                    {requestEditorType === 'stock_item' ? t.stock_item_type_label : t.consumable_type_label}
+                                    {requestEditorType === 'stock_item' ? getLocalizedField(t, 'stock_item_type_label') : getLocalizedField(t, 'consumable_type_label')}
                                 </option>
                             ))}
                         </select>
                     </div>
 
                     <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">Model</label>
+                        <label className="form-label">{t('mSteps.model')}</label>
                         <select
                             className="form-input"
                             value={requestModelId}
@@ -1817,7 +1844,7 @@ const MaintenanceSteps = ({
                             }}
                             disabled={requestSubmitting || !requestTypeId}
                         >
-                            <option value="">Select model...</option>
+                            <option value="">{t('mSteps.selectModelPlaceholder')}</option>
                             {requestModels.map((m) => (
                                 <option
                                     key={requestEditorType === 'stock_item' ? m.stock_item_model_id : m.consumable_model_id}
@@ -1850,7 +1877,7 @@ const MaintenanceSteps = ({
                             onClick={submitRequestEditor}
                             disabled={requestSubmitting || !requestModelId}
                         >
-                            {requestSubmitting ? 'Requesting...' : 'Submit request'}
+                            {requestSubmitting ? t('mSteps.requesting') : t('mSteps.submitRequest')}
                         </button>
                     </div>
                 </div>
@@ -1865,14 +1892,14 @@ const MaintenanceSteps = ({
                             style={{
                                 maxHeight: '95vh',
                                 width: '90%',
-                                maxWidth: '1000px',
+                                maxWidth: '480px',
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
                             }}
                         >
                             <div className="modal-header">
-                                <h3 className="modal-title">Update status</h3>
+                                <h3 className="modal-title">{t('mSteps.updateStatus')}</h3>
                                 <button className="modal-close" onClick={() => closeStatusEditor()} disabled={statusSaving}>
                                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -1881,21 +1908,21 @@ const MaintenanceSteps = ({
                                 </button>
                             </div>
 
-                            <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
+                            <div className="modal-body" style={{ overflowY: 'visible', flex: 1 }}>
                                 <div className="form-group" style={{ marginBottom: 10 }}>
-                                    <label className="form-label">Status</label>
+                                    <label className="form-label">{t('mSteps.status')}</label>
                                     <select
                                         className="form-input"
                                         value={statusEditorValue}
                                         onChange={(e) => setStatusEditorValue(e.target.value)}
                                         disabled={statusSaving}
                                     >
-                                        <option value="">Select status...</option>
+                                        <option value="">{t('mSteps.selectStatus')}</option>
                                         {getAllowedStepStatusOptions(
                                             steps.find((s) => s.maintenance_step_id === statusEditorStepId)?.maintenance_step_status,
                                         ).map((s) => (
                                             <option key={s} value={s}>
-                                                {s}
+                                                {translateStepStatus(s)}
                                             </option>
                                         ))}
                                     </select>
@@ -1904,7 +1931,7 @@ const MaintenanceSteps = ({
 
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => closeStatusEditor()} disabled={statusSaving}>
-                                    Cancel
+                                    {t('mSteps.cancel')}
                                 </button>
                                 <button
                                     type="button"
@@ -1915,7 +1942,7 @@ const MaintenanceSteps = ({
                                     }}
                                     disabled={statusSaving || !statusEditorValue}
                                 >
-                                    {statusSaving ? 'Saving...' : 'Save'}
+                                    {statusSaving ? t('mSteps.saving') : t('mSteps.save')}
                                 </button>
                             </div>
                         </div>
@@ -1929,7 +1956,7 @@ const MaintenanceSteps = ({
                     className="card"
                     style={{
                         position: 'fixed',
-                        right: 20,
+                        insetInlineEnd: 20,
                         bottom: 20,
                         zIndex: 50,
                         width: 520,
@@ -1939,27 +1966,27 @@ const MaintenanceSteps = ({
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ fontWeight: 700 }}>Return component to owner</div>
+                        <div style={{ fontWeight: 700 }}>{t('mSteps.returnComponentToOwner')}</div>
                         <button
                             className="btn btn-xs btn-secondary"
                             style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
                             onClick={closeReturnEditor}
                             disabled={returnSubmitting}
                         >
-                            Close
+                            {t('mSteps.close')}
                         </button>
                     </div>
 
                     <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
-                        Step: <b>{returnEditorStep.maintenance_step_id}</b>
+                        {t('mSteps.step')}: <b>{returnEditorStep.maintenance_step_id}</b>
                     </div>
 
                     {returnLoading ? (
-                        <div style={{ fontSize: 13, opacity: 0.85 }}>Loading components...</div>
+                        <div style={{ fontSize: 13, opacity: 0.85 }}>{t('mSteps.loadingComponents')}</div>
                     ) : (
                         <>
                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                <label className="form-label">Component</label>
+                                <label className="form-label">{t('mSteps.component')}</label>
                                 <select
                                     className="form-input"
                                     value={returnSelectedType && returnSelectedId ? `${returnSelectedType}:${returnSelectedId}` : ''}
@@ -1975,23 +2002,23 @@ const MaintenanceSteps = ({
                                         setReturnSelectedId(id);
                                     }}
                                 >
-                                    <option value="">Select component...</option>
+                                    <option value="">{t('mSteps.selectComponentPlaceholder')}</option>
 
                                     {returnComponents.stock_items?.length > 0 && (
-                                        <optgroup label="Stock items">
+                                        <optgroup label={t('mSteps.stockItems')}>
                                             {returnComponents.stock_items.map((it) => (
                                                 <option key={`stock_item:${it.stock_item_id}`} value={`stock_item:${it.stock_item_id}`}>
-                                                    {it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}{it.stock_item_name || `Stock item ${it.stock_item_id}`}
+                                                    {it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}{it.stock_item_name || `${t('mSteps.stockItem')} ${it.stock_item_id}`}
                                                 </option>
                                             ))}
                                         </optgroup>
                                     )}
 
                                     {returnComponents.consumables?.length > 0 && (
-                                        <optgroup label="Consumables">
+                                        <optgroup label={t('mSteps.consumables')}>
                                             {returnComponents.consumables.map((it) => (
                                                 <option key={`consumable:${it.consumable_id}`} value={`consumable:${it.consumable_id}`}>
-                                                    {it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}{it.consumable_name || `Consumable ${it.consumable_id}`}
+                                                    {it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}{it.consumable_name || `${t('mSteps.consumable')} ${it.consumable_id}`}
                                                 </option>
                                             ))}
                                         </optgroup>
@@ -2000,7 +2027,7 @@ const MaintenanceSteps = ({
                             </div>
 
                             <div className="alert alert-info" style={{ fontSize: 12, marginBottom: 10 }}>
-                                This will send the component back to the asset owner's office. This action requires approval from the stock/consumable responsible.
+                                {t('mSteps.returnComponentInfo')}
                             </div>
 
                             <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', marginTop: 'var(--space-3)' }}>
@@ -2010,7 +2037,7 @@ const MaintenanceSteps = ({
                                     onClick={closeReturnEditor}
                                     disabled={returnSubmitting}
                                 >
-                                    Cancel
+                                    {t('mSteps.cancel')}
                                 </button>
                                 <button
                                     className="btn btn-xs btn-primary"
@@ -2018,7 +2045,7 @@ const MaintenanceSteps = ({
                                     onClick={submitReturnEditor}
                                     disabled={returnSubmitting || !returnSelectedType || !returnSelectedId}
                                 >
-                                    {returnSubmitting ? 'Submitting...' : 'Request Return'}
+                                    {returnSubmitting ? t('mSteps.submitting') : t('mSteps.requestReturn')}
                                 </button>
                             </div>
                         </>
@@ -2031,7 +2058,7 @@ const MaintenanceSteps = ({
                     className="card"
                     style={{
                         position: 'fixed',
-                        right: 20,
+                        insetInlineEnd: 20,
                         bottom: 20,
                         zIndex: 50,
                         width: 520,
@@ -2041,40 +2068,40 @@ const MaintenanceSteps = ({
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ fontWeight: 700 }}>Return maintenance to owner</div>
+                        <div style={{ fontWeight: 700 }}>{t('mSteps.returnMaintenanceToOwner')}</div>
                         <button
                             className="btn btn-xs btn-secondary"
                             style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
                             onClick={closeReturnMaintenance}
                             disabled={returnMaintenanceSubmitting}
                         >
-                            Close
+                            {t('mSteps.close')}
                         </button>
                     </div>
 
                     {returnMaintenanceLoading ? (
-                        <div style={{ fontSize: 13, opacity: 0.85 }}>Loading rooms...</div>
+                        <div style={{ fontSize: 13, opacity: 0.85 }}>{t('mSteps.loadingRooms')}</div>
                     ) : (
                         <>
                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                <label className="form-label">Destination location (asset owner)</label>
+                                <label className="form-label">{t('mSteps.destinationLocation')}</label>
                                 <select
                                     className="form-input"
                                     value={returnMaintenanceDestinationLocationId}
                                     onChange={(e) => setReturnMaintenanceDestinationLocationId(e.target.value)}
                                     disabled={returnMaintenanceSubmitting}
                                 >
-                                    <option value="">Select location...</option>
+                                    <option value="">{t('mSteps.selectLocation')}</option>
                                     {returnMaintenanceLocations.map((r) => (
                                         <option key={r.location_id} value={r.location_id}>
-                                            {r.location_name}{r.location_type_label ? ` (${r.location_type_label})` : ''}
+                                            {r.location_name}{(r.location_type_label_ar || r.location_type_label) ? ` (${getLocalizedField(r, 'location_type_label')})` : ''}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
                             <div className="alert alert-info" style={{ fontSize: 12, marginBottom: 10 }}>
-                                This will create pending return movements for the asset and included items. The asset return must be approved by the asset responsible, and included items by the stock/consumable responsible.
+                                {t('mSteps.returnMaintenanceInfo')}
                             </div>
 
                             <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', marginTop: 'var(--space-3)' }}>
@@ -2084,7 +2111,7 @@ const MaintenanceSteps = ({
                                     onClick={closeReturnMaintenance}
                                     disabled={returnMaintenanceSubmitting}
                                 >
-                                    Cancel
+                                    {t('mSteps.cancel')}
                                 </button>
                                 <button
                                     className="btn btn-xs btn-primary"
@@ -2092,7 +2119,7 @@ const MaintenanceSteps = ({
                                     onClick={submitReturnMaintenance}
                                     disabled={returnMaintenanceSubmitting || !returnMaintenanceDestinationLocationId}
                                 >
-                                    {returnMaintenanceSubmitting ? 'Submitting...' : 'Request Return'}
+                                    {returnMaintenanceSubmitting ? t('mSteps.submitting') : t('mSteps.requestReturn')}
                                 </button>
                             </div>
                         </>
@@ -2105,7 +2132,7 @@ const MaintenanceSteps = ({
                     className="card"
                     style={{
                         position: 'fixed',
-                        right: 20,
+                        insetInlineEnd: 20,
                         bottom: 20,
                         zIndex: 50,
                         width: 520,
@@ -2115,27 +2142,27 @@ const MaintenanceSteps = ({
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ fontWeight: 700 }}>Remove component</div>
+                        <div style={{ fontWeight: 700 }}>{t('mSteps.removeComponent')}</div>
                         <button
                             className="btn btn-xs btn-secondary"
                             style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
                             onClick={closeRemoveEditor}
                             disabled={removeSubmitting}
                         >
-                            Close
+                            {t('mSteps.close')}
                         </button>
                     </div>
 
                     <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
-                        Step: <b>{removeEditorStep.maintenance_step_id}</b>
+                        {t('mSteps.step')}: <b>{removeEditorStep.maintenance_step_id}</b>
                     </div>
 
                     {removeLoading ? (
-                        <div style={{ fontSize: 13, opacity: 0.85 }}>Loading components...</div>
+                        <div style={{ fontSize: 13, opacity: 0.85 }}>{t('mSteps.loadingComponents')}</div>
                     ) : (
                         <>
                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                <label className="form-label">Component</label>
+                                <label className="form-label">{t('mSteps.component')}</label>
                                 <select
                                     className="form-input"
                                     value={removeSelectedType && removeSelectedId ? `${removeSelectedType}:${removeSelectedId}` : ''}
@@ -2151,23 +2178,23 @@ const MaintenanceSteps = ({
                                         setRemoveSelectedId(id);
                                     }}
                                 >
-                                    <option value="">Select component...</option>
+                                    <option value="">{t('mSteps.selectComponentPlaceholder')}</option>
 
                                     {removeComponents.stock_items?.length > 0 && (
-                                        <optgroup label="Stock items">
+                                        <optgroup label={t('mSteps.stockItems')}>
                                             {removeComponents.stock_items.map((it) => (
                                                 <option key={`stock_item:${it.stock_item_id}`} value={`stock_item:${it.stock_item_id}`}>
-                                                    {it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}{it.stock_item_name || `Stock item ${it.stock_item_id}`}
+                                                    {it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}{it.stock_item_name || `${t('mSteps.stockItem')} ${it.stock_item_id}`}
                                                 </option>
                                             ))}
                                         </optgroup>
                                     )}
 
                                     {removeComponents.consumables?.length > 0 && (
-                                        <optgroup label="Consumables">
+                                        <optgroup label={t('mSteps.consumables')}>
                                             {removeComponents.consumables.map((it) => (
                                                 <option key={`consumable:${it.consumable_id}`} value={`consumable:${it.consumable_id}`}>
-                                                    {it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}{it.consumable_name || `Consumable ${it.consumable_id}`}
+                                                    {it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}{it.consumable_name || `${t('mSteps.consumable')} ${it.consumable_id}`}
                                                 </option>
                                             ))}
                                         </optgroup>
@@ -2176,16 +2203,16 @@ const MaintenanceSteps = ({
                             </div>
 
                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                <label className="form-label">Move removed component to (maintenance location)</label>
+                                <label className="form-label">{t('mSteps.moveRemovedComponentTo')}</label>
                                 <select
                                     className="form-input"
                                     value={removeDestinationLocationId}
                                     onChange={(e) => setRemoveDestinationLocationId(e.target.value)}
                                 >
-                                    <option value="">Select location...</option>
+                                    <option value="">{t('mSteps.selectLocation')}</option>
                                     {removeLocations.map((r) => (
                                         <option key={r.location_id} value={r.location_id}>
-                                            {r.location_name}{r.location_type_label ? ` (${r.location_type_label})` : ''}
+                                            {r.location_name}{(r.location_type_label_ar || r.location_type_label) ? ` (${getLocalizedField(r, 'location_type_label')})` : ''}
                                         </option>
                                     ))}
                                 </select>
@@ -2198,7 +2225,7 @@ const MaintenanceSteps = ({
                                     onClick={closeRemoveEditor}
                                     disabled={removeSubmitting}
                                 >
-                                    Cancel
+                                    {t('mSteps.cancel')}
                                 </button>
                                 <button
                                     className="btn btn-xs btn-danger"
@@ -2206,7 +2233,7 @@ const MaintenanceSteps = ({
                                     onClick={submitRemoveEditor}
                                     disabled={removeSubmitting || !removeSelectedType || !removeSelectedId}
                                 >
-                                    {removeSubmitting ? 'Removing...' : 'Remove'}
+                                    {removeSubmitting ? t('mSteps.removing') : t('mSteps.remove')}
                                 </button>
                             </div>
                         </>
@@ -2223,14 +2250,14 @@ const MaintenanceSteps = ({
                             style={{
                                 maxHeight: '95vh',
                                 width: '90%',
-                                maxWidth: '1000px',
+                                maxWidth: '600px',
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
                             }}
                         >
                             <div className="modal-header">
-                                <h3 className="modal-title">Update asset condition</h3>
+                                <h3 className="modal-title">{t('mSteps.updateAssetCondition')}</h3>
                                 <button className="modal-close" onClick={() => closeAssetConditionEditor()} disabled={assetConditionSubmitting}>
                                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -2239,20 +2266,20 @@ const MaintenanceSteps = ({
                                 </button>
                             </div>
 
-                            <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
                                 <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
-                                    Step: <b>{assetConditionEditorStep.maintenance_step_id}</b>
+                                    {t('mSteps.step')}: <b>{assetConditionEditorStep.maintenance_step_id}</b>
                                 </div>
 
                                 <div className="form-group" style={{ marginBottom: 10 }}>
-                                    <label className="form-label">Condition</label>
+                                    <label className="form-label">{t('mSteps.condition')}</label>
                                     <select
                                         className="form-input"
                                         value={selectedConditionId}
                                         onChange={(e) => setSelectedConditionId(e.target.value)}
                                         disabled={assetConditionSubmitting}
                                     >
-                                        <option value="">Select condition...</option>
+                                        <option value="">{t('mSteps.selectCondition')}</option>
                                         {physicalConditions
                                             .filter((c) => {
                                                 const code = String(c?.condition_code || '').trim().toLowerCase();
@@ -2261,14 +2288,14 @@ const MaintenanceSteps = ({
                                             })
                                             .map((c) => (
                                             <option key={c.condition_id} value={c.condition_id}>
-                                                {c.condition_label || c.condition_code || c.condition_id}
+                                                {getLocalizedField(c, 'condition_label') || c.condition_code || c.condition_id}
                                             </option>
                                         ))}
                                     </select>
                                 </div>
 
                                 <div className="form-group" style={{ marginBottom: 10 }}>
-                                    <label className="form-label">Notes</label>
+                                    <label className="form-label">{t('mSteps.notes')}</label>
                                     <textarea
                                         className="form-input"
                                         rows={3}
@@ -2279,7 +2306,7 @@ const MaintenanceSteps = ({
                                 </div>
 
                                 <div className="form-group" style={{ marginBottom: 10 }}>
-                                    <label className="form-label">Cosmetic issues</label>
+                                    <label className="form-label">{t('mSteps.cosmeticIssues')}</label>
                                     <input
                                         className="form-input"
                                         value={assetConditionCosmeticIssues}
@@ -2289,7 +2316,7 @@ const MaintenanceSteps = ({
                                 </div>
 
                                 <div className="form-group" style={{ marginBottom: 10 }}>
-                                    <label className="form-label">Functional issues</label>
+                                    <label className="form-label">{t('mSteps.functionalIssues')}</label>
                                     <input
                                         className="form-input"
                                         value={assetConditionFunctionalIssues}
@@ -2299,7 +2326,7 @@ const MaintenanceSteps = ({
                                 </div>
 
                                 <div className="form-group" style={{ marginBottom: 10 }}>
-                                    <label className="form-label">Recommendation</label>
+                                    <label className="form-label">{t('mSteps.recommendation')}</label>
                                     <input
                                         className="form-input"
                                         value={assetConditionRecommendation}
@@ -2311,7 +2338,7 @@ const MaintenanceSteps = ({
 
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={closeAssetConditionEditor} disabled={assetConditionSubmitting}>
-                                    Cancel
+                                    {t('mSteps.cancel')}
                                 </button>
                                 <button
                                     type="button"
@@ -2319,7 +2346,7 @@ const MaintenanceSteps = ({
                                     onClick={submitAssetConditionEditor}
                                     disabled={assetConditionSubmitting || !selectedConditionId}
                                 >
-                                    {assetConditionSubmitting ? 'Saving...' : 'Save'}
+                                    {assetConditionSubmitting ? t('mSteps.saving') : t('mSteps.save')}
                                 </button>
                             </div>
                         </div>
@@ -2337,14 +2364,14 @@ const MaintenanceSteps = ({
                             style={{
                                 maxHeight: '95vh',
                                 width: '90%',
-                                maxWidth: '1000px',
+                                maxWidth: '720px',
                                 overflow: 'hidden',
                                 display: 'flex',
                                 flexDirection: 'column',
                             }}
                         >
                             <div className="modal-header">
-                                <h3 className="modal-title">Queue attribute changes</h3>
+                                <h3 className="modal-title">{t('mSteps.queueAttrChanges')}</h3>
                                 <button className="modal-close" onClick={() => closeAttributeEditor()} disabled={attributeSubmitting}>
                                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -2353,13 +2380,13 @@ const MaintenanceSteps = ({
                                 </button>
                             </div>
 
-                            <div className="modal-body" style={{ overflowY: 'visible', flex: 1, minHeight: '400px' }}>
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
                                 <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
-                                    Step: <b>{attributeEditorStep.maintenance_step_id}</b>
+                                    {t('mSteps.step')}: <b>{attributeEditorStep.maintenance_step_id}</b>
                                 </div>
 
                                 <div className="form-group" style={{ marginBottom: 10 }}>
-                                    <label className="form-label">Target</label>
+                                    <label className="form-label">{t('mSteps.target')}</label>
                                     <select
                                         className="form-input"
                                         value={attributeTargetValue}
@@ -2371,15 +2398,15 @@ const MaintenanceSteps = ({
                                         }}
                                         disabled={attributeSubmitting}
                                     >
-                                        <option value="asset">Asset</option>
-                                        <option value="stock_item">Stock item (composing asset)</option>
-                                        <option value="consumable">Consumable (composing asset)</option>
+                                        <option value="asset">{t('mSteps.asset')}</option>
+                                        <option value="stock_item">{t('mSteps.stockItemComposing')}</option>
+                                        <option value="consumable">{t('mSteps.consumableComposing')}</option>
                                     </select>
                                 </div>
 
                                 {(attributeTargetValue === 'stock_item' || attributeTargetValue === 'consumable') && (
                                     <div className="form-group" style={{ marginBottom: 10 }}>
-                                        <label className="form-label">Component</label>
+                                        <label className="form-label">{t('mSteps.component')}</label>
                                         <select
                                             className="form-input"
                                             value={attributeComponentValue}
@@ -2389,7 +2416,7 @@ const MaintenanceSteps = ({
                                             }}
                                             disabled={attributeSubmitting}
                                         >
-                                            <option value="">Select component...</option>
+                                            <option value="">{t('mSteps.selectComponentPlaceholder')}</option>
                                             {(attributeTargetValue === 'stock_item'
                                                 ? attributeEditorComponents.stock_items
                                                 : attributeEditorComponents.consumables
@@ -2399,8 +2426,8 @@ const MaintenanceSteps = ({
                                                     value={attributeTargetValue === 'stock_item' ? it.stock_item_id : it.consumable_id}
                                                 >
                                                     {attributeTargetValue === 'stock_item'
-                                                        ? `${it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}${it.stock_item_name || `Stock item ${it.stock_item_id}`}`
-                                                        : `${it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}${it.consumable_name || `Consumable ${it.consumable_id}`}`
+                                                        ? `${it.stock_item_inventory_number ? `${it.stock_item_inventory_number} - ` : ''}${it.stock_item_name || `${t('mSteps.stockItem')} ${it.stock_item_id}`}`
+                                                        : `${it.consumable_inventory_number ? `${it.consumable_inventory_number} - ` : ''}${it.consumable_name || `${t('mSteps.consumable')} ${it.consumable_id}`}`
                                                     }
                                                 </option>
                                             ))}
@@ -2409,7 +2436,7 @@ const MaintenanceSteps = ({
                                 )}
 
                                 <div className="form-group" style={{ marginBottom: 10 }}>
-                                    <label className="form-label">Attribute</label>
+                                    <label className="form-label">{t('mSteps.attribute')}</label>
                                         <select
                                             className="form-input"
                                             value={attributeDefinitionId}
@@ -2419,7 +2446,7 @@ const MaintenanceSteps = ({
                                             }}
                                             disabled={attributeSubmitting}
                                         >
-                                            <option value="">Select attribute...</option>
+                                            <option value="">{t('mSteps.selectAttribute')}</option>
                                             {(attributeTargetValue === 'asset'
                                                 ? assetAttributeDefinitions
                                                 : attributeTargetValue === 'stock_item'
@@ -2439,16 +2466,16 @@ const MaintenanceSteps = ({
                                                         : d.consumable_attribute_definition_id;
                                                 return (
                                                     <option key={id} value={id}>
-                                                        {d.description || `Attribute ${id}`}{d.unit ? ` (${d.unit})` : ''}
+                                                        {getLocalizedField(d, 'description') || `${t('mSteps.attribute')} ${id}`}{d.unit ? ` (${d.unit})` : ''}
                                                     </option>
                                                 );
                                             })}
                                         </select>
                                     {attributeDefinitionId && (
                                         <div style={{ marginTop: 8, fontSize: 12, opacity: 0.85 }}>
-                                            <b>Current value:</b>{' '}
+                                            <b>{t('mSteps.currentValue')}:</b>{' '}
                                             {attributeCurrentValueLoading ? (
-                                                'Loading...'
+                                                t('mSteps.loading')
                                             ) : attributeCurrentValue ? (
                                                 (() => {
                                                     const v = attributeCurrentValue;
@@ -2459,7 +2486,7 @@ const MaintenanceSteps = ({
                                                     return '-';
                                                 })()
                                             ) : (
-                                                <span style={{ opacity: 0.6 }}>Not set</span>
+                                                <span style={{ opacity: 0.6 }}>{t('mSteps.notSet')}</span>
                                             )}
                                         </div>
                                     )}
@@ -2471,7 +2498,7 @@ const MaintenanceSteps = ({
                                     if (dt === 'bool') {
                                         return (
                                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                                <label className="form-label">Value</label>
+                                                <label className="form-label">{t('mSteps.value')}</label>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                     <input
                                                         type="checkbox"
@@ -2479,7 +2506,7 @@ const MaintenanceSteps = ({
                                                         onChange={(e) => setAttributeValueBool(e.target.checked)}
                                                         disabled={attributeSubmitting}
                                                     />
-                                                    <div style={{ fontSize: 12, opacity: 0.85 }}>Set to true/false</div>
+                                                    <div style={{ fontSize: 12, opacity: 0.85 }}>{t('mSteps.setToTrueFalse')}</div>
                                                 </div>
                                             </div>
                                         );
@@ -2487,7 +2514,7 @@ const MaintenanceSteps = ({
                                     if (dt === 'date') {
                                         return (
                                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                                <label className="form-label">Value</label>
+                                                <label className="form-label">{t('mSteps.value')}</label>
                                                 <input
                                                     type="date"
                                                     className="form-input"
@@ -2501,7 +2528,7 @@ const MaintenanceSteps = ({
                                     if (dt === 'number') {
                                         return (
                                             <div className="form-group" style={{ marginBottom: 10 }}>
-                                                <label className="form-label">Value</label>
+                                                <label className="form-label">{t('mSteps.value')}</label>
                                                 <input
                                                     type="number"
                                                     className="form-input"
@@ -2514,7 +2541,7 @@ const MaintenanceSteps = ({
                                     }
                                     return (
                                         <div className="form-group" style={{ marginBottom: 10 }}>
-                                            <label className="form-label">Value</label>
+                                            <label className="form-label">{t('mSteps.value')}</label>
                                             <input
                                                 className="form-input"
                                                 value={attributeValueString}
@@ -2542,25 +2569,25 @@ const MaintenanceSteps = ({
 
                                 {Array.isArray(attributePendingChanges) && attributePendingChanges.length > 0 && (
                                     <div style={{ marginTop: 12 }}>
-                                        <div style={{ fontWeight: 700, marginBottom: 6 }}>Queued (local)</div>
+                                        <div style={{ fontWeight: 700, marginBottom: 6 }}>{t('mSteps.queuedLocal')}</div>
                                         <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 8 }}>
-                                            These will be sent to the server when you click "Submit".
+                                            {t('mSteps.queuedLocalInfo')}
                                         </div>
                                         <div className="table-container rounded border overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)' }}>
                                             <table className="data-table mb-0">
                                                 <thead style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                                                     <tr>
-                                                        <th className="px-4 py-2">Target</th>
-                                                        <th className="px-4 py-2">Definition</th>
-                                                        <th className="px-4 py-2">Value</th>
-                                                        <th className="px-4 py-2 text-right">Action</th>
+                                                        <th className="px-4 py-2">{t('mSteps.target')}</th>
+                                                        <th className="px-4 py-2">{t('mSteps.definition')}</th>
+                                                        <th className="px-4 py-2">{t('mSteps.value')}</th>
+                                                        <th className="px-4 py-2 text-right">{t('mSteps.action')}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                     {attributePendingChanges.map((c, idx) => (
                                                         <tr key={`chg-${idx}`} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
                                                             <td className="px-4 py-2">
-                                                                {c.target_type}{c.target_id ? ` #${c.target_id}` : ''}
+                                                                {c.target_type === 'asset' ? t('mSteps.asset') : c.target_type === 'stock_item' ? t('mSteps.stockItem') : c.target_type === 'consumable' ? t('mSteps.consumable') : c.target_type}{c.target_id ? ` #${c.target_id}` : ''}
                                                             </td>
                                                             <td className="px-4 py-2">{c.attribute_definition_id}</td>
                                                             <td className="px-4 py-2">
@@ -2573,7 +2600,7 @@ const MaintenanceSteps = ({
                                                                     onClick={() => setAttributePendingChanges((prev) => prev.filter((_, i) => i !== idx))}
                                                                     disabled={attributeSubmitting}
                                                                 >
-                                                                    Remove
+                                                                    {t('mSteps.remove')}
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -2587,7 +2614,7 @@ const MaintenanceSteps = ({
 
                             <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                                 <button type="button" className="btn btn-secondary" onClick={closeAttributeEditor} disabled={attributeSubmitting}>
-                                    Close
+                                    {t('mSteps.close')}
                                 </button>
                                 <div style={{ display: 'flex', gap: 10 }}>
                                     <button
@@ -2596,7 +2623,7 @@ const MaintenanceSteps = ({
                                         onClick={addPendingAttributeChange}
                                         disabled={attributeSubmitting}
                                     >
-                                        Add to queue
+                                        {t('mSteps.addToQueue')}
                                     </button>
                                     <button
                                         type="button"
@@ -2604,7 +2631,7 @@ const MaintenanceSteps = ({
                                         onClick={submitAttributeEditorChanges}
                                         disabled={attributeSubmitting}
                                     >
-                                        {attributeSubmitting ? 'Submitting...' : 'Submit'}
+                                        {attributeSubmitting ? t('mSteps.submitting') : t('mSteps.submit')}
                                     </button>
                                 </div>
                             </div>

@@ -7,10 +7,12 @@ import {
     consumableService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const ItemRequestsInboxPage = () => {
-    const { user } = useAuth();
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const { user, isSuperuser } = useAuth();
+    const { t } = useTranslation();
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
     const [submittingId, setSubmittingId] = useState(null);
@@ -53,7 +55,7 @@ const ItemRequestsInboxPage = () => {
             });
             setFulfillFormsById(defaults);
         } catch (e) {
-            setError('Failed to fetch item requests inbox');
+            setError(t('itemRequestsInbox.fetchError'));
         } finally {
             setLoading(false);
         }
@@ -66,14 +68,14 @@ const ItemRequestsInboxPage = () => {
         setSuccess(null);
 
         try {
-            const note = window.prompt('Rejection note (optional):', '') ?? '';
+            const note = window.prompt(t('itemRequestsInbox.rejectionNotePrompt'), '') ?? '';
             const payload = {};
             if (note !== '') payload.note = note;
             await maintenanceStepItemRequestService.reject(id, payload);
-            setSuccess(`Request #${id} rejected successfully`);
+            setSuccess(t('itemRequestsInbox.rejectedSuccess', { id }));
             await fetchData();
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to reject request');
+            setError(err.response?.data?.error || t('itemRequestsInbox.rejectError'));
         } finally {
             setSubmittingId(null);
         }
@@ -174,7 +176,7 @@ const ItemRequestsInboxPage = () => {
 
         try {
             if (!form.source_location_id || !form.destination_location_id) {
-                setError('Source location and destination location are required');
+                setError(t('itemRequestsInbox.sourceDestRequired'));
                 return;
             }
 
@@ -185,26 +187,26 @@ const ItemRequestsInboxPage = () => {
 
             if (req.request_type === 'stock_item') {
                 if (!form.stock_item_id) {
-                    setError('stock_item_id is required');
+                    setError(t('itemRequestsInbox.stockItemIdRequired'));
                     return;
                 }
                 payload.stock_item_id = Number(form.stock_item_id);
             } else if (req.request_type === 'consumable') {
                 if (!form.consumable_id) {
-                    setError('consumable_id is required');
+                    setError(t('itemRequestsInbox.consumableIdRequired'));
                     return;
                 }
                 payload.consumable_id = Number(form.consumable_id);
             } else {
-                setError('Invalid request type');
+                setError(t('itemRequestsInbox.invalidRequestType'));
                 return;
             }
 
             await maintenanceStepItemRequestService.fulfill(id, payload);
-            setSuccess(`Request #${id} fulfilled successfully`);
+            setSuccess(t('itemRequestsInbox.fulfilledSuccess', { id }));
             await fetchData();
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to fulfill request');
+            setError(err.response?.data?.error || t('itemRequestsInbox.fulfillError'));
         } finally {
             setSubmittingId(null);
         }
@@ -229,10 +231,10 @@ const ItemRequestsInboxPage = () => {
                     source_location_id: data.source_location_id || '',
                 });
             } else {
-                setError('Invalid selection response');
+                setError(t('itemRequestsInbox.invalidSelection'));
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to select randomly');
+            setError(err.response?.data?.error || t('itemRequestsInbox.selectRandomError'));
         } finally {
             setSubmittingId(null);
         }
@@ -242,18 +244,18 @@ const ItemRequestsInboxPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     return (
         <>
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Item Requests Inbox</h1>
-                    <p className="page-subtitle">Fulfill maintenance step requests for stock items and consumables</p>
+                    <h1 className="page-title">{t('itemRequestsInbox.title')}</h1>
+                    <p className="page-subtitle">{t('itemRequestsInbox.subtitle')}</p>
                 </div>
                 <div>
                     <button className="btn btn-secondary" onClick={fetchData}>
-                        Refresh
+                        {t('common.refresh')}
                     </button>
                 </div>
             </div>
@@ -275,11 +277,11 @@ const ItemRequestsInboxPage = () => {
 
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title">Pending Requests</h2>
+                    <h2 className="card-title">{t('itemRequestsInbox.pendingRequests')}</h2>
                 </div>
                 <div className="card-body">
                     {pendingRequests.length === 0 ? (
-                        <div style={{ opacity: 0.8 }}>No pending requests</div>
+                        <div style={{ opacity: 0.8 }}>{t('itemRequestsInbox.noPendingRequests')}</div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                             {pendingRequests.map((req) => {
@@ -300,15 +302,15 @@ const ItemRequestsInboxPage = () => {
                                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <div>
                                                 <div className="card-title" style={{ marginBottom: 4 }}>
-                                                    Request #{id}
+                                                    {t('itemRequestsInbox.request')} #{id}
                                                 </div>
                                                 <div style={{ fontSize: 12, opacity: 0.85 }}>
-                                                    Type: <b>{req.request_type}</b> | Step: <b>{req.maintenance_step}</b> | Requested model id:{' '}
+                                                    {t('itemRequestsInbox.type')}: <b>{req.request_type}</b> | {t('itemRequestsInbox.step')}: <b>{req.maintenance_step}</b> | {t('itemRequestsInbox.requestedModelId')}{' '}
                                                     <b>{requestedModelId || '-'}</b>
                                                 </div>
                                             </div>
                                             <div style={{ fontSize: 12, opacity: 0.85 }}>
-                                                Status: <b>{req.status}</b>
+                                                {t('common.status')}: <b>{req.status}</b>
                                             </div>
                                         </div>
 
@@ -323,7 +325,7 @@ const ItemRequestsInboxPage = () => {
                                             >
                                                 {req.request_type === 'stock_item' ? (
                                                     <div className="form-group">
-                                                        <label className="form-label">Choose Stock Item</label>
+                                                        <label className="form-label">{t('itemRequestsInbox.chooseStockItem')}</label>
                                                         <select
                                                             className="form-input"
                                                             value={form.stock_item_id}
@@ -338,7 +340,7 @@ const ItemRequestsInboxPage = () => {
                                                             }}
                                                             onFocus={() => ensureEligibleItemsLoaded(req)}
                                                         >
-                                                            <option value="">Select stock item</option>
+                                                            <option value="">{t('itemRequestsInbox.selectStockItem')}</option>
                                                             {(eligibleItemsByRequestId[id] || []).map((x) => (
                                                                 <option key={x.stock_item_id} value={x.stock_item_id}>
                                                                     {x.stock_item_id}{x.stock_item_inventory_number ? ` (${x.stock_item_inventory_number})` : ''} - {getRoomLabel(x.current_location_id)}
@@ -347,13 +349,13 @@ const ItemRequestsInboxPage = () => {
                                                         </select>
                                                         <div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>
                                                             {eligibleLoadingByRequestId[id]
-                                                                ? 'Loading available items...'
-                                                                : 'Choose an available item that matches the requested model.'}
+                                                                ? t('itemRequestsInbox.loadingAvailableItems')
+                                                                : t('itemRequestsInbox.chooseAvailableItem')}
                                                         </div>
                                                     </div>
                                                 ) : (
                                                     <div className="form-group">
-                                                        <label className="form-label">Choose Consumable</label>
+                                                        <label className="form-label">{t('itemRequestsInbox.chooseConsumable')}</label>
                                                         <select
                                                             className="form-input"
                                                             value={form.consumable_id}
@@ -368,7 +370,7 @@ const ItemRequestsInboxPage = () => {
                                                             }}
                                                             onFocus={() => ensureEligibleItemsLoaded(req)}
                                                         >
-                                                            <option value="">Select consumable</option>
+                                                            <option value="">{t('itemRequestsInbox.selectConsumable')}</option>
                                                             {(eligibleItemsByRequestId[id] || []).map((x) => (
                                                                 <option key={x.consumable_id} value={x.consumable_id}>
                                                                     {x.consumable_id}{x.consumable_inventory_number ? ` (${x.consumable_inventory_number})` : ''} - {getRoomLabel(x.current_location_id)}
@@ -377,21 +379,21 @@ const ItemRequestsInboxPage = () => {
                                                         </select>
                                                         <div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>
                                                             {eligibleLoadingByRequestId[id]
-                                                                ? 'Loading available items...'
-                                                                : 'Choose an available item that matches the requested model.'}
+                                                                ? t('itemRequestsInbox.loadingAvailableItems')
+                                                                : t('itemRequestsInbox.chooseAvailableItem')}
                                                         </div>
                                                     </div>
                                                 )}
 
                                                 <div className="form-group">
-                                                    <label className="form-label">Source Location</label>
+                                                    <label className="form-label">{t('itemRequestsInbox.sourceLocation')}</label>
                                                     <select
                                                         className="form-input"
                                                         value={form.source_location_id}
                                                         onChange={() => {}}
                                                         disabled
                                                     >
-                                                        <option value="">Source location (auto)</option>
+                                                        <option value="">{t('itemRequestsInbox.sourceLocationAuto')}</option>
                                                         {locations.map((r) => (
                                                             <option key={r.location_id} value={r.location_id}>
                                                                 {r.location_name} (#{r.location_id})
@@ -401,13 +403,13 @@ const ItemRequestsInboxPage = () => {
                                                 </div>
 
                                                 <div className="form-group">
-                                                    <label className="form-label">Destination Location</label>
+                                                    <label className="form-label">{t('itemRequestsInbox.destinationLocation')}</label>
                                                     <select
                                                         className="form-input"
                                                         value={form.destination_location_id}
                                                         onChange={(e) => updateForm(id, { destination_location_id: e.target.value })}
                                                     >
-                                                        <option value="">Select destination location</option>
+                                                        <option value="">{t('itemRequestsInbox.selectDestinationLocation')}</option>
                                                         {locations.map((r) => (
                                                             <option key={r.location_id} value={r.location_id}>
                                                                 {r.location_name} (#{r.location_id})
@@ -423,7 +425,7 @@ const ItemRequestsInboxPage = () => {
                                                     disabled={submittingId === id}
                                                     onClick={() => handleFulfill(req)}
                                                 >
-                                                    {submittingId === id ? 'Fulfilling...' : 'Fulfill'}
+                                                    {submittingId === id ? t('itemRequestsInbox.fulfilling') : t('itemRequestsInbox.fulfill')}
                                                 </button>
 
                                                 <button
@@ -431,7 +433,7 @@ const ItemRequestsInboxPage = () => {
                                                     disabled={submittingId === id}
                                                     onClick={() => handleReject(req)}
                                                 >
-                                                    {submittingId === id ? 'Rejecting...' : 'Reject'}
+                                                    {submittingId === id ? t('itemRequestsInbox.rejecting') : t('common.reject')}
                                                 </button>
 
                                                 <button
@@ -439,7 +441,7 @@ const ItemRequestsInboxPage = () => {
                                                     disabled={submittingId === id}
                                                     onClick={() => handleSelectRandom(req)}
                                                 >
-                                                    Select randomly
+                                                    {t('itemRequestsInbox.selectRandomly')}
                                                 </button>
 
                                                 <button
@@ -456,10 +458,10 @@ const ItemRequestsInboxPage = () => {
                                                                 return `${c.consumable_id} - ${c.consumable_name || ''} (model ${c.consumable_model_id})`;
                                                             })
                                                             .join('\n');
-                                                        window.alert(list || 'No candidates found (or backend filtering not available).');
+                                                        window.alert(list || t('itemRequestsInbox.noCandidates'));
                                                     }}
                                                 >
-                                                    Show candidates (top 20)
+                                                    {t('itemRequestsInbox.showCandidates')}
                                                 </button>
                                             </div>
                                         </div>

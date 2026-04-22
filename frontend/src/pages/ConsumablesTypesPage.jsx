@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
     Plus, 
@@ -20,9 +21,21 @@ import {
     Image
 } from 'lucide-react';
 import { consumableAttributeDefinitionService, consumableTypeAttributeService, consumableTypeService } from '../services/api';
+import { Tag as TagIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import TranslatableInput from '../components/TranslatableInput';
+
+const getBilingualConsumableTypeLabel = (item, currentLang) => {
+    const labelAr = item.consumable_type_label_ar;
+    const labelEn = item.consumable_type_label_en;
+    if (currentLang === 'ar') {
+        return labelAr || labelEn || item.consumable_type_label;
+    }
+    return labelEn || labelAr || item.consumable_type_label;
+};
 
 const ConsumablesTypesPage = () => {
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const isSuperuser = user?.roles?.some((role) => role.role_code === 'superuser');
@@ -42,6 +55,7 @@ const ConsumablesTypesPage = () => {
         consumable_type_label: '',
         consumable_type_code: '',
     });
+    const [formTranslations, setFormTranslations] = useState({});
 
     const [showAddTypeAttributeForm, setShowAddTypeAttributeForm] = useState(false);
     const [typeAttributeForm, setTypeAttributeForm] = useState({
@@ -63,7 +77,7 @@ const ConsumablesTypesPage = () => {
             const data = await consumableTypeService.getAll();
             setConsumableTypes(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch consumable types: ' + err.message);
+            setError(t('consumablesTypes.fetchError') + ': ' + err.message);
             setConsumableTypes([]);
         } finally {
             setLoading(false);
@@ -77,7 +91,7 @@ const ConsumablesTypesPage = () => {
             const data = await consumableTypeAttributeService.getByConsumableType(consumableTypeId);
             setTypeAttributes(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch type attributes: ' + err.message);
+            setError(t('consumablesTypes.fetchAttributesError') + ': ' + err.message);
             setTypeAttributes([]);
         } finally {
             setAttributesLoading(false);
@@ -95,11 +109,11 @@ const ConsumablesTypesPage = () => {
     const handleAddTypeAttributeSubmit = async (e) => {
         e.preventDefault();
         if (!selectedConsumableType) {
-            setError('Please select a consumable type first');
+            setError(t('consumablesTypes.selectTypeFirst'));
             return;
         }
         if (!typeAttributeForm.consumable_attribute_definition) {
-            setError('Please select an attribute definition');
+            setError(t('consumablesTypes.selectAttributeDefinition'));
             return;
         }
 
@@ -117,7 +131,7 @@ const ConsumablesTypesPage = () => {
             setShowAddTypeAttributeForm(false);
             await fetchTypeAttributes(selectedConsumableType.consumable_type_id);
         } catch (err) {
-            setError('Failed to add type attribute: ' + err.message);
+            setError(t('consumablesTypes.addAttributeError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -125,12 +139,12 @@ const ConsumablesTypesPage = () => {
 
     const handleDeleteTypeAttribute = async (definitionId) => {
         if (!selectedConsumableType) return;
-        if (!window.confirm('Remove this attribute from the consumable type?')) return;
+        if (!window.confirm(t('consumablesTypes.confirmRemoveAttribute'))) return;
         try {
             await consumableTypeAttributeService.delete(selectedConsumableType.consumable_type_id, definitionId);
             await fetchTypeAttributes(selectedConsumableType.consumable_type_id);
         } catch (err) {
-            setError('Failed to remove type attribute: ' + err.message);
+            setError(t('consumablesTypes.removeAttributeError') + ': ' + err.message);
         }
     };
 
@@ -139,14 +153,17 @@ const ConsumablesTypesPage = () => {
             const data = await consumableAttributeDefinitionService.getAll();
             setAttributeDefinitions(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch attribute definitions: ' + err.message);
+            setError(t('consumablesTypes.fetchDefinitionsError') + ': ' + err.message);
             setAttributeDefinitions([]);
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
+    const handleInputChange = (name, value) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleFormTranslationChange = (langCode, value) => {
+        setFormTranslations((prev) => ({ ...prev, [langCode]: { consumable_type_label: value } }));
     };
 
     const handleTypeSubmit = async (e) => {
@@ -154,24 +171,36 @@ const ConsumablesTypesPage = () => {
         setSaving(true);
         setError(null);
         try {
-            await consumableTypeService.create(formData);
+            const payload = { ...formData };
+            const translations = { ...formTranslations };
+            if (formData.consumable_type_label) {
+                translations['en'] = {
+                    ...(translations['en'] || {}),
+                    consumable_type_label: formData.consumable_type_label,
+                };
+            }
+            if (Object.keys(translations).length > 0) {
+                payload.translations = translations;
+            }
+            await consumableTypeService.create(payload);
             setFormData({ consumable_type_label: '', consumable_type_code: '' });
+            setFormTranslations({});
             setShowTypeForm(false);
             await fetchTypes();
         } catch (err) {
-            setError('Failed to create consumable type: ' + (err.response?.data?.error || err.message));
+            setError(t('consumablesTypes.createError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
     };
 
     const handleDeleteType = async (id) => {
-        if (window.confirm('Are you sure you want to delete this consumable type?')) {
+        if (window.confirm(t('consumablesTypes.confirmDelete'))) {
             try {
                 await consumableTypeService.delete(id);
                 await fetchTypes();
             } catch (err) {
-                setError('Failed to delete consumable type: ' + err.message);
+                setError(t('consumablesTypes.deleteError') + ': ' + err.message);
             }
         }
     };
@@ -191,8 +220,12 @@ const ConsumablesTypesPage = () => {
         navigate('/dashboard/consumables/attribute-definitions');
     };
 
+    const goToBrands = () => {
+        navigate('/dashboard/consumables/brands');
+    };
+
     const filteredTypes = consumableTypes.filter(type => 
-        type.consumable_type_label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getBilingualConsumableTypeLabel(type, i18n.language)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         type.consumable_type_code?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -205,9 +238,9 @@ const ConsumablesTypesPage = () => {
         <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div>
-                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>Consumable Types</h1>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>{t('consumablesTypes.title')}</h1>
                     <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
-                        Define and manage categories for your consumables and their specific attributes.
+                        {t('consumablesTypes.subtitle')}
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -219,7 +252,16 @@ const ConsumablesTypesPage = () => {
                         style={{ padding: 'var(--space-3) var(--space-4)' }}
                     >
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        <span>Refresh</span>
+                        <span>{t('common.refresh')}</span>
+                    </button>
+                    <button 
+                        type="button" 
+                        className="btn btn-secondary" 
+                        onClick={goToBrands}
+                        style={{ padding: 'var(--space-3) var(--space-4)' }}
+                    >
+                        <TagIcon size={18} />
+                        <span>{t('consumablesTypes.brands', 'Brands')}</span>
                     </button>
                     <button 
                         type="button" 
@@ -228,7 +270,7 @@ const ConsumablesTypesPage = () => {
                         style={{ padding: 'var(--space-3) var(--space-4)' }}
                     >
                         <Settings2 size={18} />
-                        <span>Definitions</span>
+                        <span>{t('consumablesTypes.definitions')}</span>
                     </button>
                     <button 
                         type="button" 
@@ -237,7 +279,7 @@ const ConsumablesTypesPage = () => {
                         style={{ padding: 'var(--space-3) var(--space-6)' }}
                     >
                         <Plus size={18} />
-                        <span>New Type</span>
+                        <span>{t('consumablesTypes.newType')}</span>
                     </button>
                 </div>
             </div>
@@ -267,7 +309,7 @@ const ConsumablesTypesPage = () => {
                         />
                         <input 
                             type="text" 
-                            placeholder="Search types by name or code..." 
+                            placeholder={t('consumablesTypes.searchPlaceholder')} 
                             className="form-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -278,16 +320,16 @@ const ConsumablesTypesPage = () => {
                     {loading ? (
                         <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
                             <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                            <span style={{ fontSize: 'var(--font-size-lg)' }}>Loading types...</span>
+                            <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('consumablesTypes.loading')}</span>
                         </div>
                     ) : filteredTypes.length === 0 ? (
                         <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
                             <div className="empty-state-icon">
                                 <Layers size={64} />
                             </div>
-                            <h3 className="empty-state-title">No consumable types found</h3>
+                            <h3 className="empty-state-title">{t('consumablesTypes.noTypes')}</h3>
                             <p className="empty-state-text">
-                                {searchTerm ? `No results for "${searchTerm}"` : "Start by creating your first consumable category."}
+                                {searchTerm ? t('consumablesTypes.noResults', { searchTerm }) : t('consumablesTypes.createFirst')}
                             </p>
                         </div>
                     ) : (
@@ -358,7 +400,7 @@ const ConsumablesTypesPage = () => {
                                         </div>
                                         
                                         <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
-                                            {type.consumable_type_label}
+                                            {getBilingualConsumableTypeLabel(type, i18n.language)}
                                         </h3>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)' }}>
                                             <Hash size={14} />
@@ -372,7 +414,7 @@ const ConsumablesTypesPage = () => {
                                             onClick={(e) => { e.stopPropagation(); showTypeAttributes(type); setShowAttributesModal(true); }}
                                         >
                                             <Settings size={16} />
-                                            <span>Manage Attributes</span>
+                                            <span>{t('consumablesTypes.manageAttributes')}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -403,7 +445,7 @@ const ConsumablesTypesPage = () => {
                                     <Settings2 size={24} />
                                 </div>
                                 <div>
-                                    <h2 className="modal-title" style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>{selectedConsumableType.consumable_type_label}</h2>
+                                    <h2 className="modal-title" style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>{getBilingualConsumableTypeLabel(selectedConsumableType, i18n.language)}</h2>
                                     <p style={{ margin: 'var(--space-1) 0 0', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
                                         {typeAttributes.length} attributes defined
                                     </p>
@@ -628,25 +670,23 @@ const ConsumablesTypesPage = () => {
                         </div>
                         <div className="modal-body">
                             <form onSubmit={handleTypeSubmit} className="form">
-                                <div className="form-group">
-                                    <label className="form-label">Type Name</label>
-                                    <input
-                                        type="text"
-                                        name="consumable_type_label"
-                                        value={formData.consumable_type_label}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g. Printer Paper"
-                                        required
-                                        className="form-input"
-                                    />
-                                </div>
+                                <TranslatableInput
+                                    label="Type Name"
+                                    baseFieldName="consumable_type_label"
+                                    value={formData.consumable_type_label}
+                                    onChange={handleInputChange}
+                                    translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.consumable_type_label]))}
+                                    onTranslationChange={handleFormTranslationChange}
+                                    placeholder="e.g. Printer Paper"
+                                    required
+                                />
                                 <div className="form-group">
                                     <label className="form-label">Type Code</label>
                                     <input
                                         type="text"
                                         name="consumable_type_code"
                                         value={formData.consumable_type_code}
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleInputChange('consumable_type_code', e.target.value)}
                                         placeholder="e.g. PPR"
                                         required
                                         className="form-input"

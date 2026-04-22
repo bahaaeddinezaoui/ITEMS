@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { assetModelService, authService, consumableModelService, stockItemModelService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const AssetModelCompatibilityPage = () => {
     const navigate = useNavigate();
     const { modelId } = useParams();
     const [searchParams] = useSearchParams();
+    const { t } = useTranslation();
     const typeId = searchParams.get('typeId');
 
     const [assetModel, setAssetModel] = useState(null);
@@ -71,7 +73,7 @@ const AssetModelCompatibilityPage = () => {
             setDefaultStockItems(Array.isArray(defStock) ? defStock : []);
             setDefaultConsumables(Array.isArray(defCons) ? defCons : []);
         } catch (err) {
-            setError('Failed to fetch compatibility: ' + err.message);
+            setError(t('assetModelCompatibility.fetchError') + ': ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -106,7 +108,7 @@ const AssetModelCompatibilityPage = () => {
             setShowAddStockForm(false);
             await fetchAll();
         } catch (err) {
-            setError('Failed to add compatible stock item model: ' + err.message);
+            setError(t('assetModelCompatibility.addStockError') + ': ' + err.message);
         }
     };
 
@@ -116,7 +118,7 @@ const AssetModelCompatibilityPage = () => {
             await assetModelService.removeCompatibleStockItemModel(modelId, stockItemModelId);
             await fetchAll();
         } catch (err) {
-            setError('Failed to remove compatible stock item model: ' + err.message);
+            setError(t('assetModelCompatibility.removeStockError') + ': ' + err.message);
         }
     };
 
@@ -129,7 +131,7 @@ const AssetModelCompatibilityPage = () => {
             setShowAddConsumableForm(false);
             await fetchAll();
         } catch (err) {
-            setError('Failed to add compatible consumable model: ' + err.message);
+            setError(t('assetModelCompatibility.addConsumableError') + ': ' + err.message);
         }
     };
 
@@ -139,7 +141,7 @@ const AssetModelCompatibilityPage = () => {
             await assetModelService.removeCompatibleConsumableModel(modelId, consumableModelId);
             await fetchAll();
         } catch (err) {
-            setError('Failed to remove compatible consumable model: ' + err.message);
+            setError(t('assetModelCompatibility.removeConsumableError') + ': ' + err.message);
         }
     };
 
@@ -170,7 +172,7 @@ const AssetModelCompatibilityPage = () => {
             setShowAddDefaultStockForm(false);
             await fetchAll();
         } catch (err) {
-            setError('Failed to add default stock item: ' + err.message);
+            setError(t('assetModelCompatibility.addDefaultStockError') + ': ' + err.message);
         }
     };
 
@@ -180,7 +182,7 @@ const AssetModelCompatibilityPage = () => {
             await assetModelService.removeDefaultStockItem(id);
             await fetchAll();
         } catch (err) {
-            setError('Failed to remove default stock item: ' + err.message);
+            setError(t('assetModelCompatibility.removeDefaultStockError') + ': ' + err.message);
         }
     };
 
@@ -194,7 +196,7 @@ const AssetModelCompatibilityPage = () => {
             setShowAddDefaultConsumableForm(false);
             await fetchAll();
         } catch (err) {
-            setError('Failed to add default consumable: ' + err.message);
+            setError(t('assetModelCompatibility.addDefaultConsumableError') + ': ' + err.message);
         }
     };
 
@@ -204,7 +206,7 @@ const AssetModelCompatibilityPage = () => {
             await assetModelService.removeDefaultConsumable(id);
             await fetchAll();
         } catch (err) {
-            setError('Failed to remove default consumable: ' + err.message);
+            setError(t('assetModelCompatibility.removeDefaultConsumableError') + ': ' + err.message);
         }
     };
 
@@ -216,8 +218,8 @@ const AssetModelCompatibilityPage = () => {
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">Assets</h1>
-                <p className="page-subtitle">Compatibility {assetModel?.model_name ? `• ${assetModel.model_name}` : ''}</p>
+                <h1 className="page-title">{t('assets.title')}</h1>
+                <p className="page-subtitle">{t('assetModelCompatibility.compatibility')} {assetModel?.model_name ? `• ${assetModel.model_name}` : ''}</p>
             </div>
 
             {error && (
@@ -244,8 +246,8 @@ const AssetModelCompatibilityPage = () => {
                         borderRadius: 'var(--radius-sm)',
                         cursor: 'pointer'
                     }}
-                    title="Back"
-                    aria-label="Back"
+                    title={t('common.back')}
+                    aria-label={t('common.back')}
                 >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 18l-6-6 6-6" />
@@ -270,13 +272,13 @@ const AssetModelCompatibilityPage = () => {
                         alignItems: 'center',
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Compatible Stock Item Models</h2>
+                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assetModelCompatibility.compatibleStockItemModels')}</h2>
                         {isSuperuser && !showAddStockForm && (
                             <button
                                 onClick={() => setShowAddStockForm(true)}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                             >
-                                Add compatible model
+                                {t('assetModelCompatibility.addCompatibleModel')}
                             </button>
                         )}
                     </div>
@@ -289,7 +291,7 @@ const AssetModelCompatibilityPage = () => {
                                     onChange={(e) => setSelectedStockItemModelId(e.target.value)}
                                     style={{ flex: 1, padding: 'var(--space-2)' }}
                                 >
-                                    <option value="">Select stock item model...</option>
+                                    <option value="">{t('assetModelCompatibility.selectStockItemModel')}</option>
                                     {availableStockItemModels.map((m) => (
                                         <option key={m.stock_item_model_id} value={m.stock_item_model_id}>
                                             {m.model_name || `Model ${m.stock_item_model_id}`}
@@ -301,7 +303,7 @@ const AssetModelCompatibilityPage = () => {
                                     disabled={!selectedStockItemModelId || loading}
                                     style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                                 >
-                                    Add
+                                    {t('common.add')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -310,7 +312,7 @@ const AssetModelCompatibilityPage = () => {
                                     }}
                                     style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                                 >
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                             </div>
                         </div>
@@ -333,7 +335,7 @@ const AssetModelCompatibilityPage = () => {
 
                         {compatibleStockItemModels.length === 0 && !loading && (
                             <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                                No compatible stock item models.
+                                {t('assetModelCompatibility.noCompatibleStockItemModels')}
                             </div>
                         )}
                     </div>
@@ -348,13 +350,13 @@ const AssetModelCompatibilityPage = () => {
                         alignItems: 'center',
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Compatible Consumable Models</h2>
+                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assetModelCompatibility.compatibleConsumableModels')}</h2>
                         {isSuperuser && !showAddConsumableForm && (
                             <button
                                 onClick={() => setShowAddConsumableForm(true)}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                             >
-                                Add compatible model
+                                {t('assetModelCompatibility.addCompatibleModel')}
                             </button>
                         )}
                     </div>
@@ -367,7 +369,7 @@ const AssetModelCompatibilityPage = () => {
                                     onChange={(e) => setSelectedConsumableModelId(e.target.value)}
                                     style={{ flex: 1, padding: 'var(--space-2)' }}
                                 >
-                                    <option value="">Select consumable model...</option>
+                                    <option value="">{t('assetModelCompatibility.selectConsumableModel')}</option>
                                     {availableConsumableModels.map((m) => (
                                         <option key={m.consumable_model_id} value={m.consumable_model_id}>
                                             {m.model_name || `Model ${m.consumable_model_id}`}
@@ -379,7 +381,7 @@ const AssetModelCompatibilityPage = () => {
                                     disabled={!selectedConsumableModelId || loading}
                                     style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                                 >
-                                    Add
+                                    {t('common.add')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -388,7 +390,7 @@ const AssetModelCompatibilityPage = () => {
                                     }}
                                     style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                                 >
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                             </div>
                         </div>
@@ -411,7 +413,7 @@ const AssetModelCompatibilityPage = () => {
 
                         {compatibleConsumableModels.length === 0 && !loading && (
                             <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                                No compatible consumable models.
+                                {t('assetModelCompatibility.noCompatibleConsumableModels')}
                             </div>
                         )}
                     </div>
@@ -421,10 +423,10 @@ const AssetModelCompatibilityPage = () => {
             {/* Default Composition Section */}
             <div ref={defaultCompositionRef} />
             <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginTop: 'var(--space-6)', marginBottom: 'var(--space-4)' }}>
-                Default Composition (Included with new assets)
+                {t('assetModelCompatibility.defaultComposition')}
             </h2>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)', fontSize: 'var(--font-size-sm)' }}>
-                These items will be automatically created and linked to new assets of this model when added via an attribution order.
+                {t('assetModelCompatibility.defaultCompositionDesc')}
             </p>
 
             <div style={{
@@ -444,59 +446,59 @@ const AssetModelCompatibilityPage = () => {
                         alignItems: 'center',
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Default Stock Items</h2>
+                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assetModelCompatibility.defaultStockItems')}</h2>
                         {isSuperuser && !showAddDefaultStockForm && (
                             <button
                                 onClick={() => setShowAddDefaultStockForm(true)}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                             >
-                                Add default item
+                                {t('assetModelCompatibility.addDefaultItem')}
                             </button>
                         )}
                     </div>
 
                     {isSuperuser && showAddDefaultStockForm && (
                         <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-                                <select
-                                    value={selectedDefaultStockModelId}
-                                    onChange={(e) => setSelectedDefaultStockModelId(e.target.value)}
-                                    style={{ flex: 1, padding: 'var(--space-2)' }}
-                                >
-                                    <option value="">Select stock item model...</option>
-                                    {availableDefaultStockModels.map((m) => (
-                                        <option key={m.stock_item_model_id} value={m.stock_item_model_id}>
-                                            {m.model_name || `Model ${m.stock_item_model_id}`}
-                                        </option>
-                                    ))}
-                                </select>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={defaultStockQuantity}
-                                    onChange={(e) => setDefaultStockQuantity(Number(e.target.value))}
-                                    style={{ width: '60px', padding: 'var(--space-2)' }}
-                                    placeholder="Qty"
-                                />
-                                <button
-                                    onClick={addDefaultStockItem}
-                                    disabled={!selectedDefaultStockModelId || loading}
-                                    style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    Add
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowAddDefaultStockForm(false);
-                                        setSelectedDefaultStockModelId('');
-                                        setDefaultStockQuantity(1);
-                                    }}
-                                    style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    Cancel
-                                </button>
-                            </div>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                            <select
+                                value={selectedDefaultStockModelId}
+                                onChange={(e) => setSelectedDefaultStockModelId(e.target.value)}
+                                style={{ flex: 1, padding: 'var(--space-2)' }}
+                            >
+                                <option value="">{t('assetModelCompatibility.selectStockItemModel')}</option>
+                                {availableDefaultStockModels.map((m) => (
+                                    <option key={m.stock_item_model_id} value={m.stock_item_model_id}>
+                                        {m.model_name || `Model ${m.stock_item_model_id}`}
+                                    </option>
+                                ))}
+                            </select>
+                            <input
+                                type="number"
+                                min="1"
+                                value={defaultStockQuantity}
+                                onChange={(e) => setDefaultStockQuantity(Number(e.target.value))}
+                                style={{ width: '60px', padding: 'var(--space-2)' }}
+                                placeholder={t('assetModelCompatibility.qty')}
+                            />
+                            <button
+                                onClick={addDefaultStockItem}
+                                disabled={!selectedDefaultStockModelId || loading}
+                                style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                            >
+                                {t('common.add')}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowAddDefaultStockForm(false);
+                                    setSelectedDefaultStockModelId('');
+                                    setDefaultStockQuantity(1);
+                                }}
+                                style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                            >
+                                {t('common.cancel')}
+                            </button>
                         </div>
+                    </div>
                     )}
 
                     <div style={{ overflowY: 'auto', flex: 1 }}>
@@ -504,7 +506,7 @@ const AssetModelCompatibilityPage = () => {
                             <div key={item.id} style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                     <span style={{ fontWeight: '500' }}>{item.stock_item_model_name}</span>
-                                    <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>Qty: {item.quantity}</span>
+                                    <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>{t('assetModelCompatibility.qty')}: {item.quantity}</span>
                                 </div>
                                 {isSuperuser && (
                                     <button onClick={() => removeDefaultStockItem(item.id)} style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}>
@@ -516,7 +518,7 @@ const AssetModelCompatibilityPage = () => {
 
                         {defaultStockItems.length === 0 && !loading && (
                             <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                                No default stock items defined.
+                                {t('assetModelCompatibility.noDefaultStockItems')}
                             </div>
                         )}
                     </div>
@@ -532,13 +534,13 @@ const AssetModelCompatibilityPage = () => {
                         alignItems: 'center',
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Default Consumables</h2>
+                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assetModelCompatibility.defaultConsumables')}</h2>
                         {isSuperuser && !showAddDefaultConsumableForm && (
                             <button
                                 onClick={() => setShowAddDefaultConsumableForm(true)}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                             >
-                                Add default item
+                                {t('assetModelCompatibility.addDefaultItem')}
                             </button>
                         )}
                     </div>
@@ -551,7 +553,7 @@ const AssetModelCompatibilityPage = () => {
                                     onChange={(e) => setSelectedDefaultConsumableModelId(e.target.value)}
                                     style={{ flex: 1, padding: 'var(--space-2)' }}
                                 >
-                                    <option value="">Select consumable model...</option>
+                                    <option value="">{t('assetModelCompatibility.selectConsumableModel')}</option>
                                     {availableDefaultConsumableModels.map((m) => (
                                         <option key={m.consumable_model_id} value={m.consumable_model_id}>
                                             {m.model_name || `Model ${m.consumable_model_id}`}
@@ -564,14 +566,14 @@ const AssetModelCompatibilityPage = () => {
                                     value={defaultConsumableQuantity}
                                     onChange={(e) => setDefaultConsumableQuantity(Number(e.target.value))}
                                     style={{ width: '60px', padding: 'var(--space-2)' }}
-                                    placeholder="Qty"
+                                    placeholder={t('assetModelCompatibility.qty')}
                                 />
                                 <button
                                     onClick={addDefaultConsumable}
                                     disabled={!selectedDefaultConsumableModelId || loading}
                                     style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                                 >
-                                    Add
+                                    {t('common.add')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -581,7 +583,7 @@ const AssetModelCompatibilityPage = () => {
                                     }}
                                     style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
                                 >
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                             </div>
                         </div>
@@ -592,7 +594,7 @@ const AssetModelCompatibilityPage = () => {
                             <div key={item.id} style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                     <span style={{ fontWeight: '500' }}>{item.consumable_model_name}</span>
-                                    <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>Qty: {item.quantity}</span>
+                                    <span style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>{t('assetModelCompatibility.qty')}: {item.quantity}</span>
                                 </div>
                                 {isSuperuser && (
                                     <button onClick={() => removeDefaultConsumable(item.id)} style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}>
@@ -604,7 +606,7 @@ const AssetModelCompatibilityPage = () => {
 
                         {defaultConsumables.length === 0 && !loading && (
                             <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-                                No default consumables defined.
+                                {t('assetModelCompatibility.noDefaultConsumables')}
                             </div>
                         )}
                     </div>

@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { purchaseOrderService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const PurchaseOrderReceivePage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
     const { orderId } = useParams();
+    const { t } = useTranslation();
 
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -49,7 +51,7 @@ const PurchaseOrderReceivePage = () => {
             );
         } catch (e) {
             setOrder(null);
-            setError(e?.response?.data?.error || 'Failed to load purchase order');
+            setError(e?.response?.data?.error || t('purchaseOrderReceive.loadError'));
         } finally {
             setLoading(false);
         }
@@ -79,7 +81,7 @@ const PurchaseOrderReceivePage = () => {
 
             if (willHaveRemaining) {
                 const ok = window.confirm(
-                    'Some items are still not fully received. A backorder report will be created. Do you want to continue?'
+                    t('purchaseOrderReceive.confirmPartial')
                 );
                 if (!ok) {
                     setSubmitting(false);
@@ -102,14 +104,14 @@ const PurchaseOrderReceivePage = () => {
             const createdBr = res?.backorder_report_id;
 
             if (createdBr) {
-                setSuccess(`Received quantities saved. Backorder report #${createdBr} created.`);
+                setSuccess(t('purchaseOrderReceive.savedWithBackorder', { id: createdBr }));
             } else {
-                setSuccess('Received quantities saved.');
+                setSuccess(t('purchaseOrderReceive.saved'));
             }
 
             navigate(`/dashboard/purchase-orders/${orderId}/backorder-reports`);
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to submit received quantities');
+            setError(e?.response?.data?.error || t('purchaseOrderReceive.submitError'));
         } finally {
             setSubmitting(false);
         }
@@ -119,15 +121,15 @@ const PurchaseOrderReceivePage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">Receive items</h1>
-                    <p className="page-subtitle">Enter quantities received for each line.</p>
+                    <h1 className="page-title">{t('purchaseOrderReceive.title')}</h1>
+                    <p className="page-subtitle">{t('purchaseOrderReceive.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${orderId}`)} disabled={submitting}>
-                        Back
+                        {t('common.back')}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={load} disabled={loading || submitting}>
-                        Refresh
+                        {t('common.refresh')}
                     </button>
                 </div>
             </div>
@@ -144,14 +146,14 @@ const PurchaseOrderReceivePage = () => {
             )}
 
             {loading ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
             ) : !order ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>Not found.</div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.notFound')}</div>
             ) : (
                 <>
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Order #{order.purchase_order_id}</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderDetails.order')} #{order.purchase_order_id}</h2>
                         </div>
                         <div className="card-body" style={{ color: 'var(--color-text-secondary)' }}>
                             {order.purchase_order_code || ''}
@@ -160,21 +162,21 @@ const PurchaseOrderReceivePage = () => {
 
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Stock item models</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderReceive.stockItemModels')}</h2>
                         </div>
                         <div className="card-body">
                             {(receiveStock || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>None</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
                             ) : (
                                 <div style={{ overflowX: 'auto' }}>
                                     <table className="table" style={{ width: '100%' }}>
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
-                                                <th>Model</th>
-                                                <th>Ordered</th>
-                                                <th>Already received</th>
-                                                <th>Newly received</th>
+                                                <th>{t('common.id')}</th>
+                                                <th>{t('purchaseOrderDetails.model')}</th>
+                                                <th>{t('purchaseOrderDetails.ordered')}</th>
+                                                <th>{t('purchaseOrderReceive.alreadyReceived')}</th>
+                                                <th>{t('purchaseOrderReceive.newlyReceived')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -207,21 +209,21 @@ const PurchaseOrderReceivePage = () => {
 
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Consumable models</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderReceive.consumableModels')}</h2>
                         </div>
                         <div className="card-body">
                             {(receiveConsumable || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>None</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
                             ) : (
                                 <div style={{ overflowX: 'auto' }}>
                                     <table className="table" style={{ width: '100%' }}>
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
-                                                <th>Model</th>
-                                                <th>Ordered</th>
-                                                <th>Already received</th>
-                                                <th>Newly received</th>
+                                                <th>{t('common.id')}</th>
+                                                <th>{t('purchaseOrderDetails.model')}</th>
+                                                <th>{t('purchaseOrderDetails.ordered')}</th>
+                                                <th>{t('purchaseOrderReceive.alreadyReceived')}</th>
+                                                <th>{t('purchaseOrderReceive.newlyReceived')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -253,9 +255,9 @@ const PurchaseOrderReceivePage = () => {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ color: 'var(--color-text-secondary)' }}>{allLinesCount} lines</div>
+                        <div style={{ color: 'var(--color-text-secondary)' }}>{allLinesCount} {t('purchaseOrderReceive.lines')}</div>
                         <button type="button" className="btn btn-primary" onClick={submit} disabled={submitting}>
-                            {submitting ? 'Submitting...' : 'Submit'}
+                            {submitting ? t('purchaseOrderReceive.submitting') : t('purchaseOrderReceive.submit')}
                         </button>
                     </div>
                 </>

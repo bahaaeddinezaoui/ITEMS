@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { purchaseOrderService, locationService, stockItemService, consumableService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const PurchaseOrderMoveItemsPage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
     const { orderId } = useParams();
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const { t } = useTranslation();
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -72,7 +74,7 @@ const PurchaseOrderMoveItemsPage = () => {
             setStockItems(uniqStock);
             setConsumables(uniqCons);
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to load purchase order data');
+            setError(e?.response?.data?.error || t('poMoveItems.loadError'));
         } finally {
             setLoading(false);
         }
@@ -165,7 +167,7 @@ const PurchaseOrderMoveItemsPage = () => {
                         anySuccess = true;
                     }
                 } catch (e) {
-                    const msg = e?.response?.data?.error || 'Failed';
+                    const msg = e?.response?.data?.error || t('common.failed');
                     setBulkErrors((prev) => [...prev, `${it.kind} #${it.id}: ${msg}`]);
                 } finally {
                     setBulkProgress({ done: i + 1, total: items.length });
@@ -173,7 +175,7 @@ const PurchaseOrderMoveItemsPage = () => {
             }
 
             if (anySuccess) {
-                setSuccess('Bulk move finished');
+                setSuccess(t('poMoveItems.bulkMoveFinished'));
             }
         } finally {
             setBulkSubmitting(false);
@@ -212,9 +214,9 @@ const PurchaseOrderMoveItemsPage = () => {
                 await consumableService.move(id, { destination_location_id });
             }
 
-            setSuccess(`${kind} #${id} moved`);
+            setSuccess(t('poMoveItems.itemMoved', { kind, id }));
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to move item');
+            setError(e?.response?.data?.error || t('poMoveItems.moveError'));
         } finally {
             setSubmittingKey(null);
         }
@@ -230,10 +232,10 @@ const PurchaseOrderMoveItemsPage = () => {
                 <div className="card">
                     <div className="card-body">
                         <div className="alert alert-error">
-                            All signatories must sign the acceptance report before moving items.
+                            {t('poMoveItems.signatoriesRequired')}
                         </div>
                         <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                            Back to Purchase Orders
+                            {t('poMoveItems.backToPurchaseOrders')}
                         </button>
                     </div>
                 </div>
@@ -245,15 +247,15 @@ const PurchaseOrderMoveItemsPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">Move Items (Purchase Order)</h1>
-                    <p className="page-subtitle">Purchase order #{orderId}{order?.purchase_order_code ? ` | ${order.purchase_order_code}` : ''}</p>
+                    <h1 className="page-title">{t('poMoveItems.title')}</h1>
+                    <p className="page-subtitle">{t('purchaseOrderDetails.order')} #{orderId}{order?.purchase_order_code ? ` | ${order.purchase_order_code}` : ''}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                     <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        Back
+                        {t('common.back')}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={loadAll}>
-                        Refresh
+                        {t('common.refresh')}
                     </button>
                 </div>
             </div>
@@ -262,12 +264,12 @@ const PurchaseOrderMoveItemsPage = () => {
             {success && <div className="alert alert-success">{success}</div>}
 
             {loading ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
             ) : (
                 <>
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Bulk Move</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.bulkMove')}</h2>
                         </div>
                         <div className="card-body">
                             <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -277,7 +279,7 @@ const PurchaseOrderMoveItemsPage = () => {
                                     onChange={(e) => setBulkDestinationId(e.target.value)}
                                     style={{ minWidth: 280 }}
                                 >
-                                    <option value="">Select destination location</option>
+                                    <option value="">{t('poMoveItems.selectDestination')}</option>
                                     {allLocationOptions.map((l) => (
                                         <option key={l.id} value={l.id}>
                                             {l.name || `#${l.id}`}
@@ -290,14 +292,14 @@ const PurchaseOrderMoveItemsPage = () => {
                                     disabled={!isFullySigned || bulkSubmitting || !bulkDestinationId || bulkItems.length === 0}
                                     onClick={handleBulkMove}
                                 >
-                                    {bulkSubmitting ? `Moving... (${bulkProgress.done}/${bulkProgress.total})` : 'Move All Items'}
+                                    {bulkSubmitting ? t('poMoveItems.movingProgress', { done: bulkProgress.done, total: bulkProgress.total }) : t('poMoveItems.moveAllItems')}
                                 </button>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>Total items: {bulkItems.length}</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('poMoveItems.totalItems')}: {bulkItems.length}</div>
                             </div>
 
                             {bulkErrors.length > 0 && (
                                 <div className="alert alert-error" style={{ marginTop: 'var(--space-4)' }}>
-                                    <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Some items failed to move</div>
+                                    <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('poMoveItems.someItemsFailed')}</div>
                                     <div style={{ maxHeight: 220, overflowY: 'auto' }}>
                                         {bulkErrors.map((m, idx) => (
                                             <div key={idx}>{m}</div>
@@ -310,22 +312,22 @@ const PurchaseOrderMoveItemsPage = () => {
 
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Stock Items</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.stockItems')}</h2>
                         </div>
                         <div className="card-body">
                             {(stockItems || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>No stock items added.</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('poMoveItems.noStockItemsAdded')}</div>
                             ) : (
                                 <div style={{ overflowX: 'auto' }}>
                                     <table className="table" style={{ width: '100%' }}>
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Status</th>
-                                                <th>Current location</th>
-                                                <th>Destination</th>
-                                                <th style={{ textAlign: 'right' }}>Action</th>
+                                                <th>{t('common.id')}</th>
+                                                <th>{t('poMoveItems.name')}</th>
+                                                <th>{t('common.status')}</th>
+                                                <th>{t('poMoveItems.currentLocation')}</th>
+                                                <th>{t('poMoveItems.destination')}</th>
+                                                <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -343,7 +345,7 @@ const PurchaseOrderMoveItemsPage = () => {
                                                                 value={destinationsByKey[key] || ''}
                                                                 onChange={(e) => setDestination(key, e.target.value)}
                                                             >
-                                                                <option value="">Select location</option>
+                                                                <option value="">{t('poMoveItems.selectLocation')}</option>
                                                                 {allLocationOptions.map((l) => (
                                                                     <option key={l.id} value={l.id}>
                                                                         {l.name || `#${l.id}`}
@@ -358,7 +360,7 @@ const PurchaseOrderMoveItemsPage = () => {
                                                                 disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
                                                                 onClick={() => doMove({ kind: 'stock_item', id: s.stock_item_id })}
                                                             >
-                                                                {submittingKey === key ? 'Moving...' : 'Move'}
+                                                                {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -373,22 +375,22 @@ const PurchaseOrderMoveItemsPage = () => {
 
                     <div className="card">
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Consumables</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.consumables')}</h2>
                         </div>
                         <div className="card-body">
                             {(consumables || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>No consumables added.</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('poMoveItems.noConsumablesAdded')}</div>
                             ) : (
                                 <div style={{ overflowX: 'auto' }}>
                                     <table className="table" style={{ width: '100%' }}>
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
-                                                <th>Name</th>
-                                                <th>Status</th>
-                                                <th>Current location</th>
-                                                <th>Destination</th>
-                                                <th style={{ textAlign: 'right' }}>Action</th>
+                                                <th>{t('common.id')}</th>
+                                                <th>{t('poMoveItems.name')}</th>
+                                                <th>{t('common.status')}</th>
+                                                <th>{t('poMoveItems.currentLocation')}</th>
+                                                <th>{t('poMoveItems.destination')}</th>
+                                                <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -406,7 +408,7 @@ const PurchaseOrderMoveItemsPage = () => {
                                                                 value={destinationsByKey[key] || ''}
                                                                 onChange={(e) => setDestination(key, e.target.value)}
                                                             >
-                                                                <option value="">Select location</option>
+                                                                <option value="">{t('poMoveItems.selectLocation')}</option>
                                                                 {allLocationOptions.map((l) => (
                                                                     <option key={l.id} value={l.id}>
                                                                         {l.name || `#${l.id}`}
@@ -421,7 +423,7 @@ const PurchaseOrderMoveItemsPage = () => {
                                                                 disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
                                                                 onClick={() => doMove({ kind: 'consumable', id: c.consumable_id })}
                                                             >
-                                                                {submittingKey === key ? 'Moving...' : 'Move'}
+                                                                {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
                                                             </button>
                                                         </td>
                                                     </tr>

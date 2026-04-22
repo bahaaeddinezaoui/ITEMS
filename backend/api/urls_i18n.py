@@ -26,6 +26,28 @@ from api.views_i18n import (
     WarehouseTranslationViewSet,
     LocationTranslationViewSet,
     OrganizationalStructureTranslationViewSet,
+    # Operational Text
+    AssetMovementTranslationViewSet,
+    ConsumableMovementTranslationViewSet,
+    StockItemMovementTranslationViewSet,
+    PersonReportsProblemOnAssetTranslationViewSet,
+    PersonReportsProblemOnConsumableTranslationViewSet,
+    PersonReportsProblemOnStockItemTranslationViewSet,
+    MaintenanceTranslationViewSet,
+    AssetConditionHistoryTranslationViewSet,
+    ConsumableConditionHistoryTranslationViewSet,
+    StockItemConditionHistoryTranslationViewSet,
+    # Other Human-Facing Text
+    AssetTranslationViewSet,
+    ConsumableTranslationViewSet,
+    StockItemTranslationViewSet,
+    AssetModelTranslationViewSet,
+    ConsumableModelTranslationViewSet,
+    StockItemModelTranslationViewSet,
+    AdministrativeCertificateTranslationViewSet,
+    CompanyAssetRequestTranslationViewSet,
+    ExternalMaintenanceDocumentTranslationViewSet,
+    MaintenanceStepItemRequestTranslationViewSet,
     # Metadata
     I18NMetadataView,
     I18NSearchView,
@@ -55,6 +77,30 @@ router.register(r'translations/suppliers', SupplierTranslationViewSet, basename=
 router.register(r'translations/warehouses', WarehouseTranslationViewSet, basename='warehouse-translation')
 router.register(r'translations/locations', LocationTranslationViewSet, basename='location-translation')
 router.register(r'translations/org-structures', OrganizationalStructureTranslationViewSet, basename='orgstructure-translation')
+
+# Operational Text routes
+router.register(r'translations/asset-movements', AssetMovementTranslationViewSet, basename='assetmovement-translation')
+router.register(r'translations/consumable-movements', ConsumableMovementTranslationViewSet, basename='consumablemovement-translation')
+router.register(r'translations/stock-item-movements', StockItemMovementTranslationViewSet, basename='stockitemmovement-translation')
+router.register(r'translations/problem-reports-assets', PersonReportsProblemOnAssetTranslationViewSet, basename='problemreportasset-translation')
+router.register(r'translations/problem-reports-consumables', PersonReportsProblemOnConsumableTranslationViewSet, basename='problemreportconsumable-translation')
+router.register(r'translations/problem-reports-stock-items', PersonReportsProblemOnStockItemTranslationViewSet, basename='problemreportstockitem-translation')
+router.register(r'translations/maintenances', MaintenanceTranslationViewSet, basename='maintenance-translation')
+router.register(r'translations/asset-condition-histories', AssetConditionHistoryTranslationViewSet, basename='assetconditionhistory-translation')
+router.register(r'translations/consumable-condition-histories', ConsumableConditionHistoryTranslationViewSet, basename='consumableconditionhistory-translation')
+router.register(r'translations/stock-item-condition-histories', StockItemConditionHistoryTranslationViewSet, basename='stockitemconditionhistory-translation')
+
+# Other Human-Facing Text routes
+router.register(r'translations/assets', AssetTranslationViewSet, basename='asset-translation')
+router.register(r'translations/consumables', ConsumableTranslationViewSet, basename='consumable-translation')
+router.register(r'translations/stock-items', StockItemTranslationViewSet, basename='stockitem-translation')
+router.register(r'translations/asset-models', AssetModelTranslationViewSet, basename='assetmodel-translation')
+router.register(r'translations/consumable-models', ConsumableModelTranslationViewSet, basename='consumablemodel-translation')
+router.register(r'translations/stock-item-models', StockItemModelTranslationViewSet, basename='stockitemmodel-translation')
+router.register(r'translations/administrative-certificates', AdministrativeCertificateTranslationViewSet, basename='administrativecertificate-translation')
+router.register(r'translations/company-asset-requests', CompanyAssetRequestTranslationViewSet, basename='companyassetrequest-translation')
+router.register(r'translations/ext-maintenance-documents', ExternalMaintenanceDocumentTranslationViewSet, basename='extmaintenancedocument-translation')
+router.register(r'translations/maintenance-step-item-requests', MaintenanceStepItemRequestTranslationViewSet, basename='maintenancestepitemrequest-translation')
 
 # URL patterns
 urlpatterns = [

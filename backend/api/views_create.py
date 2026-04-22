@@ -11,9 +11,9 @@ def create(self, request, *args, **kwargs):
         return Response({'error': 'Maintenance is ended'}, status=status.HTTP_400_BAD_REQUEST)
     if maintenance and getattr(maintenance, 'start_datetime', None) is None:
         try:
-            pending_asset_move = AssetMovement.objects.filter(status='pending', movement_reason=f'maintenance_create_{maintenance.maintenance_id}').exists()
-            pending_stock_moves = StockItemMovement.objects.filter(status='pending', movement_reason=f'problem_report_include_{maintenance.maintenance_id}').exists()
-            pending_consumable_moves = ConsumableMovement.objects.filter(status='pending', movement_reason=f'problem_report_include_{maintenance.maintenance_id}').exists()
+            pending_asset_move = AssetMovement.objects.filter(status='pending', movement_reason='maintenance_create', maintenance_id=maintenance.maintenance_id).exists()
+            pending_stock_moves = StockItemMovement.objects.filter(status='pending', movement_reason='problem_report_include', maintenance_id=maintenance.maintenance_id).exists()
+            pending_consumable_moves = ConsumableMovement.objects.filter(status='pending', movement_reason='problem_report_include', maintenance_id=maintenance.maintenance_id).exists()
             if pending_asset_move or pending_stock_moves or pending_consumable_moves:
                 pending_parts = []
                 if pending_asset_move:

@@ -5,6 +5,7 @@ import {
     stockItemModelService,
     consumableModelService,
 } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const DRAFT_ASSETS_KEY = 'attribution_order_create_draft_assets';
 const DRAFT_INCLUDED_ITEMS_KEY = 'attribution_order_create_draft_included_items';
@@ -12,6 +13,7 @@ const DRAFT_INCLUDED_ITEMS_KEY = 'attribution_order_create_draft_included_items'
 const AttributionOrderAssetIncludedItemsPage = () => {
     const navigate = useNavigate();
     const { rowId, itemKind } = useParams();
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const context = searchParams.get('context');
 
@@ -50,7 +52,7 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                 setAllStockItemModels(Array.isArray(sModels) ? sModels : (sModels?.results || []));
                 setAllConsumableModels(Array.isArray(cModels) ? cModels : (cModels?.results || []));
             } catch (err) {
-                setError('Failed to fetch models');
+                setError(t('includedItems.fetchModelsError'));
             } finally {
                 setLoading(false);
             }
@@ -113,7 +115,7 @@ const AttributionOrderAssetIncludedItemsPage = () => {
 
                 saveDraft(stockInst, consInst);
             } catch (err) {
-                setError('Failed to load default composition');
+                setError(t('includedItems.loadDefaultsError'));
             } finally {
                 setLoading(false);
             }
@@ -258,9 +260,9 @@ const AttributionOrderAssetIncludedItemsPage = () => {
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">Attribution Orders</h1>
+                <h1 className="page-title">{t('includedItems.title')}</h1>
                 <p className="page-subtitle">
-                    Configure included items {assetRow?.asset_name ? `• ${assetRow.asset_name}` : ''}
+                    {t('includedItems.configureItems')} {assetRow?.asset_name ? `• ${assetRow.asset_name}` : ''}
                 </p>
             </div>
 
@@ -289,15 +291,15 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                             borderRadius: 'var(--radius-sm)',
                             cursor: 'pointer'
                         }}
-                        title="Back"
-                        aria-label="Back"
+                        title={t('common.back')}
+                        aria-label={t('common.back')}
                     >
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M15 18l-6-6 6-6" />
                         </svg>
                     </button>
                     <div style={{ color: 'var(--color-text-secondary)' }}>
-                        Stock items: {totalStockItems} • Consumables: {totalConsumables}
+                        {t('includedItems.stockItems')}: {totalStockItems} • {t('includedItems.consumables')}: {totalConsumables}
                     </div>
                 </div>
             </div>
@@ -314,11 +316,11 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                 {(view === 'all' || view === 'stock') && (
                     <div className="card" style={{ padding: 'var(--space-4)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
                         <div className="card-header" style={{ marginBottom: 'var(--space-3)' }}>
-                            <h2 className="card-title">Default Stock Items</h2>
+                            <h2 className="card-title">{t('includedItems.defaultStockItems')}</h2>
                         </div>
                         {stockItemRows.length === 0 ? (
                             <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
-                                No default stock items for this asset model.
+                                {t('includedItems.noDefaultStockItems')}
                             </div>
                         ) : (
                             <div className="table-container">
@@ -326,16 +328,16 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                                     <thead>
                                         <tr>
                                             <th style={{ width: '50px' }}>#</th>
-                                            <th>Type</th>
-                                            <th>Model</th>
-                                            <th>Name</th>
-                                            <th>Inventory #</th>
+                                            <th>{t('includedItems.type')}</th>
+                                            <th>{t('includedItems.model')}</th>
+                                            <th>{t('includedItems.name')}</th>
+                                            <th>{t('includedItems.inventoryNumber')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {stockItemRows.map((row, idx) => {
                                             const model = stockItemModelLookup.get(Number(row.modelId));
-                                            const modelName = model?.model_name || `Model #${row.modelId}`;
+                                            const modelName = model?.model_name || `${t('includedItems.model')} #${row.modelId}`;
                                             const modelCode = model?.model_code || '';
                                             const typeName = model?.stock_item_type_label || '-';
                                             return (
@@ -356,7 +358,7 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                                                             value={row.instance.stock_item_name || ''}
                                                             onChange={(e) => updateStockItemInstance(row.modelId, row.instanceIdx, 'stock_item_name', e.target.value)}
                                                             style={{ width: '100%', padding: '6px' }}
-                                                            placeholder="Enter name..."
+                                                            placeholder={t('includedItems.enterName')}
                                                         />
                                                     </td>
                                                     <td>
@@ -365,7 +367,7 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                                                             value={row.instance.stock_item_inventory_number || ''}
                                                             onChange={(e) => updateStockItemInstance(row.modelId, row.instanceIdx, 'stock_item_inventory_number', e.target.value)}
                                                             style={{ width: '100%', padding: '6px' }}
-                                                            placeholder="Enter inventory #..."
+                                                            placeholder={t('includedItems.enterInventoryNumber')}
                                                         />
                                                     </td>
                                                 </tr>
@@ -381,11 +383,11 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                 {(view === 'all' || view === 'consumables') && (
                     <div className="card" style={{ padding: 'var(--space-4)', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
                         <div className="card-header" style={{ marginBottom: 'var(--space-3)' }}>
-                            <h2 className="card-title">Default Consumables</h2>
+                            <h2 className="card-title">{t('includedItems.defaultConsumables')}</h2>
                         </div>
                         {consumableRows.length === 0 ? (
                             <div style={{ padding: 'var(--space-4)', color: 'var(--color-text-secondary)' }}>
-                                No default consumables for this asset model.
+                                {t('includedItems.noDefaultConsumables')}
                             </div>
                         ) : (
                             <div className="table-container">
@@ -393,17 +395,17 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                                     <thead>
                                         <tr>
                                             <th style={{ width: '50px' }}>#</th>
-                                            <th>Type</th>
-                                            <th>Model</th>
-                                            <th>Name</th>
-                                            <th>Serial #</th>
-                                            <th>Inventory #</th>
+                                            <th>{t('includedItems.type')}</th>
+                                            <th>{t('includedItems.model')}</th>
+                                            <th>{t('includedItems.name')}</th>
+                                            <th>{t('includedItems.serialNumber')}</th>
+                                            <th>{t('includedItems.inventoryNumber')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {consumableRows.map((row, idx) => {
                                             const model = consumableModelLookup.get(Number(row.modelId));
-                                            const modelName = model?.model_name || `Model #${row.modelId}`;
+                                            const modelName = model?.model_name || `${t('includedItems.model')} #${row.modelId}`;
                                             const modelCode = model?.model_code || '';
                                             const typeName = model?.consumable_type_label || '-';
                                             return (
@@ -424,7 +426,7 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                                                             value={row.instance.consumable_name || ''}
                                                             onChange={(e) => updateConsumableInstance(row.modelId, row.instanceIdx, 'consumable_name', e.target.value)}
                                                             style={{ width: '100%', padding: '6px' }}
-                                                            placeholder="Enter name..."
+                                                            placeholder={t('includedItems.enterName')}
                                                         />
                                                     </td>
                                                     <td>
@@ -433,7 +435,7 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                                                             value={row.instance.consumable_serial_number || ''}
                                                             onChange={(e) => updateConsumableInstance(row.modelId, row.instanceIdx, 'consumable_serial_number', e.target.value)}
                                                             style={{ width: '100%', padding: '6px' }}
-                                                            placeholder="Enter serial #..."
+                                                            placeholder={t('includedItems.enterSerialNumber')}
                                                         />
                                                     </td>
                                                     <td>
@@ -442,7 +444,7 @@ const AttributionOrderAssetIncludedItemsPage = () => {
                                                             value={row.instance.consumable_inventory_number || ''}
                                                             onChange={(e) => updateConsumableInstance(row.modelId, row.instanceIdx, 'consumable_inventory_number', e.target.value)}
                                                             style={{ width: '100%', padding: '6px' }}
-                                                            placeholder="Enter inventory #..."
+                                                            placeholder={t('includedItems.enterInventoryNumber')}
                                                         />
                                                     </td>
                                                 </tr>

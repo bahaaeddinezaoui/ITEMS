@@ -186,7 +186,7 @@ const LoginPage = () => {
                                     type="button"
                                     className="password-toggle-btn"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                                 >
                                     {showPassword ? (
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -254,7 +254,7 @@ const LoginPage = () => {
                                 key={index}
                                 className={`indicator ${index === currentIndex ? 'active' : ''}`}
                                 onClick={() => setCurrentIndex(index)}
-                                aria-label={`Go to feature ${index + 1}`}
+                                aria-label={t('landing.goToFeature', { index: index + 1 })}
                             />
                         ))}
                     </div>

@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { stockItemModelService, stockItemService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const StockItemInstanceCreatePage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const { t } = useTranslation();
 
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const modelIdParam = searchParams.get('modelId');
     const qtyParam = searchParams.get('qty');
@@ -39,14 +41,14 @@ const StockItemInstanceCreatePage = () => {
             try {
                 if (!modelIdParam) {
                     setModel(null);
-                    setError('modelId is required');
+                    setError(t('stockItemInstanceCreate.modelIdRequired'));
                     return;
                 }
                 const m = await stockItemModelService.getById(modelIdParam);
                 setModel(m || null);
             } catch (e) {
                 setModel(null);
-                setError(e?.response?.data?.error || 'Failed to load stock item model');
+                setError(e?.response?.data?.error || t('stockItemInstanceCreate.loadModelError'));
             } finally {
                 setLoading(false);
             }
@@ -90,7 +92,7 @@ const StockItemInstanceCreatePage = () => {
 
         try {
             if (!modelIdParam) {
-                setError('modelId is required');
+                setError(t('stockItemInstanceCreate.modelIdRequired'));
                 return;
             }
 
@@ -112,7 +114,7 @@ const StockItemInstanceCreatePage = () => {
                 createdCount += 1;
             }
 
-            setSuccess(createdCount === 1 ? '1 stock item created' : `${createdCount} stock items created`);
+            setSuccess(createdCount === 1 ? t('stockItemInstanceCreate.oneCreated') : t('stockItemInstanceCreate.countCreated', { count: createdCount }));
             setLines((prev) => prev.map(() => ({
                 stock_item_name: '',
                 stock_item_inventory_number: '',
@@ -127,7 +129,7 @@ const StockItemInstanceCreatePage = () => {
                 }, 1500);
             }
         } catch (e2) {
-            setError(e2?.response?.data?.error || 'Failed to create stock item');
+            setError(e2?.response?.data?.error || t('stockItemInstanceCreate.createError'));
         } finally {
             setSubmitting(false);
         }
@@ -137,12 +139,12 @@ const StockItemInstanceCreatePage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">New Stock Item</h1>
-                    <p className="page-subtitle">Enter the core information for a stock item instance.</p>
+                    <h1 className="page-title">{t('stockItemInstanceCreate.title')}</h1>
+                    <p className="page-subtitle">{t('stockItemInstanceCreate.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders/create')}>
-                        Back
+                        {t('common.back')}
                     </button>
                 </div>
             </div>
@@ -160,16 +162,16 @@ const StockItemInstanceCreatePage = () => {
 
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>Model</h2>
+                    <h2 className="card-title" style={{ margin: 0 }}>{t('stockItemInstanceCreate.model')}</h2>
                 </div>
                 <div className="card-body" style={{ color: 'var(--color-text-secondary)' }}>
-                    {loading ? 'Loading...' : model ? `${model.model_name || ''} (#${model.stock_item_model_id})` : 'Not found.'}
+                    {loading ? t('common.loading') : model ? `${model.model_name || ''} (#${model.stock_item_model_id})` : t('stockItemInstanceCreate.notFound')}
                 </div>
             </div>
 
             <div className="card" style={{ marginTop: 'var(--space-4)' }}>
                 <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>Core information</h2>
+                    <h2 className="card-title" style={{ margin: 0 }}>{t('stockItemInstanceCreate.coreInformation')}</h2>
                 </div>
                 <div className="card-body">
                     <form onSubmit={submit}>
@@ -186,7 +188,7 @@ const StockItemInstanceCreatePage = () => {
                                         }}
                                     >
                                         <div className="form-group">
-                                            <label className="form-label">Name (Item #{idx + 1})</label>
+                                            <label className="form-label">{t('stockItemInstanceCreate.nameItem', { index: idx + 1 })}</label>
                                             <input
                                                 className="form-input"
                                                 value={l.stock_item_name}
@@ -196,28 +198,28 @@ const StockItemInstanceCreatePage = () => {
                                         </div>
 
                                         <div className="form-group">
-                                            <label className="form-label">Status</label>
+                                            <label className="form-label">{t('common.status')}</label>
                                             <select
                                                 className="form-input"
                                                 value={l.stock_item_status}
                                                 onChange={(e) => updateLine(idx, { stock_item_status: e.target.value })}
                                                 disabled={submitting}
                                             >
-                                                <option value="not_delivered_to_company">Not Delivered to Company</option>
-                                                <option value="in_stock">In Stock</option>
-                                                <option value="in_use">In Use</option>
-                                                <option value="reserved">Reserved</option>
-                                                <option value="expired">Expired</option>
-                                                <option value="failed">Failed</option>
-                                                <option value="lost">Lost</option>
-                                                <option value="stolen">Stolen</option>
-                                                <option value="irrecoverably_damaged">Irrecoverably Damaged</option>
-                                                <option value="destroyed">Destroyed</option>
+                                                <option value="not_delivered_to_company">{t('stockItemInstanceCreate.notDeliveredToCompany')}</option>
+                                                <option value="in_stock">{t('stockItemInstanceCreate.inStock')}</option>
+                                                <option value="in_use">{t('stockItemInstanceCreate.inUse')}</option>
+                                                <option value="reserved">{t('stockItemInstanceCreate.reserved')}</option>
+                                                <option value="expired">{t('stockItemInstanceCreate.expired')}</option>
+                                                <option value="failed">{t('stockItemInstanceCreate.failed')}</option>
+                                                <option value="lost">{t('stockItemInstanceCreate.lost')}</option>
+                                                <option value="stolen">{t('stockItemInstanceCreate.stolen')}</option>
+                                                <option value="irrecoverably_damaged">{t('stockItemInstanceCreate.irrecoverablyDamaged')}</option>
+                                                <option value="destroyed">{t('stockItemInstanceCreate.destroyed')}</option>
                                             </select>
                                         </div>
 
                                         <div className="form-group">
-                                            <label className="form-label">Inventory number</label>
+                                            <label className="form-label">{t('stockItemInstanceCreate.inventoryNumber')}</label>
                                             <input
                                                 className="form-input"
                                                 value={l.stock_item_inventory_number}
@@ -227,7 +229,7 @@ const StockItemInstanceCreatePage = () => {
                                         </div>
 
                                         <div className="form-group">
-                                            <label className="form-label">Warranty (months)</label>
+                                            <label className="form-label">{t('stockItemInstanceCreate.warrantyMonths')}</label>
                                             <input
                                                 className="form-input"
                                                 type="number"
@@ -239,7 +241,7 @@ const StockItemInstanceCreatePage = () => {
                                         </div>
 
                                         <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                            <label className="form-label">Name in administrative certificate</label>
+                                            <label className="form-label">{t('stockItemInstanceCreate.nameInAdminCert')}</label>
                                             <input
                                                 className="form-input"
                                                 value={l.stock_item_name_in_administrative_certificate}
@@ -254,7 +256,7 @@ const StockItemInstanceCreatePage = () => {
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
                             <button type="submit" className="btn btn-primary" disabled={submitting || loading || !modelIdParam || lines.length === 0}>
-                                {submitting ? 'Saving...' : (lines.length === 1 ? 'Create stock item' : `Create ${lines.length} stock items`)}
+                                {submitting ? t('common.saving') : (lines.length === 1 ? t('stockItemInstanceCreate.createStockItem') : t('stockItemInstanceCreate.createCountStockItems', { count: lines.length }))}
                             </button>
                         </div>
                     </form>

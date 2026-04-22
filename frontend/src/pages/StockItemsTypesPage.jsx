@@ -20,11 +20,24 @@ import {
     Image
 } from 'lucide-react';
 import { stockItemAttributeDefinitionService, stockItemTypeAttributeService, stockItemTypeService } from '../services/api';
+import { Tag as TagIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import TranslatableInput from '../components/TranslatableInput';
+
+const getBilingualStockItemTypeLabel = (item, currentLang) => {
+    const labelAr = item.stock_item_type_label_ar;
+    const labelEn = item.stock_item_type_label_en;
+    if (currentLang === 'ar') {
+        return labelAr || labelEn || item.stock_item_type_label;
+    }
+    return labelEn || labelAr || item.stock_item_type_label;
+};
 
 const StockItemsTypesPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
     const isSuperuser = user?.roles?.some((role) => role.role_code === 'superuser');
 
     const [stockItemTypes, setStockItemTypes] = useState([]);
@@ -42,6 +55,7 @@ const StockItemsTypesPage = () => {
         stock_item_type_label: '',
         stock_item_type_code: '',
     });
+    const [formTranslations, setFormTranslations] = useState({});
 
     const [attributeDefinitionForm, setAttributeDefinitionForm] = useState({
         description: '',
@@ -69,7 +83,7 @@ const StockItemsTypesPage = () => {
             const data = await stockItemTypeService.getAll();
             setStockItemTypes(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch stock item types: ' + err.message);
+            setError(t('stockItemTypes.fetchError') + ': ' + err.message);
             setStockItemTypes([]);
         } finally {
             setLoading(false);
@@ -83,7 +97,7 @@ const StockItemsTypesPage = () => {
             const data = await stockItemTypeAttributeService.getByStockItemType(stockItemTypeId);
             setTypeAttributes(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch type attributes: ' + err.message);
+            setError(t('stockItemTypes.fetchAttributesError') + ': ' + err.message);
             setTypeAttributes([]);
         } finally {
             setAttributesLoading(false);
@@ -101,11 +115,11 @@ const StockItemsTypesPage = () => {
     const handleAddTypeAttributeSubmit = async (e) => {
         e.preventDefault();
         if (!selectedStockItemType) {
-            setError('Please select a stock item type first');
+            setError(t('stockItemTypes.selectTypeFirst'));
             return;
         }
         if (!typeAttributeForm.stock_item_attribute_definition) {
-            setError('Please select an attribute definition');
+            setError(t('stockItemTypes.selectDefinition'));
             return;
         }
 
@@ -123,7 +137,7 @@ const StockItemsTypesPage = () => {
             setShowAddTypeAttributeForm(false);
             await fetchTypeAttributes(selectedStockItemType.stock_item_type_id);
         } catch (err) {
-            setError('Failed to add type attribute: ' + err.message);
+            setError(t('stockItemTypes.addAttributeError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -131,12 +145,12 @@ const StockItemsTypesPage = () => {
 
     const handleDeleteTypeAttribute = async (definitionId) => {
         if (!selectedStockItemType) return;
-        if (!window.confirm('Remove this attribute from the stock item type?')) return;
+        if (!window.confirm(t('stockItemTypes.confirmRemoveAttribute'))) return;
         try {
             await stockItemTypeAttributeService.delete(selectedStockItemType.stock_item_type_id, definitionId);
             await fetchTypeAttributes(selectedStockItemType.stock_item_type_id);
         } catch (err) {
-            setError('Failed to remove type attribute: ' + err.message);
+            setError(t('stockItemTypes.removeAttributeError') + ': ' + err.message);
         }
     };
 
@@ -145,14 +159,17 @@ const StockItemsTypesPage = () => {
             const data = await stockItemAttributeDefinitionService.getAll();
             setAttributeDefinitions(Array.isArray(data) ? data : []);
         } catch (err) {
-            setError('Failed to fetch stock item attribute definitions: ' + err.message);
+            setError(t('stockItemTypes.fetchDefinitionsError') + ': ' + err.message);
             setAttributeDefinitions([]);
         }
     };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
+    const handleInputChange = (name, value) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleFormTranslationChange = (langCode, value) => {
+        setFormTranslations((prev) => ({ ...prev, [langCode]: { stock_item_type_label: value } }));
     };
 
     const handleAttributeDefinitionInputChange = (e) => {
@@ -165,24 +182,36 @@ const StockItemsTypesPage = () => {
         setSaving(true);
         setError(null);
         try {
-            await stockItemTypeService.create(formData);
+            const payload = { ...formData };
+            const translations = { ...formTranslations };
+            if (formData.stock_item_type_label) {
+                translations['en'] = {
+                    ...(translations['en'] || {}),
+                    stock_item_type_label: formData.stock_item_type_label,
+                };
+            }
+            if (Object.keys(translations).length > 0) {
+                payload.translations = translations;
+            }
+            await stockItemTypeService.create(payload);
             setFormData({ stock_item_type_label: '', stock_item_type_code: '' });
+            setFormTranslations({});
             setShowTypeForm(false);
             await fetchTypes();
         } catch (err) {
-            setError('Failed to create stock item type: ' + (err.response?.data?.error || err.message));
+            setError(t('stockItemTypes.createError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
     };
 
     const handleDeleteType = async (id) => {
-        if (window.confirm('Are you sure you want to delete this stock item type?')) {
+        if (window.confirm(t('stockItemTypes.confirmDelete'))) {
             try {
                 await stockItemTypeService.delete(id);
                 await fetchTypes();
             } catch (err) {
-                setError('Failed to delete stock item type: ' + err.message);
+                setError(t('stockItemTypes.deleteError') + ': ' + err.message);
             }
         }
     };
@@ -202,19 +231,19 @@ const StockItemsTypesPage = () => {
             setShowAttributeDefinitionForm(false);
             await fetchAttributeDefinitions();
         } catch (err) {
-            setError('Failed to create stock item attribute definition: ' + err.message);
+            setError(t('stockItemTypes.createDefinitionError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
     };
 
     const handleDeleteAttributeDefinition = async (id) => {
-        if (window.confirm('Delete this attribute definition?')) {
+        if (window.confirm(t('stockItemTypes.confirmDeleteDefinition'))) {
             try {
                 await stockItemAttributeDefinitionService.delete(id);
                 await fetchAttributeDefinitions();
             } catch (err) {
-                setError('Failed to delete stock item attribute definition: ' + err.message);
+                setError(t('stockItemTypes.deleteDefinitionError') + ': ' + err.message);
             }
         }
     };
@@ -239,10 +268,14 @@ const StockItemsTypesPage = () => {
         navigate('/dashboard/stock-items/attribute-definitions');
     };
 
+    const goToBrands = () => {
+        navigate('/dashboard/stock-items/brands');
+    };
+
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredTypes = stockItemTypes.filter(type => 
-        type.stock_item_type_label?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getBilingualStockItemTypeLabel(type, i18n.language)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         type.stock_item_type_code?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -250,9 +283,9 @@ const StockItemsTypesPage = () => {
         <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div>
-                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>Stock Item Types</h1>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>{t('stockItemTypes.title')}</h1>
                     <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
-                        Define and manage categories for your inventory items and their specific attributes.
+                        {t('stockItemTypes.subtitle')}
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -264,7 +297,16 @@ const StockItemsTypesPage = () => {
                         style={{ padding: 'var(--space-3) var(--space-4)' }}
                     >
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        <span>Refresh</span>
+                        <span>{t('common.refresh')}</span>
+                    </button>
+                    <button 
+                        type="button" 
+                        className="btn btn-secondary" 
+                        onClick={goToBrands}
+                        style={{ padding: 'var(--space-3) var(--space-4)' }}
+                    >
+                        <TagIcon size={18} />
+                        <span>{t('stockItemTypes.brands', 'Brands')}</span>
                     </button>
                     <button 
                         type="button" 
@@ -273,7 +315,7 @@ const StockItemsTypesPage = () => {
                         style={{ padding: 'var(--space-3) var(--space-4)' }}
                     >
                         <Settings2 size={18} />
-                        <span>Definitions</span>
+                        <span>{t('stockItemTypes.definitions')}</span>
                     </button>
                     <button 
                         type="button" 
@@ -282,7 +324,7 @@ const StockItemsTypesPage = () => {
                         style={{ padding: 'var(--space-3) var(--space-6)' }}
                     >
                         <Plus size={18} />
-                        <span>New Type</span>
+                        <span>{t('stockItemTypes.newType')}</span>
                     </button>
                 </div>
             </div>
@@ -313,7 +355,7 @@ const StockItemsTypesPage = () => {
                         />
                         <input 
                             type="text" 
-                            placeholder="Search types by name or code..." 
+                            placeholder={t('stockItemTypes.searchPlaceholder')} 
                             className="form-input"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -324,16 +366,16 @@ const StockItemsTypesPage = () => {
                     {loading ? (
                         <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
                             <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                            <span style={{ fontSize: 'var(--font-size-lg)' }}>Loading types...</span>
+                            <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('stockItemTypes.loadingTypes')}</span>
                         </div>
                     ) : filteredTypes.length === 0 ? (
                         <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
                             <div className="empty-state-icon">
                                 <Layers size={64} />
                             </div>
-                            <h3 className="empty-state-title">No item types found</h3>
+                            <h3 className="empty-state-title">{t('stockItemTypes.noTypesFound')}</h3>
                             <p className="empty-state-text">
-                                {searchTerm ? `No results for "${searchTerm}"` : "Start by creating your first stock item category."}
+                                {searchTerm ? t('stockItemTypes.noResultsFor', { term: searchTerm }) : t('stockItemTypes.startByCreating')}
                             </p>
                         </div>
                     ) : (
@@ -364,7 +406,7 @@ const StockItemsTypesPage = () => {
                                         }}>
                                             <div style={{ textAlign: 'center' }}>
                                                 <Image size={32} style={{ marginBottom: 'var(--space-2)', opacity: 0.5 }} />
-                                                <span style={{ fontSize: 'var(--font-size-xs)', display: 'block' }}>Type Photo</span>
+                                                <span style={{ fontSize: 'var(--font-size-xs)', display: 'block' }}>{t('stockItemTypes.typePhoto')}</span>
                                             </div>
                                         </div>
 
@@ -386,7 +428,7 @@ const StockItemsTypesPage = () => {
                                                     className="btn btn-secondary" 
                                                     style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px' }}
                                                     onClick={(e) => { e.stopPropagation(); goToModels(type); }}
-                                                    title="View Models"
+                                                    title={t('stockItemTypes.viewModels')}
                                                 >
                                                     <LayoutGrid size={16} />
                                                 </button>
@@ -395,7 +437,7 @@ const StockItemsTypesPage = () => {
                                                         className="btn btn-secondary" 
                                                         style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px', color: 'var(--color-error)' }}
                                                         onClick={(e) => { e.stopPropagation(); handleDeleteType(type.stock_item_type_id); }}
-                                                        title="Delete Type"
+                                                        title={t('stockItemTypes.deleteType')}
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>
@@ -404,7 +446,7 @@ const StockItemsTypesPage = () => {
                                         </div>
                                         
                                         <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
-                                            {type.stock_item_type_label}
+                                            {getBilingualStockItemTypeLabel(type, i18n.language)}
                                         </h3>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-4)' }}>
                                             <Hash size={14} />
@@ -418,7 +460,7 @@ const StockItemsTypesPage = () => {
                                             onClick={(e) => { e.stopPropagation(); showTypeAttributes(type); setShowAttributesModal(true); }}
                                         >
                                             <Settings size={16} />
-                                            <span>Manage Attributes</span>
+                                            <span>{t('stockItemTypes.manageAttributes')}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -449,9 +491,9 @@ const StockItemsTypesPage = () => {
                                     <Settings2 size={24} />
                                 </div>
                                 <div>
-                                    <h2 className="modal-title" style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>{selectedStockItemType.stock_item_type_label}</h2>
+                                    <h2 className="modal-title" style={{ margin: 0, fontSize: 'var(--font-size-xl)' }}>{getBilingualStockItemTypeLabel(selectedStockItemType, i18n.language)}</h2>
                                     <p style={{ margin: 'var(--space-1) 0 0', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                                        {typeAttributes.length} attributes defined
+                                        {t('stockItemTypes.attributesDefined', { count: typeAttributes.length })}
                                     </p>
                                 </div>
                             </div>
@@ -477,7 +519,7 @@ const StockItemsTypesPage = () => {
                                 }}
                             >
                                 <Plus size={18} />
-                                <span>{showAddTypeAttributeForm ? 'Cancel' : 'Add New Attribute'}</span>
+                                <span>{showAddTypeAttributeForm ? t('common.cancel') : t('stockItemTypes.addNewAttribute')}</span>
                             </button>
 
                             {/* Add Attribute Form */}
@@ -490,10 +532,10 @@ const StockItemsTypesPage = () => {
                                     borderRadius: 'var(--radius-lg)',
                                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                                 }}>
-                                    <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-md)', color: 'var(--color-accent-primary)' }}>New Attribute</h4>
+                                    <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-md)', color: 'var(--color-accent-primary)' }}>{t('stockItemTypes.newAttribute')}</h4>
                                     <form onSubmit={handleAddTypeAttributeSubmit} className="form">
                                         <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-                                            <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>Attribute Definition</label>
+                                            <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>{t('stockItemTypes.attributeDefinition')}</label>
                                             <select
                                                 name="stock_item_attribute_definition"
                                                 value={typeAttributeForm.stock_item_attribute_definition}
@@ -501,7 +543,7 @@ const StockItemsTypesPage = () => {
                                                 className="form-input"
                                                 style={{ height: '44px' }}
                                             >
-                                                <option value="">Select a definition...</option>
+                                                <option value="">{t('stockItemTypes.selectDefinition')}</option>
                                                 {availableAttributeDefinitions.map((def) => (
                                                     <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
                                                         {def.description}
@@ -512,11 +554,11 @@ const StockItemsTypesPage = () => {
 
                                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
                                             <div className="form-group">
-                                                <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>Default Value</label>
+                                                <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>{t('stockItemTypes.defaultValue')}</label>
                                                 <input
                                                     type="text"
                                                     name="default_value"
-                                                    placeholder="Enter default value (optional)"
+                                                    placeholder={t('stockItemTypes.defaultValuePlaceholder')}
                                                     value={typeAttributeForm.default_value}
                                                     onChange={handleTypeAttributeInputChange}
                                                     className="form-input"
@@ -542,16 +584,16 @@ const StockItemsTypesPage = () => {
                                                         onChange={handleTypeAttributeInputChange}
                                                         style={{ width: '18px', height: '18px' }}
                                                     />
-                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>Mandatory</span>
+                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>{t('stockItemTypes.mandatory')}</span>
                                                 </label>
                                             </div>
                                         </div>
 
                                         <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
                                             <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1, padding: 'var(--space-3)' }}>
-                                                {saving ? 'Saving...' : 'Save Attribute'}
+                                                {saving ? t('common.saving') : t('stockItemTypes.saveAttribute')}
                                             </button>
-                                            <button type="button" onClick={() => setShowAddTypeAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1, padding: 'var(--space-3)' }}>Cancel</button>
+                                            <button type="button" onClick={() => setShowAddTypeAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1, padding: 'var(--space-3)' }}>{t('common.cancel')}</button>
                                         </div>
                                     </form>
                                 </div>
@@ -561,7 +603,7 @@ const StockItemsTypesPage = () => {
                             {attributesLoading ? (
                                 <div className="loading-state" style={{ padding: 'var(--space-8)' }}>
                                     <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                                    <span>Loading attributes...</span>
+                                    <span>{t('stockItemTypes.loadingAttributes')}</span>
                                 </div>
                             ) : typeAttributes.length === 0 ? (
                                 <div style={{ 
@@ -573,8 +615,8 @@ const StockItemsTypesPage = () => {
                                     border: '2px dashed var(--color-border)'
                                 }}>
                                     <Settings2 size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.3 }} />
-                                    <p style={{ fontSize: 'var(--font-size-md)', margin: 0 }}>No attributes defined yet</p>
-                                    <p style={{ fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-2)' }}>Click "Add New Attribute" to get started</p>
+                                    <p style={{ fontSize: 'var(--font-size-md)', margin: 0 }}>{t('stockItemTypes.noAttributesYet')}</p>
+                                    <p style={{ fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-2)' }}>{t('stockItemTypes.clickAddAttribute')}</p>
                                 </div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -614,7 +656,7 @@ const StockItemsTypesPage = () => {
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-1)' }}>
                                                             <span style={{ fontWeight: '600', fontSize: 'var(--font-size-md)' }}>{definition?.description}</span>
                                                             {attr.is_mandatory && (
-                                                                <span style={{ fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: 'var(--color-error)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', textTransform: 'uppercase', fontWeight: '600' }}>Required</span>
+                                                                <span style={{ fontSize: '11px', background: 'rgba(239, 68, 68, 0.15)', color: 'var(--color-error)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', textTransform: 'uppercase', fontWeight: '600' }}>{t('stockItemTypes.required')}</span>
                                                             )}
                                                         </div>
                                                         <div style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)', display: 'flex', gap: 'var(--space-4)', alignItems: 'center' }}>
@@ -626,7 +668,7 @@ const StockItemsTypesPage = () => {
                                                             {attr.default_value && (
                                                                 <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', color: 'var(--color-accent-primary)' }}>
                                                                     <Hash size={12} />
-                                                                    Default: {attr.default_value}
+                                                                    {t('stockItemTypes.defaultLabel')} {attr.default_value}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -648,7 +690,7 @@ const StockItemsTypesPage = () => {
                                                     }}
                                                     onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = 'var(--color-error)'; }}
                                                     onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-bg-secondary)'; e.currentTarget.style.color = 'var(--color-text-muted)'; }}
-                                                    title="Remove attribute"
+                                                    title={t('stockItemTypes.removeAttribute')}
                                                 >
                                                     <X size={18} />
                                                 </button>
@@ -667,42 +709,40 @@ const StockItemsTypesPage = () => {
                 <div className="modal-overlay">
                     <div className="modal" style={{ maxWidth: '500px' }}>
                         <div className="modal-header">
-                            <h2 className="modal-title">New Stock Item Type</h2>
+                            <h2 className="modal-title">{t('stockItemTypes.newStockItemType')}</h2>
                             <button className="modal-close" onClick={() => setShowTypeForm(false)}>
                                 <X size={20} />
                             </button>
                         </div>
                         <div className="modal-body">
                             <form onSubmit={handleTypeSubmit} className="form">
+                                <TranslatableInput
+                                    label={t('stockItemTypes.typeName')}
+                                    baseFieldName="stock_item_type_label"
+                                    value={formData.stock_item_type_label}
+                                    onChange={handleInputChange}
+                                    translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.stock_item_type_label]))}
+                                    onTranslationChange={handleFormTranslationChange}
+                                    placeholder={t('stockItemTypes.typeNamePlaceholder')}
+                                    required
+                                />
                                 <div className="form-group">
-                                    <label className="form-label">Type Name</label>
-                                    <input
-                                        type="text"
-                                        name="stock_item_type_label"
-                                        value={formData.stock_item_type_label}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g. Network Cables"
-                                        required
-                                        className="form-input"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label className="form-label">Type Code</label>
+                                    <label className="form-label">{t('stockItemTypes.typeCode')}</label>
                                     <input
                                         type="text"
                                         name="stock_item_type_code"
                                         value={formData.stock_item_type_code}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g. NET_CBL"
+                                        onChange={(e) => handleInputChange('stock_item_type_code', e.target.value)}
+                                        placeholder={t('stockItemTypes.typeCodePlaceholder')}
                                         required
                                         className="form-input"
                                     />
-                                    <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: 'var(--space-1)' }}>Used for inventory tracking and identification.</p>
+                                    <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: 'var(--space-1)' }}>{t('stockItemTypes.typeCodeHint')}</p>
                                 </div>
                                 <div className="modal-footer" style={{ padding: 'var(--space-4) 0 0', border: 'none' }}>
-                                    <button type="button" onClick={() => setShowTypeForm(false)} className="btn btn-secondary">Cancel</button>
+                                    <button type="button" onClick={() => setShowTypeForm(false)} className="btn btn-secondary">{t('common.cancel')}</button>
                                     <button type="submit" disabled={saving} className="btn btn-primary">
-                                        {saving ? 'Creating...' : 'Create Type'}
+                                        {saving ? t('common.saving') : t('stockItemTypes.createType')}
                                     </button>
                                 </div>
                             </form>

@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { authService, movementApprovalService, userSessionService, authenticationLogService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { Monitor, Smartphone, Globe, XCircle, Clock, Shield, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY = 'incidentReportCompositionStatusStrategy';
 
 const OptionsPage = () => {
     const { user, isSuperuser } = useAuth();
+    const { t } = useTranslation();
+    const navigate = useNavigate();
     const isMaintenanceTech = useMemo(() => {
         return user?.roles?.some(r => ['it_maintenance_technician', 'network_maintenance_technician'].includes(r.role_code)) || false;
     }, [user]);
@@ -91,14 +95,14 @@ const OptionsPage = () => {
 
     const handleTerminate = async (sessionId) => {
         try {
-            if (!window.confirm('Are you sure you want to terminate this session? You will be logged out from that device.')) return;
+            if (!window.confirm(t('options.confirmTerminateSession'))) return;
             await userSessionService.terminate(sessionId);
-            setMessage({ type: 'success', text: 'Session terminated successfully' });
+            setMessage({ type: 'success', text: t('options.sessionTerminated') });
             setTimeout(() => setMessage({ type: '', text: '' }), 3000);
             fetchSessions();
         } catch (error) {
             console.error('Error terminating session:', error);
-            setMessage({ type: 'error', text: 'Failed to terminate session' });
+            setMessage({ type: 'error', text: t('options.terminateError') });
         }
     };
 
@@ -106,7 +110,7 @@ const OptionsPage = () => {
         setDestMode(mode);
         try {
             localStorage.setItem('maintenanceCreateDestinationMode', mode);
-            setMessage({ type: 'success', text: 'Preference saved' });
+            setMessage({ type: 'success', text: t('options.preferenceSaved') });
             setTimeout(() => setMessage({ type: '', text: '' }), 1500);
         } catch {
             // no-op
@@ -117,7 +121,7 @@ const OptionsPage = () => {
         setIncidentCompositionStrategy(strategy);
         try {
             localStorage.setItem(INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY, strategy);
-            setMessage({ type: 'success', text: 'Preference saved' });
+            setMessage({ type: 'success', text: t('options.preferenceSaved') });
             setTimeout(() => setMessage({ type: '', text: '' }), 1500);
         } catch {
         }
@@ -128,23 +132,23 @@ const OptionsPage = () => {
         setMessage({ type: '', text: '' });
 
         if (formData.newPassword !== formData.confirmPassword) {
-            setMessage({ type: 'error', text: 'New passwords do not match' });
+            setMessage({ type: 'error', text: t('options.passwordsDoNotMatch') });
             return;
         }
 
         if (formData.newPassword.length < 8) {
-            setMessage({ type: 'error', text: 'New password must be at least 8 characters long' });
+            setMessage({ type: 'error', text: t('options.passwordTooShort') });
             return;
         }
 
         setLoading(true);
         try {
             await authService.changePassword(formData.oldPassword, formData.newPassword);
-            setMessage({ type: 'success', text: 'Password changed successfully!' });
+            setMessage({ type: 'success', text: t('options.passwordChangedSuccess') });
             setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
             setShowPasswordForm(false);
         } catch (error) {
-            const errorMsg = error.response?.data?.error || error.response?.data?.detail || 'Failed to change password. Please check your old password.';
+            const errorMsg = error.response?.data?.error || error.response?.data?.detail || t('options.passwordChangeError');
             setMessage({ type: 'error', text: errorMsg });
         } finally {
             setLoading(false);
@@ -152,20 +156,20 @@ const OptionsPage = () => {
     };
 
     const sections = [
-        { id: 'general', label: 'General', icon: '⚙️' },
-        { id: 'security', label: 'Security', icon: '🔒' },
-        { id: 'notifications', label: 'Notifications', icon: '🔔' },
-        { id: 'appearance', label: 'Appearance', icon: '🎨' },
-        ...(isSuperuser || isMaintenanceTech || isMaintenanceChief ? [{ id: 'maintenance', label: 'Maintenance', icon: '🧰' }] : []),
-        ...(isSuperuser || isAssetResponsible ? [{ id: 'asset', label: 'Asset', icon: '📦' }] : []),
-        ...(isSuperuser || isItBureauChief ? [{ id: 'incident', label: 'Incident Reports', icon: '📝' }] : []),
+        { id: 'general', label: t('options.general'), icon: '⚙️' },
+        { id: 'security', label: t('options.security'), icon: '🔒' },
+        { id: 'notifications', label: t('options.notifications'), icon: '🔔' },
+        { id: 'appearance', label: t('options.appearance'), icon: '🎨' },
+        ...(isSuperuser || isMaintenanceChief || isItBureauChief ? [{ id: 'maintenance', label: t('options.maintenance'), icon: '🧰' }] : []),
+        ...(isSuperuser || isAssetResponsible ? [{ id: 'asset', label: t('options.asset'), icon: '📦' }] : []),
+        ...(isSuperuser || isItBureauChief ? [{ id: 'incident', label: t('options.incidentReports'), icon: '📝' }] : []),
     ];
 
     return (
         <div className="page-container">
             <header className="page-header">
-                <h1 className="page-title">Settings</h1>
-                <p className="page-subtitle">Manage your account preferences and security.</p>
+                <h1 className="page-title">{t('options.title')}</h1>
+                <p className="page-subtitle">{t('options.subtitle')}</p>
             </header>
 
             <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: 'var(--space-8)', alignItems: 'start' }}>
@@ -205,7 +209,7 @@ const OptionsPage = () => {
                 <div className="card">
                     <div className="card-header">
                         <h2 className="card-title">
-                            {sections.find(s => s.id === activeSection)?.label} Settings
+                            {sections.find(s => s.id === activeSection)?.label} {t('options.settingsSuffix')}
                         </h2>
                     </div>
                     <div className="card-body">
@@ -215,8 +219,8 @@ const OptionsPage = () => {
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
                                             <div>
-                                                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600' }}>Password</h3>
-                                                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>Update your password to keep your account secure.</p>
+                                                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600' }}>{t('options.password')}</h3>
+                                                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>{t('options.passwordDesc')}</p>
                                             </div>
                                             <button 
                                                 className="btn btn-secondary"
@@ -225,7 +229,7 @@ const OptionsPage = () => {
                                                     setMessage({ type: '', text: '' });
                                                 }}
                                             >
-                                                Change Password
+                                                {t('options.changePassword')}
                                             </button>
                                         </div>
                                         {message.text && message.type === 'success' && (
@@ -238,14 +242,14 @@ const OptionsPage = () => {
                                     <div style={{ maxWidth: '600px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
                                             <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600' }}>
-                                                Change Password
+                                                {t('options.changePassword')}
                                             </h3>
                                             <button 
                                                 className="btn btn-secondary" 
                                                 onClick={() => setShowPasswordForm(false)}
                                                 style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
                                             >
-                                                Cancel
+                                                {t('common.cancel')}
                                             </button>
                                         </div>
                                         
@@ -257,7 +261,7 @@ const OptionsPage = () => {
 
                                         <form className="form" onSubmit={handleSubmitPassword}>
                                             <div className="form-group">
-                                                <label className="form-label">Old Password</label>
+                                                <label className="form-label">{t('options.oldPassword')}</label>
                                                 <input
                                                     type="password"
                                                     name="oldPassword"
@@ -269,7 +273,7 @@ const OptionsPage = () => {
                                             </div>
 
                                             <div className="form-group">
-                                                <label className="form-label">New Password</label>
+                                                <label className="form-label">{t('options.newPassword')}</label>
                                                 <input
                                                     type="password"
                                                     name="newPassword"
@@ -282,7 +286,7 @@ const OptionsPage = () => {
                                             </div>
 
                                             <div className="form-group">
-                                                <label className="form-label">Confirm New Password</label>
+                                                <label className="form-label">{t('options.confirmNewPassword')}</label>
                                                 <input
                                                     type="password"
                                                     name="confirmPassword"
@@ -299,7 +303,7 @@ const OptionsPage = () => {
                                                     className="btn btn-primary"
                                                     disabled={loading}
                                                 >
-                                                    {loading ? 'Updating...' : 'Update Password'}
+                                                    {loading ? t('options.updating') : t('options.updatePassword')}
                                                 </button>
                                             </div>
                                         </form>
@@ -313,7 +317,7 @@ const OptionsPage = () => {
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                                 <Monitor size={18} style={{ color: 'var(--color-accent-primary)' }} />
-                                                Active Sessions
+                                                {t('options.activeSessions')}
                                             </h3>
                                             <span style={{ 
                                                 fontSize: 'var(--font-size-xs)', 
@@ -323,7 +327,7 @@ const OptionsPage = () => {
                                                 color: 'var(--color-accent-tertiary)', 
                                                 borderRadius: 'var(--radius-full)' 
                                             }}>
-                                                {sessions.length} Devices
+                                                {sessions.length} {t('options.devices')}
                                             </span>
                                         </div>
 
@@ -334,7 +338,7 @@ const OptionsPage = () => {
                                             overflow: 'hidden'
                                         }}>
                                             {sessionsLoading ? (
-                                                <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>Loading sessions...</div>
+                                                <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{t('options.loadingSessions')}</div>
                                             ) : sessions.map((session, idx) => (
                                                 <div key={session.session_id} style={{ 
                                                     padding: 'var(--space-4)', 
@@ -370,7 +374,7 @@ const OptionsPage = () => {
                                                                         borderRadius: '4px',
                                                                         border: '1px solid rgba(16, 185, 129, 0.2)'
                                                                     }}>
-                                                                        Current
+                                                                        {t('options.current')}
                                                                     </span>
                                                                 )}
                                                             </div>
@@ -411,17 +415,27 @@ const OptionsPage = () => {
                                                 </div>
                                             ))}
                                             {sessions.length === 0 && !sessionsLoading && (
-                                                <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>No other active sessions found.</div>
+                                                <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>{t('options.noOtherSessions')}</div>
                                             )}
                                         </div>
                                     </section>
 
                                     {/* Access History */}
                                     <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                                        <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                            <Globe size={18} style={{ color: 'var(--color-accent-primary)' }} />
-                                            Access History
-                                        </h3>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-4)' }}>
+                                            <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', margin: 0 }}>
+                                                <Globe size={18} style={{ color: 'var(--color-accent-primary)' }} />
+                                                {t('options.accessHistory')}
+                                            </h3>
+                                            <button
+                                                type="button"
+                                                className="btn btn-secondary"
+                                                onClick={() => navigate('/dashboard/options/access-history')}
+                                                style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
+                                            >
+                                                View all
+                                            </button>
+                                        </div>
                                         <div style={{ 
                                             background: 'var(--color-bg-secondary)', 
                                             borderRadius: 'var(--radius-md)', 
@@ -432,8 +446,8 @@ const OptionsPage = () => {
                                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--font-size-sm)' }}>
                                                     <thead style={{ position: 'sticky', top: 0, background: 'var(--color-bg-primary)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontSize: '10px', fontWeight: '800', letterSpacing: '0.05em', borderBottom: '1px solid var(--color-border)' }}>
                                                         <tr>
-                                                            <th style={{ padding: 'var(--space-3) var(--space-5)', textAlign: 'left' }}>Event</th>
-                                                            <th style={{ padding: 'var(--space-3) var(--space-5)', textAlign: 'right' }}>Timestamp</th>
+                                                            <th style={{ padding: 'var(--space-3) var(--space-5)', textAlign: 'left' }}>{t('options.event')}</th>
+                                                            <th style={{ padding: 'var(--space-3) var(--space-5)', textAlign: 'right' }}>{t('options.timestamp')}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -462,7 +476,7 @@ const OptionsPage = () => {
                                                         {logs.length === 0 && (
                                                             <tr>
                                                                 <td colSpan="2" style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>
-                                                                    No activity logs found.
+                                                                    {t('options.noActivityLogs')}
                                                                 </td>
                                                             </tr>
                                                         )}
@@ -478,9 +492,9 @@ const OptionsPage = () => {
                         {activeSection === 'maintenance' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 }}>
                                 <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
-                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>Create Maintenance defaults</h3>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('options.createMaintenanceDefaults')}</h3>
                                     <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
-                                        Choose the default destination location when creating a maintenance.
+                                        {t('options.maintenanceDestDesc')}
                                     </p>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
                                         <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -492,9 +506,9 @@ const OptionsPage = () => {
                                                 onChange={() => saveDestMode('maintenance_room')}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Maintenance room</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.maintenanceRoom')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Move asset to a maintenance room. You will be asked to choose the room if needed.
+                                                    {t('options.maintenanceRoomDesc')}
                                                 </div>
                                             </div>
                                         </label>
@@ -507,9 +521,9 @@ const OptionsPage = () => {
                                                 onChange={() => saveDestMode('asset_current')}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Asset current location</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.assetCurrentLocation')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Do not move the asset; perform maintenance where it currently resides.
+                                                    {t('options.assetCurrentLocationDesc')}
                                                 </div>
                                             </div>
                                         </label>
@@ -522,18 +536,18 @@ const OptionsPage = () => {
                                                 onChange={() => saveDestMode('other')}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Other location</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.otherLocation')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Choose any location (not limited to maintenance rooms).
+                                                    {t('options.otherLocationDesc')}
                                                 </div>
                                             </div>
                                         </label>
                                     </div>
                                 </div>
                                 <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
-                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>Users' Maintenance Timeline visibility</h3>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('options.timelineVisibility')}</h3>
                                     <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
-                                        Control whether users can view the full maintenance history of an asset in My Items.
+                                        {t('options.timelineVisibilityDesc')}
                                     </p>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
                                         <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -545,15 +559,15 @@ const OptionsPage = () => {
                                                 onChange={() => {
                                                     try {
                                                         localStorage.setItem('maintenanceTimelineVisibilityPolicy', 'owned_only');
-                                                        setMessage({ type: 'success', text: 'Visibility preference saved' });
+                                                        setMessage({ type: 'success', text: t('options.preferenceSaved') });
                                                         setTimeout(() => setMessage({ type: '', text: '' }), 1500);
                                                     } catch {}
                                                 }}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Owned only</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.ownedOnly')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Users see maintenance history only for assets they have been assigned to.
+                                                    {t('options.ownedOnlyDesc')}
                                                 </div>
                                             </div>
                                         </label>
@@ -566,15 +580,15 @@ const OptionsPage = () => {
                                                 onChange={() => {
                                                     try {
                                                         localStorage.setItem('maintenanceTimelineVisibilityPolicy', 'anytime');
-                                                        setMessage({ type: 'success', text: 'Visibility preference saved' });
+                                                        setMessage({ type: 'success', text: t('options.preferenceSaved') });
                                                         setTimeout(() => setMessage({ type: '', text: '' }), 1500);
                                                     } catch {}
                                                 }}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Anytime</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.anytime')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Users can view the maintenance history of the selected asset at any time.
+                                                    {t('options.anytimeDesc')}
                                                 </div>
                                             </div>
                                         </label>
@@ -588,16 +602,16 @@ const OptionsPage = () => {
 
                         {activeSection === 'general' && (
                             <div className="empty-state">
-                                <p className="empty-state-text">General settings will appear here.</p>
+                                <p className="empty-state-text">{t('options.general')}...</p>
                             </div>
                         )}
 
                         {activeSection === 'asset' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 }}>
                                 <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
-                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>Asset Movements Approval</h3>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('options.assetMovementsApproval')}</h3>
                                     <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
-                                        Automatically accept pending asset movements (for asset responsible).
+                                        {t('options.assetMovementsApprovalDesc')}
                                     </p>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
                                         <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -609,15 +623,15 @@ const OptionsPage = () => {
                                                 onChange={() => {
                                                     try {
                                                         localStorage.setItem('autoAcceptAssetMovements', 'disabled');
-                                                        setMessage({ type: 'success', text: 'Preference saved' });
+                                                        setMessage({ type: 'success', text: t('options.preferenceSaved') });
                                                         setTimeout(() => setMessage({ type: '', text: '' }), 1500);
                                                     } catch {}
                                                 }}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Disabled</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.disabled')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Review and accept/reject movements manually.
+                                                    {t('options.disabledDesc')}
                                                 </div>
                                             </div>
                                         </label>
@@ -639,9 +653,7 @@ const OptionsPage = () => {
                                                             const r = String(m.movement_reason || '');
                                                             return r === 'return_to_owner'
                                                                 || r === 'maintenance_step_return_to_owner'
-                                                                || r === 'maintenance_create'
-                                                                || r === 'Maintenance'
-                                                                || r.startsWith('maintenance_create_');
+                                                                || r === 'maintenance_create';
                                                         });
                                                         setAutoAcceptEligibleIds(eligible.map(m => m.asset_movement_id));
                                                         setAutoAcceptEligibleCount(eligible.length);
@@ -654,9 +666,9 @@ const OptionsPage = () => {
                                                 }}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Enabled</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.enabled')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Automatically accept all pending asset movements when loading approvals.
+                                                    {t('options.enabledDesc')}
                                                 </div>
                                             </div>
                                         </label>
@@ -670,7 +682,7 @@ const OptionsPage = () => {
                                     <div className="modal-overlay" onClick={() => !autoAcceptSubmitting && setShowAutoAcceptConfirm(false)}>
                                         <div className="modal" onClick={(e) => e.stopPropagation()}>
                                             <div className="modal-header">
-                                                <h3 className="modal-title">Enable Auto-Accept</h3>
+                                                <h3 className="modal-title">{t('options.enableAutoAccept')}</h3>
                                                 <button className="modal-close" onClick={() => !autoAcceptSubmitting && setShowAutoAcceptConfirm(false)}>
                                                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
                                                         <line x1="18" y1="6" x2="6" y2="18" />
@@ -680,7 +692,7 @@ const OptionsPage = () => {
                                             </div>
                                             <div className="modal-body">
                                                 {autoAcceptLoading ? (
-                                                    <div style={{ color: 'var(--color-text-secondary)' }}>Loading pending movements...</div>
+                                                    <div style={{ color: 'var(--color-text-secondary)' }}>{t('options.loadingPendingMovements')}</div>
                                                 ) : (
                                                     <>
                                                         <p style={{ marginBottom: 'var(--space-4)' }}>
@@ -698,14 +710,14 @@ const OptionsPage = () => {
                                                         if (autoAcceptSubmitting) return;
                                                         try {
                                                             localStorage.setItem('autoAcceptAssetMovements', 'enabled');
-                                                            setMessage({ type: 'success', text: 'Auto-accept enabled' });
+                                                            setMessage({ type: 'success', text: t('options.autoAcceptEnabled') });
                                                             setTimeout(() => setMessage({ type: '', text: '' }), 1500);
                                                         } catch {}
                                                         setShowAutoAcceptConfirm(false);
                                                     }}
                                                     disabled={autoAcceptSubmitting}
                                                 >
-                                                    Enable Only
+                                                    {t('options.enableOnly')}
                                                 </button>
                                                 <button
                                                     type="button"
@@ -719,10 +731,10 @@ const OptionsPage = () => {
                                                             );
                                                             await Promise.allSettled(tasks);
                                                             localStorage.setItem('autoAcceptAssetMovements', 'enabled');
-                                                            setMessage({ type: 'success', text: 'Auto-accept enabled and pending movements accepted' });
+                                                            setMessage({ type: 'success', text: t('options.autoAcceptEnabledAndAccepted') });
                                                             setTimeout(() => setMessage({ type: '', text: '' }), 1500);
                                                         } catch {
-                                                            setMessage({ type: 'error', text: 'Failed to accept pending movements' });
+                                                            setMessage({ type: 'error', text: t('options.failedAcceptMovements') });
                                                         } finally {
                                                             setAutoAcceptSubmitting(false);
                                                             setShowAutoAcceptConfirm(false);
@@ -730,7 +742,7 @@ const OptionsPage = () => {
                                                     }}
                                                     disabled={autoAcceptLoading || autoAcceptSubmitting}
                                                 >
-                                                    Accept All Now
+                                                    {t('options.acceptAllNow')}
                                                 </button>
                                             </div>
                                         </div>
@@ -742,9 +754,9 @@ const OptionsPage = () => {
                         {activeSection === 'incident' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 }}>
                                 <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
-                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>Incident report composition strategy</h3>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('options.incidentCompositionStrategy')}</h3>
                                     <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
-                                        Choose the default behavior for composing stock items and consumables when creating an incident report.
+                                        {t('options.incidentCompositionStrategyDesc')}
                                     </p>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
                                         <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -756,9 +768,9 @@ const OptionsPage = () => {
                                                 onChange={() => saveIncidentCompositionStrategy('all')}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Apply to all composing items</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.applyToAllComposing')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Stock items and consumables composing the asset are all set to the asset status.
+                                                    {t('options.applyToAllComposingDesc')}
                                                 </div>
                                             </div>
                                         </label>
@@ -771,9 +783,9 @@ const OptionsPage = () => {
                                                 onChange={() => saveIncidentCompositionStrategy('exploitation_decides')}
                                             />
                                             <div>
-                                                <div style={{ fontWeight: 600 }}>Let exploitation chief decide per item</div>
+                                                <div style={{ fontWeight: 600 }}>{t('options.letExploitationDecide')}</div>
                                                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                                    Exploitation chief chooses which composing items receive the incident status during review.
+                                                    {t('options.letExploitationDecideDesc')}
                                                 </div>
                                             </div>
                                         </label>
@@ -787,13 +799,13 @@ const OptionsPage = () => {
 
                         {activeSection === 'notifications' && (
                             <div className="empty-state">
-                                <p className="empty-state-text">Notification preferences will appear here.</p>
+                                <p className="empty-state-text">{t('options.notifications')}...</p>
                             </div>
                         )}
 
                         {activeSection === 'appearance' && (
                             <div className="empty-state">
-                                <p className="empty-state-text">Theme and appearance settings will appear here.</p>
+                                <p className="empty-state-text">{t('options.appearance')}...</p>
                             </div>
                         )}
                     </div>

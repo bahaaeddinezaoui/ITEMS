@@ -444,7 +444,6 @@ class AssetAttributeDefinition(models.Model):
     data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
     unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
-    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
 
     class Meta:
         managed = False
@@ -517,7 +516,6 @@ class StockItemAttributeDefinition(models.Model):
     data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
     unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
-    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
 
     class Meta:
         managed = False
@@ -590,7 +588,6 @@ class ConsumableAttributeDefinition(models.Model):
     data_type = models.CharField(max_length=18, blank=True, null=True, db_column='data_type')
     unit = models.CharField(max_length=24, blank=True, null=True, db_column='unit')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
-    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
 
     class Meta:
         managed = False
@@ -929,6 +926,7 @@ class MaintenanceStep(models.Model):
     start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
     end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
     maintenance_step_status = models.CharField(max_length=60, blank=True, null=True, db_column='maintenance_step_status')
+    note = models.CharField(max_length=1024, blank=True, null=True, db_column='note')
     asset_condition_history = models.IntegerField(blank=True, null=True, db_column='asset_condition_history_id')
     stock_item_condition_history = models.IntegerField(blank=True, null=True, db_column='stock_item_condition_history_id')
     consumable_condition_history = models.IntegerField(blank=True, null=True, db_column='consumable_condition_history_id')
@@ -1127,6 +1125,7 @@ class AssetMovement(models.Model):
         related_name='+',
     )
     external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
+    maintenance = models.ForeignKey('Maintenance', on_delete=models.SET_NULL, db_column='maintenance_id', null=True, blank=True, related_name='+')
     movement_reason = models.CharField(max_length=128, db_column='movement_reason')
     movement_datetime = models.DateTimeField(db_column='movement_datetime')
     status = models.CharField(max_length=24, db_column='status', default='pending')
@@ -1144,6 +1143,7 @@ class StockItemMovement(models.Model):
     destination_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='destination_location_id', related_name='+')
     maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.SET_NULL, db_column='maintenance_step_id', null=True, blank=True, related_name='+')
     external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
+    maintenance = models.ForeignKey('Maintenance', on_delete=models.SET_NULL, db_column='maintenance_id', null=True, blank=True, related_name='+')
     movement_reason = models.CharField(max_length=128, db_column='movement_reason')
     movement_datetime = models.DateTimeField(db_column='movement_datetime')
     status = models.CharField(max_length=24, db_column='status', default='pending')
@@ -1160,6 +1160,7 @@ class ConsumableMovement(models.Model):
     source_location = models.ForeignKey(Location, on_delete=models.CASCADE, db_column='source_location_id', related_name='+')
     maintenance_step = models.ForeignKey(MaintenanceStep, on_delete=models.SET_NULL, db_column='maintenance_step_id', null=True, blank=True, related_name='+')
     external_maintenance_step_id = models.IntegerField(blank=True, null=True, db_column='external_maintenance_step_id')
+    maintenance = models.ForeignKey('Maintenance', on_delete=models.SET_NULL, db_column='maintenance_id', null=True, blank=True, related_name='+')
     consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
     movement_reason = models.CharField(max_length=128, db_column='movement_reason')
     movement_datetime = models.DateTimeField(db_column='movement_datetime')
@@ -1198,6 +1199,35 @@ class AssetConditionHistory(models.Model):
         db_table = 'asset_condition_history'
 
 
+class ConsumableConditionHistory(models.Model):
+    consumable_condition_history_id = models.IntegerField(primary_key=True, db_column='consumable_condition_history_id')
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
+    notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    cosmetic_issues = models.CharField(max_length=128, blank=True, null=True, db_column='cosmetic_issues')
+    functional_issues = models.CharField(max_length=128, blank=True, null=True, db_column='functional_issues')
+    recommendation = models.CharField(max_length=128, blank=True, null=True, db_column='recommendation')
+    created_at = models.DateTimeField(blank=True, null=True, db_column='created_at')
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_condition_history'
+
+
+class StockItemConditionHistory(models.Model):
+    stock_item_condition_history_id = models.IntegerField(primary_key=True, db_column='stock_item_condition_history_id')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id', related_name='+')
+    condition = models.ForeignKey(PhysicalCondition, on_delete=models.CASCADE, db_column='condition_id', related_name='+')
+    notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    cosmetic_issues = models.CharField(max_length=128, blank=True, null=True, db_column='cosmetic_issues')
+    functional_issues = models.CharField(max_length=128, blank=True, null=True, db_column='functional_issues')
+    recommendation = models.CharField(max_length=128, blank=True, null=True, db_column='recommendation')
+    created_at = models.DateTimeField(blank=True, null=True, db_column='created_at')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_condition_history'
+
+
 class MaintenanceStepItemRequest(models.Model):
     """New table: maintenance_step_item_request"""
     maintenance_step_item_request_id = models.IntegerField(primary_key=True, db_column='maintenance_step_item_request_id')
@@ -1221,6 +1251,19 @@ class MaintenanceStepItemRequest(models.Model):
     class Meta:
         managed = False
         db_table = 'maintenance_step_item_request'
+
+
+class Supplier(models.Model):
+    supplier_id = models.AutoField(primary_key=True, db_column='supplier_id')
+    supplier_name = models.CharField(max_length=60, db_column='supplier_name')
+    supplier_address = models.CharField(max_length=128, blank=True, null=True, db_column='supplier_address')
+
+    class Meta:
+        managed = False
+        db_table = 'supplier'
+
+    def __str__(self):
+        return self.supplier_name
 
 
 class Warehouse(models.Model):
@@ -1317,6 +1360,7 @@ class ExternalMaintenanceTypicalStep(models.Model):
     maintenance_type = models.CharField(max_length=8, blank=True, null=True, db_column='maintenance_type')
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
     maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
+    operation_type = models.CharField(max_length=24, blank=True, null=True, db_column='operation_type')
 
     class Meta:
         managed = False
@@ -1592,3 +1636,50 @@ class UserSession(models.Model):
     class Meta:
         managed = False
         db_table = 'user_session'
+
+
+# Import translation models to register them with Django
+from api.translations import (
+    # Reference/Dictionary Data
+    AssetTypeTranslation,
+    ConsumableTypeTranslation,
+    StockItemTypeTranslation,
+    LocationTypeTranslation,
+    OrganizationalStructureTypeTranslation,
+    PhysicalConditionTranslation,
+    RoleTranslation,
+    PositionTranslation,
+    AssetAttributeDefinitionTranslation,
+    ConsumableAttributeDefinitionTranslation,
+    StockItemAttributeDefinitionTranslation,
+    MaintenanceTypicalStepTranslation,
+    ExternalMaintenanceTypicalStepTranslation,
+    # Entity Names
+    PersonTranslation,
+    SupplierTranslation,
+    WarehouseTranslation,
+    LocationTranslation,
+    OrganizationalStructureTranslation,
+    # Operational Text
+    AssetMovementTranslation,
+    ConsumableMovementTranslation,
+    StockItemMovementTranslation,
+    PersonReportsProblemOnAssetTranslation,
+    PersonReportsProblemOnConsumableTranslation,
+    PersonReportsProblemOnStockItemTranslation,
+    MaintenanceTranslation,
+    AssetConditionHistoryTranslation,
+    ConsumableConditionHistoryTranslation,
+    StockItemConditionHistoryTranslation,
+    # Other Human-Facing Text
+    AssetTranslation,
+    ConsumableTranslation,
+    StockItemTranslation,
+    AssetModelTranslation,
+    ConsumableModelTranslation,
+    StockItemModelTranslation,
+    AdministrativeCertificateTranslation,
+    CompanyAssetRequestTranslation,
+    ExternalMaintenanceDocumentTranslation,
+    MaintenanceStepItemRequestTranslation,
+)

@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { backorderReportService, purchaseOrderService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const PurchaseOrderBackorderReportsPage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
     const { orderId } = useParams();
+    const { t } = useTranslation();
 
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -34,7 +36,7 @@ const PurchaseOrderBackorderReportsPage = () => {
             setOrder(data || null);
         } catch (e) {
             setOrder(null);
-            setError(e?.response?.data?.error || 'Failed to load purchase order');
+            setError(e?.response?.data?.error || t('backorderReports.loadOrderError'));
         } finally {
             setLoading(false);
         }
@@ -48,7 +50,7 @@ const PurchaseOrderBackorderReportsPage = () => {
             setRemaining(data || null);
         } catch (e) {
             setRemaining(null);
-            setError(e?.response?.data?.error || 'Failed to load remaining items');
+            setError(e?.response?.data?.error || t('backorderReports.loadRemainingError'));
         } finally {
             setRemainingLoading(false);
         }
@@ -66,7 +68,7 @@ const PurchaseOrderBackorderReportsPage = () => {
             }
         } catch (e) {
             setReports([]);
-            setError(e?.response?.data?.error || 'Failed to load backorder reports');
+            setError(e?.response?.data?.error || t('backorderReports.loadReportsError'));
         } finally {
             setReportsLoading(false);
         }
@@ -85,7 +87,7 @@ const PurchaseOrderBackorderReportsPage = () => {
             setSelectedReport(data || null);
         } catch (e) {
             setSelectedReport(null);
-            setError(e?.response?.data?.error || 'Failed to load backorder report details');
+            setError(e?.response?.data?.error || t('backorderReports.loadReportDetailsError'));
         } finally {
             setSelectedLoading(false);
         }
@@ -116,15 +118,15 @@ const PurchaseOrderBackorderReportsPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">Backorder reports</h1>
-                    <p className="page-subtitle">Track remaining quantities and generate reports.</p>
+                    <h1 className="page-title">{t('backorderReports.title')}</h1>
+                    <p className="page-subtitle">{t('backorderReports.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        Back
+                        {t('common.back')}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={refreshAll} disabled={loading || remainingLoading || reportsLoading}>
-                        Refresh
+                        {t('common.refresh')}
                     </button>
                 </div>
             </div>
@@ -141,17 +143,17 @@ const PurchaseOrderBackorderReportsPage = () => {
             )}
 
             {loading ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
             ) : !order ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>Not found.</div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>{t('backorderReports.notFound')}</div>
             ) : (
                 <> 
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 className="card-title" style={{ margin: 0 }}>Order #{order.purchase_order_id}</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('backorderReports.order')} #{order.purchase_order_id}</h2>
                             {(remaining && ((remaining.stock_item_models || []).some((l) => Number(l.quantity_remaining ?? 0) > 0) || (remaining.consumable_models || []).some((l) => Number(l.quantity_remaining ?? 0) > 0))) && (
                                 <button type="button" className="btn btn-primary" onClick={() => navigate(`/dashboard/purchase-orders/${orderId}/receive`)}>
-                                    Receive items
+                                    {t('backorderReports.receiveItems')}
                                 </button>
                             )}
                         </div>
@@ -162,29 +164,29 @@ const PurchaseOrderBackorderReportsPage = () => {
 
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Remaining to deliver</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('backorderReports.remainingToDeliver')}</h2>
                         </div>
                         <div className="card-body">
                             {remainingLoading ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
                             ) : !remaining ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>No remaining data.</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('backorderReports.noRemainingData')}</div>
                             ) : ((remaining.stock_item_models || []).length === 0 && (remaining.consumable_models || []).length === 0) ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>All items have been received.</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('backorderReports.allItemsReceived')}</div>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                                     {(remaining.stock_item_models || []).length > 0 && (
                                         <div>
-                                            <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Stock item models</div>
+                                            <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('backorderReports.stockItemModels')}</div>
                                             <div style={{ overflowX: 'auto' }}>
                                                 <table className="table" style={{ width: '100%' }}>
                                                     <thead>
                                                         <tr>
-                                                            <th>ID</th>
-                                                            <th>Model</th>
-                                                            <th>Ordered</th>
-                                                            <th>Received</th>
-                                                            <th>Remaining</th>
+                                                            <th>{t('common.id')}</th>
+                                                            <th>{t('backorderReports.model')}</th>
+                                                            <th>{t('backorderReports.ordered')}</th>
+                                                            <th>{t('backorderReports.received')}</th>
+                                                            <th>{t('backorderReports.remaining')}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -205,16 +207,16 @@ const PurchaseOrderBackorderReportsPage = () => {
 
                                     {(remaining.consumable_models || []).length > 0 && (
                                         <div>
-                                            <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Consumable models</div>
+                                            <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('backorderReports.consumableModels')}</div>
                                             <div style={{ overflowX: 'auto' }}>
                                                 <table className="table" style={{ width: '100%' }}>
                                                     <thead>
                                                         <tr>
-                                                            <th>ID</th>
-                                                            <th>Model</th>
-                                                            <th>Ordered</th>
-                                                            <th>Received</th>
-                                                            <th>Remaining</th>
+                                                            <th>{t('common.id')}</th>
+                                                            <th>{t('backorderReports.model')}</th>
+                                                            <th>{t('backorderReports.ordered')}</th>
+                                                            <th>{t('backorderReports.received')}</th>
+                                                            <th>{t('backorderReports.remaining')}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -239,21 +241,21 @@ const PurchaseOrderBackorderReportsPage = () => {
 
                     <div className="card">
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Reports history</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('backorderReports.reportsHistory')}</h2>
                         </div>
                         <div className="card-body">
                             {reportsLoading ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
                             ) : (reports || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>No backorder reports yet.</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('backorderReports.noReportsYet')}</div>
                             ) : (
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 'var(--space-4)' }}>
                                     <div style={{ overflowX: 'auto' }}>
                                         <table className="table" style={{ width: '100%' }}>
                                             <thead>
                                                 <tr>
-                                                    <th>ID</th>
-                                                    <th>Date</th>
+                                                    <th>{t('common.id')}</th>
+                                                    <th>{t('backorderReports.date')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -275,25 +277,25 @@ const PurchaseOrderBackorderReportsPage = () => {
                                     </div>
 
                                     <div>
-                                        <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Remaining snapshot (selected report)</div>
+                                        <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('backorderReports.remainingSnapshot')}</div>
                                         {selectedLoading ? (
-                                            <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                                            <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
                                         ) : !selectedReport ? (
-                                            <div style={{ color: 'var(--color-text-secondary)' }}>Select a report to view its snapshot.</div>
+                                            <div style={{ color: 'var(--color-text-secondary)' }}>{t('backorderReports.selectReport')}</div>
                                         ) : (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                                                 {(selectedReport.stock_item_models || []).length > 0 && (
                                                     <div>
-                                                        <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Stock item models</div>
+                                                        <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('backorderReports.stockItemModels')}</div>
                                                         <div style={{ overflowX: 'auto' }}>
                                                             <table className="table" style={{ width: '100%' }}>
                                                                 <thead>
                                                                     <tr>
-                                                                        <th>ID</th>
-                                                                        <th>Model</th>
-                                                                        <th>Ordered</th>
-                                                                        <th>Received</th>
-                                                                        <th>Remaining</th>
+                                                                        <th>{t('common.id')}</th>
+                                                                        <th>{t('backorderReports.model')}</th>
+                                                                        <th>{t('backorderReports.ordered')}</th>
+                                                                        <th>{t('backorderReports.received')}</th>
+                                                                        <th>{t('backorderReports.remaining')}</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -314,16 +316,16 @@ const PurchaseOrderBackorderReportsPage = () => {
 
                                                 {(selectedReport.consumable_models || []).length > 0 && (
                                                     <div>
-                                                        <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Consumable models</div>
+                                                        <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('backorderReports.consumableModels')}</div>
                                                         <div style={{ overflowX: 'auto' }}>
                                                             <table className="table" style={{ width: '100%' }}>
                                                                 <thead>
                                                                     <tr>
-                                                                        <th>ID</th>
-                                                                        <th>Model</th>
-                                                                        <th>Ordered</th>
-                                                                        <th>Received</th>
-                                                                        <th>Remaining</th>
+                                                                        <th>{t('common.id')}</th>
+                                                                        <th>{t('backorderReports.model')}</th>
+                                                                        <th>{t('backorderReports.ordered')}</th>
+                                                                        <th>{t('backorderReports.received')}</th>
+                                                                        <th>{t('backorderReports.remaining')}</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -343,7 +345,7 @@ const PurchaseOrderBackorderReportsPage = () => {
                                                 )}
 
                                                 {(selectedReport.stock_item_models || []).length === 0 && (selectedReport.consumable_models || []).length === 0 && (
-                                                    <div style={{ color: 'var(--color-text-secondary)' }}>No snapshot lines stored for this report.</div>
+                                                    <div style={{ color: 'var(--color-text-secondary)' }}>{t('backorderReports.noSnapshotLines')}</div>
                                                 )}
                                             </div>
                                         )}

@@ -9,7 +9,7 @@ from decimal import Decimal
 from django.utils import timezone
 from django.db import connection
 from django.db import transaction
-from django.db.models import OuterRef, Subquery, Q, Max
+from django.db.models import OuterRef, Subquery, Q, Max, Prefetch
 from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -154,6 +154,7 @@ def _cascade_move_composed_items(
     movement_datetime,
     maintenance_step_id=None,
     external_maintenance_step_id=None,
+    maintenance_id=None,
 ):
     stock_item_ids = list(
         AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list(
@@ -179,14 +180,15 @@ def _cascade_move_composed_items(
         if current_location_id == destination_location_id:
             continue
 
-        StockItemMovement.objects.create(
+        _create_stock_item_movement_with_translations(
+            movement_reason=movement_reason,
             stock_item_movement_id=next_stock_move_id,
             stock_item_id=stock_item_id,
             source_location_id=current_location_id,
             destination_location_id=destination_location_id,
             maintenance_step_id=maintenance_step_id,
             external_maintenance_step_id=external_maintenance_step_id,
-            movement_reason=movement_reason,
+            maintenance_id=maintenance_id,
             movement_datetime=movement_datetime,
         )
         next_stock_move_id += 1
@@ -204,17 +206,166 @@ def _cascade_move_composed_items(
         if current_location_id == destination_location_id:
             continue
 
-        ConsumableMovement.objects.create(
+        _create_consumable_movement_with_translations(
+            movement_reason=movement_reason,
             consumable_movement_id=next_consumable_move_id,
             consumable_id=consumable_id,
             source_location_id=current_location_id,
             destination_location_id=destination_location_id,
             maintenance_step_id=maintenance_step_id,
             external_maintenance_step_id=external_maintenance_step_id,
-            movement_reason=movement_reason,
+            maintenance_id=maintenance_id,
             movement_datetime=movement_datetime,
         )
         next_consumable_move_id += 1
+
+
+REASON_EN_MAP = {
+    "return_to_owner": "Return to owner",
+    "maintenance_create": "Maintenance",
+    "maintenance_step_return_to_owner": "Maintenance step return to owner",
+    "maintenance_step_remove": "Maintenance step remove",
+    "maintenance_step_fulfill_request": "Maintenance step fulfill request",
+    "problem_report_include": "Problem report include",
+    "manual_move": "Manual move",
+    "attribution": "Attribution",
+    "transfer": "Transfer",
+    "destruction": "Destruction",
+    "destruction_item_recovered": "Destruction item recovered",
+    "manual_split": "Manual split",
+    "sent_to_external_maintenance": "Sent to external maintenance provider",
+    "received_from_external_maintenance": "Received by company from external maintenance",
+}
+
+REASON_AR_MAP = {
+    "return_to_owner": "إرجاع للمالك",
+    "maintenance_create": "صيانة",
+    "maintenance_step_return_to_owner": "إرجاع خطوة صيانة",
+    "maintenance_step_remove": "إزالة خطوة صيانة",
+    "maintenance_step_fulfill_request": "تلبية طلب خطوة صيانة",
+    "problem_report_include": "تضمين تقرير مشكلة",
+    "manual_move": "نقل يدوي",
+    "attribution": "إسناد",
+    "transfer": "نقل",
+    "destruction": "إتلاف",
+    "destruction_item_recovered": "استرجاع عنصر من الإتلاف",
+    "manual_split": "تقسيم يدوي",
+    "sent_to_external_maintenance": "إرسال إلى مزود الصيانة الخارجية",
+    "received_from_external_maintenance": "استلام من الصيانة الخارجية",
+}
+
+
+def _create_asset_movement_with_translations(
+    *,
+    movement_reason_en: str,
+    movement_reason_ar: str = None,
+    **kwargs,
+):
+    """Create an AssetMovement row and persist translations.
+
+    - English movement_reason is stored in both the original asset_movement table
+      AND the asset_movement_translation table (language_code='en').
+    - Arabic movement_reason (if provided) is stored ONLY in the
+      asset_movement_translation table (language_code='ar').
+    - For snake_case reasons, the English translation uses human-readable form
+      (e.g. "Return to owner" instead of "return_to_owner").
+    """
+    from api.translations import AssetMovementTranslation
+
+    movement = AssetMovement.objects.create(movement_reason=movement_reason_en, **kwargs)
+
+    # English translation row — use human-readable form for snake_case reasons
+    en_reason = REASON_EN_MAP.get(movement_reason_en, movement_reason_en)
+    last_t = AssetMovementTranslation.objects.order_by('-id').first()
+    next_t_id = (last_t.id + 1) if last_t else 1
+    AssetMovementTranslation.objects.create(
+        id=next_t_id,
+        asset_movement=movement,
+        language_code='en',
+        movement_reason=en_reason,
+    )
+
+    # Arabic translation row
+    ar_reason = movement_reason_ar or REASON_AR_MAP.get(movement_reason_en)
+    if ar_reason:
+        last_t = AssetMovementTranslation.objects.order_by('-id').first()
+        next_t_id = (last_t.id + 1) if last_t else 1
+        AssetMovementTranslation.objects.create(
+            id=next_t_id,
+            asset_movement=movement,
+            language_code='ar',
+            movement_reason=ar_reason,
+        )
+
+    return movement
+
+
+def _create_stock_item_movement_with_translations(
+    *,
+    movement_reason: str,
+    **kwargs,
+):
+    """Create a StockItemMovement row and persist translations."""
+    from api.translations import StockItemMovementTranslation
+
+    movement = StockItemMovement.objects.create(movement_reason=movement_reason, **kwargs)
+
+    en_reason = REASON_EN_MAP.get(movement_reason, movement_reason)
+    last_t = StockItemMovementTranslation.objects.order_by('-id').first()
+    next_t_id = (last_t.id + 1) if last_t else 1
+    StockItemMovementTranslation.objects.create(
+        id=next_t_id,
+        stock_item_movement=movement,
+        language_code='en',
+        movement_reason=en_reason,
+    )
+
+    ar_reason = REASON_AR_MAP.get(movement_reason)
+    if ar_reason:
+        last_t = StockItemMovementTranslation.objects.order_by('-id').first()
+        next_t_id = (last_t.id + 1) if last_t else 1
+        StockItemMovementTranslation.objects.create(
+            id=next_t_id,
+            stock_item_movement=movement,
+            language_code='ar',
+            movement_reason=ar_reason,
+        )
+
+    return movement
+
+
+def _create_consumable_movement_with_translations(
+    *,
+    movement_reason: str,
+    **kwargs,
+):
+    """Create a ConsumableMovement row and persist translations."""
+    from api.translations import ConsumableMovementTranslation
+
+    movement = ConsumableMovement.objects.create(movement_reason=movement_reason, **kwargs)
+
+    en_reason = REASON_EN_MAP.get(movement_reason, movement_reason)
+    last_t = ConsumableMovementTranslation.objects.order_by('-id').first()
+    next_t_id = (last_t.id + 1) if last_t else 1
+    ConsumableMovementTranslation.objects.create(
+        id=next_t_id,
+        consumable_movement=movement,
+        language_code='en',
+        movement_reason=en_reason,
+    )
+
+    ar_reason = REASON_AR_MAP.get(movement_reason)
+    if ar_reason:
+        last_t = ConsumableMovementTranslation.objects.order_by('-id').first()
+        next_t_id = (last_t.id + 1) if last_t else 1
+        ConsumableMovementTranslation.objects.create(
+            id=next_t_id,
+            consumable_movement=movement,
+            language_code='ar',
+            movement_reason=ar_reason,
+        )
+
+    return movement
 
 
 def _cascade_move_stock_item_consumables(
@@ -226,6 +377,7 @@ def _cascade_move_stock_item_consumables(
     movement_datetime,
     maintenance_step_id=None,
     external_maintenance_step_id=None,
+    maintenance_id=None,
 ):
     consumable_ids = list(
         ConsumableIsUsedInStockItemHistory.objects.filter(
@@ -247,14 +399,15 @@ def _cascade_move_stock_item_consumables(
         if current_location_id == destination_location_id:
             continue
 
-        ConsumableMovement.objects.create(
+        _create_consumable_movement_with_translations(
+            movement_reason=movement_reason,
             consumable_movement_id=next_consumable_move_id,
             consumable_id=consumable_id,
             source_location_id=current_location_id,
             destination_location_id=destination_location_id,
             maintenance_step_id=maintenance_step_id,
             external_maintenance_step_id=external_maintenance_step_id,
-            movement_reason=movement_reason,
+            maintenance_id=maintenance_id,
             movement_datetime=movement_datetime,
         )
         next_consumable_move_id += 1
@@ -658,10 +811,95 @@ class SuperuserWriteMixin:
         return super().destroy(request, *args, **kwargs)
 
 
-class MaintenanceTypicalStepViewSet(viewsets.ReadOnlyModelViewSet):
+class MaintenanceTypicalStepViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = MaintenanceTypicalStep.objects.all().order_by("maintenance_typical_step_id")
     serializer_class = MaintenanceTypicalStepSerializer
     permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=["get"], url_path="field-choices")
+    def field_choices(self, request):
+        """Return distinct/allowed values for maintenance_type, operation_type, maintenance_domain, with Arabic labels."""
+        from django.db import connection
+
+        # Static Arabic translation map for known values
+        ar_map = {
+            "maintenance_type": {"Software": "برمجي", "Hardware": "عتادي"},
+            "operation_type": {"add": "إضافة", "change": "تغيير", "remove": "نزع", "inspect": "فحص"},
+            "maintenance_domain": {"it": "تكنولوجيا المعلومات", "network": "شبكي"},
+        }
+
+        choices = {}
+        with connection.cursor() as cursor:
+            # maintenance_type: distinct non-null values from both tables
+            cursor.execute(
+                "SELECT DISTINCT maintenance_type FROM ("
+                "  SELECT maintenance_type FROM maintenance_typical_step WHERE maintenance_type IS NOT NULL "
+                " UNION "
+                "  SELECT maintenance_type FROM external_maintenance_typical_step WHERE maintenance_type IS NOT NULL"
+                ") sub ORDER BY maintenance_type"
+            )
+            choices["maintenance_type"] = [
+                {"value": row[0].strip(), "label_ar": ar_map["maintenance_type"].get(row[0].strip(), "")}
+                for row in cursor.fetchall()
+            ]
+
+            # operation_type: from CHECK constraint on maintenance_typical_step
+            cursor.execute(
+                "SELECT DISTINCT operation_type FROM maintenance_typical_step "
+                "WHERE operation_type IS NOT NULL ORDER BY operation_type"
+            )
+            choices["operation_type"] = [
+                {"value": row[0].strip(), "label_ar": ar_map["operation_type"].get(row[0].strip(), "")}
+                for row in cursor.fetchall()
+            ]
+
+            # maintenance_domain: from ENUM type
+            cursor.execute(
+                "SELECT unnest(enum_range(NULL::public.maintenance_domain))::text ORDER BY 1"
+            )
+            choices["maintenance_domain"] = [
+                {"value": row[0], "label_ar": ar_map["maintenance_domain"].get(row[0], "")}
+                for row in cursor.fetchall()
+            ]
+
+        return Response(choices)
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create maintenance typical steps")
+        if denial:
+            return denial
+
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            last_item = MaintenanceTypicalStep.objects.order_by("-maintenance_typical_step_id").first()
+            next_id = (last_item.maintenance_typical_step_id + 1) if last_item else 1
+
+            translations_data = serializer.validated_data.pop('translations', None)
+            instance = MaintenanceTypicalStep.objects.create(
+                maintenance_typical_step_id=next_id,
+                **serializer.validated_data,
+            )
+            if translations_data:
+                from api.utils.i18n import save_translations
+                save_translations(instance, translations_data)
+
+            out = self.get_serializer(instance)
+            return Response(out.data, status=status.HTTP_201_CREATED)
+        except Exception as exc:
+            import os
+            import traceback
+            try:
+                log_path = os.path.join(os.getcwd(), 'root_debug.log')
+                with open(log_path, 'a', encoding='utf-8') as f:
+                    f.write(f"\n[MaintenanceTypicalStepViewSet.create] ERROR: {str(exc)}\n")
+                    f.write(traceback.format_exc())
+                    f.write("-" * 40 + "\n")
+                    f.flush()
+            except Exception:
+                pass
+            return Response({"error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -781,6 +1019,8 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         qs = (
             Maintenance.objects.select_related(
                 "asset",
+                "asset__asset_model__asset_brand",
+                "asset__asset_model__asset_type",
                 "performed_by_person",
             )
             .all()
@@ -809,21 +1049,17 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             # via a pending maintenance-create asset movement request.
             pending_moves = list(
                 AssetMovement.objects.filter(Q(status="pending") | Q(status__isnull=True))
-                .filter(
-                    Q(movement_reason="maintenance_create")
-                    | Q(movement_reason__startswith="maintenance_create_")
-                    | Q(movement_reason="Maintenance")
-                )
-                .values("movement_reason", "asset_id")
+                .filter(movement_reason="maintenance_create")
+                .values("asset_id", "maintenance_id")
             )
 
             maintenance_ids = []
             asset_ids = []
             for row in pending_moves:
                 try:
-                    s = str(row.get("movement_reason"))
-                    if s.startswith("maintenance_create_"):
-                        maintenance_ids.append(int(s.split("maintenance_create_", 1)[1]))
+                    mid = row.get("maintenance_id")
+                    if mid:
+                        maintenance_ids.append(int(mid))
                     else:
                         asset_ids.append(int(row.get("asset_id")))
                 except Exception:
@@ -836,7 +1072,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             return Maintenance.objects.none()
 
         if "it_maintenance_technician" in role_codes or "network_maintenance_technician" in role_codes:
-            return qs.filter(performed_by_person=person)
+            return qs.filter(Q(performed_by_person=person) | Q(steps__person=person)).distinct()
 
         return Maintenance.objects.none()
 
@@ -877,6 +1113,8 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 is_allowed = True
             elif maintenance.performed_by_person_id == person.person_id:
                 is_allowed = True
+            elif MaintenanceStep.objects.filter(maintenance_id=maintenance.maintenance_id, person_id=person.person_id).exists():
+                is_allowed = True
 
         if not is_allowed:
             return Response({"error": "Not allowed to cancel this maintenance"}, status=status.HTTP_403_FORBIDDEN)
@@ -910,6 +1148,8 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             if "maintenance_chief" in role_codes or "it_bureau_chief" in role_codes:
                 is_allowed = True
             elif getattr(maintenance, "performed_by_person_id", None) == getattr(person, "person_id", None):
+                is_allowed = True
+            elif MaintenanceStep.objects.filter(maintenance_id=maintenance.maintenance_id, person_id=person.person_id).exists():
                 is_allowed = True
 
         if not is_allowed:
@@ -970,12 +1210,25 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        is_technician = ("it_maintenance_technician" in role_codes) or ("network_maintenance_technician" in role_codes) or user_account.is_superuser()
-        if not is_technician:
-            return Response({"error": "Only maintenance technicians can request return"}, status=status.HTTP_403_FORBIDDEN)
+        is_allowed = (
+            "it_maintenance_technician" in role_codes
+            or "network_maintenance_technician" in role_codes
+            or "maintenance_chief" in role_codes
+            or "it_bureau_chief" in role_codes
+            or user_account.is_superuser()
+        )
+        if not is_allowed:
+            return Response({"error": "Only maintenance technicians or chiefs can request return"}, status=status.HTTP_403_FORBIDDEN)
 
-        if (not user_account.is_superuser()) and (maintenance.performed_by_person_id != person.person_id):
-            return Response({"error": "Only the assigned technician can request return"}, status=status.HTTP_403_FORBIDDEN)
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (maintenance.performed_by_person_id != person.person_id):
+            # Also allow technicians who have at least one step assigned on this maintenance
+            from .models import MaintenanceStep
+            is_step_assigned = MaintenanceStep.objects.filter(
+                maintenance_id=maintenance.maintenance_id,
+                person_id=person.person_id,
+            ).exists()
+            if not is_step_assigned:
+                return Response({"error": "Only the assigned technician can request return"}, status=status.HTTP_403_FORBIDDEN)
 
         asset = getattr(maintenance, "asset", None)
         if not asset:
@@ -1010,14 +1263,14 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
 
         now_dt = timezone.now()
-        AssetMovement.objects.create(
+        _create_asset_movement_with_translations(
+            movement_reason_en="return_to_owner",
             asset_movement_id=next_asset_move_id,
             asset=asset,
             source_location=source_location,
             destination_location=destination_location,
             maintenance_step=None,
             external_maintenance_step_id=None,
-            movement_reason="return_to_owner",
             movement_datetime=now_dt,
             status="pending",
         )
@@ -1030,6 +1283,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             movement_datetime=now_dt,
             maintenance_step_id=None,
             external_maintenance_step_id=None,
+            maintenance_id=None,
         )
 
         return Response(
@@ -1055,12 +1309,25 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        is_technician = ("it_maintenance_technician" in role_codes) or ("network_maintenance_technician" in role_codes) or user_account.is_superuser()
-        if not is_technician:
-            return Response({"error": "Only maintenance technicians can access this"}, status=status.HTTP_403_FORBIDDEN)
+        is_allowed = (
+            "it_maintenance_technician" in role_codes
+            or "network_maintenance_technician" in role_codes
+            or "maintenance_chief" in role_codes
+            or "it_bureau_chief" in role_codes
+            or user_account.is_superuser()
+        )
+        if not is_allowed:
+            return Response({"error": "Only maintenance technicians or chiefs can access this"}, status=status.HTTP_403_FORBIDDEN)
 
-        if (not user_account.is_superuser()) and (maintenance.performed_by_person_id != person.person_id):
-            return Response({"error": "Only the assigned technician can access this"}, status=status.HTTP_403_FORBIDDEN)
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (maintenance.performed_by_person_id != person.person_id):
+            # Also allow technicians who have at least one step assigned on this maintenance
+            from .models import MaintenanceStep
+            is_step_assigned = MaintenanceStep.objects.filter(
+                maintenance_id=maintenance.maintenance_id,
+                person_id=person.person_id,
+            ).exists()
+            if not is_step_assigned:
+                return Response({"error": "Only the assigned technician can access this"}, status=status.HTTP_403_FORBIDDEN)
 
         asset_id = getattr(maintenance, "asset_id", None)
         if not asset_id:
@@ -1086,12 +1353,25 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         role_codes = set(
             PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
         )
-        is_technician = ("it_maintenance_technician" in role_codes) or ("network_maintenance_technician" in role_codes) or user_account.is_superuser()
-        if not is_technician:
-            return Response({"error": "Only maintenance technicians can access this"}, status=status.HTTP_403_FORBIDDEN)
+        is_allowed = (
+            "it_maintenance_technician" in role_codes
+            or "network_maintenance_technician" in role_codes
+            or "maintenance_chief" in role_codes
+            or "it_bureau_chief" in role_codes
+            or user_account.is_superuser()
+        )
+        if not is_allowed:
+            return Response({"error": "Only maintenance technicians or chiefs can access this"}, status=status.HTTP_403_FORBIDDEN)
 
-        if (not user_account.is_superuser()) and (maintenance.performed_by_person_id != person.person_id):
-            return Response({"error": "Only the assigned technician can access this"}, status=status.HTTP_403_FORBIDDEN)
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (maintenance.performed_by_person_id != person.person_id):
+            # Also allow technicians who have at least one step assigned on this maintenance
+            from .models import MaintenanceStep
+            is_step_assigned = MaintenanceStep.objects.filter(
+                maintenance_id=maintenance.maintenance_id,
+                person_id=person.person_id,
+            ).exists()
+            if not is_step_assigned:
+                return Response({"error": "Only the assigned technician can access this"}, status=status.HTTP_403_FORBIDDEN)
 
         asset_id = getattr(maintenance, "asset_id", None)
         if not asset_id:
@@ -1170,14 +1450,14 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
             last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
             next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
-            AssetMovement.objects.create(
+            _create_asset_movement_with_translations(
+                movement_reason_en="maintenance_create",
                 asset_movement_id=next_asset_move_id,
                 asset=asset,
                 source_location=source_location,
                 destination_location=destination_location,
                 maintenance_step=None,
                 external_maintenance_step_id=None,
-                movement_reason="maintenance_create",
                 movement_datetime=timezone.now(),
             )
             _cascade_move_composed_items(
@@ -1188,6 +1468,7 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 movement_datetime=timezone.now(),
                 maintenance_step_id=None,
                 external_maintenance_step_id=None,
+                maintenance_id=None,
             )
 
         technician = Person.objects.filter(person_id=technician_person_id).first()
@@ -1896,15 +2177,18 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             try:
                 pending_asset_move = AssetMovement.objects.filter(
                     status="pending",
-                    movement_reason=f"maintenance_create_{maintenance.maintenance_id}",
+                    movement_reason="maintenance_create",
+                    maintenance_id=maintenance.maintenance_id,
                 ).exists()
                 pending_stock_moves = StockItemMovement.objects.filter(
                     status="pending",
-                    movement_reason=f"problem_report_include_{maintenance.maintenance_id}",
+                    movement_reason="problem_report_include",
+                    maintenance_id=maintenance.maintenance_id,
                 ).exists()
                 pending_consumable_moves = ConsumableMovement.objects.filter(
                     status="pending",
-                    movement_reason=f"problem_report_include_{maintenance.maintenance_id}",
+                    movement_reason="problem_report_include",
+                    maintenance_id=maintenance.maintenance_id,
                 ).exists()
 
                 if pending_asset_move or pending_stock_moves or pending_consumable_moves:
@@ -2060,6 +2344,13 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
 
         return True, None
 
+    def _is_assigned_technician(self, person, maintenance_id) -> bool:
+        """Check if the person has at least one MaintenanceStep assigned to them on this maintenance."""
+        return MaintenanceStep.objects.filter(
+            maintenance_id=maintenance_id,
+            person_id=person.person_id,
+        ).exists()
+
     def _require_can_request_for_step(self, request, step: MaintenanceStep):
         person = self._get_user_person(request)
         if not person:
@@ -2070,6 +2361,11 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         )
 
         if (step.person_id == person.person_id) or ("maintenance_chief" in role_codes) or ("it_bureau_chief" in role_codes) or ("superuser" in role_codes):
+            return person, None
+
+        # Also allow technicians who have at least one step assigned on the same maintenance
+        maintenance_id = getattr(step, "maintenance_id", None)
+        if maintenance_id and self._is_assigned_technician(person, maintenance_id):
             return person, None
 
         return None, Response({"error": "Not allowed to request items for this step"}, status=status.HTTP_403_FORBIDDEN)
@@ -2267,13 +2563,13 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             last_move_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
             next_move_id = (last_move_global.stock_item_movement_id + 1) if last_move_global else 1
 
-            StockItemMovement.objects.create(
+            _create_stock_item_movement_with_translations(
+                movement_reason="maintenance_step_remove",
                 stock_item_movement_id=next_move_id,
                 stock_item_id=component_id_int,
                 source_location=source_location,
                 destination_location=destination_location,
                 maintenance_step=step,
-                movement_reason="maintenance_step_remove",
                 movement_datetime=now_dt,
             )
             _cascade_move_stock_item_consumables(
@@ -2298,13 +2594,13 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             last_move_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
             next_move_id = (last_move_global.consumable_movement_id + 1) if last_move_global else 1
 
-            ConsumableMovement.objects.create(
+            _create_consumable_movement_with_translations(
+                movement_reason="maintenance_step_remove",
                 consumable_movement_id=next_move_id,
                 consumable_id=component_id_int,
                 source_location=source_location,
                 destination_location=destination_location,
                 maintenance_step=step,
-                movement_reason="maintenance_step_remove",
                 movement_datetime=now_dt,
             )
 
@@ -2353,13 +2649,13 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             last_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
             next_move_id = (last_global.stock_item_movement_id + 1) if last_global else 1
 
-            StockItemMovement.objects.create(
+            _create_stock_item_movement_with_translations(
+                movement_reason="maintenance_step_return_to_owner",
                 stock_item_movement_id=next_move_id,
                 stock_item_id=component_id_int,
                 source_location=source_location,
                 destination_location=destination_location,
                 maintenance_step=step,
-                movement_reason="maintenance_step_return_to_owner",
                 movement_datetime=now_dt,
                 status="pending",
             )
@@ -2372,13 +2668,13 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             last_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
             next_id = (last_global.consumable_movement_id + 1) if last_global else 1
 
-            ConsumableMovement.objects.create(
+            _create_consumable_movement_with_translations(
+                movement_reason="maintenance_step_return_to_owner",
                 consumable_movement_id=next_id,
                 consumable_id=component_id_int,
                 source_location=source_location,
                 destination_location=destination_location,
                 maintenance_step=step,
-                movement_reason="return_to_owner",
                 movement_datetime=now_dt,
                 status="pending",
             )
@@ -2606,13 +2902,13 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
             last_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
             next_move_id = (last_move.stock_item_movement_id + 1) if last_move else 1
 
-            StockItemMovement.objects.create(
+            _create_stock_item_movement_with_translations(
+                movement_reason="maintenance_step_fulfill_request",
                 stock_item_movement_id=next_move_id,
                 stock_item=stock_item,
                 source_location=source_location,
                 destination_location=destination_location,
                 maintenance_step=step,
-                movement_reason="maintenance_step_fulfill_request",
                 movement_datetime=timezone.now(),
             )
 
@@ -2657,13 +2953,13 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
             last_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
             next_move_id = (last_move.consumable_movement_id + 1) if last_move else 1
 
-            ConsumableMovement.objects.create(
+            _create_consumable_movement_with_translations(
+                movement_reason="maintenance_step_fulfill_request",
                 consumable_movement_id=next_move_id,
                 consumable=consumable,
                 source_location=source_location,
                 destination_location=destination_location,
                 maintenance_step=step,
-                movement_reason="maintenance_step_fulfill_request",
                 movement_datetime=timezone.now(),
             )
 
@@ -2918,10 +3214,47 @@ class ExternalMaintenanceProviderViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-class ExternalMaintenanceTypicalStepViewSet(viewsets.ReadOnlyModelViewSet):
+class ExternalMaintenanceTypicalStepViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
     queryset = ExternalMaintenanceTypicalStep.objects.all().order_by("external_maintenance_typical_step_id")
     serializer_class = ExternalMaintenanceTypicalStepSerializer
     permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        denial = self._require_superuser(request, "create external maintenance typical steps")
+        if denial:
+            return denial
+
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            last_item = ExternalMaintenanceTypicalStep.objects.order_by("-external_maintenance_typical_step_id").first()
+            next_id = (last_item.external_maintenance_typical_step_id + 1) if last_item else 1
+
+            translations_data = serializer.validated_data.pop('translations', None)
+            instance = ExternalMaintenanceTypicalStep.objects.create(
+                external_maintenance_typical_step_id=next_id,
+                **serializer.validated_data,
+            )
+            if translations_data:
+                from api.utils.i18n import save_translations
+                save_translations(instance, translations_data)
+
+            out = self.get_serializer(instance)
+            return Response(out.data, status=status.HTTP_201_CREATED)
+        except Exception as exc:
+            import os
+            import traceback
+            try:
+                log_path = os.path.join(os.getcwd(), 'root_debug.log')
+                with open(log_path, 'a', encoding='utf-8') as f:
+                    f.write(f"\n[ExternalMaintenanceTypicalStepViewSet.create] ERROR: {str(exc)}\n")
+                    f.write(traceback.format_exc())
+                    f.write("-" * 40 + "\n")
+                    f.flush()
+            except Exception:
+                pass
+            return Response({"error": str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -2948,6 +3281,40 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
         if not maintenance_id:
             return Response({"error": "maintenance_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Permission check: only the main technician (performed_by_person), chiefs, and superusers
+        # can create external maintenances. Step-assigned technicians cannot.
+        user_account = None
+        try:
+            if hasattr(request, "auth") and request.auth is not None:
+                user_id = request.auth.get("user_id")
+                if user_id:
+                    user_account = UserAccount.objects.select_related("person").get(user_id=user_id)
+        except (UserAccount.DoesNotExist, AttributeError, KeyError):
+            user_account = None
+
+        if user_account and user_account.person and not user_account.is_superuser():
+            person = user_account.person
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            is_chief = ("maintenance_chief" in role_codes) or ("it_bureau_chief" in role_codes)
+            if not is_chief:
+                # Must be the performed_by_person of the maintenance
+                try:
+                    maintenance_id_int = int(maintenance_id)
+                except (ValueError, TypeError):
+                    maintenance_id_int = None
+                if maintenance_id_int:
+                    is_main_tech = Maintenance.objects.filter(
+                        maintenance_id=maintenance_id_int,
+                        performed_by_person_id=person.person_id,
+                    ).exists()
+                    if not is_main_tech:
+                        return Response(
+                            {"error": "Only the main assigned technician or maintenance chief can create an external maintenance"},
+                            status=status.HTTP_403_FORBIDDEN,
+                        )
+
         try:
             maintenance_id_int = int(maintenance_id)
         except (ValueError, TypeError):
@@ -2963,15 +3330,18 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             try:
                 pending_asset_move = AssetMovement.objects.filter(
                     status="pending",
-                    movement_reason=f"maintenance_create_{maintenance.maintenance_id}",
+                    movement_reason="maintenance_create",
+                    maintenance_id=maintenance.maintenance_id,
                 ).exists()
                 pending_stock_moves = StockItemMovement.objects.filter(
                     status="pending",
-                    movement_reason=f"problem_report_include_{maintenance.maintenance_id}",
+                    movement_reason="problem_report_include",
+                    maintenance_id=maintenance.maintenance_id,
                 ).exists()
                 pending_consumable_moves = ConsumableMovement.objects.filter(
                     status="pending",
-                    movement_reason=f"problem_report_include_{maintenance.maintenance_id}",
+                    movement_reason="problem_report_include",
+                    maintenance_id=maintenance.maintenance_id,
                 ).exists()
 
                 if pending_asset_move or pending_stock_moves or pending_consumable_moves:
@@ -3120,21 +3490,21 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         now = timezone.now()
         try:
-            AssetMovement.objects.create(
+            _create_asset_movement_with_translations(
+                movement_reason_en="sent_to_external_maintenance",
                 asset_movement_id=next_asset_move_id,
                 asset_id=asset_id,
                 source_location_id=source_location_id,
                 destination_location_id=destination_location_id_int,
                 maintenance_step_id=None,
                 external_maintenance_step_id=None,
-                movement_reason="Sent to external maintenance provider",
                 movement_datetime=now,
             )
             _cascade_move_composed_items(
                 asset_id=asset_id,
                 source_location_id=source_location_id,
                 destination_location_id=destination_location_id_int,
-                movement_reason="Sent to external maintenance provider",
+                movement_reason="sent_to_external_maintenance",
                 movement_datetime=now,
                 maintenance_step_id=None,
                 external_maintenance_step_id=None,
@@ -3172,6 +3542,19 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                 {"error": "Only maintenance technician can create external maintenance steps"},
                 status=status.HTTP_403_FORBIDDEN,
             )
+
+        # Only the main technician (performed_by_person) or chiefs can create external maintenance steps.
+        # Step-assigned technicians who are not the main technician cannot.
+        if (not user_account.is_superuser()) and ("maintenance_chief" not in role_codes) and ("it_bureau_chief" not in role_codes):
+            try:
+                em = ExternalMaintenance.objects.select_related("maintenance").get(external_maintenance_id=int(pk))
+                if em.maintenance and em.maintenance.performed_by_person_id != user_account.person.person_id:
+                    return Response(
+                        {"error": "Only the main assigned technician or maintenance chief can create external maintenance steps"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            except (ExternalMaintenance.DoesNotExist, ValueError, TypeError):
+                pass
 
         typical_step_id = request.data.get("external_maintenance_typical_step_id")
         if not typical_step_id:
@@ -3360,21 +3743,21 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
 
         now = timezone.now()
         try:
-            AssetMovement.objects.create(
+            _create_asset_movement_with_translations(
+                movement_reason_en="received_from_external_maintenance",
                 asset_movement_id=next_asset_move_id,
                 asset_id=asset_id,
                 source_location_id=source_location_id,
                 destination_location_id=destination_location_id_int,
                 maintenance_step_id=None,
                 external_maintenance_step_id=external_step_id,
-                movement_reason="Received by company from external maintenance",
                 movement_datetime=now,
             )
             _cascade_move_composed_items(
                 asset_id=asset_id,
                 source_location_id=source_location_id,
                 destination_location_id=destination_location_id_int,
-                movement_reason="Received by company from external maintenance",
+                movement_reason="received_from_external_maintenance",
                 movement_datetime=now,
                 maintenance_step_id=None,
                 external_maintenance_step_id=external_step_id,
@@ -4105,14 +4488,15 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 else:
                     source_location = destination_location
 
-                StockItemMovement.objects.create(
+                _create_stock_item_movement_with_translations(
+                    movement_reason="problem_report_include",
                     stock_item_movement_id=next_stock_move_id,
                     stock_item_id=stock_item_id_int,
                     source_location=source_location,
                     destination_location=destination_location,
                     maintenance_step=None,
                     external_maintenance_step_id=None,
-                    movement_reason=f"problem_report_include_{next_maintenance_id}",
+                    maintenance_id=next_maintenance_id,
                     movement_datetime=now_dt,
                     status="pending",
                 )
@@ -4141,14 +4525,15 @@ class ProblemReportViewSet(viewsets.ViewSet):
                 else:
                     source_location = destination_location
 
-                ConsumableMovement.objects.create(
+                _create_consumable_movement_with_translations(
+                    movement_reason="problem_report_include",
                     consumable_movement_id=next_consumable_move_id,
                     consumable_id=consumable_id_int,
                     source_location=source_location,
                     destination_location=destination_location,
                     maintenance_step=None,
                     external_maintenance_step_id=None,
-                    movement_reason=f"problem_report_include_{next_maintenance_id}",
+                    maintenance_id=next_maintenance_id,
                     movement_datetime=now_dt,
                     status="pending",
                 )
@@ -4186,8 +4571,11 @@ class ProblemReportViewSet(viewsets.ViewSet):
             # Always require an asset-responsible decision for maintenance creation.
             # If the asset is already in a maintenance location, we create a no-op movement (source=destination=current)
             # purely to represent the approval requirement.
-            movement_reason = f"maintenance_create_{next_maintenance_id}"
-            already_exists = AssetMovement.objects.filter(asset_id=asset_id, movement_reason=movement_reason).exists()
+            already_exists = AssetMovement.objects.filter(
+                asset_id=asset_id,
+                movement_reason="maintenance_create",
+                maintenance_id=next_maintenance_id,
+            ).exists()
 
             if not already_exists:
                 if not current_location:
@@ -4244,14 +4632,15 @@ class ProblemReportViewSet(viewsets.ViewSet):
 
                 last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
                 next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
-                AssetMovement.objects.create(
+                _create_asset_movement_with_translations(
+                    movement_reason_en="maintenance_create",
                     asset_movement_id=next_asset_move_id,
                     asset_id=asset_id,
                     source_location_id=source_location_id,
                     destination_location_id=dest_location_id,
                     maintenance_step_id=None,
                     external_maintenance_step_id=None,
-                    movement_reason=movement_reason,
+                    maintenance_id=next_maintenance_id,
                     movement_datetime=timezone.now(),
                     status="pending",
                 )
@@ -4450,8 +4839,50 @@ class PersonViewSet(viewsets.ModelViewSet):
 
         last_person = Person.objects.order_by("-person_id").first()
         next_id = (last_person.person_id + 1) if last_person else 1
+        translations_data = serializer.validated_data.pop('translations', None)
         person = Person.objects.create(person_id=next_id, **serializer.validated_data)
+
+        # Always save English translation from first_name/last_name
+        try:
+            if not translations_data:
+                translations_data = {}
+            if 'en' not in translations_data:
+                translations_data['en'] = {}
+            if person.first_name:
+                translations_data['en']['first_name'] = person.first_name
+            if person.last_name:
+                translations_data['en']['last_name'] = person.last_name
+            from api.utils.i18n import save_translations
+            save_translations(person, translations_data)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
         return Response(PersonSerializer(person).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        translations_data = serializer.validated_data.pop('translations', None)
+        serializer.save()
+
+        # Always save English translation from first_name/last_name
+        try:
+            if not translations_data:
+                translations_data = {}
+            if 'en' not in translations_data:
+                translations_data['en'] = {}
+            if instance.first_name:
+                translations_data['en']['first_name'] = instance.first_name
+            if instance.last_name:
+                translations_data['en']['last_name'] = instance.last_name
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        return Response(PersonSerializer(instance).data)
 
 
 class AssetTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -4469,7 +4900,11 @@ class AssetTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_type = AssetType.objects.all().order_by("-asset_type_id").first()
         next_id = (last_type.asset_type_id + 1) if last_type else 1
         
+        translations_data = serializer.validated_data.pop('translations', None)
         asset_type = AssetType.objects.create(asset_type_id=next_id, **serializer.validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(asset_type, translations_data)
         return Response(AssetTypeSerializer(asset_type).data, status=status.HTTP_201_CREATED)
 
 
@@ -4482,8 +4917,15 @@ class AssetBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if denial:
             return denial
 
-        serializer = self.get_serializer(data=request.data)
+        translations_data = request.data.get('translations')
+        mutable_data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        mutable_data.pop('translations', None)
+
+        serializer = self.get_serializer(data=mutable_data)
         serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+        validated_data.pop('translations', None)
 
         last_brand = AssetBrand.objects.all().order_by("-asset_brand_id").first()
         next_id = (last_brand.asset_brand_id + 1) if last_brand else 1
@@ -4491,7 +4933,7 @@ class AssetBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         try:
             brand = AssetBrand.objects.create(
                 asset_brand_id=next_id,
-                **serializer.validated_data,
+                **validated_data,
             )
         except IntegrityError:
             return Response(
@@ -4502,7 +4944,50 @@ class AssetBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Always save English translation from brand_name
+        try:
+            translations_dict = json.loads(translations_data) if translations_data and isinstance(translations_data, str) else (translations_data or {})
+            if not isinstance(translations_dict, dict):
+                translations_dict = {}
+            if brand.brand_name:
+                if 'en' not in translations_dict:
+                    translations_dict['en'] = {}
+                translations_dict['en']['brand_name'] = brand.brand_name
+            from api.utils.i18n import save_translations
+            save_translations(brand, translations_dict)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
         return Response(self.get_serializer(brand).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        translations_data = request.data.get('translations')
+        mutable_data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        mutable_data.pop('translations', None)
+
+        serializer = self.get_serializer(instance, data=mutable_data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data.pop('translations', None)
+        serializer.save()
+
+        # Always save English translation from brand_name
+        try:
+            translations_dict = json.loads(translations_data) if translations_data and isinstance(translations_data, str) else (translations_data or {})
+            if not isinstance(translations_dict, dict):
+                translations_dict = {}
+            if instance.brand_name:
+                if 'en' not in translations_dict:
+                    translations_dict['en'] = {}
+                translations_dict['en']['brand_name'] = instance.brand_name
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_dict)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        return Response(self.get_serializer(instance).data)
 
 
 class AssetModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -4663,11 +5148,16 @@ class AssetModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
+        translations_data = serializer.validated_data.pop('translations', None)
+
         last_model = AssetModel.objects.all().order_by("-asset_model_id").first()
         next_id = (last_model.asset_model_id + 1) if last_model else 1
-        
+
         asset_model = AssetModel.objects.create(asset_model_id=next_id, **serializer.validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(asset_model, translations_data)
         _sync_asset_model_attribute_values(asset_model)
         return Response(AssetModelSerializer(asset_model).data, status=status.HTTP_201_CREATED)
 
@@ -4711,6 +5201,23 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+
+        queryset = queryset.prefetch_related(
+            Prefetch(
+                'stock_item_composition_history',
+                queryset=AssetIsComposedOfStockItemHistory.objects.filter(
+                    end_datetime__isnull=True
+                ).select_related('stock_item'),
+                to_attr='_current_stock_items',
+            ),
+            Prefetch(
+                'consumable_composition_history',
+                queryset=AssetIsComposedOfConsumableHistory.objects.filter(
+                    end_datetime__isnull=True
+                ).select_related('consumable'),
+                to_attr='_current_consumables',
+            ),
+        )
 
         queryset = queryset.annotate(
             failed_external_maintenance_id=Subquery(
@@ -4778,8 +5285,22 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         response = super().update(request, *args, **kwargs)
-        if "asset_status" in request.data and response.status_code < 400:
-            self._sync_composed_items_status_with_asset(self.get_object())
+        if response.status_code < 400:
+            asset = self.get_object()
+            # Handle translations from request data
+            translations_data = request.data.get('translations')
+            if translations_data and isinstance(translations_data, dict):
+                from api.utils.i18n import save_translations
+                en_data = translations_data.get('en', {})
+                if asset.asset_name and 'asset_name' not in en_data:
+                    en_data['asset_name'] = asset.asset_name
+                    translations_data['en'] = en_data
+                save_translations(asset, translations_data)
+            elif asset.asset_name:
+                from api.utils.i18n import save_translations
+                save_translations(asset, {'en': {'asset_name': asset.asset_name}})
+            if "asset_status" in request.data:
+                self._sync_composed_items_status_with_asset(asset)
         return response
 
     def partial_update(self, request, *args, **kwargs):
@@ -4800,8 +5321,22 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         response = super().partial_update(request, *args, **kwargs)
-        if "asset_status" in request.data and response.status_code < 400:
-            self._sync_composed_items_status_with_asset(self.get_object())
+        if response.status_code < 400:
+            asset = self.get_object()
+            # Handle translations from request data
+            translations_data = request.data.get('translations')
+            if translations_data and isinstance(translations_data, dict):
+                from api.utils.i18n import save_translations
+                en_data = translations_data.get('en', {})
+                if asset.asset_name and 'asset_name' not in en_data:
+                    en_data['asset_name'] = asset.asset_name
+                    translations_data['en'] = en_data
+                save_translations(asset, translations_data)
+            elif asset.asset_name:
+                from api.utils.i18n import save_translations
+                save_translations(asset, {'en': {'asset_name': asset.asset_name}})
+            if "asset_status" in request.data:
+                self._sync_composed_items_status_with_asset(asset)
         return response
 
     @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
@@ -4867,12 +5402,12 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     source_loc_id = asset_last_move.destination_location_id if asset_last_move else None
                     
                     if source_loc_id:
-                        StockItemMovement.objects.create(
+                        _create_stock_item_movement_with_translations(
+                            movement_reason="destruction_item_recovered",
                             stock_item_movement_id=next_id,
                             stock_item=si,
                             source_location_id=source_loc_id,
                             destination_location_id=storage_location_id,
-                            movement_reason="Asset suggested for destruction - item recovered",
                             movement_datetime=now,
                             status="pending"
                         )
@@ -4902,12 +5437,12 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     source_loc_id = asset_last_move.destination_location_id if asset_last_move else None
                     
                     if source_loc_id:
-                        ConsumableMovement.objects.create(
+                        _create_consumable_movement_with_translations(
+                            movement_reason="destruction_item_recovered",
                             consumable_movement_id=next_id,
                             consumable=c,
                             source_location_id=source_loc_id,
                             destination_location_id=storage_location_id,
-                            movement_reason="Asset suggested for destruction - item recovered",
                             movement_datetime=now,
                             status="pending"
                         )
@@ -4930,9 +5465,12 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         print(f"[AssetViewSet.create] included_stock_items: {included_stock_items}")
         print(f"[AssetViewSet.create] included_consumables: {included_consumables}")
         
+        # Extract translations before creating the asset
+        translations_data = serializer.validated_data.pop('translations', None)
+        
         # Make a clean copy of validated_data without the extra fields
         asset_data = {k: v for k, v in serializer.validated_data.items() 
-                      if k not in ('included_stock_items', 'included_consumables')}
+                      if k not in ('included_stock_items', 'included_consumables', 'translations')}
         
         print(f"[AssetViewSet.create] asset_data keys: {list(asset_data.keys())}")
         
@@ -4942,6 +5480,18 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         
         # Create the asset with only model fields
         asset = Asset.objects.create(asset_id=next_asset_id, **asset_data)
+        
+        # Save translations (English name in both main table and translation table, Arabic only in translation table)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            en_data = translations_data.get('en', {})
+            if asset.asset_name and 'asset_name' not in en_data:
+                en_data['asset_name'] = asset.asset_name
+                translations_data['en'] = en_data
+            save_translations(asset, translations_data)
+        elif asset.asset_name:
+            from api.utils.i18n import save_translations
+            save_translations(asset, {'en': {'asset_name': asset.asset_name}})
         
         # If asset has an attribution_order, create default composition
         attribution_order_obj = serializer.validated_data.get('attribution_order')
@@ -5126,6 +5676,7 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         asset = self.get_object()
         destination_location_id = request.data.get("destination_location_id")
         movement_reason = request.data.get("movement_reason") or "manual_move"
+        movement_reason_ar = request.data.get("movement_reason_ar") or None
         if not destination_location_id:
             return Response({"error": "destination_location_id is required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -5148,14 +5699,15 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
             next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
 
-            AssetMovement.objects.create(
+            _create_asset_movement_with_translations(
+                movement_reason_en=movement_reason,
+                movement_reason_ar=movement_reason_ar,
                 asset_movement_id=next_asset_move_id,
                 asset=asset,
                 source_location=destination_location,
                 destination_location=destination_location,
                 maintenance_step=None,
                 external_maintenance_step_id=None,
-                movement_reason=movement_reason,
                 movement_datetime=timezone.now(),
             )
 
@@ -5175,14 +5727,15 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
         next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
 
-        AssetMovement.objects.create(
+        _create_asset_movement_with_translations(
+            movement_reason_en=movement_reason,
+            movement_reason_ar=movement_reason_ar,
             asset_movement_id=next_asset_move_id,
             asset=asset,
             source_location=source_location,
             destination_location=destination_location,
             maintenance_step=None,
             external_maintenance_step_id=None,
-            movement_reason=movement_reason,
             movement_datetime=timezone.now(),
         )
 
@@ -5235,9 +5788,6 @@ class AssetAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet
 
     def get_queryset(self):
         queryset = AssetAttributeDefinition.objects.all().order_by("asset_attribute_definition_id")
-        domain = self.request.query_params.get('maintenance_domain')
-        if domain:
-            queryset = queryset.filter(maintenance_domain=domain)
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -5247,9 +5797,13 @@ class AssetAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        translations_data = serializer.validated_data.pop('translations', None)
         last_def = AssetAttributeDefinition.objects.order_by("-asset_attribute_definition_id").first()
         next_id = (last_def.asset_attribute_definition_id + 1) if last_def else 1
         definition = AssetAttributeDefinition.objects.create(asset_attribute_definition_id=next_id, **serializer.validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(definition, translations_data)
         return Response(AssetAttributeDefinitionSerializer(definition).data, status=status.HTTP_201_CREATED)
 
 
@@ -5380,6 +5934,7 @@ class StockItemTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_type = StockItemType.objects.all().order_by("-stock_item_type_id").first()
         next_id = (last_type.stock_item_type_id + 1) if last_type else 1
 
+        translations_data = serializer.validated_data.pop('translations', None)
         try:
             stock_item_type = StockItemType.objects.create(
                 stock_item_type_id=next_id,
@@ -5394,6 +5949,9 @@ class StockItemTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(stock_item_type, translations_data)
         return Response(StockItemTypeSerializer(stock_item_type).data, status=status.HTTP_201_CREATED)
 
 
@@ -5406,8 +5964,15 @@ class StockItemBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if denial:
             return denial
 
-        serializer = self.get_serializer(data=request.data)
+        translations_data = request.data.get('translations')
+        mutable_data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        mutable_data.pop('translations', None)
+
+        serializer = self.get_serializer(data=mutable_data)
         serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+        validated_data.pop('translations', None)
 
         last_brand = StockItemBrand.objects.all().order_by("-stock_item_brand_id").first()
         next_id = (last_brand.stock_item_brand_id + 1) if last_brand else 1
@@ -5415,7 +5980,7 @@ class StockItemBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         try:
             brand = StockItemBrand.objects.create(
                 stock_item_brand_id=next_id,
-                **serializer.validated_data,
+                **validated_data,
             )
         except IntegrityError:
             return Response(
@@ -5426,7 +5991,50 @@ class StockItemBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Always save English translation from brand_name
+        try:
+            translations_dict = json.loads(translations_data) if translations_data and isinstance(translations_data, str) else (translations_data or {})
+            if not isinstance(translations_dict, dict):
+                translations_dict = {}
+            if brand.brand_name:
+                if 'en' not in translations_dict:
+                    translations_dict['en'] = {}
+                translations_dict['en']['brand_name'] = brand.brand_name
+            from api.utils.i18n import save_translations
+            save_translations(brand, translations_dict)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
         return Response(self.get_serializer(brand).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        translations_data = request.data.get('translations')
+        mutable_data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        mutable_data.pop('translations', None)
+
+        serializer = self.get_serializer(instance, data=mutable_data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data.pop('translations', None)
+        serializer.save()
+
+        # Always save English translation from brand_name
+        try:
+            translations_dict = json.loads(translations_data) if translations_data and isinstance(translations_data, str) else (translations_data or {})
+            if not isinstance(translations_dict, dict):
+                translations_dict = {}
+            if instance.brand_name:
+                if 'en' not in translations_dict:
+                    translations_dict['en'] = {}
+                translations_dict['en']['brand_name'] = instance.brand_name
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_dict)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        return Response(self.get_serializer(instance).data)
 
 
 class StockItemModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -5526,10 +6134,15 @@ class StockItemModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        translations_data = serializer.validated_data.pop('translations', None)
+
         last_model = StockItemModel.objects.all().order_by("-stock_item_model_id").first()
         next_id = (last_model.stock_item_model_id + 1) if last_model else 1
 
         stock_item_model = StockItemModel.objects.create(stock_item_model_id=next_id, **serializer.validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(stock_item_model, translations_data)
         _sync_stock_item_model_attribute_values(stock_item_model)
         return Response(StockItemModelSerializer(stock_item_model).data, status=status.HTTP_201_CREATED)
 
@@ -5577,7 +6190,22 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 {"error": "Stock item status can only be set to destroyed by validating a destruction certificate."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        return super().partial_update(request, *args, **kwargs)
+        response = super().partial_update(request, *args, **kwargs)
+        if response.status_code < 400:
+            instance = self.get_object()
+            # Handle translations from request data
+            translations_data = request.data.get('translations')
+            if translations_data and isinstance(translations_data, dict):
+                from api.utils.i18n import save_translations
+                en_data = translations_data.get('en', {})
+                if instance.stock_item_name and 'stock_item_name' not in en_data:
+                    en_data['stock_item_name'] = instance.stock_item_name
+                    translations_data['en'] = en_data
+                save_translations(instance, translations_data)
+            elif instance.stock_item_name:
+                from api.utils.i18n import save_translations
+                save_translations(instance, {'en': {'stock_item_name': instance.stock_item_name}})
+        return response
 
     @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
     def suggest_for_destruction(self, request, pk=None):
@@ -5645,9 +6273,21 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        translations_data = serializer.validated_data.pop('translations', None)
         last_item = StockItem.objects.order_by("-stock_item_id").first()
         next_id = (last_item.stock_item_id + 1) if last_item else 1
         item = StockItem.objects.create(stock_item_id=next_id, **serializer.validated_data)
+        # Save translations (English name in both main table and translation table, Arabic only in translation table)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            en_data = translations_data.get('en', {})
+            if item.stock_item_name and 'stock_item_name' not in en_data:
+                en_data['stock_item_name'] = item.stock_item_name
+                translations_data['en'] = en_data
+            save_translations(item, translations_data)
+        elif item.stock_item_name:
+            from api.utils.i18n import save_translations
+            save_translations(item, {'en': {'stock_item_name': item.stock_item_name}})
         _sync_stock_item_attribute_values(item)
         return Response(StockItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
@@ -5801,14 +6441,14 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             if final_location_id:
                 last_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
                 next_move_id = (last_move.stock_item_movement_id + 1) if last_move else 1
-                StockItemMovement.objects.create(
+                _create_stock_item_movement_with_translations(
+                    movement_reason="manual_split",
                     stock_item_movement_id=next_move_id,
                     stock_item_id=new_item.stock_item_id,
                     source_location_id=final_location_id,
                     destination_location_id=final_location_id,
                     maintenance_step_id=None,
                     external_maintenance_step_id=None,
-                    movement_reason="manual_split",
                     movement_datetime=timezone.now(),
                 )
 
@@ -5908,14 +6548,14 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             last_global_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
             next_move_id = (last_global_move.stock_item_movement_id + 1) if last_global_move else 1
 
-            StockItemMovement.objects.create(
+            _create_stock_item_movement_with_translations(
+                movement_reason=movement_reason,
                 stock_item_movement_id=next_move_id,
                 stock_item=stock_item,
                 source_location=destination_location,
                 destination_location=destination_location,
                 maintenance_step=None,
                 external_maintenance_step_id=None,
-                movement_reason=movement_reason,
                 movement_datetime=timezone.now(),
             )
 
@@ -5935,14 +6575,14 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_global_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
         next_move_id = (last_global_move.stock_item_movement_id + 1) if last_global_move else 1
 
-        StockItemMovement.objects.create(
+        _create_stock_item_movement_with_translations(
+            movement_reason=movement_reason,
             stock_item_movement_id=next_move_id,
             stock_item=stock_item,
             source_location=source_location,
             destination_location=destination_location,
             maintenance_step=None,
             external_maintenance_step_id=None,
-            movement_reason=movement_reason,
             movement_datetime=timezone.now(),
         )
 
@@ -5972,9 +6612,6 @@ class StockItemAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelVie
 
     def get_queryset(self):
         queryset = StockItemAttributeDefinition.objects.all().order_by("stock_item_attribute_definition_id")
-        domain = self.request.query_params.get('maintenance_domain')
-        if domain:
-            queryset = queryset.filter(maintenance_domain=domain)
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -5984,11 +6621,15 @@ class StockItemAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelVie
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        translations_data = serializer.validated_data.pop('translations', None)
         last_def = StockItemAttributeDefinition.objects.order_by("-stock_item_attribute_definition_id").first()
         next_id = (last_def.stock_item_attribute_definition_id + 1) if last_def else 1
         definition = StockItemAttributeDefinition.objects.create(
             stock_item_attribute_definition_id=next_id, **serializer.validated_data
         )
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(definition, translations_data)
         return Response(StockItemAttributeDefinitionSerializer(definition).data, status=status.HTTP_201_CREATED)
 
 
@@ -6123,6 +6764,7 @@ class ConsumableTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_type = ConsumableType.objects.all().order_by("-consumable_type_id").first()
         next_id = (last_type.consumable_type_id + 1) if last_type else 1
 
+        translations_data = serializer.validated_data.pop('translations', None)
         try:
             consumable_type = ConsumableType.objects.create(
                 consumable_type_id=next_id,
@@ -6137,6 +6779,9 @@ class ConsumableTypeViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(consumable_type, translations_data)
         return Response(ConsumableTypeSerializer(consumable_type).data, status=status.HTTP_201_CREATED)
 
 
@@ -6149,8 +6794,15 @@ class ConsumableBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if denial:
             return denial
 
-        serializer = self.get_serializer(data=request.data)
+        translations_data = request.data.get('translations')
+        mutable_data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        mutable_data.pop('translations', None)
+
+        serializer = self.get_serializer(data=mutable_data)
         serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+        validated_data.pop('translations', None)
 
         last_brand = ConsumableBrand.objects.all().order_by("-consumable_brand_id").first()
         next_id = (last_brand.consumable_brand_id + 1) if last_brand else 1
@@ -6158,7 +6810,7 @@ class ConsumableBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         try:
             brand = ConsumableBrand.objects.create(
                 consumable_brand_id=next_id,
-                **serializer.validated_data,
+                **validated_data,
             )
         except IntegrityError:
             return Response(
@@ -6169,7 +6821,50 @@ class ConsumableBrandViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Always save English translation from brand_name
+        try:
+            translations_dict = json.loads(translations_data) if translations_data and isinstance(translations_data, str) else (translations_data or {})
+            if not isinstance(translations_dict, dict):
+                translations_dict = {}
+            if brand.brand_name:
+                if 'en' not in translations_dict:
+                    translations_dict['en'] = {}
+                translations_dict['en']['brand_name'] = brand.brand_name
+            from api.utils.i18n import save_translations
+            save_translations(brand, translations_dict)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
         return Response(self.get_serializer(brand).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        translations_data = request.data.get('translations')
+        mutable_data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        mutable_data.pop('translations', None)
+
+        serializer = self.get_serializer(instance, data=mutable_data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.validated_data.pop('translations', None)
+        serializer.save()
+
+        # Always save English translation from brand_name
+        try:
+            translations_dict = json.loads(translations_data) if translations_data and isinstance(translations_data, str) else (translations_data or {})
+            if not isinstance(translations_dict, dict):
+                translations_dict = {}
+            if instance.brand_name:
+                if 'en' not in translations_dict:
+                    translations_dict['en'] = {}
+                translations_dict['en']['brand_name'] = instance.brand_name
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_dict)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        return Response(self.get_serializer(instance).data)
 
 
 class ConsumableModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -6271,10 +6966,15 @@ class ConsumableModelViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        translations_data = serializer.validated_data.pop('translations', None)
+
         last_model = ConsumableModel.objects.all().order_by("-consumable_model_id").first()
         next_id = (last_model.consumable_model_id + 1) if last_model else 1
 
         consumable_model = ConsumableModel.objects.create(consumable_model_id=next_id, **serializer.validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(consumable_model, translations_data)
         _sync_consumable_model_attribute_values(consumable_model)
         return Response(ConsumableModelSerializer(consumable_model).data, status=status.HTTP_201_CREATED)
 
@@ -6325,6 +7025,18 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         response = super().partial_update(request, *args, **kwargs)
         instance = self.get_object()
         _sync_consumable_attribute_values(instance)
+        # Handle translations from request data
+        translations_data = request.data.get('translations')
+        if translations_data and isinstance(translations_data, dict):
+            from api.utils.i18n import save_translations
+            en_data = translations_data.get('en', {})
+            if instance.consumable_name and 'consumable_name' not in en_data:
+                en_data['consumable_name'] = instance.consumable_name
+                translations_data['en'] = en_data
+            save_translations(instance, translations_data)
+        elif instance.consumable_name:
+            from api.utils.i18n import save_translations
+            save_translations(instance, {'en': {'consumable_name': instance.consumable_name}})
         return response
 
     @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
@@ -6393,9 +7105,21 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        translations_data = serializer.validated_data.pop('translations', None)
         last_item = Consumable.objects.order_by("-consumable_id").first()
         next_id = (last_item.consumable_id + 1) if last_item else 1
         item = Consumable.objects.create(consumable_id=next_id, **serializer.validated_data)
+        # Save translations (English name in both main table and translation table, Arabic only in translation table)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            en_data = translations_data.get('en', {})
+            if item.consumable_name and 'consumable_name' not in en_data:
+                en_data['consumable_name'] = item.consumable_name
+                translations_data['en'] = en_data
+            save_translations(item, translations_data)
+        elif item.consumable_name:
+            from api.utils.i18n import save_translations
+            save_translations(item, {'en': {'consumable_name': item.consumable_name}})
         _sync_consumable_attribute_values(item)
         return Response(ConsumableSerializer(item).data, status=status.HTTP_201_CREATED)
 
@@ -6553,14 +7277,14 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             if final_location_id:
                 last_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
                 next_move_id = (last_move.consumable_movement_id + 1) if last_move else 1
-                ConsumableMovement.objects.create(
+                _create_consumable_movement_with_translations(
+                    movement_reason="manual_split",
                     consumable_movement_id=next_move_id,
                     consumable_id=new_item.consumable_id,
                     source_location_id=final_location_id,
                     destination_location_id=final_location_id,
                     maintenance_step_id=None,
                     external_maintenance_step_id=None,
-                    movement_reason="manual_split",
                     movement_datetime=timezone.now(),
                 )
 
@@ -6660,14 +7384,14 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             last_global_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
             next_move_id = (last_global_move.consumable_movement_id + 1) if last_global_move else 1
 
-            ConsumableMovement.objects.create(
+            _create_consumable_movement_with_translations(
+                movement_reason=movement_reason,
                 consumable_movement_id=next_move_id,
                 consumable=consumable,
                 source_location=destination_location,
                 destination_location=destination_location,
                 maintenance_step=None,
                 external_maintenance_step_id=None,
-                movement_reason=movement_reason,
                 movement_datetime=timezone.now(),
             )
 
@@ -6687,14 +7411,14 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_global_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
         next_move_id = (last_global_move.consumable_movement_id + 1) if last_global_move else 1
 
-        ConsumableMovement.objects.create(
+        _create_consumable_movement_with_translations(
+            movement_reason=movement_reason,
             consumable_movement_id=next_move_id,
             consumable=consumable,
             source_location=source_location,
             destination_location=destination_location,
             maintenance_step=None,
             external_maintenance_step_id=None,
-            movement_reason=movement_reason,
             movement_datetime=timezone.now(),
         )
 
@@ -7077,9 +7801,6 @@ class ConsumableAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelVi
 
     def get_queryset(self):
         queryset = ConsumableAttributeDefinition.objects.all().order_by("consumable_attribute_definition_id")
-        domain = self.request.query_params.get('maintenance_domain')
-        if domain:
-            queryset = queryset.filter(maintenance_domain=domain)
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -7089,11 +7810,15 @@ class ConsumableAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelVi
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        translations_data = serializer.validated_data.pop('translations', None)
         last_def = ConsumableAttributeDefinition.objects.order_by("-consumable_attribute_definition_id").first()
         next_id = (last_def.consumable_attribute_definition_id + 1) if last_def else 1
         definition = ConsumableAttributeDefinition.objects.create(
             consumable_attribute_definition_id=next_id, **serializer.validated_data
         )
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(definition, translations_data)
         return Response(ConsumableAttributeDefinitionSerializer(definition).data, status=status.HTTP_201_CREATED)
 
 
@@ -7488,10 +8213,48 @@ class OrganizationalStructureViewSet(SuperuserWriteMixin, viewsets.ModelViewSet)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        translations_data = serializer.validated_data.pop('translations', None)
         last_org = OrganizationalStructure.objects.order_by("-organizational_structure_id").first()
         next_id = (last_org.organizational_structure_id + 1) if last_org else 1
         org_structure = OrganizationalStructure.objects.create(organizational_structure_id=next_id, **serializer.validated_data)
+
+        # Always save English translation from structure_name
+        try:
+            if not translations_data:
+                translations_data = {}
+            if 'en' not in translations_data:
+                translations_data['en'] = {}
+            if org_structure.structure_name:
+                translations_data['en']['structure_name'] = org_structure.structure_name
+            from api.utils.i18n import save_translations
+            save_translations(org_structure, translations_data)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
         return Response(OrganizationalStructureSerializer(org_structure).data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        translations_data = serializer.validated_data.pop('translations', None)
+        serializer.save()
+
+        # Always save English translation from structure_name
+        try:
+            if not translations_data:
+                translations_data = {}
+            if 'en' not in translations_data:
+                translations_data['en'] = {}
+            if instance.structure_name:
+                translations_data['en']['structure_name'] = instance.structure_name
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        return Response(OrganizationalStructureSerializer(instance).data)
 
 
 class OrganizationalStructureRelationViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -7899,7 +8662,7 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
             .filter(
                 Q(movement_reason="return_to_owner")
                 | Q(movement_reason="problem_report_include")
-                | Q(movement_reason__startswith="problem_report_include_")
+                | Q(movement_reason="maintenance_step_return_to_owner")
             )
             .order_by("-movement_datetime", "-stock_item_movement_id")
         )
@@ -7938,10 +8701,9 @@ class StockItemMovementApprovalViewSet(viewsets.ViewSet):
             return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
 
         if not (
-            movement.movement_reason in {"problem_report_include", "return_to_owner"}
-            or str(movement.movement_reason).startswith("problem_report_include_")
+            movement.movement_reason in {"problem_report_include", "return_to_owner", "maintenance_step_return_to_owner"}
         ):
-            return Response({"error": "Only problem_report_include or return_to_owner movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Only problem_report_include, return_to_owner, or maintenance_step_return_to_owner movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
 
         if movement.status != "pending":
             return Response({"error": "Only pending movements can be decided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -7989,7 +8751,7 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
             .filter(
                 Q(movement_reason="return_to_owner")
                 | Q(movement_reason="problem_report_include")
-                | Q(movement_reason__startswith="problem_report_include_")
+                | Q(movement_reason="maintenance_step_return_to_owner")
             )
             .order_by("-movement_datetime", "-consumable_movement_id")
         )
@@ -8028,11 +8790,10 @@ class ConsumableMovementApprovalViewSet(viewsets.ViewSet):
             return Response({"error": "Movement not found"}, status=status.HTTP_404_NOT_FOUND)
 
         if not (
-            movement.movement_reason in {"problem_report_include", "return_to_owner"}
-            or str(movement.movement_reason).startswith("problem_report_include_")
+            movement.movement_reason in {"problem_report_include", "return_to_owner", "maintenance_step_return_to_owner"}
         ):
             return Response(
-                {"error": "Only problem_report_include or return_to_owner movements can be decided"},
+                {"error": "Only problem_report_include, return_to_owner, or maintenance_step_return_to_owner movements can be decided"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -8077,15 +8838,59 @@ class AssetMovementApprovalViewSet(viewsets.ViewSet):
         if denial:
             return denial
 
-        qs = AssetMovement.objects.filter(Q(status="pending") | Q(status__isnull=True)).order_by("-movement_datetime", "-asset_movement_id")
+        lang = request.query_params.get('lang') or request.headers.get('Accept-Language', '').split(',')[0].split(';')[0].strip().split('-')[0].lower() or 'en'
+        status_filter = request.query_params.get('status', 'pending')
+
+        qs = AssetMovement.objects.select_related(
+            "asset", "source_location", "destination_location"
+        )
+        if status_filter == 'all':
+            pass  # no status filter
+        elif status_filter in ('pending', 'accepted', 'rejected'):
+            qs = qs.filter(status=status_filter)
+        else:
+            qs = qs.filter(Q(status="pending") | Q(status__isnull=True))
+        qs = qs.order_by("-movement_datetime", "-asset_movement_id")
+
+        # Pre-fetch translations for the requested language
+        movement_ids = list(qs.values_list("asset_movement_id", flat=True))
+        asset_ids = list(qs.values_list("asset_id", flat=True))
+        location_ids = list(qs.values_list("source_location_id", flat=True)) + list(qs.values_list("destination_location_id", flat=True))
+
+        reason_translations = {}
+        asset_name_translations = {}
+        location_name_translations = {}
+
+        from api.translations import AssetMovementTranslation, AssetTranslation, LocationTranslation
+
+        # Always fetch reason translations (English uses human-readable form, not snake_case)
+        if movement_ids:
+            for t in AssetMovementTranslation.objects.filter(asset_movement_id__in=movement_ids, language_code=lang):
+                if t.movement_reason:
+                    reason_translations[t.asset_movement_id] = t.movement_reason
+
+        if lang != 'en':
+            if asset_ids:
+                for t in AssetTranslation.objects.filter(asset_id__in=asset_ids, language_code=lang):
+                    if t.asset_name:
+                        asset_name_translations[t.asset_id] = t.asset_name
+            if location_ids:
+                for t in LocationTranslation.objects.filter(location_id__in=location_ids, language_code=lang):
+                    if t.location_name:
+                        location_name_translations[t.location_id] = t.location_name
 
         data = [
             {
                 "asset_movement_id": m.asset_movement_id,
                 "asset_id": m.asset_id,
+                "asset_name": asset_name_translations.get(m.asset_id, getattr(m.asset, 'asset_name', None) or ''),
+                "asset_inventory_number": getattr(m.asset, 'asset_inventory_number', None) or '',
                 "source_location_id": m.source_location_id,
+                "source_location_name": location_name_translations.get(m.source_location_id, getattr(m.source_location, 'location_name', None) or ''),
                 "destination_location_id": m.destination_location_id,
+                "destination_location_name": location_name_translations.get(m.destination_location_id, getattr(m.destination_location, 'location_name', None) or ''),
                 "movement_reason": m.movement_reason,
+                "movement_reason_translated": reason_translations.get(m.asset_movement_id, m.movement_reason),
                 "movement_datetime": m.movement_datetime,
                 "status": m.status,
             }
@@ -10394,6 +11199,9 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
         "asset",
         "owner_person",
         "school_headquarter_person",
+    ).prefetch_related(
+        "included_stock_items",
+        "included_consumables",
     ).all().order_by("-asset_incident_report_id")
     serializer_class = AssetIncidentReportSerializer
     permission_classes = [IsAuthenticated]

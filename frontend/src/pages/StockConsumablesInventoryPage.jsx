@@ -1,7 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import { locationInventoryService, locationService } from '../services/api';
+import { useTranslation } from 'react-i18next';
+
+const getBilingualName = (nameAr, nameEn, fallbackName, currentLang) => {
+    if (currentLang === 'ar') {
+        if (nameAr && nameEn && nameAr !== nameEn) return `${nameAr} (${nameEn})`;
+        return nameAr || nameEn || fallbackName;
+    } else {
+        if (nameEn && nameAr && nameEn !== nameAr) return `${nameEn} (${nameAr})`;
+        return nameEn || nameAr || fallbackName;
+    }
+};
+
+const getBilingualTypeLabel = (typeAr, typeEn, fallbackType, currentLang) => {
+    if (currentLang === 'ar') {
+        return typeAr || typeEn || fallbackType;
+    } else {
+        return typeEn || typeAr || fallbackType;
+    }
+};
 
 const StockConsumablesInventoryPage = () => {
+    const { t, i18n } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [inventoryData, setInventoryData] = useState(null);
@@ -15,21 +35,21 @@ const StockConsumablesInventoryPage = () => {
     const statusOptions = useMemo(() => {
         if (itemTypeFilter === 'stock_item') {
             return [
-                { value: 'in_stock', label: 'In Stock' },
-                { value: 'Included with Asset', label: 'Included with Asset' },
-                { value: 'not_delivered_to_company', label: 'Not Delivered to Company' },
-                { value: 'suggested_for_destruction', label: 'Suggested for Destruction' },
-                { value: 'destroyed', label: 'Destroyed' },
-                { value: 'failed', label: 'Failed' },
+                { value: 'in_stock', label: t('stockConsumablesInventory.inStock') },
+                { value: 'Included with Asset', label: t('stockConsumablesInventory.includedWithAsset') },
+                { value: 'not_delivered_to_company', label: t('stockConsumablesInventory.notDelivered') },
+                { value: 'suggested_for_destruction', label: t('stockConsumablesInventory.suggestedForDestruction') },
+                { value: 'destroyed', label: t('stockConsumablesInventory.destroyed') },
+                { value: 'failed', label: t('stockConsumablesInventory.failed') },
             ];
         } else if (itemTypeFilter === 'consumable') {
             return [
-                { value: 'in_stock', label: 'In Stock' },
-                { value: 'Included with Asset', label: 'Included with Asset' },
-                { value: 'not_delivered_to_company', label: 'Not Delivered to Company' },
-                { value: 'suggested_for_destruction', label: 'Suggested for Destruction' },
-                { value: 'destroyed', label: 'Destroyed' },
-                { value: 'failed', label: 'Failed' },
+                { value: 'in_stock', label: t('stockConsumablesInventory.inStock') },
+                { value: 'Included with Asset', label: t('stockConsumablesInventory.includedWithAsset') },
+                { value: 'not_delivered_to_company', label: t('stockConsumablesInventory.notDelivered') },
+                { value: 'suggested_for_destruction', label: t('stockConsumablesInventory.suggestedForDestruction') },
+                { value: 'destroyed', label: t('stockConsumablesInventory.destroyed') },
+                { value: 'failed', label: t('stockConsumablesInventory.failed') },
             ];
         }
         return [];
@@ -63,7 +83,7 @@ const StockConsumablesInventoryPage = () => {
             };
             setInventoryData({ items: filtered, locations, summary });
         } catch (err) {
-            setError('Failed to load inventory data');
+            setError(t('stockConsumablesInventory.loadError'));
         } finally {
             setLoading(false);
         }
@@ -120,24 +140,24 @@ const StockConsumablesInventoryPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">📦🧴 Stock & Consumables Inventory</h1>
-                <p className="page-subtitle">View stock items and consumables by location</p>
+                <h1 className="page-title">📦🧴 {t('stockConsumablesInventory.title')}</h1>
+                <p className="page-subtitle">{t('stockConsumablesInventory.subtitle')}</p>
             </div>
 
             <div className="filters-bar">
                 <div className="filter-item" style={{ maxWidth: 520 }}>
-                    <label className="form-label">Search</label>
+                    <label className="form-label">{t('stockConsumablesInventory.search')}</label>
                     <input
                         className="form-input"
                         type="text"
-                        placeholder="Search by name, inventory number, model..."
+                        placeholder={t('stockConsumablesInventory.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
 
                 <div className="filter-item" style={{ maxWidth: 240 }}>
-                    <label className="form-label">Item Type</label>
+                    <label className="form-label">{t('stockConsumablesInventory.itemType')}</label>
                     <select
                         className="form-input"
                         value={itemTypeFilter}
@@ -146,21 +166,21 @@ const StockConsumablesInventoryPage = () => {
                             setStatusFilter('');
                         }}
                     >
-                        <option value="">All</option>
-                        <option value="stock_item">Stock Items</option>
-                        <option value="consumable">Consumables</option>
+                        <option value="">{t('common.all')}</option>
+                        <option value="stock_item">{t('stockConsumablesInventory.stockItems')}</option>
+                        <option value="consumable">{t('stockConsumablesInventory.consumables')}</option>
                     </select>
                 </div>
 
                 <div className="filter-item" style={{ maxWidth: 260 }}>
-                    <label className="form-label">Status</label>
+                    <label className="form-label">{t('common.status')}</label>
                     <select
                         className="form-input"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                         disabled={statusOptions.length === 0}
                     >
-                        <option value="">All Statuses</option>
+                        <option value="">{t('stockConsumablesInventory.allStatuses')}</option>
                         {statusOptions.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
@@ -168,15 +188,17 @@ const StockConsumablesInventoryPage = () => {
                 </div>
 
                 <div className="filter-item" style={{ maxWidth: 300 }}>
-                    <label className="form-label">Location</label>
+                    <label className="form-label">{t('stockConsumablesInventory.location')}</label>
                     <select
                         className="form-input"
                         value={locationFilter}
                         onChange={(e) => setLocationFilter(e.target.value)}
                     >
-                        <option value="">All Locations</option>
+                        <option value="">{t('stockConsumablesInventory.allLocations')}</option>
                         {locations.map(loc => (
-                            <option key={loc.location_id} value={loc.location_id}>{loc.location_name}</option>
+                            <option key={loc.location_id} value={loc.location_id}>
+                                {getBilingualName(loc.location_name_ar, loc.location_name_en, loc.location_name, i18n.language)}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -186,15 +208,15 @@ const StockConsumablesInventoryPage = () => {
                 <div className="stat-grid">
                     <div className="stat-card">
                         <div className="stat-value">{inventoryData.summary?.total_stock_items || 0}</div>
-                        <div className="stat-label">Stock Items</div>
+                        <div className="stat-label">{t('stockConsumablesInventory.stockItems')}</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">{inventoryData.summary?.total_consumables || 0}</div>
-                        <div className="stat-label">Consumables</div>
+                        <div className="stat-label">{t('stockConsumablesInventory.consumables')}</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-value">{inventoryData.locations?.length || 0}</div>
-                        <div className="stat-label">Locations</div>
+                        <div className="stat-label">{t('stockConsumablesInventory.locations')}</div>
                     </div>
                 </div>
             )}
@@ -202,24 +224,24 @@ const StockConsumablesInventoryPage = () => {
             {inventoryData && inventoryData.locations && inventoryData.locations.length > 0 && (
                 <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                     <div className="card-header">
-                        <h2 className="card-title">📊 Items by Location</h2>
+                        <h2 className="card-title">📊 {t('stockConsumablesInventory.itemsByLocation')}</h2>
                     </div>
                     <div className="table-container">
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Location</th>
-                                    <th>Type</th>
-                                    <th style={{ textAlign: 'center' }}>Stock Items</th>
-                                    <th style={{ textAlign: 'center' }}>Consumables</th>
-                                    <th style={{ textAlign: 'center' }}>Total</th>
+                                    <th>{t('stockConsumablesInventory.location')}</th>
+                                    <th>{t('stockConsumablesInventory.type')}</th>
+                                    <th style={{ textAlign: 'center' }}>{t('stockConsumablesInventory.stockItems')}</th>
+                                    <th style={{ textAlign: 'center' }}>{t('stockConsumablesInventory.consumables')}</th>
+                                    <th style={{ textAlign: 'center' }}>{t('stockConsumablesInventory.total')}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {inventoryData.locations.map(loc => (
                                     <tr key={loc.location_id}>
-                                        <td><strong>{loc.location_name}</strong></td>
-                                        <td style={{ color: 'var(--color-text-secondary)' }}>{loc.location_type || 'Unknown'}</td>
+                                        <td><strong>{getBilingualName(loc.location_name_ar, loc.location_name_en, loc.location_name, i18n.language)}</strong></td>
+                                        <td style={{ color: 'var(--color-text-secondary)' }}>{getBilingualTypeLabel(loc.location_type_ar, loc.location_type_en, loc.location_type, i18n.language) || t('stockConsumablesInventory.unknown')}</td>
                                         <td style={{ textAlign: 'center' }}>
                                             <span className="badge badge-info">{loc.stock_item_count}</span>
                                         </td>
@@ -240,13 +262,13 @@ const StockConsumablesInventoryPage = () => {
             <div className="card">
                 <div className="card-header">
                     <h2 className="card-title">
-                        📋 Item Details {filteredItems.length > 0 ? <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>({filteredItems.length} items)</span> : null}
+                        📋 {t('stockConsumablesInventory.itemDetails')} {filteredItems.length > 0 ? <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>({filteredItems.length} {t('stockConsumablesInventory.items')})</span> : null}
                     </h2>
                 </div>
                 {loading ? (
                     <div className="loading-state">
                         <div className="loading-spinner" />
-                        <span>Loading inventory data...</span>
+                        <span>{t('stockConsumablesInventory.loading')}</span>
                     </div>
                 ) : error ? (
                     <div className="card-body">
@@ -254,21 +276,21 @@ const StockConsumablesInventoryPage = () => {
                     </div>
                 ) : filteredItems.length === 0 ? (
                     <div className="empty-state">
-                        <div className="empty-state-title">No items found</div>
-                        <div className="empty-state-text">No items match the selected criteria.</div>
+                        <div className="empty-state-title">{t('stockConsumablesInventory.noItemsFound')}</div>
+                        <div className="empty-state-text">{t('stockConsumablesInventory.noItemsMatch')}</div>
                     </div>
                 ) : (
                     <div className="table-container">
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Type</th>
-                                    <th>Name</th>
-                                    <th>Inventory #</th>
-                                    <th>Model/Brand</th>
-                                    <th>Category</th>
-                                    <th>Status</th>
-                                    <th>Location</th>
+                                    <th>{t('stockConsumablesInventory.type')}</th>
+                                    <th>{t('stockConsumablesInventory.name')}</th>
+                                    <th>{t('stockConsumablesInventory.inventoryNumber')}</th>
+                                    <th>{t('stockConsumablesInventory.modelBrand')}</th>
+                                    <th>{t('stockConsumablesInventory.category')}</th>
+                                    <th>{t('common.status')}</th>
+                                    <th>{t('stockConsumablesInventory.location')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -298,7 +320,7 @@ const StockConsumablesInventoryPage = () => {
                                                 {formatStatusLabel(item.status)}
                                             </span>
                                         </td>
-                                        <td>{item.location_name || '-'}</td>
+                                        <td>{getBilingualName(item.location_name_ar, item.location_name_en, item.location_name, i18n.language) || '-'}</td>
                                     </tr>
                                 ))}
                             </tbody>

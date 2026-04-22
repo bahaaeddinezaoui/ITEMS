@@ -55,6 +55,45 @@ class StockItemTypeTranslation(models.Model):
         unique_together = ['stock_item_type', 'language_code']
 
 
+class AssetBrandTranslation(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id')
+    asset_brand = models.ForeignKey('AssetBrand', on_delete=models.CASCADE, db_column='asset_brand_id')
+    language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
+    brand_name = models.CharField(max_length=48, db_column='brand_name')
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    class Meta:
+        managed = False
+        db_table = 'asset_brand_translation'
+        unique_together = ['asset_brand', 'language_code']
+
+
+class StockItemBrandTranslation(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id')
+    stock_item_brand = models.ForeignKey('StockItemBrand', on_delete=models.CASCADE, db_column='stock_item_brand_id')
+    language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
+    brand_name = models.CharField(max_length=48, db_column='brand_name')
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    class Meta:
+        managed = False
+        db_table = 'stock_item_brand_translation'
+        unique_together = ['stock_item_brand', 'language_code']
+
+
+class ConsumableBrandTranslation(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id')
+    consumable_brand = models.ForeignKey('ConsumableBrand', on_delete=models.CASCADE, db_column='consumable_brand_id')
+    language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
+    brand_name = models.CharField(max_length=48, db_column='brand_name')
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    class Meta:
+        managed = False
+        db_table = 'consumable_brand_translation'
+        unique_together = ['consumable_brand', 'language_code']
+
+
 class LocationTypeTranslation(models.Model):
     id = models.AutoField(primary_key=True, db_column='id')
     location_type = models.ForeignKey('LocationType', on_delete=models.CASCADE, db_column='location_type_id')
@@ -170,6 +209,9 @@ class MaintenanceTypicalStepTranslation(models.Model):
     maintenance_typical_step = models.ForeignKey('MaintenanceTypicalStep', on_delete=models.CASCADE, db_column='maintenance_typical_step_id')
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     description = models.CharField(max_length=256, db_column='description')
+    maintenance_type = models.CharField(max_length=8, blank=True, null=True, db_column='maintenance_type')
+    operation_type = models.CharField(max_length=24, blank=True, null=True, db_column='operation_type')
+    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     class Meta:
@@ -183,6 +225,9 @@ class ExternalMaintenanceTypicalStepTranslation(models.Model):
     external_maintenance_typical_step = models.ForeignKey('ExternalMaintenanceTypicalStep', on_delete=models.CASCADE, db_column='external_maintenance_typical_step_id')
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     description = models.CharField(max_length=256, db_column='description')
+    maintenance_type = models.CharField(max_length=8, blank=True, null=True, db_column='maintenance_type')
+    operation_type = models.CharField(max_length=24, blank=True, null=True, db_column='operation_type')
+    maintenance_domain = models.CharField(max_length=24, blank=True, null=True, db_column='maintenance_domain')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     class Meta:

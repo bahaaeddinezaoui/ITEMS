@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors } from 'lucide-react';
+import TranslatableInput from '../components/TranslatableInput';
 import {
     authService,
     personService,
@@ -16,6 +19,7 @@ import {
 } from '../services/api';
 
 const ConsumablesPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -49,6 +53,9 @@ const ConsumablesPage = () => {
     const [moveCurrentLocationLabel, setMoveCurrentLocationLabel] = useState('');
     const [selectedMoveLocationId, setSelectedMoveLocationId] = useState('');
     const [moveSubmitting, setMoveSubmitting] = useState(false);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
     const [showSplitModal, setShowSplitModal] = useState(false);
     const [splittingConsumable, setSplittingConsumable] = useState(null);
     const [splitAttributeOptions, setSplitAttributeOptions] = useState([]);
@@ -123,6 +130,7 @@ const ConsumablesPage = () => {
         notes: '',
         warranty_expiry_in_months: '',
     });
+    const [formTranslations, setFormTranslations] = useState({});
     const [consumableFormData, setConsumableFormData] = useState({
         consumable_name: '',
         consumable_inventory_number: '',
@@ -427,6 +435,10 @@ const ConsumablesPage = () => {
         setConsumableFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleFormTranslationChange = (langCode, value) => {
+        setFormTranslations((prev) => ({ ...prev, [langCode]: { consumable_name: value } }));
+    };
+
     const handleTypeAttributeSubmit = async (e) => {
         e.preventDefault();
         if (!selectedConsumableType) {
@@ -660,6 +672,16 @@ const ConsumablesPage = () => {
                 consumable_model: selectedConsumableModel.consumable_model_id,
                 destruction_certificate_id: consumableFormData.destruction_certificate_id ? Number(consumableFormData.destruction_certificate_id) : null,
             };
+            const translations = { ...formTranslations };
+            if (consumableFormData.consumable_name) {
+                translations['en'] = {
+                    ...(translations['en'] || {}),
+                    consumable_name: consumableFormData.consumable_name,
+                };
+            }
+            if (Object.keys(translations).length > 0) {
+                dataToSubmit.translations = translations;
+            }
             if (editingConsumable) {
                 await consumableService.update(editingConsumable, dataToSubmit);
             } else {
@@ -674,6 +696,7 @@ const ConsumablesPage = () => {
                 destruction_certificate_id: '',
                 maintenance_step_id: null
             });
+            setFormTranslations({});
             setEditingConsumable(null);
             setShowConsumableForm(false);
             await fetchConsumables(selectedConsumableModel.consumable_model_id);
@@ -698,6 +721,10 @@ const ConsumablesPage = () => {
             destruction_certificate_id: item.destruction_certificate_id ?? '',
             maintenance_step_id: item.maintenance_step_id || null
         });
+        const trans = {};
+        if (item.consumable_name_ar) trans['ar'] = { consumable_name: item.consumable_name_ar };
+        if (item.consumable_name_en) trans['en'] = { consumable_name: item.consumable_name_en };
+        setFormTranslations(trans);
         setShowConsumableForm(true);
     };
 
@@ -952,11 +979,667 @@ const ConsumablesPage = () => {
         }
     };
 
+    const filteredConsumables = useMemo(() => {
+        let result = consumables;
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(item =>
+                (item.consumable_name || '').toLowerCase().includes(term) ||
+                (item.consumable_inventory_number || '').toLowerCase().includes(term)
+            );
+        }
+        if (statusFilter) {
+            result = result.filter(item => item.consumable_status === statusFilter);
+        }
+        return result;
+    }, [consumables, searchTerm, statusFilter]);
+
+    const formatStatus = (value) => {
+        return String(value || '').split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ');
+    };
+
+    if (isInstancesMode) {
+        return (
+            <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                        <button className="btn btn-secondary" onClick={() => {
+                            if (typeIdParam) {
+                                navigate(`/dashboard/consumables/models?typeId=${typeIdParam}`);
+                            } else {
+                                navigate('/dashboard/consumables/types');
+                            }
+                        }} style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                            <ArrowLeft size={18} />
+                        </button>
+                        <div>
+                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
+                                {t('consumables.title')}
+                            </h1>
+                            <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                <Tag size={14} />
+                                {selectedConsumableType?.consumable_type_label || `Type #${typeIdParam || ''}`} • {formatModelLabel(selectedConsumableModel) || selectedConsumableModel?.model_name || `Model #${modelIdParam || ''}`}
+                            </p>
+                        </div>
+                    </div>
+                    <button className="btn btn-primary" onClick={() => {
+                        setEditingConsumable(null);
+                        setFormTranslations({});
+                        setConsumableFormData({
+                            consumable_name: '',
+                            consumable_inventory_number: '',
+                            consumable_status: 'not_delivered_to_company',
+                            consumable_warranty_expiry_in_months: '',
+                            consumable_name_in_administrative_certificate: '',
+                            destruction_certificate_id: 0,
+                            maintenance_step_id: null
+                        });
+                        setShowConsumableForm(true);
+                    }} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                        <Plus size={18} />
+                        <span>{t('consumables.addItem', 'Add Consumable')}</span>
+                    </button>
+                </div>
+
+                {/* Error */}
+                {error && (
+                    <div className="error-message" style={{ marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <XCircle size={20} />
+                        <span>{error}</span>
+                        <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                            <X size={18} />
+                        </button>
+                    </div>
+                )}
+
+                {/* Success Toast */}
+                {successToast && (
+                    <div style={{
+                        position: 'fixed', top: '88px', right: '20px', zIndex: 2100,
+                        backgroundColor: '#dcfce7', color: '#166534', border: '1px solid #86efac',
+                        borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+                        fontSize: 'var(--font-size-sm)', boxShadow: '0 8px 20px rgba(0, 0, 0, 0.18)', maxWidth: '420px'
+                    }}>
+                        {successToast}
+                    </div>
+                )}
+
+                {/* Add/Edit Consumable Modal */}
+                {showConsumableForm && (
+                    <div className="modal-overlay" onClick={() => setShowConsumableForm(false)}>
+                        <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{editingConsumable ? t('consumables.editItem', 'Edit Consumable') : t('consumables.newItem', 'New Consumable')}</h3>
+                                <button className="modal-close" onClick={() => setShowConsumableForm(false)}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <form onSubmit={handleConsumableSubmit} className="form">
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <TranslatableInput
+                                                label={t('consumables.namePlaceholder', 'Consumable name')}
+                                                baseFieldName="consumable_name"
+                                                value={consumableFormData.consumable_name}
+                                                onChange={(name, value) => handleConsumableInputChange({ target: { name, value } })}
+                                                translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.consumable_name]))}
+                                                onTranslationChange={handleFormTranslationChange}
+                                                placeholder={t('consumables.namePlaceholder', 'Consumable name')}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <select name="consumable_status" value={consumableFormData.consumable_status} onChange={handleConsumableInputChange} className="form-input" style={{ height: '44px' }}>
+                                                <option value="not_delivered_to_company">{t('consumables.statusNotDelivered', 'Not Delivered')}</option>
+                                                <option value="in_stock">{t('consumables.statusInStock', 'In Stock')}</option>
+                                                <option value="assigned">{t('consumables.statusAssigned', 'Assigned')}</option>
+                                                <option value="maintenance">{t('consumables.statusMaintenance', 'Maintenance')}</option>
+                                                <option value="expired">{t('consumables.statusExpired', 'Expired')}</option>
+                                                <option value="failed">{t('consumables.statusFailed', 'Failed')}</option>
+                                                <option value="lost">{t('consumables.statusLost', 'Lost')}</option>
+                                                <option value="stolen">{t('consumables.statusStolen', 'Stolen')}</option>
+                                                <option value="irrecoverably_damaged">{t('consumables.statusIrrecoverablyDamaged', 'Irrecoverably Damaged')}</option>
+                                                <option value="destroyed">{t('consumables.statusDestroyed', 'Destroyed')}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <input type="text" name="consumable_inventory_number" value={consumableFormData.consumable_inventory_number} onChange={handleConsumableInputChange} placeholder={t('consumables.inventoryNumber', 'Inventory Number')} className="form-input" style={{ height: '44px' }} />
+                                        </div>
+                                        <div className="form-group">
+                                            <input type="number" name="consumable_warranty_expiry_in_months" value={consumableFormData.consumable_warranty_expiry_in_months} onChange={handleConsumableInputChange} placeholder={t('consumables.warrantyMonths', 'Warranty (Months)')} className="form-input" style={{ height: '44px' }} />
+                                        </div>
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                                            {editingConsumable ? t('common.update') : t('common.save')}
+                                        </button>
+                                        <button type="button" onClick={() => setShowConsumableForm(false)} className="btn btn-secondary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                                            {t('common.cancel')}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Layout */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                    {/* Consumables Panel */}
+                    <div className="card" style={{ overflow: 'hidden' }}>
+                        {/* Toolbar */}
+                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                            <div style={{ position: 'relative', flex: '0 1 320px', minWidth: '180px' }}>
+                                <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                                <input type="text" placeholder={t('consumables.searchPlaceholder', 'Search consumables...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
+                            </div>
+                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', minWidth: '130px' }}>
+                                <option value="">{t('consumables.allStatuses', 'All Statuses')}</option>
+                                <option value="in_stock">{t('consumables.statusInStock', 'In Stock')}</option>
+                                <option value="assigned">{t('consumables.statusAssigned', 'Assigned')}</option>
+                                <option value="maintenance">{t('consumables.statusMaintenance', 'Maintenance')}</option>
+                                <option value="failed">{t('consumables.statusFailed', 'Failed')}</option>
+                                <option value="not_delivered_to_company">{t('consumables.statusNotDelivered', 'Not Delivered')}</option>
+                                <option value="expired">{t('consumables.statusExpired', 'Expired')}</option>
+                                <option value="lost">{t('consumables.statusLost', 'Lost')}</option>
+                                <option value="destroyed">{t('consumables.statusDestroyed', 'Destroyed')}</option>
+                            </select>
+                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
+                                {filteredConsumables.length}
+                            </span>
+                        </div>
+
+                        {/* Consumable List */}
+                        <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
+                            {loading ? (
+                                <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
+                                    <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
+                                    <span>{t('consumables.loading', 'Loading...')}</span>
+                                </div>
+                            ) : filteredConsumables.length === 0 ? (
+                                <div className="empty-state" style={{ padding: 'var(--space-12)' }}>
+                                    <Box size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.3 }} />
+                                    <p style={{ color: 'var(--color-text-muted)' }}>
+                                        {searchTerm || statusFilter ? t('consumables.noMatchingItems', 'No matching consumables') : t('consumables.noItemsForModel', 'No consumables found for this model.')}
+                                    </p>
+                                </div>
+                            ) : (
+                                filteredConsumables.map(item => (
+                                    <div
+                                        key={item.consumable_id}
+                                        style={{
+                                            padding: 'var(--space-4) var(--space-5)',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            borderBottom: '1px solid var(--color-border)',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.15s ease'
+                                        }}
+                                        onClick={() => openConsumableDetailsModal(item)}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flex: 1, minWidth: 0 }}>
+                                            <div style={{
+                                                width: '36px', height: '36px', borderRadius: 'var(--radius-md)',
+                                                background: 'var(--color-accent-glow)', border: '1px solid var(--color-border)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                fontSize: 'var(--font-size-sm)', fontWeight: '700', color: 'var(--color-accent-tertiary)',
+                                                flexShrink: 0
+                                            }}>
+                                                {(item.consumable_name || '?')[0].toUpperCase()}
+                                            </div>
+                                            <div style={{ minWidth: 0 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                                                    <span style={{ fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                        {item.consumable_name || t('consumables.unnamedItem', 'Unnamed Item')}
+                                                    </span>
+                                                    {item.consumable_inventory_number && (
+                                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                            {item.consumable_inventory_number}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: '2px' }}>
+                                                    <span style={{
+                                                        padding: '1px 6px', borderRadius: '12px', fontSize: 'var(--font-size-xs)',
+                                                        backgroundColor: item.consumable_status === 'in_stock' ? 'rgba(16, 185, 129, 0.15)' :
+                                                                         item.consumable_status === 'not_delivered_to_company' ? 'rgba(245, 158, 11, 0.15)' : 'var(--color-bg-secondary)',
+                                                        color: item.consumable_status === 'in_stock' ? 'var(--color-success)' :
+                                                               item.consumable_status === 'not_delivered_to_company' ? 'var(--color-warning)' : 'var(--color-text-secondary)'
+                                                    }}>
+                                                        {formatStatus(item.consumable_status)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', flexShrink: 0 }}>
+                                            <button onClick={(e) => { e.stopPropagation(); openConsumableDetailsModal(item); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('consumables.attributes', 'Attributes')}>
+                                                <Sliders size={14} />
+                                            </button>
+                                            <button onClick={(e) => { e.stopPropagation(); handleEditConsumable(item); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('common.edit')}>
+                                                <Pencil size={14} />
+                                            </button>
+                                            {canMoveConsumables && (
+                                                <button onClick={(e) => { e.stopPropagation(); openMoveModal(item); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('consumables.move', 'Move')}>
+                                                    <Box size={14} />
+                                                </button>
+                                            )}
+                                            {canSplitConsumables && (
+                                                <button onClick={(e) => { e.stopPropagation(); openSplitModal(item); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0ea5e9' }} title={t('consumables.split', 'Split')}>
+                                                    <Scissors size={14} />
+                                                </button>
+                                            )}
+                                            {canAssignConsumables && (
+                                                (() => {
+                                                    const activeAssignment = activeAssignmentsByConsumable.get(item.consumable_id);
+                                                    return activeAssignment ? (
+                                                        <button onClick={(e) => { e.stopPropagation(); setDischargingAssignment(activeAssignment); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-error)' }} title={t('consumables.discharge', 'Discharge')}>
+                                                            <X size={14} />
+                                                        </button>
+                                                    ) : (
+                                                        <button onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setAssigningConsumable(item);
+                                                            const now = new Date();
+                                                            const tzOffset = now.getTimezoneOffset() * 60000;
+                                                            const localISOTime = new Date(now - tzOffset).toISOString().slice(0, 16);
+                                                            setAssignFormData({
+                                                                person: '',
+                                                                start_datetime: localISOTime,
+                                                                condition_on_assignment: item.consumable_status === 'in_stock' ? 'Good' : 'Needs Repair'
+                                                            });
+                                                            setShowAssignForm(true);
+                                                        }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-success)' }} title={t('consumables.assign', 'Assign')}>
+                                                            <Plus size={14} />
+                                                        </button>
+                                                    );
+                                                })()
+                                            )}
+                                            <button onClick={(e) => { e.stopPropagation(); handleDeleteConsumable(item.consumable_id); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-error)' }} title={t('common.delete')}>
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Consumable Details Modal */}
+                {showConsumableDetailsModal && selectedConsumable && (
+                    <div className="modal-overlay" onClick={closeConsumableDetailsModal}>
+                        <div className="modal" style={{ maxWidth: '720px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <div>
+                                    <h3 className="modal-title" style={{ margin: 0 }}>
+                                        {selectedConsumable.consumable_name || t('consumables.itemWithId', { id: selectedConsumable.consumable_id })}
+                                    </h3>
+                                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                        {t('consumables.inventoryNo', 'Inventory No.')}: {selectedConsumable.consumable_inventory_number || '—'} • {t('consumables.status', 'Status')}: {formatStatus(selectedConsumable.consumable_status)}
+                                    </span>
+                                </div>
+                                <button className="modal-close" onClick={closeConsumableDetailsModal}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                {canSuggestConsumableForDestruction && (selectedConsumable.consumable_status || '').toLowerCase() === 'failed' && (
+                                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                                        <button
+                                            type="button"
+                                            onClick={submitSuggestConsumableForDestruction}
+                                            disabled={saving}
+                                            className="btn btn-secondary"
+                                        >
+                                            {saving ? t('consumables.saving', 'Saving...') : t('consumables.suggestForDestruction', 'Suggest for Destruction')}
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div style={{
+                                    marginBottom: 'var(--space-6)',
+                                    padding: 'var(--space-4)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--color-bg-secondary)'
+                                }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+                                        <div>
+                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{t('consumables.inventoryNo', 'Inventory No.')}</div>
+                                            <div style={{ fontWeight: 600 }}>{selectedConsumable.consumable_inventory_number || '—'}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{t('consumables.assignedTo', 'Assigned To')}</div>
+                                            {(() => {
+                                                const activeAssignment = activeAssignmentsByConsumable.get(selectedConsumable.consumable_id);
+                                                return (
+                                                    <div style={{ fontWeight: 600 }}>
+                                                        {activeAssignment?.person_name || '—'}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-4)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                                        <div style={{ fontWeight: '600' }}>{t('consumables.consumableAttributes', 'Consumable Attributes')}</div>
+                                        <button
+                                            onClick={() => setShowConsumableAttributeForm(!showConsumableAttributeForm)}
+                                            style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
+                                        >
+                                            + {t('consumables.addValue', 'Add Value')}
+                                        </button>
+                                    </div>
+                                    {showConsumableAttributeForm && (
+                                        <form onSubmit={handleConsumableAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
+                                            <select
+                                                name="consumable_attribute_definition"
+                                                value={consumableAttributeForm.consumable_attribute_definition}
+                                                onChange={handleConsumableAttributeInputChange}
+                                                required
+                                                className="form-input"
+                                                style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }}
+                                            >
+                                                <option value="">{t('consumables.selectAttrDefPlaceholder', 'Select attribute definition...')}</option>
+                                                {consumableAttributeDefinitions.map((def) => (
+                                                    <option key={def.consumable_attribute_definition_id} value={def.consumable_attribute_definition_id}>
+                                                        {def.description || t('consumables.attributeWithId', { id: def.consumable_attribute_definition_id })}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            {(() => {
+                                                const selectedDef = definitionLookup.get(Number(consumableAttributeForm.consumable_attribute_definition));
+                                                const dataType = selectedDef?.data_type?.toLowerCase();
+                                                if (dataType === 'number') {
+                                                    return <input type="number" name="value_number" placeholder={t('consumables.numberValue', 'Number value')} value={consumableAttributeForm.value_number} onChange={handleConsumableAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                                }
+                                                if (dataType === 'bool' || dataType === 'boolean') {
+                                                    return (
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <input type="checkbox" name="value_bool" checked={consumableAttributeForm.value_bool} onChange={handleConsumableAttributeInputChange} />
+                                                            {t('consumables.true', 'True')}
+                                                        </label>
+                                                    );
+                                                }
+                                                if (dataType === 'date') {
+                                                    return <input type="date" name="value_date" value={consumableAttributeForm.value_date} onChange={handleConsumableAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                                }
+                                                return <input type="text" name="value_string" placeholder={t('consumables.stringValue', 'String value')} value={consumableAttributeForm.value_string} onChange={handleConsumableAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                            })()}
+                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
+                                                <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1 }}>{t('consumables.save', 'Save')}</button>
+                                                <button type="button" onClick={() => setShowConsumableAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1 }}>{t('consumables.cancel', 'Cancel')}</button>
+                                            </div>
+                                        </form>
+                                    )}
+                                    {consumableAttributes.length === 0 ? (
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('consumables.noAttrValues', 'No attribute values.')}</div>
+                                    ) : (
+                                        consumableAttributes.map((attr) => {
+                                            const definition = attr.definition || definitionLookup.get(attr.consumable_attribute_definition);
+                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                            return (
+                                                <div key={`${attr.consumable}-${attr.consumable_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: '500' }}>{definition?.description || t('consumables.attributeWithId', { id: attr.consumable_attribute_definition })}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? t('consumables.noValue', 'No value') : String(value)}</div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteConsumableAttribute(attr.consumable, attr.consumable_attribute_definition)}
+                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                    >
+                                                        &times;
+                                                    </button>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Split Modal */}
+                {showSplitModal && splittingConsumable && (
+                    <div className="modal-overlay" onClick={() => !splitSubmitting && closeSplitModal()}>
+                        <div className="modal" style={{ maxWidth: '640px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('consumables.splitItemTitle', 'Split Consumable')}: {splittingConsumable.consumable_name || t('consumables.itemWithId', { id: splittingConsumable.consumable_id })}</h3>
+                                <button className="modal-close" onClick={closeSplitModal} disabled={splitSubmitting}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <form onSubmit={submitSplit}>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('consumables.numericAttribute', 'Numeric Attribute')}</label>
+                                        <select
+                                            value={splitFormData.attribute_definition_id}
+                                            onChange={(e) => setSplitFormData((prev) => ({ ...prev, attribute_definition_id: e.target.value }))}
+                                            className="form-input"
+                                            style={{ height: '44px' }}
+                                            required
+                                        >
+                                            {splitAttributeOptions.length === 0 && <option value="">{t('consumables.noNumericAttr', 'No numeric attribute available')}</option>}
+                                            {splitAttributeOptions.map((x) => (
+                                                <option key={x.definitionId} value={x.definitionId}>
+                                                    {(x.definition?.description || t('consumables.attributeWithId', { id: x.definitionId }))} ({t('consumables.current', 'current')}: {String(x.attr.value_number)})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('consumables.splitValue', 'Split Value')}</label>
+                                        <input
+                                            type="number"
+                                            step="0.000001"
+                                            min="0.000001"
+                                            value={splitFormData.split_value}
+                                            onChange={(e) => setSplitFormData((prev) => ({ ...prev, split_value: e.target.value }))}
+                                            className="form-input"
+                                            style={{ height: '44px' }}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">{t('consumables.newItemName', 'New Consumable Name')}</label>
+                                            <input
+                                                type="text"
+                                                value={splitFormData.new_item_name}
+                                                onChange={(e) => setSplitFormData((prev) => ({ ...prev, new_item_name: e.target.value }))}
+                                                className="form-input"
+                                                style={{ height: '44px' }}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">{t('consumables.newInventoryNumber', 'New Inventory Number')}</label>
+                                            <input
+                                                type="text"
+                                                value={splitFormData.new_item_inventory_number}
+                                                onChange={(e) => setSplitFormData((prev) => ({ ...prev, new_item_inventory_number: e.target.value }))}
+                                                className="form-input"
+                                                style={{ height: '44px' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label className="form-label">{t('consumables.newSerialNumber', 'New Serial Number')}</label>
+                                            <input
+                                                type="text"
+                                                value={splitFormData.new_item_serial_number}
+                                                onChange={(e) => setSplitFormData((prev) => ({ ...prev, new_item_serial_number: e.target.value }))}
+                                                className="form-input"
+                                                style={{ height: '44px' }}
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">{t('consumables.newItemStatus', 'New Status')}</label>
+                                            <input
+                                                type="text"
+                                                value={splitFormData.new_item_status}
+                                                onChange={(e) => setSplitFormData((prev) => ({ ...prev, new_item_status: e.target.value }))}
+                                                className="form-input"
+                                                style={{ height: '44px' }}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('consumables.destinationLocation', 'Destination Location')}</label>
+                                        <select
+                                            value={splitFormData.destination_location_id}
+                                            onChange={(e) => setSplitFormData((prev) => ({ ...prev, destination_location_id: e.target.value }))}
+                                            className="form-input"
+                                            style={{ height: '44px' }}
+                                        >
+                                            <option value="">{t('consumables.sameAsSourceLocation', 'Same as source location')}</option>
+                                            {locations.map((loc) => (
+                                                <option key={loc.location_id} value={loc.location_id}>
+                                                    {loc.location_name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="button" onClick={closeSplitModal} disabled={splitSubmitting} className="btn btn-secondary">{t('consumables.cancel', 'Cancel')}</button>
+                                        <button type="submit" disabled={splitSubmitting || splitAttributeOptions.length === 0} className="btn btn-primary">
+                                            {splitSubmitting ? t('consumables.splitting', 'Splitting...') : t('consumables.split', 'Split')}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Move Modal */}
+                {showMoveModal && movingConsumable && (
+                    <div className="modal-overlay" onClick={() => !moveSubmitting && closeMoveModal()}>
+                        <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('consumables.moveItemTitle', 'Move Consumable')}: {movingConsumable.consumable_name || t('consumables.itemWithId', { id: movingConsumable.consumable_id })}</h3>
+                                <button className="modal-close" onClick={closeMoveModal} disabled={moveSubmitting}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <form onSubmit={submitMove}>
+                                    <div className="form-group">
+                                        <div style={{
+                                            marginBottom: 'var(--space-3)',
+                                            padding: 'var(--space-3)',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-sm)',
+                                            background: 'var(--color-bg-secondary)'
+                                        }}>
+                                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: '2px' }}>{t('consumables.currentLocation', 'Current Location')}</div>
+                                            <div style={{ fontWeight: 600 }}>{moveCurrentLocationLabel || t('consumables.unknown', 'Unknown')}</div>
+                                        </div>
+                                        <label className="form-label">{t('consumables.destinationLocation', 'Destination Location')}</label>
+                                        <select
+                                            value={selectedMoveLocationId}
+                                            onChange={(e) => setSelectedMoveLocationId(e.target.value)}
+                                            required
+                                            disabled={moveSubmitting}
+                                            className="form-input"
+                                            style={{ height: '44px' }}
+                                        >
+                                            <option value="">{t('consumables.selectLocation', 'Select location')}</option>
+                                            {locations.map((r) => (
+                                                <option key={r.location_id} value={r.location_id}>
+                                                    {r.location_name || t('consumables.locationWithId', { id: r.location_id })}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="submit" disabled={moveSubmitting || !selectedMoveLocationId} className="btn btn-primary">
+                                            {moveSubmitting ? t('consumables.moving', 'Moving...') : t('consumables.move', 'Move')}
+                                        </button>
+                                        <button type="button" onClick={closeMoveModal} disabled={moveSubmitting} className="btn btn-secondary">{t('consumables.cancel', 'Cancel')}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Assign Modal */}
+                {showAssignForm && assigningConsumable && (
+                    <div className="modal-overlay" onClick={() => { setShowAssignForm(false); setAssigningConsumable(null); }}>
+                        <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('consumables.assignItemTitle', 'Assign Consumable')}: {assigningConsumable.consumable_name || t('consumables.itemWithId', { id: assigningConsumable.consumable_id })}</h3>
+                                <button className="modal-close" onClick={() => { setShowAssignForm(false); setAssigningConsumable(null); }}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <form onSubmit={handleAssignSubmit}>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('consumables.assignToPerson', 'Assign to Person')}</label>
+                                        <select name="person" value={assignFormData.person} onChange={handleAssignInputChange} required disabled={saving} className="form-input" style={{ height: '44px' }}>
+                                            <option value="">{t('consumables.selectPerson', 'Select person')}</option>
+                                            {persons.map(p => (
+                                                <option key={p.person_id} value={p.person_id}>
+                                                    {p.first_name} {p.last_name} ({p.person_id})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('consumables.startDateAuto', 'Start Date (Automatic)')}</label>
+                                        <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required readOnly className="form-input" style={{ height: '44px', cursor: 'not-allowed' }} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('consumables.condition', 'Condition')}</label>
+                                        <input type="text" name="condition_on_assignment" value={assignFormData.condition_on_assignment} onChange={handleAssignInputChange} placeholder={t('consumables.conditionPlaceholder', 'e.g. Good, New')} required disabled={saving} className="form-input" style={{ height: '44px' }} />
+                                    </div>
+                                    <div className="form-actions">
+                                        <button type="submit" disabled={saving} className="btn btn-primary">
+                                            {saving ? t('consumables.assigning', 'Assigning...') : t('consumables.assignItem', 'Assign Consumable')}
+                                        </button>
+                                        <button type="button" onClick={() => { setShowAssignForm(false); setAssigningConsumable(null); }} className="btn btn-secondary">{t('consumables.cancel', 'Cancel')}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Discharge Modal */}
+                {dischargingAssignment && (
+                    <div className="modal-overlay" onClick={() => setDischargingAssignment(null)}>
+                        <div className="modal" style={{ maxWidth: '480px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('consumables.confirmDischarge', 'Confirm Discharge')}</h3>
+                                <button className="modal-close" onClick={() => setDischargingAssignment(null)}><X size={18} /></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>
+                                    {t('consumables.dischargeConfirmText', { item: dischargingAssignment.consumable?.consumable_name || 'Consumable', person: dischargingAssignment.person })}
+                                    <br /><br />
+                                    {t('consumables.endDateNow', 'The end date will be set to right now.')}
+                                </p>
+                                <div className="form-actions">
+                                    <button onClick={() => handleDischarge(dischargingAssignment.assignment_id)} disabled={saving} className="btn btn-primary" style={{ backgroundColor: '#ef4444' }}>
+                                        {saving ? t('consumables.discharging', 'Discharging...') : t('consumables.confirmDischarge', 'Confirm Discharge')}
+                                    </button>
+                                    <button onClick={() => setDischargingAssignment(null)} className="btn btn-secondary">{t('consumables.cancel', 'Cancel')}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">Consumables Explorer</h1>
-                <p className="page-subtitle">Manage consumable types, models, and inventory</p>
+                <h1 className="page-title">{t('consumables.title')}</h1>
+                <p className="page-subtitle">{t('consumables.subtitle')}</p>
             </div>
 
             {error && (
@@ -1012,7 +1695,7 @@ const ConsumablesPage = () => {
                         alignItems: 'center',
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
-                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Library</h2>
+                        <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('consumables.library')}</h2>
                         <button
                             onClick={() => setShowTypeForm(!showTypeForm)}
                             style={{
@@ -1023,7 +1706,7 @@ const ConsumablesPage = () => {
                                 color: 'var(--color-primary)',
                                 padding: '0 var(--space-2)'
                             }}
-                            title="Add Consumable Type"
+                            title={t('consumables.addType')}
                         >
                             +
                         </button>
@@ -1220,6 +1903,7 @@ const ConsumablesPage = () => {
                                 <button
                                     onClick={() => {
                                         setEditingConsumable(null);
+                                        setFormTranslations({});
                                         setConsumableFormData({
                                             consumable_name: '',
                                             consumable_inventory_number: '',
@@ -1442,8 +2126,15 @@ const ConsumablesPage = () => {
                                         <form onSubmit={handleConsumableSubmit}>
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                                 <div>
-                                                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Name</label>
-                                                    <input type="text" name="consumable_name" value={consumableFormData.consumable_name} onChange={handleConsumableInputChange} placeholder="Consumable Name" style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
+                                                    <TranslatableInput
+                                                        label="Name"
+                                                        baseFieldName="consumable_name"
+                                                        value={consumableFormData.consumable_name}
+                                                        onChange={(name, value) => handleConsumableInputChange({ target: { name, value } })}
+                                                        translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.consumable_name]))}
+                                                        onTranslationChange={handleFormTranslationChange}
+                                                        placeholder="Consumable Name"
+                                                    />
                                                 </div>
                                                 <div>
                                                     <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Status</label>

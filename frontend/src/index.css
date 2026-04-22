@@ -1838,6 +1838,15 @@ option {
     }
 }
 
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
 @keyframes shake {
     0%, 100% {
         transform: translateX(0);
@@ -2017,6 +2026,29 @@ option {
 
 .user-menu-item:hover {
     background: var(--color-bg-card-hover);
+}
+
+.user-menu-item.language-switcher-item {
+    display: flex;
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+}
+
+.user-menu-item.language-switcher-item:hover {
+    background: var(--color-bg-card-hover);
+}
+
+.user-menu-item.language-switcher-item > button {
+    width: 100%;
+    justify-content: flex-start;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 .user-avatar {
@@ -3027,5 +3059,294 @@ option {
 
     .company-asset-requests-modal-footer .btn {
         width: 100%;
+    }
+}
+
+details[open] > summary .details-chevron {
+    transform: rotate(180deg);
+}
+
+details > summary::-webkit-details-marker,
+details > summary::marker {
+    display: none;
+    content: '';
+}
+
+/* ========================================
+   Typical Steps Modal - Modern UI
+   ======================================== */
+
+.ts-modal {
+    background: var(--color-bg-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: calc(var(--radius-xl) + 4px);
+    width: 100%;
+    max-width: 950px;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: slideUp var(--transition-base);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.6), 0 0 60px rgba(99, 102, 241, 0.08);
+    backdrop-filter: blur(20px);
+}
+
+.ts-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%);
+}
+
+.ts-modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.ts-modal-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-lg);
+    background: var(--gradient-primary);
+    box-shadow: var(--shadow-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.ts-modal-title {
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.ts-modal-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.ts-modal-close {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ts-modal-close:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--color-error);
+}
+
+/* Tab Switcher */
+.ts-modal-tabs {
+    display: flex;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.ts-modal-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: var(--font-family);
+}
+
+.ts-modal-tab:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--color-border-hover);
+    color: var(--color-text-primary);
+}
+
+.ts-modal-tab-active {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+    color: var(--color-accent-tertiary);
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
+}
+
+.ts-modal-tab-active:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.5);
+    color: var(--color-accent-tertiary);
+}
+
+/* Body */
+.ts-modal-body {
+    padding: var(--space-6);
+    overflow-y: auto;
+    max-height: calc(90vh - 140px);
+}
+
+/* Error */
+.ts-modal-error {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: var(--color-error);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-4);
+}
+
+/* Form */
+.ts-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.ts-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-4);
+}
+
+.ts-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.ts-form-section:focus-within {
+    border-color: rgba(99, 102, 241, 0.35);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.ts-form-section-full {
+    grid-column: 1 / -1;
+}
+
+.ts-form-section-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.ts-form-section .form-input,
+.ts-form-section select {
+    width: 100%;
+}
+
+.ts-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-border);
+}
+
+.ts-btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-full);
+    border: none;
+    background: var(--gradient-primary);
+    color: white;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    font-family: var(--font-family);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-md);
+}
+
+.ts-btn-submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow);
+}
+
+.ts-btn-submit:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.ts-btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* RTL support for ts-modal */
+[dir="rtl"] .ts-modal-header-left {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .ts-modal-tabs {
+    flex-direction: row-reverse;
+}
+
+[dir="rtl"] .ts-form-actions {
+    justify-content: flex-start;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ts-modal {
+        max-width: 95vw;
+        margin: var(--space-4);
+    }
+
+    .ts-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ts-form-section-full {
+        grid-column: 1;
+    }
+
+    .ts-modal-header {
+        padding: var(--space-4);
+    }
+
+    .ts-modal-body {
+        padding: var(--space-4);
+    }
+}
+
+@media (max-width: 480px) {
+    .ts-modal-tabs {
+        padding: var(--space-2) var(--space-4);
+    }
+
+    .ts-modal-tab {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--font-size-xs);
     }
 }

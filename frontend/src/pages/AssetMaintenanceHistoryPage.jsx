@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { assetService, maintenanceService, maintenanceStepService } from '../services/api';
 
 const AssetMaintenanceHistoryPage = () => {
+    const { t } = useTranslation();
     const [assets, setAssets] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedAsset, setSelectedAsset] = useState(null);
@@ -16,10 +18,10 @@ const AssetMaintenanceHistoryPage = () => {
             setLoadingAssets(true);
             setError('');
             try {
-                const data = await assetService.getAll();
+                const data = await assetService.getAll({ page_size: 1000 });
                 setAssets(Array.isArray(data) ? data : []);
             } catch (err) {
-                setError('Failed to load assets: ' + (err?.message || 'unknown error'));
+                setError(t('assetMaintenanceHistory.loadAssetsError') + ': ' + (err?.message || 'unknown error'));
                 setAssets([]);
             } finally {
                 setLoadingAssets(false);
@@ -66,7 +68,7 @@ const AssetMaintenanceHistoryPage = () => {
             setMaintenances(forAsset);
             setStepsByMaintenance(stepsMap);
         } catch (err) {
-            setError('Failed to load maintenance history: ' + (err?.message || 'unknown error'));
+            setError(t('assetMaintenanceHistory.loadHistoryError') + ': ' + (err?.message || 'unknown error'));
         } finally {
             setLoadingHistory(false);
         }
@@ -92,17 +94,17 @@ const AssetMaintenanceHistoryPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">Asset Maintenance History</h1>
-                <p className="page-subtitle">Search by inventory number, serial number, or name</p>
+                <h1 className="page-title">{t('assetMaintenanceHistory.title')}</h1>
+                <p className="page-subtitle">{t('assetMaintenanceHistory.subtitle')}</p>
             </div>
 
             <div className="filters-bar">
                 <div className="filter-item" style={{ maxWidth: 520 }}>
-                    <label className="form-label">Search Asset</label>
+                    <label className="form-label">{t('assetMaintenanceHistory.searchAsset')}</label>
                     <input
                         className="form-input"
                         type="text"
-                        placeholder="e.g. INV-00123, SN-ABC123, or Dell Latitude"
+                        placeholder={t('assetMaintenanceHistory.searchPlaceholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -112,23 +114,23 @@ const AssetMaintenanceHistoryPage = () => {
             {loadingAssets ? (
                 <div className="loading-state">
                     <div className="loading-spinner" />
-                    <span>Loading assets...</span>
+                    <span>{t('assetMaintenanceHistory.loadingAssets')}</span>
                 </div>
             ) : null}
 
             {!selectedAsset && filteredAssets.length > 0 && (
                 <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                     <div className="card-header">
-                        <h2 className="card-title">Matching Assets</h2>
+                        <h2 className="card-title">{t('assetMaintenanceHistory.matchingAssets')}</h2>
                     </div>
                     <div className="table-container">
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Inventory #</th>
-                                    <th>Serial #</th>
-                                    <th>Status</th>
+                                    <th>{t('assets.assetName')}</th>
+                                    <th>{t('assets.inventoryNumber')}</th>
+                                    <th>{t('assets.serialNumber')}</th>
+                                    <th>{t('common.status')}</th>
                                     <th style={{ width: 1 }}></th>
                                 </tr>
                             </thead>
@@ -141,7 +143,7 @@ const AssetMaintenanceHistoryPage = () => {
                                         <td><span className={getStatusBadge(a.asset_status)}>{a.asset_status || '-'}</span></td>
                                         <td>
                                             <button className="btn btn-primary" onClick={() => { setSelectedAsset(a); loadHistory(a); }}>
-                                                View History
+                                                {t('assetMaintenanceHistory.viewHistory')}
                                             </button>
                                         </td>
                                     </tr>
@@ -156,7 +158,7 @@ const AssetMaintenanceHistoryPage = () => {
                 <div className="card">
                     <div className="card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <h2 className="card-title">
-                            History for: {selectedAsset.asset_name || `Asset ${selectedAsset.asset_id}`}
+                            {t('assetMaintenanceHistory.historyFor')}: {selectedAsset.asset_name || `${t('assets.asset')} ${selectedAsset.asset_id}`}
                             {selectedAsset.asset_inventory_number ? (
                                 <span style={{ marginLeft: 'var(--space-3)', color: 'var(--color-text-secondary)', fontWeight: 400 }}>
                                     ({selectedAsset.asset_inventory_number})
@@ -164,13 +166,13 @@ const AssetMaintenanceHistoryPage = () => {
                             ) : null}
                         </h2>
                         <button className="btn" onClick={() => { setSelectedAsset(null); setMaintenances([]); setStepsByMaintenance({}); }}>
-                            Change Asset
+                            {t('assetMaintenanceHistory.changeAsset')}
                         </button>
                     </div>
                     {loadingHistory ? (
                         <div className="loading-state">
                             <div className="loading-spinner" />
-                            <span>Loading maintenance history...</span>
+                            <span>{t('assetMaintenanceHistory.loadingHistory')}</span>
                         </div>
                     ) : error ? (
                         <div className="card-body">
@@ -178,7 +180,7 @@ const AssetMaintenanceHistoryPage = () => {
                         </div>
                     ) : maintenances.length === 0 ? (
                         <div className="card-body">
-                            <div className="empty-state">No maintenances found for this asset.</div>
+                            <div className="empty-state">{t('assetMaintenanceHistory.noMaintenances')}</div>
                         </div>
                     ) : (
                         <div className="card-body">

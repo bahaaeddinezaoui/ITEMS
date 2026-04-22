@@ -24,17 +24,19 @@ import {
 } from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const PurchaseOrdersPage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const { t } = useTranslation();
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
     const isItBureauChief = user?.roles?.some((role) => role.role_code === 'it_bureau_chief');
     const isDirectorAdminSupport = user?.roles?.some((role) => role.role_code === 'director_admin_support');
     const isProtectionSecurityBureauChief = user?.roles?.some((role) => role.role_code === 'protection_and_security_bureau_chief');
     const isSchoolHeadquarter = user?.roles?.some((role) => role.role_code === 'school_headquarter');
-    const canConsultPurchaseOrders = isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
-    const canSignAcceptanceReport = isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief || isStockConsumableResponsible;
+    const canConsultPurchaseOrders = isSuperuser || isStockConsumableResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief;
+    const canSignAcceptanceReport = isSuperuser || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isItBureauChief || isStockConsumableResponsible;
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -124,7 +126,7 @@ const PurchaseOrdersPage = () => {
                 setDeliveryNoteCode(String(info.delivery_note_code));
             }
         } catch (e) {
-            setDeliveryNoteError(e?.response?.data?.error || 'Failed to load delivery note');
+            setDeliveryNoteError(e?.response?.data?.error || t('poOrders.loadDeliveryNoteError'));
         } finally {
             setDeliveryNoteLoading(false);
         }
@@ -148,9 +150,9 @@ const PurchaseOrdersPage = () => {
             await purchaseOrderService.signAcceptanceReport(acceptanceReportPo.purchase_order_id, payload);
             const info = await purchaseOrderService.getAcceptanceReport(acceptanceReportPo.purchase_order_id);
             setAcceptanceReportInfo(info);
-            setSuccess('Acceptance report signed');
+            setSuccess(t('poOrders.acceptanceReportSigned'));
         } catch (e) {
-            setAcceptanceReportError(e?.response?.data?.error || 'Failed to sign acceptance report');
+            setAcceptanceReportError(e?.response?.data?.error || t('poOrders.signAcceptanceReportError'));
         }
     };
 
@@ -166,7 +168,7 @@ const PurchaseOrdersPage = () => {
             const info = await purchaseOrderService.getAcceptanceReport(order.purchase_order_id);
             setAcceptanceReportInfo(info);
         } catch (e) {
-            setAcceptanceReportError(e?.response?.data?.error || 'Failed to load acceptance report');
+            setAcceptanceReportError(e?.response?.data?.error || t('poOrders.loadAcceptanceReportError'));
         } finally {
             setAcceptanceReportLoading(false);
         }
@@ -179,7 +181,7 @@ const PurchaseOrdersPage = () => {
         setError('');
 
         if (!acceptanceReportFile) {
-            setAcceptanceReportError('digital_copy file is required');
+            setAcceptanceReportError(t('poOrders.digitalCopyRequired'));
             return;
         }
 
@@ -189,13 +191,13 @@ const PurchaseOrdersPage = () => {
             fd.append('digital_copy', acceptanceReportFile);
             const data = await purchaseOrderService.createAcceptanceReport(acceptanceReportPo.purchase_order_id, fd);
             const arId = data?.acceptance_report_id;
-            setSuccess(arId ? `Acceptance report #${arId} created` : 'Acceptance report created');
+            setSuccess(arId ? t('poOrders.acceptanceReportCreatedWithId', { id: arId }) : t('poOrders.acceptanceReportCreated'));
 
             const info = await purchaseOrderService.getAcceptanceReport(acceptanceReportPo.purchase_order_id);
             setAcceptanceReportInfo(info);
             await loadOrders();
         } catch (e) {
-            setAcceptanceReportError(e?.response?.data?.error || 'Failed to create acceptance report');
+            setAcceptanceReportError(e?.response?.data?.error || t('poOrders.createAcceptanceReportError'));
         } finally {
             setAcceptanceReportSubmitting(false);
         }
@@ -213,7 +215,7 @@ const PurchaseOrdersPage = () => {
                 window.URL.revokeObjectURL(url);
             }, 60_000);
         } catch (e) {
-            setAcceptanceReportError(e?.response?.data?.error || 'Failed to load acceptance report PDF');
+            setAcceptanceReportError(e?.response?.data?.error || t('poOrders.loadAcceptanceReportPdfError'));
         }
     };
 
@@ -224,11 +226,11 @@ const PurchaseOrdersPage = () => {
         setError('');
 
         if (!deliveryNoteCode) {
-            setDeliveryNoteError('delivery_note_code is required');
+            setDeliveryNoteError(t('poOrders.deliveryNoteCodeRequired'));
             return;
         }
         if (!deliveryNoteFile) {
-            setDeliveryNoteError('digital_copy file is required');
+            setDeliveryNoteError(t('poOrders.digitalCopyRequired'));
             return;
         }
 
@@ -239,13 +241,13 @@ const PurchaseOrdersPage = () => {
             fd.append('digital_copy', deliveryNoteFile);
             const data = await purchaseOrderService.createDeliveryNote(deliveryNotePo.purchase_order_id, fd);
             const dnId = data?.delivery_note_id;
-            setSuccess(dnId ? `Delivery note #${dnId} created` : 'Delivery note created');
+            setSuccess(dnId ? t('poOrders.deliveryNoteCreatedWithId', { id: dnId }) : t('poOrders.deliveryNoteCreated'));
 
             const info = await purchaseOrderService.getDeliveryNote(deliveryNotePo.purchase_order_id);
             setDeliveryNoteInfo(info);
             await loadOrders();
         } catch (e) {
-            setDeliveryNoteError(e?.response?.data?.error || 'Failed to create delivery note');
+            setDeliveryNoteError(e?.response?.data?.error || t('poOrders.createDeliveryNoteError'));
         } finally {
             setDeliveryNoteSubmitting(false);
         }
@@ -269,7 +271,7 @@ const PurchaseOrdersPage = () => {
             const info = await purchaseOrderService.getInvoice(order.purchase_order_id);
             setInvoiceInfo(info);
         } catch (e) {
-            setInvoiceError(e?.response?.data?.error || 'Failed to load invoice');
+            setInvoiceError(e?.response?.data?.error || t('poOrders.loadInvoiceError'));
         } finally {
             setInvoiceLoading(false);
         }
@@ -282,7 +284,7 @@ const PurchaseOrdersPage = () => {
         setError('');
 
         if (!invoiceFile) {
-            setInvoiceError('digital_copy file is required');
+            setInvoiceError(t('poOrders.digitalCopyRequired'));
             return;
         }
 
@@ -292,13 +294,13 @@ const PurchaseOrdersPage = () => {
             fd.append('digital_copy', invoiceFile);
             const data = await purchaseOrderService.createInvoice(invoicePo.purchase_order_id, fd);
             const invId = data?.invoice_id;
-            setSuccess(invId ? `Invoice #${invId} created` : 'Invoice created');
+            setSuccess(invId ? t('poOrders.invoiceCreatedWithId', { id: invId }) : t('poOrders.invoiceCreated'));
 
             const info = await purchaseOrderService.getInvoice(invoicePo.purchase_order_id);
             setInvoiceInfo(info);
             await loadOrders();
         } catch (e) {
-            setInvoiceError(e?.response?.data?.error || 'Failed to create invoice');
+            setInvoiceError(e?.response?.data?.error || t('poOrders.createInvoiceError'));
         } finally {
             setInvoiceSubmitting(false);
         }
@@ -316,7 +318,7 @@ const PurchaseOrdersPage = () => {
                 window.URL.revokeObjectURL(url);
             }, 60_000);
         } catch (e) {
-            setInvoiceError(e?.response?.data?.error || 'Failed to load invoice PDF');
+            setInvoiceError(e?.response?.data?.error || t('poOrders.loadInvoicePdfError'));
         }
     };
 
@@ -328,7 +330,7 @@ const PurchaseOrdersPage = () => {
             const data = await purchaseOrderService.getAll();
             setOrders(Array.isArray(data) ? data : (data?.results || []));
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to load purchase orders');
+            setError(e?.response?.data?.error || t('poOrders.loadOrdersError'));
         } finally {
             setLoading(false);
         }
@@ -367,18 +369,18 @@ const PurchaseOrdersPage = () => {
     };
 
     const getStatusText = (o) => {
-        if (o.has_remaining === false) return 'Received';
-        if (o.has_remaining === true) return 'Partial';
-        return 'Pending';
+        if (o.has_remaining === false) return t('poOrders.statusReceived');
+        if (o.has_remaining === true) return t('poOrders.statusPartial');
+        return t('poOrders.statusPending');
     };
 
     return (
         <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div>
-                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>Purchase Orders</h1>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>{t('poOrders.title')}</h1>
                     <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
-                        Manage procurement, track shipments, and oversee supplier deliveries.
+                        {t('poOrders.subtitle')}
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -390,7 +392,7 @@ const PurchaseOrdersPage = () => {
                         style={{ padding: 'var(--space-3) var(--space-4)' }}
                     >
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        <span>Refresh</span>
+                        <span>{t('common.refresh')}</span>
                     </button>
                     {isStockConsumableResponsible && (
                         <button 
@@ -400,7 +402,7 @@ const PurchaseOrdersPage = () => {
                             style={{ padding: 'var(--space-3) var(--space-6)' }}
                         >
                             <Plus size={18} />
-                            <span>New Order</span>
+                            <span>{t('poOrders.newOrder')}</span>
                         </button>
                     )}
                 </div>
@@ -420,7 +422,7 @@ const PurchaseOrdersPage = () => {
                     />
                     <input 
                         type="text" 
-                        placeholder="Search by ID, code, or supplier..." 
+                        placeholder={t('poOrders.searchPlaceholder')} 
                         className="form-input"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -436,16 +438,16 @@ const PurchaseOrdersPage = () => {
                 {loading ? (
                     <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
                         <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                        <span style={{ fontSize: 'var(--font-size-lg)' }}>Loading orders...</span>
+                        <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('poOrders.loadingOrders')}</span>
                     </div>
                 ) : filteredOrders.length === 0 ? (
                     <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
                         <div className="empty-state-icon">
                             <Package size={64} />
                         </div>
-                        <h3 className="empty-state-title">No orders found</h3>
+                        <h3 className="empty-state-title">{t('poOrders.noOrdersFound')}</h3>
                         <p className="empty-state-text">
-                            {searchTerm ? `No results for "${searchTerm}"` : "You haven't created any purchase orders yet."}
+                            {searchTerm ? t('poOrders.noResultsFor', { term: searchTerm }) : t('poOrders.noOrdersYet')}
                         </p>
                     </div>
                 ) : (
@@ -487,7 +489,7 @@ const PurchaseOrdersPage = () => {
                                                 </span>
                                             </div>
                                             <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                                {o.purchase_order_code || 'Unnamed Order'}
+                                                {o.purchase_order_code || t('poOrders.unnamedOrder')}
                                             </h3>
                                         </div>
                                         <button 
@@ -502,7 +504,7 @@ const PurchaseOrdersPage = () => {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-5)' }}>
                                         <Building2 size={16} />
                                         <span style={{ fontSize: 'var(--font-size-sm)' }}>
-                                            {o.supplier_name || (o.supplier_id ? `Supplier #${o.supplier_id}` : 'No supplier')}
+                                            {o.supplier_name || (o.supplier_id ? t('poOrders.supplierWithId', { id: o.supplier_id }) : t('poOrders.noSupplier'))}
                                         </span>
                                     </div>
 
@@ -518,19 +520,19 @@ const PurchaseOrdersPage = () => {
                                             style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)' }}
                                             onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/receive`)}
                                             disabled={o.has_remaining === false}
-                                            title="Receive items"
+                                            title={t('poOrders.receiveItems')}
                                         >
                                             <Package size={18} />
-                                            <span>Receive</span>
+                                            <span>{t('poOrders.receive')}</span>
                                         </button>
                                         <button 
                                             className="btn btn-secondary" 
                                             style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)' }}
                                             onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/backorder-reports`)}
-                                            title="Backorders"
+                                            title={t('poOrders.backorders')}
                                         >
                                             <History size={18} />
-                                            <span>History</span>
+                                            <span>{t('poOrders.history')}</span>
                                         </button>
                                         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
                                             <button 
@@ -538,10 +540,10 @@ const PurchaseOrdersPage = () => {
                                                 style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)', width: '100%' }}
                                                 onClick={() => openAcceptanceReportModal(o)}
                                                 disabled={isStockConsumableResponsible ? (o.has_remaining !== false) : false}
-                                                title="Acceptance Report"
+                                                title={t('poOrders.acceptanceReport')}
                                             >
                                                 <ClipboardCheck size={18} />
-                                                <span>Report</span>
+                                                <span>{t('poOrders.report')}</span>
                                             </button>
                                         </div>
                                     </div>
@@ -554,7 +556,7 @@ const PurchaseOrdersPage = () => {
                                             disabled={o.has_remaining !== false}
                                         >
                                             <FileText size={14} />
-                                            <span>Delivery Note</span>
+                                            <span>{t('poOrders.deliveryNote')}</span>
                                         </button>
                                         <button 
                                             className="btn btn-secondary" 
@@ -563,7 +565,7 @@ const PurchaseOrdersPage = () => {
                                             disabled={o.has_remaining !== false}
                                         >
                                             <Receipt size={14} />
-                                            <span>Invoice</span>
+                                            <span>{t('poOrders.invoice')}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -578,7 +580,7 @@ const PurchaseOrdersPage = () => {
                     <div className="modal" style={{ maxWidth: '600px' }}>
                         <div className="modal-header">
                             <div>
-                                <h2 className="modal-title">Delivery Note</h2>
+                                <h2 className="modal-title">{t('poOrders.deliveryNote')}</h2>
                                 <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
                                     PO #{deliveryNotePo.purchase_order_id} • {deliveryNotePo.purchase_order_code}
                                 </p>
@@ -598,26 +600,26 @@ const PurchaseOrdersPage = () => {
                             {deliveryNoteLoading ? (
                                 <div className="loading-state">
                                     <div className="loading-spinner"></div>
-                                    <span>Fetching details...</span>
+                                    <span>{t('poOrders.fetchingDetails')}</span>
                                 </div>
                             ) : deliveryNoteInfo?.exists ? (
                                 <div className="form">
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                         <div className="form-group">
-                                            <label className="form-label">Note ID</label>
+                                            <label className="form-label">{t('poOrders.noteId')}</label>
                                             <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
                                                 {deliveryNoteInfo.delivery_note_id}
                                             </div>
                                         </div>
                                         <div className="form-group">
-                                            <label className="form-label">Issue Date</label>
+                                            <label className="form-label">{t('poOrders.issueDate')}</label>
                                             <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
                                                 {deliveryNoteInfo.delivery_note_date}
                                             </div>
                                         </div>
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label">Reference Code</label>
+                                        <label className="form-label">{t('poOrders.referenceCode')}</label>
                                         <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
                                             {deliveryNoteInfo.delivery_note_code}
                                         </div>
@@ -630,26 +632,26 @@ const PurchaseOrdersPage = () => {
                                         disabled={!deliveryNoteInfo.has_digital_copy}
                                     >
                                         <Download size={18} />
-                                        <span>Download PDF</span>
+                                        <span>{t('poOrders.downloadPdf')}</span>
                                     </button>
                                 </div>
                             ) : (
                                 <div className="form">
                                     <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-                                        Register a new delivery note for this purchase order.
+                                        {t('poOrders.registerDeliveryNote')}
                                     </p>
                                     <div className="form-group">
-                                        <label className="form-label">Delivery Note Code</label>
+                                        <label className="form-label">{t('poOrders.deliveryNoteCode')}</label>
                                         <input 
                                             className="form-input" 
-                                            placeholder="Enter reference code..."
+                                            placeholder={t('poOrders.enterReferenceCode')}
                                             value={deliveryNoteCode} 
                                             onChange={(e) => setDeliveryNoteCode(e.target.value)} 
                                             disabled={deliveryNoteSubmitting} 
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label className="form-label">Digital Copy (PDF)</label>
+                                        <label className="form-label">{t('poOrders.digitalCopyPdf')}</label>
                                         <div 
                                             style={{ 
                                                 border: '2px dashed var(--color-border)', 
@@ -664,7 +666,7 @@ const PurchaseOrdersPage = () => {
                                         >
                                             <Upload size={32} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }} />
                                             <p style={{ margin: 0, fontSize: 'var(--font-size-sm)' }}>
-                                                {deliveryNoteFile ? deliveryNoteFile.name : 'Click to upload or drag and drop'}
+                                                {deliveryNoteFile ? deliveryNoteFile.name : t('poOrders.clickToUpload')}
                                             </p>
                                             <input
                                                 id="dn-file"
@@ -683,7 +685,7 @@ const PurchaseOrdersPage = () => {
                                         disabled={deliveryNoteSubmitting || !deliveryNoteCode || !deliveryNoteFile}
                                         style={{ width: '100%' }}
                                     >
-                                        {deliveryNoteSubmitting ? 'Creating...' : 'Register Delivery Note'}
+                                        {deliveryNoteSubmitting ? t('poOrders.creating') : t('poOrders.registerDeliveryNoteBtn')}
                                     </button>
                                 </div>
                             )}
@@ -697,7 +699,7 @@ const PurchaseOrdersPage = () => {
                     <div className="modal" style={{ maxWidth: '600px' }}>
                         <div className="modal-header">
                             <div>
-                                <h2 className="modal-title">Supplier Invoice</h2>
+                                <h2 className="modal-title">{t('poOrders.supplierInvoice')}</h2>
                                 <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
                                     PO #{invoicePo.purchase_order_id} • {invoicePo.purchase_order_code}
                                 </p>
@@ -717,19 +719,19 @@ const PurchaseOrdersPage = () => {
                             {invoiceLoading ? (
                                 <div className="loading-state">
                                     <div className="loading-spinner"></div>
-                                    <span>Fetching invoice...</span>
+                                    <span>{t('poOrders.fetchingInvoice')}</span>
                                 </div>
                             ) : invoiceInfo?.exists ? (
                                 <div className="form">
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                         <div className="form-group">
-                                            <label className="form-label">Invoice ID</label>
+                                            <label className="form-label">{t('poOrders.invoiceId')}</label>
                                             <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
                                                 {invoiceInfo.invoice_id}
                                             </div>
                                         </div>
                                         <div className="form-group">
-                                            <label className="form-label">Related Delivery Note</label>
+                                            <label className="form-label">{t('poOrders.relatedDeliveryNote')}</label>
                                             <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
                                                 {invoiceInfo.delivery_note_id}
                                             </div>
@@ -743,16 +745,16 @@ const PurchaseOrdersPage = () => {
                                         disabled={!invoiceInfo.has_digital_copy}
                                     >
                                         <Download size={18} />
-                                        <span>Download PDF</span>
+                                        <span>{t('poOrders.downloadPdf')}</span>
                                     </button>
                                 </div>
                             ) : (
                                 <div className="form">
                                     <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-                                        Upload the final invoice for this purchase order.
+                                        {t('poOrders.uploadInvoiceDesc')}
                                     </p>
                                     <div className="form-group">
-                                        <label className="form-label">Digital Copy (PDF)</label>
+                                        <label className="form-label">{t('poOrders.digitalCopyPdf')}</label>
                                         <div 
                                             style={{ 
                                                 border: '2px dashed var(--color-border)', 
@@ -767,7 +769,7 @@ const PurchaseOrdersPage = () => {
                                         >
                                             <Upload size={32} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }} />
                                             <p style={{ margin: 0, fontSize: 'var(--font-size-sm)' }}>
-                                                {invoiceFile ? invoiceFile.name : 'Click to upload or drag and drop'}
+                                                {invoiceFile ? invoiceFile.name : t('poOrders.clickToUpload')}
                                             </p>
                                             <input
                                                 id="inv-file"
@@ -786,7 +788,7 @@ const PurchaseOrdersPage = () => {
                                         disabled={invoiceSubmitting || !invoiceFile}
                                         style={{ width: '100%' }}
                                     >
-                                        {invoiceSubmitting ? 'Uploading...' : 'Upload Invoice'}
+                                        {invoiceSubmitting ? t('poOrders.uploading') : t('poOrders.uploadInvoice')}
                                     </button>
                                 </div>
                             )}
@@ -800,7 +802,7 @@ const PurchaseOrdersPage = () => {
                     <div className="modal" style={{ maxWidth: '800px' }}>
                         <div className="modal-header">
                             <div>
-                                <h2 className="modal-title">Acceptance Report</h2>
+                                <h2 className="modal-title">{t('poOrders.acceptanceReport')}</h2>
                                 <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
                                     PO #{acceptanceReportPo.purchase_order_id} • {acceptanceReportPo.purchase_order_code}
                                 </p>
@@ -820,19 +822,19 @@ const PurchaseOrdersPage = () => {
                             {acceptanceReportLoading ? (
                                 <div className="loading-state">
                                     <div className="loading-spinner"></div>
-                                    <span>Fetching report...</span>
+                                    <span>{t('poOrders.fetchingReport')}</span>
                                 </div>
                             ) : acceptanceReportInfo?.exists ? (
                                 <div className="form">
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
                                         <div className="form-group">
-                                            <label className="form-label">Report ID</label>
+                                            <label className="form-label">{t('poOrders.reportId')}</label>
                                             <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
                                                 {acceptanceReportInfo.acceptance_report_id}
                                             </div>
                                         </div>
                                         <div className="form-group">
-                                            <label className="form-label">Date & Time</label>
+                                            <label className="form-label">{t('poOrders.dateAndTime')}</label>
                                             <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
                                                 {acceptanceReportInfo.acceptance_report_datetime}
                                             </div>
@@ -840,16 +842,16 @@ const PurchaseOrdersPage = () => {
                                     </div>
 
                                     <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-3)' }}>
-                                        Signatures Status
+                                        {t('poOrders.signaturesStatus')}
                                     </h4>
                                     
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
                                         {[
-                                            { label: 'Director of Admin', signed: acceptanceReportInfo.is_signed_by_director_of_administration_and_support },
-                                            { label: 'Security Chief', signed: acceptanceReportInfo.is_signed_by_protection_and_security_bureau_chief },
-                                            { label: 'IT Bureau Chief', signed: acceptanceReportInfo.is_signed_by_information_technilogy_bureau_chief },
-                                            { label: 'Stock Responsible', signed: acceptanceReportInfo.acceptance_report_is_stock_item_and_consumable_responsible },
-                                            { label: 'School Headquarter', signed: acceptanceReportInfo.is_signed_by_school_headquarter },
+                                            { label: t('poOrders.sigDirectorOfAdmin'), signed: acceptanceReportInfo.is_signed_by_director_of_administration_and_support },
+                                            { label: t('poOrders.sigSecurityChief'), signed: acceptanceReportInfo.is_signed_by_protection_and_security_bureau_chief },
+                                            { label: t('poOrders.sigItBureauChief'), signed: acceptanceReportInfo.is_signed_by_information_technilogy_bureau_chief },
+                                            { label: t('poOrders.sigStockResponsible'), signed: acceptanceReportInfo.acceptance_report_is_stock_item_and_consumable_responsible },
+                                            { label: t('poOrders.sigSchoolHeadquarter'), signed: acceptanceReportInfo.is_signed_by_school_headquarter },
                                         ].map((sig, idx) => (
                                             <div key={idx} style={{ 
                                                 padding: 'var(--space-3)', 
@@ -875,13 +877,13 @@ const PurchaseOrdersPage = () => {
                                          acceptanceReportInfo?.acceptance_report_is_stock_item_and_consumable_responsible && (
                                             <button type="button" className="btn btn-primary" onClick={() => navigate(`/dashboard/purchase-orders/${acceptanceReportPo.purchase_order_id}/move-items`)}>
                                                 <Package size={18} />
-                                                <span>Move Items to Stock</span>
+                                                <span>{t('poOrders.moveItemsToStock')}</span>
                                             </button>
                                         )}
                                         {canSignAcceptanceReport && canCurrentUserSignAcceptanceReport && (
                                             <button type="button" className="btn btn-primary" onClick={submitSignAcceptanceReport}>
                                                 <PenTool size={18} />
-                                                <span>Sign Report</span>
+                                                <span>{t('poOrders.signReport')}</span>
                                             </button>
                                         )}
                                         <button
@@ -891,17 +893,17 @@ const PurchaseOrdersPage = () => {
                                             disabled={!acceptanceReportInfo.has_digital_copy}
                                         >
                                             <Download size={18} />
-                                            <span>Download PDF</span>
+                                            <span>{t('poOrders.downloadPdf')}</span>
                                         </button>
                                     </div>
                                 </div>
                             ) : isStockConsumableResponsible ? (
                                 <div className="form">
                                     <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-                                        Create a new acceptance report by uploading the digital copy.
+                                        {t('poOrders.createAcceptanceReportDesc')}
                                     </p>
                                     <div className="form-group">
-                                        <label className="form-label">Digital Copy (PDF)</label>
+                                        <label className="form-label">{t('poOrders.digitalCopyPdf')}</label>
                                         <div 
                                             style={{ 
                                                 border: '2px dashed var(--color-border)', 
@@ -916,10 +918,10 @@ const PurchaseOrdersPage = () => {
                                         >
                                             <Upload size={40} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }} />
                                             <p style={{ margin: 0, fontSize: 'var(--font-size-base)', fontWeight: '500' }}>
-                                                {acceptanceReportFile ? acceptanceReportFile.name : 'Choose a file or drag here'}
+                                                {acceptanceReportFile ? acceptanceReportFile.name : t('poOrders.chooseFile')}
                                             </p>
                                             <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                                Only PDF files are supported
+                                                {t('poOrders.onlyPdfSupported')}
                                             </p>
                                             <input
                                                 id="ar-file"
@@ -938,13 +940,13 @@ const PurchaseOrdersPage = () => {
                                         disabled={acceptanceReportSubmitting || !acceptanceReportFile}
                                         style={{ width: '100%' }}
                                     >
-                                        {acceptanceReportSubmitting ? 'Creating...' : 'Create Acceptance Report'}
+                                        {acceptanceReportSubmitting ? t('poOrders.creating') : t('poOrders.createAcceptanceReport')}
                                     </button>
                                 </div>
                             ) : (
                                 <div className="empty-state" style={{ padding: 'var(--space-10)' }}>
                                     <ClipboardCheck size={48} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }} />
-                                    <p style={{ color: 'var(--color-text-secondary)' }}>No acceptance report has been created for this order yet.</p>
+                                    <p style={{ color: 'var(--color-text-secondary)' }}>{t('poOrders.noAcceptanceReportYet')}</p>
                                 </div>
                             )}
                         </div>

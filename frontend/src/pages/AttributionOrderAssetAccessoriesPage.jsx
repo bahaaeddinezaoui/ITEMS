@@ -7,10 +7,12 @@ import {
     attributionOrderAssetStockItemAccessoryService,
     attributionOrderAssetConsumableAccessoryService,
 } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const AttributionOrderAssetAccessoriesPage = () => {
     const navigate = useNavigate();
     const { orderId, assetId } = useParams();
+    const { t } = useTranslation();
 
     const orderIdNum = useMemo(() => Number(orderId), [orderId]);
     const assetIdNum = useMemo(() => Number(assetId), [assetId]);
@@ -32,7 +34,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
 
     const loadAll = async () => {
         if (!Number.isFinite(orderIdNum) || !Number.isFinite(assetIdNum)) {
-            setError('Invalid orderId or assetId');
+            setError(t('assetAccessories.invalidIds'));
             setLoading(false);
             return;
         }
@@ -54,7 +56,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
             setStockItems(Array.isArray(stockItemsData) ? stockItemsData : (stockItemsData?.results || []));
             setConsumables(Array.isArray(consumablesData) ? consumablesData : (consumablesData?.results || []));
         } catch (err) {
-            setError('Failed to load accessories');
+            setError(t('assetAccessories.loadError'));
         } finally {
             setLoading(false);
         }
@@ -96,7 +98,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
             setSelectedStockItemId('');
             await loadAll();
         } catch (err) {
-            setError(err?.response?.data?.error || 'Failed to add stock item accessory');
+            setError(err?.response?.data?.error || t('assetAccessories.addStockError'));
         } finally {
             setSaving(false);
         }
@@ -117,7 +119,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
             setSelectedConsumableId('');
             await loadAll();
         } catch (err) {
-            setError(err?.response?.data?.error || 'Failed to add consumable accessory');
+            setError(err?.response?.data?.error || t('assetAccessories.addConsumableError'));
         } finally {
             setSaving(false);
         }
@@ -130,7 +132,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
             await attributionOrderAssetStockItemAccessoryService.delete(id);
             await loadAll();
         } catch (err) {
-            setError('Failed to remove stock item accessory');
+            setError(t('assetAccessories.removeStockError'));
         } finally {
             setSaving(false);
         }
@@ -143,7 +145,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
             await attributionOrderAssetConsumableAccessoryService.delete(id);
             await loadAll();
         } catch (err) {
-            setError('Failed to remove consumable accessory');
+            setError(t('assetAccessories.removeConsumableError'));
         } finally {
             setSaving(false);
         }
@@ -153,24 +155,24 @@ const AttributionOrderAssetAccessoriesPage = () => {
         return asset?.attribution_order != null;
     }, [asset]);
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             {/* Header Card */}
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">Accessories</h1>
+                    <h1 className="page-title">{t('assetAccessories.title')}</h1>
                     <p className="page-subtitle">
-                        Order #{orderIdNum} • {asset?.asset_name ? asset.asset_name : `Asset #${assetIdNum}`}
+                        {t('assetAccessories.order')} #{orderIdNum} • {asset?.asset_name ? asset.asset_name : `${t('assetAccessories.asset')} #${assetIdNum}`}
                     </p>
                 </div>
                 <button
                     type="button"
                     className="btn btn-secondary"
                     onClick={() => navigate(`/dashboard/attribution-orders?orderId=${orderIdNum}`)}
-                    title="Back"
-                    aria-label="Back"
+                    title={t('common.back')}
+                    aria-label={t('common.back')}
                 >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 18l-6-6 6-6" />
@@ -189,9 +191,9 @@ const AttributionOrderAssetAccessoriesPage = () => {
                             </svg>
                         </div>
                         <div>
-                            <div style={{ fontWeight: '600' }}>Asset Created</div>
+                            <div style={{ fontWeight: '600' }}>{t('assetAccessories.assetCreated')}</div>
                             <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                                This asset is already created. Accessories cannot be modified.
+                                {t('assetAccessories.assetCreatedMessage')}
                             </div>
                         </div>
                     </div>
@@ -211,7 +213,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                 <line x1="12" y1="22.08" x2="12" y2="12"/>
                             </svg>
                         </div>
-                        <h2 className="card-title" style={{ margin: 0 }}>Stock Item Accessories</h2>
+                        <h2 className="card-title" style={{ margin: 0 }}>{t('assetAccessories.stockItemAccessories')}</h2>
                         <span className="badge" style={{ marginLeft: 'auto' }}>{stockAccessories.length}</span>
                     </div>
                 </div>
@@ -219,16 +221,16 @@ const AttributionOrderAssetAccessoriesPage = () => {
                     {!isAssetCreated && (
                         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap', marginBottom: 'var(--space-6)', paddingBottom: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
                             <div className="form-group" style={{ flex: 1, minWidth: 260 }}>
-                                <label className="form-label">Add stock item</label>
+                                <label className="form-label">{t('assetAccessories.addStockItem')}</label>
                                 <select
                                     className="form-input"
                                     value={selectedStockItemId}
                                     onChange={(e) => setSelectedStockItemId(e.target.value)}
                                 >
-                                    <option value="">Select stock item...</option>
+                                    <option value="">{t('assetAccessories.selectStockItem')}</option>
                                     {stockItems.map((s) => (
                                         <option key={s.stock_item_id} value={s.stock_item_id}>
-                                            {(s.stock_item_name || `Stock Item #${s.stock_item_id}`)}
+                                            {(s.stock_item_name || `${t('assetAccessories.stockItem')} #${s.stock_item_id}`)}
                                         </option>
                                     ))}
                                 </select>
@@ -240,7 +242,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                 disabled={saving || !selectedStockItemId}
                                 style={{ width: 'auto', padding: 'var(--space-3) var(--space-6)' }}
                             >
-                                Add
+                                {t('common.add')}
                             </button>
                         </div>
                     )}
@@ -252,13 +254,13 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                 <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
                                 <line x1="12" y1="22.08" x2="12" y2="12"/>
                             </svg>
-                            <p>No stock item accessories linked.</p>
+                            <p>{t('assetAccessories.noStockItemAccessoriesLinked')}</p>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                             {stockAccessories.map((a) => {
                                 const s = stockItemLookup.get(Number(a.stock_item));
-                                const label = s?.stock_item_name || `Stock Item #${a.stock_item}`;
+                                const label = s?.stock_item_name || `${t('assetAccessories.stockItem')} #${a.stock_item}`;
                                 return (
                                     <div 
                                         key={a.id}
@@ -288,7 +290,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                                 disabled={saving}
                                                 onClick={() => removeStockAccessory(a.id)}
                                             >
-                                                Remove
+                                                {t('common.remove')}
                                             </button>
                                         )}
                                     </div>
@@ -309,7 +311,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                 <path d="M6 12c0 4 2.5 8 6 10 3.5-2 6-6 6-10" fill="none"/>
                             </svg>
                         </div>
-                        <h2 className="card-title" style={{ margin: 0 }}>Consumable Accessories</h2>
+                        <h2 className="card-title" style={{ margin: 0 }}>{t('assetAccessories.consumableAccessories')}</h2>
                         <span className="badge" style={{ marginLeft: 'auto' }}>{consumableAccessories.length}</span>
                     </div>
                 </div>
@@ -317,16 +319,16 @@ const AttributionOrderAssetAccessoriesPage = () => {
                     {!isAssetCreated && (
                         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap', marginBottom: 'var(--space-6)', paddingBottom: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
                             <div className="form-group" style={{ flex: 1, minWidth: 260 }}>
-                                <label className="form-label">Add consumable</label>
+                                <label className="form-label">{t('assetAccessories.addConsumable')}</label>
                                 <select
                                     className="form-input"
                                     value={selectedConsumableId}
                                     onChange={(e) => setSelectedConsumableId(e.target.value)}
                                 >
-                                    <option value="">Select consumable...</option>
+                                    <option value="">{t('assetAccessories.selectConsumable')}</option>
                                     {consumables.map((c) => (
                                         <option key={c.consumable_id} value={c.consumable_id}>
-                                            {(c.consumable_name || `Consumable #${c.consumable_id}`)}
+                                            {(c.consumable_name || `${t('assetAccessories.consumable')} #${c.consumable_id}`)}
                                         </option>
                                     ))}
                                 </select>
@@ -338,7 +340,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                 disabled={saving || !selectedConsumableId}
                                 style={{ width: 'auto', padding: 'var(--space-3) var(--space-6)' }}
                             >
-                                Add
+                                {t('common.add')}
                             </button>
                         </div>
                     )}
@@ -349,13 +351,13 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                 <path d="M12 2v6m0 0v14m0-14c-2 0-6 1-6 5s4 5 6 5 6-1 6-5-4-5-6-5z"/>
                                 <path d="M6 12c0 4 2.5 8 6 10 3.5-2 6-6 6-10" fill="none"/>
                             </svg>
-                            <p>No consumable accessories linked.</p>
+                            <p>{t('assetAccessories.noConsumableAccessoriesLinked')}</p>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                             {consumableAccessories.map((a) => {
                                 const c = consumableLookup.get(Number(a.consumable));
-                                const label = c?.consumable_name || `Consumable #${a.consumable}`;
+                                const label = c?.consumable_name || `${t('assetAccessories.consumable')} #${a.consumable}`;
                                 return (
                                     <div 
                                         key={a.id}
@@ -385,7 +387,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
                                                 disabled={saving}
                                                 onClick={() => removeConsumableAccessory(a.id)}
                                             >
-                                                Remove
+                                                {t('common.remove')}
                                             </button>
                                         )}
                                     </div>

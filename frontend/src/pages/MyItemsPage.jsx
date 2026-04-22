@@ -13,18 +13,27 @@ import {
     CheckCircle2,
     Hash,
     Tag,
-    XCircle
+    XCircle,
+    SlidersHorizontal,
+    ArrowUpDown,
+    ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { myItemsService, problemReportService, locationService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const MyItemsPage = () => {
     const { user, isSuperuser } = useAuth();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('assets');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+    const [sortField, setSortField] = useState('name');
+    const [sortDirection, setSortDirection] = useState('asc');
+    const [showSortMenu, setShowSortMenu] = useState(false);
 
     const [myItems, setMyItems] = useState(null);
 
@@ -55,7 +64,7 @@ const MyItemsPage = () => {
         
         if (!current) return [];
         
-        return current.filter(item => {
+        let result = current.filter(item => {
             const searchLower = searchTerm.toLowerCase();
             const name = (activeTab === 'assets' ? item.asset_name : 
                          activeTab === 'stock_items' ? item.stock_item_name : 
@@ -67,11 +76,57 @@ const MyItemsPage = () => {
                               activeTab === 'stock_items' ? item.stock_item_inventory_number : 
                               item.consumable_inventory_number) || '';
             
-            return name.toLowerCase().includes(searchLower) || 
+            const matchesSearch = name.toLowerCase().includes(searchLower) || 
                    id.includes(searchLower) || 
                    inventory.toLowerCase().includes(searchLower);
+
+            const status = activeTab === 'assets' ? item.asset_status : 
+                          activeTab === 'stock_items' ? item.stock_item_status : 
+                          item.consumable_status;
+            const matchesStatus = !filterStatus || 
+                (status && status.toLowerCase() === filterStatus.toLowerCase());
+
+            return matchesSearch && matchesStatus;
         });
-    }, [myItems, activeTab, searchTerm]);
+
+        result.sort((a, b) => {
+            let cmp = 0;
+            if (sortField === 'name') {
+                const nameA = (activeTab === 'assets' ? a.asset_name : activeTab === 'stock_items' ? a.stock_item_name : a.consumable_name || '').toLowerCase();
+                const nameB = (activeTab === 'assets' ? b.asset_name : activeTab === 'stock_items' ? b.stock_item_name : b.consumable_name || '').toLowerCase();
+                cmp = nameA.localeCompare(nameB, i18n.language === 'ar' ? 'ar' : undefined);
+            } else if (sortField === 'id') {
+                const idA = activeTab === 'assets' ? a.asset_id : activeTab === 'stock_items' ? a.stock_item_id : a.consumable_id;
+                const idB = activeTab === 'assets' ? b.asset_id : activeTab === 'stock_items' ? b.stock_item_id : b.consumable_id;
+                cmp = idA - idB;
+            } else if (sortField === 'inventory') {
+                const invA = (activeTab === 'assets' ? a.asset_inventory_number : activeTab === 'stock_items' ? a.stock_item_inventory_number : a.consumable_inventory_number || '').toLowerCase();
+                const invB = (activeTab === 'assets' ? b.asset_inventory_number : activeTab === 'stock_items' ? b.stock_item_inventory_number : b.consumable_inventory_number || '').toLowerCase();
+                cmp = invA.localeCompare(invB);
+            }
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
+
+        return result;
+    }, [myItems, activeTab, searchTerm, filterStatus, sortField, sortDirection, i18n.language]);
+
+    const sortOptions = [
+        { field: 'name', dir: 'asc', label: `${t('myItems.sortByName')} — ${t('myItems.ascending')}` },
+        { field: 'name', dir: 'desc', label: `${t('myItems.sortByName')} — ${t('myItems.descending')}` },
+        { field: 'id', dir: 'asc', label: `${t('myItems.sortById')} — ${t('myItems.ascending')}` },
+        { field: 'id', dir: 'desc', label: `${t('myItems.sortById')} — ${t('myItems.descending')}` },
+        { field: 'inventory', dir: 'asc', label: `${t('myItems.sortByInventory')} — ${t('myItems.ascending')}` },
+        { field: 'inventory', dir: 'desc', label: `${t('myItems.sortByInventory')} — ${t('myItems.descending')}` },
+    ];
+
+    const hasActiveFilters = searchTerm.trim() || filterStatus;
+
+    const clearAllFilters = () => {
+        setSearchTerm('');
+        setFilterStatus('');
+        setSortField('name');
+        setSortDirection('asc');
+    };
 
     const loadMyItems = async () => {
         try {
@@ -80,7 +135,7 @@ const MyItemsPage = () => {
             const data = await myItemsService.get();
             setMyItems(data);
         } catch {
-            setError('Failed to load your items');
+            setError(t('myItems.failedLoadItems'));
         } finally {
             setLoading(false);
         }
@@ -89,6 +144,13 @@ const MyItemsPage = () => {
     useEffect(() => {
         loadMyItems();
     }, []);
+
+    useEffect(() => {
+        if (!showSortMenu) return;
+        const handler = () => setShowSortMenu(false);
+        document.addEventListener('click', handler);
+        return () => document.removeEventListener('click', handler);
+    }, [showSortMenu]);
 
     const openReportModal = async (target) => {
         setSuccessMessage('');
@@ -142,13 +204,13 @@ const MyItemsPage = () => {
     const submitReport = async () => {
         if (!reportTarget) return;
         if (!reportObservation.trim()) {
-            setReportModalError('Please enter an observation');
+            setReportModalError(t('myItems.pleaseEnterObservation'));
             return;
         }
 
         const hasIncludedItems = selectedStockItems.length > 0 || selectedConsumables.length > 0;
         if (reportTarget.item_type === 'asset' && hasIncludedItems && !destinationLocationId) {
-            setReportModalError('Please select a destination maintenance location for the included items');
+            setReportModalError(t('myItems.selectDestForIncluded'));
             return;
         }
 
@@ -168,10 +230,10 @@ const MyItemsPage = () => {
             setShowReportModal(false);
             setReportTarget(null);
             setReportObservation('');
-            setSuccessMessage('Report submitted successfully');
+            setSuccessMessage(t('myItems.reportSubmitted'));
         } catch (e) {
-            const msg = e?.response?.data?.error || e?.message || 'Failed to submit report';
-            setReportModalError(typeof msg === 'string' ? msg : 'Failed to submit report');
+            const msg = e?.response?.data?.error || e?.message || t('myItems.failedSubmitReport');
+            setReportModalError(typeof msg === 'string' ? msg : t('myItems.failedSubmitReport'));
         } finally {
             setReportSubmitting(false);
         }
@@ -206,7 +268,7 @@ const MyItemsPage = () => {
                                     className="btn btn-secondary" 
                                     style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px' }}
                                     onClick={() => navigate(`/dashboard/my-items/assets/${id}/maintenance-timeline`)}
-                                    title="View Maintenance"
+                                    title={t('myItems.viewMaintenance')}
                                 >
                                     <Clock size={16} />
                                 </button>
@@ -215,7 +277,7 @@ const MyItemsPage = () => {
                                 className="btn btn-secondary" 
                                 style={{ padding: 'var(--space-1)', borderRadius: 'var(--radius-sm)', width: '32px', height: '32px', color: 'var(--color-error)' }}
                                 onClick={() => openReportModal({ item_type: type, item_id: id, item_label: name })}
-                                title="Report Problem"
+                                title={t('myItems.reportProblem')}
                             >
                                 <AlertCircle size={16} />
                             </button>
@@ -255,8 +317,8 @@ const MyItemsPage = () => {
                     <div className="empty-state-icon">
                         <History size={48} />
                     </div>
-                    <h3 className="empty-state-title">No history</h3>
-                    <p className="empty-state-text">No previous ownership records found.</p>
+                    <h3 className="empty-state-title">{t('myItems.noHistory')}</h3>
+                    <p className="empty-state-text">{t('myItems.noPreviousOwnership')}</p>
                 </div>
             );
         }
@@ -266,10 +328,10 @@ const MyItemsPage = () => {
                 <table className="data-table">
                     <thead>
                         <tr>
-                            <th>Item Name</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Condition</th>
+                            <th>{t('myItems.itemName')}</th>
+                            <th>{t('myItems.startDate')}</th>
+                            <th>{t('myItems.endDate')}</th>
+                            <th>{t('myItems.condition')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -288,7 +350,7 @@ const MyItemsPage = () => {
                                         <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>ID: #{itemId}</div>
                                     </td>
                                     <td>{r.start_datetime ? new Date(r.start_datetime).toLocaleDateString() : '-'}</td>
-                                    <td>{r.end_datetime ? new Date(r.end_datetime).toLocaleDateString() : 'Present'}</td>
+                                    <td>{r.end_datetime ? new Date(r.end_datetime).toLocaleDateString() : t('myItems.present')}</td>
                                     <td>
                                         <span className="badge badge-secondary">{r.condition_on_assignment || 'N/A'}</span>
                                     </td>
@@ -305,9 +367,9 @@ const MyItemsPage = () => {
         <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div>
-                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>My Items</h1>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>{t('myItems.title')}</h1>
                     <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
-                        Manage your assigned assets, stock items, and consumables.
+                        {t('myItems.subtitle')}
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -319,7 +381,7 @@ const MyItemsPage = () => {
                         style={{ padding: 'var(--space-3) var(--space-4)' }}
                     >
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        <span>Refresh</span>
+                        <span>{t('myItems.refresh')}</span>
                     </button>
                 </div>
             </div>
@@ -362,7 +424,7 @@ const MyItemsPage = () => {
                             minHeight: '44px'
                         }}
                     >
-                        Assets
+                        {t('myItems.assets')}
                     </button>
                     <button 
                         className={`btn ${activeTab === 'stock_items' ? 'btn-primary' : ''}`} 
@@ -382,7 +444,7 @@ const MyItemsPage = () => {
                             lineHeight: '1.2'
                         }}
                     >
-                        Stock Items
+                        {t('myItems.stockItems')}
                     </button>
                     <button 
                         className={`btn ${activeTab === 'consumables' ? 'btn-primary' : ''}`} 
@@ -400,51 +462,238 @@ const MyItemsPage = () => {
                             minHeight: '44px'
                         }}
                     >
-                        Consumables
+                        {t('myItems.consumables')}
                     </button>
                 </div>
             </div>
 
-            <div style={{ marginBottom: 'var(--space-6)', position: 'relative', maxWidth: '500px' }}>
-                <Search 
-                    size={18} 
-                    style={{ 
-                        position: 'absolute', 
-                        left: 'var(--space-4)', 
-                        top: '50%', 
-                        transform: 'translateY(-50%)', 
-                        color: 'var(--color-text-muted)' 
-                    }} 
-                />
-                <input 
-                    type="text" 
-                    placeholder={`Search your ${activeTab.replace('_', ' ')}...`} 
-                    className="form-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{ paddingLeft: 'var(--space-12)', height: '48px', background: 'var(--color-bg-card)' }}
-                />
-            </div>
+            {/* Search / Filter / Sort Toolbar */}
+            {!loading && !error && myItems && (
+                <div style={{
+                    display: 'flex',
+                    gap: 'var(--space-3)',
+                    alignItems: 'center',
+                    marginBottom: 'var(--space-5)',
+                    flexWrap: 'wrap'
+                }}>
+                    {/* Search */}
+                    <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
+                        <Search size={18} style={{
+                            position: 'absolute',
+                            left: 'var(--space-3)',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'var(--color-text-muted)',
+                            pointerEvents: 'none'
+                        }} />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder={t('myItems.searchPlaceholder', { type: activeTab.replace('_', ' ') })}
+                            className="form-input"
+                            style={{
+                                width: '100%',
+                                height: '42px',
+                                paddingLeft: 'var(--space-10)',
+                                paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)'
+                            }}
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                style={{
+                                    position: 'absolute',
+                                    right: 'var(--space-3)',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-text-muted)',
+                                    cursor: 'pointer',
+                                    padding: '2px',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter by Status */}
+                    <div style={{ position: 'relative', minWidth: '160px' }}>
+                        <SlidersHorizontal size={16} style={{
+                            position: 'absolute',
+                            left: 'var(--space-3)',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'var(--color-text-muted)',
+                            pointerEvents: 'none',
+                            zIndex: 1
+                        }} />
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="form-input"
+                            style={{
+                                width: '100%',
+                                height: '42px',
+                                paddingLeft: 'var(--space-10)',
+                                appearance: 'none',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            <option value="">{t('myItems.allStatuses')}</option>
+                            <option value="active">{t('myItems.statusActive')}</option>
+                            <option value="assigned">{t('myItems.statusAssigned')}</option>
+                            <option value="in_maintenance">{t('myItems.statusInMaintenance')}</option>
+                            <option value="retired">{t('myItems.statusRetired')}</option>
+                        </select>
+                    </div>
+
+                    {/* Sort */}
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowSortMenu(!showSortMenu);
+                            }}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-2)',
+                                padding: 'var(--space-2) var(--space-4)',
+                                height: '42px',
+                                border: '1px solid var(--color-border)',
+                                background: 'var(--color-bg-card)',
+                                color: 'var(--color-text-secondary)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                fontWeight: '500',
+                                fontSize: 'var(--font-size-sm)',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <ArrowUpDown size={16} />
+                            <span>{sortField === 'name' ? t('myItems.sortByName') : sortField === 'inventory' ? t('myItems.sortByInventory') : 'ID'}</span>
+                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                {sortDirection === 'asc' ? t('myItems.ascending') : t('myItems.descending')}
+                            </span>
+                            <ChevronDown size={14} style={{ transform: showSortMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                        </button>
+                        {showSortMenu && (
+                            <div
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                    position: 'absolute',
+                                    top: 'calc(100% + 4px)',
+                                    right: 0,
+                                    background: 'var(--color-bg-secondary)',
+                                    border: '1px solid var(--color-border)',
+                                    borderRadius: 'var(--radius-md)',
+                                    boxShadow: 'var(--shadow-lg)',
+                                    padding: 'var(--space-2)',
+                                    zIndex: 100,
+                                    minWidth: '200px'
+                                }}
+                            >
+                                <div style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    {t('common.sortBy')}
+                                </div>
+                                {sortOptions.map(opt => (
+                                    <button
+                                        key={`${opt.field}-${opt.dir}`}
+                                        onClick={() => {
+                                            setSortField(opt.field);
+                                            setSortDirection(opt.dir);
+                                            setShowSortMenu(false);
+                                        }}
+                                        style={{
+                                            display: 'block',
+                                            width: '100%',
+                                            textAlign: i18n.language === 'ar' ? 'right' : 'left',
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            border: 'none',
+                                            borderRadius: 'var(--radius-sm)',
+                                            cursor: 'pointer',
+                                            fontSize: 'var(--font-size-sm)',
+                                            fontWeight: sortField === opt.field && sortDirection === opt.dir ? '600' : '400',
+                                            color: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-tertiary)' : 'var(--color-text-primary)',
+                                            background: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-glow)' : 'transparent',
+                                            transition: 'all var(--transition-fast)'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
+                                                e.currentTarget.style.background = 'var(--color-bg-card-hover)';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
+                                                e.currentTarget.style.background = 'transparent';
+                                            }
+                                        }}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Clear Filters */}
+                    {hasActiveFilters && (
+                        <button
+                            onClick={clearAllFilters}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-2)',
+                                padding: 'var(--space-2) var(--space-3)',
+                                height: '42px',
+                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                background: 'rgba(239, 68, 68, 0.08)',
+                                color: 'var(--color-error)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                fontSize: 'var(--font-size-sm)',
+                                fontWeight: '500',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <X size={14} />
+                            {t('myItems.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* Results count */}
+            {!loading && !error && myItems && (
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', fontWeight: '600' }}>
+                    {t('myItems.resultCount', { count: filteredCurrentItems.length })}
+                </div>
+            )}
 
             <div style={{ marginBottom: 'var(--space-12)' }}>
                 <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <Box size={20} className="text-accent" />
-                    Currently Owned
+                    {t('myItems.currentlyOwned')}
                 </h2>
                 
                 {loading ? (
                     <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
                         <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                        <span style={{ fontSize: 'var(--font-size-lg)' }}>Loading items...</span>
+                        <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('myItems.loadingItems')}</span>
                     </div>
                 ) : filteredCurrentItems.length === 0 ? (
                     <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
                         <div className="empty-state-icon">
                             {activeTab === 'assets' ? <Box size={64} /> : activeTab === 'stock_items' ? <ShoppingCart size={64} /> : <Layers size={64} />}
                         </div>
-                        <h3 className="empty-state-title">No items found</h3>
+                        <h3 className="empty-state-title">{t('myItems.noItemsFound')}</h3>
                         <p className="empty-state-text">
-                            {searchTerm ? `No results for "${searchTerm}"` : `You don't currently have any assigned ${activeTab.replace('_', ' ')}.`}
+                            {searchTerm ? t('myItems.noResultsFor', { searchTerm }) : t('myItems.noAssignedItems', { type: activeTab.replace('_', ' ') })}
                         </p>
                     </div>
                 ) : (
@@ -457,7 +706,7 @@ const MyItemsPage = () => {
             <div>
                 <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                     <History size={20} className="text-accent" />
-                    Ownership History
+                    {t('myItems.ownershipHistory')}
                 </h2>
                 <div className="card" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
                     {loading ? (
@@ -500,7 +749,7 @@ const MyItemsPage = () => {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Report a problem</h2>
+                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>{t('myItems.reportProblemTitle')}</h2>
                             <button
                                 className="btn btn-secondary"
                                 style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
@@ -511,7 +760,7 @@ const MyItemsPage = () => {
                                     }
                                 }}
                             >
-                                Close
+                                {t('common.close')}
                             </button>
                         </div>
 
@@ -537,7 +786,7 @@ const MyItemsPage = () => {
                             ) : null}
 
                             <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: 500 }}>
-                                Observation
+                                {t('myItems.observation')}
                             </label>
                             <textarea
                                 value={reportObservation}
@@ -558,10 +807,10 @@ const MyItemsPage = () => {
 
                             {reportTarget?.item_type === 'asset' && (
                                 <div style={{ marginBottom: 'var(--space-4)' }}>
-                                    <h3 style={{ fontSize: 'var(--font-size-md)', marginBottom: 'var(--space-2)' }}>Include other items you own</h3>
+                                    <h3 style={{ fontSize: 'var(--font-size-md)', marginBottom: 'var(--space-2)' }}>{t('myItems.includeOtherItems')}</h3>
                                     <div style={{ marginBottom: 'var(--space-3)' }}>
                                         <label style={{ display: 'block', marginBottom: 'var(--space-1)', fontWeight: 500 }}>
-                                            Destination maintenance location
+                                            {t('myItems.destinationMaintenanceLocation')}
                                         </label>
                                         <select
                                             value={destinationLocationId}
@@ -574,7 +823,7 @@ const MyItemsPage = () => {
                                                 color: 'var(--color-text)',
                                             }}
                                         >
-                                            <option value="">{loadingLocations ? 'Loading locations...' : 'Select a maintenance location'}</option>
+                                            <option value="">{loadingLocations ? t('myItems.loadingLocations') : t('myItems.selectMaintenanceLocation')}</option>
                                             {maintenanceLocations.map((r) => (
                                                 <option key={r.location_id} value={String(r.location_id)}>
                                                     {r.location_name} (#{r.location_id})
@@ -582,17 +831,17 @@ const MyItemsPage = () => {
                                             ))}
                                         </select>
                                         <div style={{ marginTop: 'var(--space-1)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                            Only maintenance locations are shown.
+                                            {t('myItems.onlyMaintenanceLocations')}
                                         </div>
                                     </div>
 
                                     {loadingEligible ? (
-                                        <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>Loading eligible items...</div>
+                                        <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>{t('myItems.loadingEligibleItems')}</div>
                                     ) : (
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                             <div>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
-                                                    <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Stock Items</h4>
+                                                    <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>{t('myItems.stockItemsLabel')}</h4>
                                                     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                                         <button
                                                             type="button"
@@ -601,7 +850,7 @@ const MyItemsPage = () => {
                                                             onClick={() => setSelectedStockItems(eligibleItems.stock_items.map((s) => s.stock_item_id))}
                                                             disabled={eligibleItems.stock_items.length === 0}
                                                         >
-                                                            Select all
+                                                            {t('myItems.selectAll')}
                                                         </button>
                                                         <button
                                                             type="button"
@@ -610,12 +859,12 @@ const MyItemsPage = () => {
                                                             onClick={() => setSelectedStockItems([])}
                                                             disabled={selectedStockItems.length === 0}
                                                         >
-                                                            Clear
+                                                            {t('common.clear')}
                                                         </button>
                                                     </div>
                                                 </div>
                                                 {eligibleItems.stock_items.length === 0 ? (
-                                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>None available</div>
+                                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{t('myItems.noneAvailable')}</div>
                                                 ) : (
                                                     <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                                         {eligibleItems.stock_items.map(s => (
@@ -633,7 +882,7 @@ const MyItemsPage = () => {
                                             </div>
                                             <div>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)' }}>
-                                                    <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>Consumables</h4>
+                                                    <h4 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-1)', color: 'var(--color-text-secondary)' }}>{t('myItems.consumablesLabel')}</h4>
                                                     <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                                                         <button
                                                             type="button"
@@ -642,7 +891,7 @@ const MyItemsPage = () => {
                                                             onClick={() => setSelectedConsumables(eligibleItems.consumables.map((c) => c.consumable_id))}
                                                             disabled={eligibleItems.consumables.length === 0}
                                                         >
-                                                            Select all
+                                                            {t('myItems.selectAll')}
                                                         </button>
                                                         <button
                                                             type="button"
@@ -651,12 +900,12 @@ const MyItemsPage = () => {
                                                             onClick={() => setSelectedConsumables([])}
                                                             disabled={selectedConsumables.length === 0}
                                                         >
-                                                            Clear
+                                                            {t('common.clear')}
                                                         </button>
                                                     </div>
                                                 </div>
                                                 {eligibleItems.consumables.length === 0 ? (
-                                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>None available</div>
+                                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{t('myItems.noneAvailable')}</div>
                                                 ) : (
                                                     <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                                         {eligibleItems.consumables.map(c => (
@@ -688,14 +937,14 @@ const MyItemsPage = () => {
                                     }}
                                     disabled={reportSubmitting}
                                 >
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button
                                     className="btn btn-primary"
                                     onClick={submitReport}
                                     disabled={reportSubmitting}
                                 >
-                                    {reportSubmitting ? 'Submitting...' : 'Submit report'}
+                                    {reportSubmitting ? t('common.saving') : t('myItems.reportProblem')}
                                 </button>
                             </div>
                         </div>

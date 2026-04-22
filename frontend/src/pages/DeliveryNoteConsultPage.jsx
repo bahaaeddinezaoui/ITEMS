@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { purchaseOrderService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const DeliveryNoteConsultPage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
     const { orderId } = useParams();
+    const { t } = useTranslation();
 
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -33,11 +35,11 @@ const DeliveryNoteConsultPage = () => {
                 const deliveryInfo = await purchaseOrderService.getDeliveryNote(orderId);
                 setInfo(deliveryInfo);
                 if (!deliveryInfo?.exists) {
-                    setError('Delivery note not found');
+                    setError(t('deliveryNote.notFound'));
                     return;
                 }
                 if (!deliveryInfo?.has_digital_copy) {
-                    setError('No PDF stored for this delivery note');
+                    setError(t('deliveryNote.noPdf'));
                     return;
                 }
 
@@ -49,7 +51,7 @@ const DeliveryNoteConsultPage = () => {
                     return url;
                 });
             } catch (e) {
-                setError(e?.response?.data?.error || 'Failed to load delivery note');
+                setError(e?.response?.data?.error || t('deliveryNote.loadError'));
             } finally {
                 setLoading(false);
             }
@@ -65,11 +67,11 @@ const DeliveryNoteConsultPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">Delivery note</h1>
-                    <p className="page-subtitle">Purchase order #{orderId}{info?.delivery_note_code ? ` • Code: ${info.delivery_note_code}` : ''}</p>
+                    <h1 className="page-title">{t('deliveryNote.title')}</h1>
+                    <p className="page-subtitle">{t('deliveryNote.purchaseOrder')} #{orderId}{info?.delivery_note_code ? ` • ${t('deliveryNote.code')}: ${info.delivery_note_code}` : ''}</p>
                 </div>
                 <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                    Back
+                    {t('common.back')}
                 </button>
             </div>
 
@@ -80,10 +82,10 @@ const DeliveryNoteConsultPage = () => {
             )}
 
             {loading ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
             ) : pdfUrl ? (
                 <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden', height: '78vh' }}>
-                    <iframe title="Delivery note PDF" src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none', background: 'var(--color-bg-secondary)' }} />
+                    <iframe title={t('deliveryNote.pdfTitle')} src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none', background: 'var(--color-bg-secondary)' }} />
                 </div>
             ) : null}
         </div>

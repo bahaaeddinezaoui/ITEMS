@@ -1,259 +1,213 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { organizationalStructureService, organizationalStructureRelationService, organizationalStructureTypeService } from '../services/api';
+import TranslatableInput from '../components/TranslatableInput';
+import { Search, SlidersHorizontal, ArrowUpDown, Building2, Plus, X, Pencil, Trash2, Network, ChevronDown, XCircle, Check } from 'lucide-react';
 
-// Form Tab Component
-const FormTabContent = ({ editingId, formData, handleFormChange, handleSubmit, handleCancel, structureTypes, structureTypesLoading, t }) => (
-    <div className="card">
-        <div className="card-body">
-            <div className="form-header" style={{ marginBottom: 'var(--space-6)' }}>
-                <h3 className="form-title">{editingId ? t('organizationalStructure.editStructure') : t('organizationalStructure.addStructure')}</h3>
-                <p className="form-subtitle">
-                    {editingId ? t('organizationalStructure.updateDetails') : t('organizationalStructure.createNew')}
-                </p>
-            </div>
+const getBilingualStructureName = (item, currentLang) => {
+    const nameAr = item.structure_name_ar;
+    const nameEn = item.structure_name_en;
+    if (currentLang === 'ar') {
+        if (nameAr && nameEn && nameAr !== nameEn) return `${nameAr} (${nameEn})`;
+        return nameAr || nameEn || item.structure_name;
+    } else {
+        if (nameEn && nameAr && nameEn !== nameAr) return `${nameEn} (${nameAr})`;
+        return nameEn || nameAr || item.structure_name;
+    }
+};
 
-            <form onSubmit={handleSubmit}>
-                <div className="form-row">
-                    <div className="form-group">
-                        <label className="form-label">{t('organizationalStructure.structureCode')} *</label>
-                        <input
-                            type="text"
-                            name="structure_code"
-                            value={formData.structure_code}
-                            onChange={handleFormChange}
-                            required
-                            className="form-control"
-                            placeholder={t('organizationalStructure.codePlaceholder')}
-                        />
-                    </div>
+const getBilingualStructureTypeLabel = (item, currentLang) => {
+    const labelAr = item.structure_type_label_ar || item.organizational_structure_type_ar;
+    const labelEn = item.structure_type_label_en || item.organizational_structure_type_en || item.structure_type_label || item.organizational_structure_type;
+    if (currentLang === 'ar') {
+        return labelAr || labelEn || '';
+    } else {
+        return labelEn || labelAr || '';
+    }
+};
 
-                    <div className="form-group">
-                        <label className="form-label">{t('organizationalStructure.structureType')} *</label>
-                        <select
-                            name="structure_type_id"
-                            value={formData.structure_type_id}
-                            onChange={handleFormChange}
-                            required
-                            className="form-control"
-                            disabled={structureTypesLoading}
-                        >
-                            <option value="">{structureTypesLoading ? t('common.loading') : t('organizationalStructure.selectType')}</option>
-                            {structureTypes.map(type => (
-                                <option key={type.organizational_structure_type_id} value={type.organizational_structure_type_id}>
-                                    {type.organizational_structure_type}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
+const inputStyle = {
+    width: '100%', padding: '12px 14px', background: 'rgba(15, 23, 42, 0.8)',
+    border: '1px solid rgba(71, 85, 105, 0.5)', borderRadius: '10px',
+    fontSize: '14px', color: '#f1f5f9', fontFamily: 'inherit', outline: 'none', transition: 'all 0.2s ease'
+};
+const labelStyle = {
+    display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600',
+    color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px'
+};
+const focusBorder = (e) => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.15)'; };
+const blurBorder = (e) => { e.target.style.borderColor = 'rgba(71, 85, 105, 0.5)'; e.target.style.boxShadow = 'none'; };
 
-                <div className="form-group">
-                    <label className="form-label">{t('organizationalStructure.structureName')} *</label>
-                    <input
-                        type="text"
-                        name="structure_name"
-                        value={formData.structure_name}
-                        onChange={handleFormChange}
-                        required
-                        className="form-control"
-                        placeholder={t('organizationalStructure.namePlaceholder')}
-                    />
-                </div>
-
-                <div className="form-group form-group-checkbox">
-                    <label className="form-checkbox-label">
-                        <input
-                            type="checkbox"
-                            name="is_active"
-                            checked={formData.is_active}
-                            onChange={handleFormChange}
-                            className="form-checkbox"
-                        />
-                        <span>{t('organizationalStructure.activeStructure')}</span>
-                    </label>
-                    <span className="form-hint">{t('organizationalStructure.inactiveHint')}</span>
-                </div>
-
-                <div className="form-actions">
-                    <button type="submit" className="btn btn-primary">
-                        {editingId ? t('common.saveChanges') : t('organizationalStructure.createStructure')}
-                    </button>
-                    {editingId && (
-                        <button type="button" onClick={handleCancel} className="btn btn-secondary">
-                            {t('common.cancel')}
-                        </button>
-                    )}
-                </div>
-            </form>
-        </div>
-    </div>
-);
-
-// Modal Component for Hierarchy Configuration
-const HierarchyModal = ({
-    isOpen,
-    onClose,
-    selectedStructure,
-    structures,
-    relations,
-    relationFormData,
-    handleRelationFormChange,
-    handleSubmitRelation,
-    editingRelation,
-    handleCancelRelation,
-    handleEditRelation,
-    handleDeleteRelation,
-    t
-}) => {
-    const { t: tHook } = useTranslation();
-    const tFunc = t || tHook;
-    if (!isOpen || !selectedStructure) return null;
+// Modal for Add/Edit Structure
+const StructureFormModal = ({ isOpen, onClose, editingId, formData, handleFormChange, handleInputChange, handleSubmit, structureTypes, structureTypesLoading, saving, formTranslations, handleFormTranslationChange }) => {
+    const { t, i18n } = useTranslation();
+    if (!isOpen) return null;
 
     return (
-        <div className="hierarchy-modal-overlay" onClick={onClose}>
-            <div className="hierarchy-modal-dialog" onClick={(e) => e.stopPropagation()}>
-                <div className="hierarchy-modal-header">
-                    <div className="hierarchy-header-left">
-                        <div className="hierarchy-header-icon">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
-                            </svg>
+        <div className="modal-overlay" onClick={onClose} style={{ background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)' }}>
+            <div className="modal" style={{ maxWidth: '520px', width: '90%', borderRadius: '16px', border: '1px solid rgba(148, 163, 184, 0.2)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+                <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <div style={{ width: '44px', height: '44px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
+                                {editingId ? <Pencil size={22} /> : <Plus size={22} />}
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', letterSpacing: '-0.5px' }}>{editingId ? t('organizationalStructure.editStructure') : t('organizationalStructure.newStructure')}</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '14px', opacity: 0.9, fontWeight: '500' }}>{editingId ? t('organizationalStructure.updateDetails') : t('organizationalStructure.createNew')}</p>
+                            </div>
                         </div>
-                        <div className="hierarchy-header-text">
-                            <h3 className="hierarchy-modal-title">{tFunc('organizationalStructure.hierarchyConfiguration')}</h3>
-                            <p className="hierarchy-modal-subtitle">
-                                {selectedStructure.structure_name} <span className="hierarchy-code-badge">{selectedStructure.structure_code}</span>
-                            </p>
-                        </div>
+                        <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', transition: 'all 0.2s ease', backdropFilter: 'blur(10px)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}>
+                            <X size={18} />
+                        </button>
                     </div>
-                    <button className="hierarchy-close-btn" onClick={onClose} aria-label={tFunc('common.close')}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                    </button>
+                </div>
+                <div style={{ padding: '28px', background: '#0f172a' }}>
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                            <div>
+                                <label style={labelStyle}>{t('organizationalStructure.structureCode')} <span style={{ color: '#ef4444' }}>*</span></label>
+                                <input type="text" name="structure_code" value={formData.structure_code} onChange={handleFormChange} required placeholder={t('organizationalStructure.codePlaceholder')} style={inputStyle} onFocus={focusBorder} onBlur={blurBorder} />
+                            </div>
+                            <div>
+                                <label style={labelStyle}>{t('organizationalStructure.structureType')} <span style={{ color: '#ef4444' }}>*</span></label>
+                                <select name="structure_type_id" value={formData.structure_type_id} onChange={handleFormChange} required disabled={structureTypesLoading} style={{ ...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: '36px' }} onFocus={focusBorder} onBlur={blurBorder}>
+                                    <option value="" style={{ background: '#0f172a' }}>{structureTypesLoading ? t('common.loading') : t('organizationalStructure.selectType')}</option>
+                                    {structureTypes.map(type => (
+                                        <option key={type.organizational_structure_type_id} value={type.organizational_structure_type_id} style={{ background: '#0f172a' }}>
+                                            {getBilingualStructureTypeLabel(type, i18n.language) || type.organizational_structure_type}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div style={{ marginBottom: '20px' }}>
+                            <TranslatableInput
+                                label={t('organizationalStructure.structureName')}
+                                baseFieldName="structure_name"
+                                value={formData.structure_name}
+                                onChange={handleInputChange}
+                                translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.structure_name || '']))}
+                                onTranslationChange={(langCode, value) => handleFormTranslationChange(langCode, { structure_name: value })}
+                                required
+                                placeholder={t('organizationalStructure.namePlaceholder')}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: '14px 16px', background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(71, 85, 105, 0.4)', borderRadius: '12px', marginBottom: '24px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', cursor: 'pointer', fontWeight: '500', color: '#f1f5f9', fontSize: '14px' }}>
+                                <input type="checkbox" name="is_active" checked={formData.is_active} onChange={handleFormChange} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+                                {t('organizationalStructure.activeStructure')}
+                            </label>
+                            <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#64748b' }}>{t('organizationalStructure.inactiveHint')}</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button type="submit" disabled={saving} style={{ flex: 1, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', border: 'none', borderRadius: '10px', padding: '14px 24px', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.5)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(99, 102, 241, 0.4)'; }}>
+                                {saving ? <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><span className="loading-spinner" style={{ width: '16px', height: '16px' }}></span>{t('common.saving')}</span> : <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>{editingId ? <Pencil size={18} /> : <Plus size={18} />}{editingId ? t('common.saveChanges') : t('organizationalStructure.createStructure')}</span>}
+                            </button>
+                            <button type="button" onClick={onClose} style={{ padding: '14px 24px', background: 'rgba(71, 85, 105, 0.3)', border: '1px solid rgba(71, 85, 105, 0.5)', borderRadius: '10px', color: '#cbd5e1', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(71, 85, 105, 0.5)'; e.currentTarget.style.color = '#f1f5f9'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(71, 85, 105, 0.3)'; e.currentTarget.style.color = '#cbd5e1'; }}>
+                                {t('common.cancel')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Modal for Hierarchy Configuration
+const HierarchyModal = ({
+    isOpen, onClose, selectedStructure, structures, relations,
+    relationFormData, handleRelationFormChange, handleSubmitRelation,
+    editingRelation, handleCancelRelation, handleEditRelation, handleDeleteRelation
+}) => {
+    const { t, i18n } = useTranslation();
+    if (!isOpen || !selectedStructure) return null;
+
+    const hasRelation = relations.length > 0;
+
+    return (
+        <div className="modal-overlay" onClick={onClose} style={{ background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)' }}>
+            <div className="modal" style={{ maxWidth: '520px', width: '90%', borderRadius: '16px', border: '1px solid rgba(148, 163, 184, 0.2)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+                <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white', position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                            <div style={{ width: '44px', height: '44px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
+                                <Network size={22} />
+                            </div>
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', letterSpacing: '-0.5px' }}>{t('organizationalStructure.hierarchyConfiguration')}</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '14px', opacity: 0.9, fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    {getBilingualStructureName(selectedStructure, i18n.language)}
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', padding: '1px 8px', background: 'rgba(255,255,255,0.2)', borderRadius: '6px', fontSize: '12px', fontWeight: '600' }}>{selectedStructure.structure_code}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '10px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', transition: 'all 0.2s ease', backdropFilter: 'blur(10px)' }} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}>
+                            <X size={18} />
+                        </button>
+                    </div>
                 </div>
 
-                <div className="hierarchy-modal-body">
-                    {/* Current Parent Display */}
-                    {relations.length > 0 && !editingRelation && (
-                        <div className="hierarchy-section">
-                            <div className="hierarchy-section-header">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
-                                </svg>
-                                <span>{tFunc('organizationalStructure.currentParent')}</span>
-                            </div>
-                            
-                            {relations.map((relation) => {
-                                const parentStructure = structures.find(s => s.organizational_structure_id === relation.parent_organizational_structure);
-                                return parentStructure ? (
-                                    <div key={relation.parent_organizational_structure} className="hierarchy-connected-card">
-                                        <div className="hierarchy-connected-info">
-                                            <div className="hierarchy-connected-indicator">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
-                                                </svg>
-                                            </div>
-                                            <div className="hierarchy-connected-text">
-                                                <span className="hierarchy-connected-label">{tFunc('organizationalStructure.parentStructure')}</span>
-                                                <span className="hierarchy-connected-name">
-                                                    {parentStructure.structure_name} ({parentStructure.structure_code})
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="hierarchy-connected-actions">
-                                            <button 
-                                                className="hierarchy-btn hierarchy-btn-outline"
-                                                onClick={() => handleEditRelation(relation)}
-                                            >
-                                                {tFunc('common.change')}
-                                            </button>
-                                            <button 
-                                                className="hierarchy-btn hierarchy-btn-danger-outline"
-                                                onClick={() => handleDeleteRelation(relation.child_organizational_structure, relation.parent_organizational_structure)}
-                                            >
-                                                {tFunc('common.remove')}
-                                            </button>
-                                        </div>
+                <div style={{ padding: '28px', background: '#0f172a' }}>
+                    {hasRelation && !editingRelation ? (
+                        <div style={{ background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '14px', padding: '20px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)' }}>
+                                    <Check size={24} color="white" strokeWidth={2.5} />
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '11px', color: '#86efac', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600', marginBottom: '4px' }}>{t('organizationalStructure.currentParent')}</div>
+                                    <div style={{ fontWeight: '700', color: '#f0fdf4', fontSize: '17px', letterSpacing: '-0.3px' }}>
+                                        {relations.map((relation) => {
+                                            const parentStructure = structures.find(s => s.organizational_structure_id === relation.parent_organizational_structure);
+                                            return parentStructure ? getBilingualStructureName(parentStructure, i18n.language) : '';
+                                        }).join(', ')}
                                     </div>
-                                ) : null;
-                            })}
-                        </div>
-                    )}
-
-                    {/* Parent Assignment Form */}
-                    {(editingRelation || (relations.length === 0 && selectedStructure)) && (
-                        <div className="hierarchy-section hierarchy-form-section">
-                            <div className="hierarchy-section-header">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M12 5v14"/><path d="M5 12h14"/>
-                                </svg>
-                                <span>{editingRelation?.parent_organizational_structure ? tFunc('organizationalStructure.changeParent') : tFunc('organizationalStructure.assignParent')}</span>
+                                </div>
                             </div>
-                            
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <button onClick={() => handleEditRelation(relations[0])} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '10px 16px', color: '#f0fdf4', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}>
+                                    <Pencil size={14} /> {t('common.change')}
+                                </button>
+                                <button onClick={() => handleDeleteRelation(relations[0].child_organizational_structure, relations[0].parent_organizational_structure)} style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '10px', padding: '10px 14px', color: '#fca5a5', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; }}>
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {(editingRelation || !hasRelation) && (
+                        <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(71, 85, 105, 0.4)', borderRadius: '14px', padding: '24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                                <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {editingRelation?.parent_organizational_structure ? <Pencil size={18} color="white" /> : <Plus size={18} color="white" />}
+                                </div>
+                                <span style={{ fontWeight: '700', color: '#f8fafc', fontSize: '16px' }}>
+                                    {editingRelation?.parent_organizational_structure ? t('organizationalStructure.changeParent') : t('organizationalStructure.assignParent')}
+                                </span>
+                            </div>
                             <form onSubmit={handleSubmitRelation}>
-                                <div className="hierarchy-form-group">
-                                    <label className="hierarchy-form-label">{tFunc('organizationalStructure.selectParentStructure')}</label>
-                                    <select
-                                        name="parent_organizational_structure"
-                                        value={relationFormData.parent_organizational_structure}
-                                        onChange={handleRelationFormChange}
-                                        required
-                                        className="hierarchy-form-select"
-                                    >
-                                        <option value="">{tFunc('organizationalStructure.chooseParent')}</option>
-                                        {structures
-                                            .filter(s => s.organizational_structure_id !== selectedStructure.organizational_structure_id)
-                                            .sort((a, b) => a.structure_name.localeCompare(b.structure_name))
-                                            .map(structure => (
-                                                <option 
-                                                    key={structure.organizational_structure_id} 
-                                                    value={structure.organizational_structure_id}
-                                                >
-                                                    {structure.structure_name} ({structure.structure_code}) - {structure.structure_type_label || 'N/A'}
-                                                </option>
-                                            ))
-                                        }
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={labelStyle}>{t('organizationalStructure.selectParentStructure')}</label>
+                                    <select name="parent_organizational_structure" value={relationFormData.parent_organizational_structure} onChange={handleRelationFormChange} required style={{ ...inputStyle, cursor: 'pointer', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center', paddingRight: '44px' }} onFocus={focusBorder} onBlur={blurBorder}>
+                                        <option value="" style={{ background: '#0f172a' }}>{t('organizationalStructure.chooseParent')}</option>
+                                        {structures.filter(s => s.organizational_structure_id !== selectedStructure.organizational_structure_id).sort((a, b) => a.structure_name.localeCompare(b.structure_name)).map(structure => (
+                                            <option key={structure.organizational_structure_id} value={structure.organizational_structure_id} style={{ background: '#0f172a' }}>
+                                                {getBilingualStructureName(structure, i18n.language)} — {getBilingualStructureTypeLabel(structure, i18n.language) || t('common.na')}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
-
-                                <div className="hierarchy-form-actions">
-                                    <button type="submit" className="hierarchy-btn hierarchy-btn-primary">
-                                        {editingRelation?.parent_organizational_structure ? tFunc('organizationalStructure.updateConnection') : tFunc('organizationalStructure.saveConnection')}
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <button type="submit" style={{ flex: 1, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', border: 'none', borderRadius: '10px', padding: '14px 24px', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.5)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(99, 102, 241, 0.4)'; }}>
+                                        {editingRelation?.parent_organizational_structure ? t('organizationalStructure.updateConnection') : t('organizationalStructure.saveConnection')}
                                     </button>
-                                    <button 
-                                        type="button" 
-                                        className="hierarchy-btn hierarchy-btn-outline"
-                                        onClick={handleCancelRelation}
-                                    >
-                                        {tFunc('common.cancel')}
+                                    <button type="button" onClick={handleCancelRelation} style={{ padding: '14px 24px', background: 'rgba(71, 85, 105, 0.3)', border: '1px solid rgba(71, 85, 105, 0.5)', borderRadius: '10px', color: '#cbd5e1', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(71, 85, 105, 0.5)'; e.currentTarget.style.color = '#f1f5f9'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(71, 85, 105, 0.3)'; e.currentTarget.style.color = '#cbd5e1'; }}>
+                                        {t('common.cancel')}
                                     </button>
                                 </div>
                             </form>
-                        </div>
-                    )}
-
-                    {/* No Parent State */}
-                    {relations.length === 0 && !editingRelation && selectedStructure && (
-                        <div className="hierarchy-section">
-                            <div className="hierarchy-empty-card">
-                                <div className="hierarchy-empty-icon">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M6 3v12"/><path d="M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M15 6H9a3 3 0 0 0-3 3v3"/>
-                                    </svg>
-                                </div>
-                                <h3 className="hierarchy-empty-title">{tFunc('organizationalStructure.noParent')}</h3>
-                                <p className="hierarchy-empty-desc">
-                                    {tFunc('organizationalStructure.noParentDesc')}
-                                </p>
-                                <button 
-                                    className="hierarchy-btn hierarchy-btn-primary"
-                                    onClick={() => handleEditRelation({})}
-                                >
-                                    {tFunc('organizationalStructure.assignParent')}
-                                </button>
-                            </div>
                         </div>
                     )}
                 </div>
@@ -262,194 +216,225 @@ const HierarchyModal = ({
     );
 };
 
-const StructuresTabContent = ({ 
-    loading, 
-    structures, 
-    handleEdit, 
-    handleDelete,
-    relationFormData,
-    handleRelationFormChange,
-    handleSubmitRelation,
-    editingRelation,
-    handleCancelRelation,
-    handleEditRelation,
-    handleDeleteRelation,
-    relations,
-    selectedStructure,
-    handleSelectStructureForRelations,
-    t
+const StructuresList = ({
+    loading, structures, handleEdit, handleDelete,
+    relationFormData, handleRelationFormChange, handleSubmitRelation,
+    editingRelation, handleCancelRelation, handleEditRelation, handleDeleteRelation,
+    relations, selectedStructure, handleSelectStructureForRelations,
+    structureTypes, t
 }) => {
+    const { i18n } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
-    const [sortField, setSortField] = useState('structure_name');
+    const [filterType, setFilterType] = useState('');
+    const [sortField, setSortField] = useState('name');
     const [sortDirection, setSortDirection] = useState('asc');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showSortMenu, setShowSortMenu] = useState(false);
+    const [isHierarchyModalOpen, setIsHierarchyModalOpen] = useState(false);
 
     useEffect(() => {
-        if (isModalOpen) {
+        if (isHierarchyModalOpen) {
             document.body.style.overflow = 'hidden';
-            const handleEsc = (e) => { if (e.key === 'Escape') handleCloseModal(); };
+            const handleEsc = (e) => { if (e.key === 'Escape') handleCloseHierarchyModal(); };
             document.addEventListener('keydown', handleEsc);
-            return () => {
-                document.body.style.overflow = '';
-                document.removeEventListener('keydown', handleEsc);
-            };
+            return () => { document.body.style.overflow = ''; document.removeEventListener('keydown', handleEsc); };
         }
         return () => { document.body.style.overflow = ''; };
-    }, [isModalOpen]);
+    }, [isHierarchyModalOpen]);
 
-    const filteredStructures = structures.filter(s =>
-        s.structure_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.structure_code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (s.structure_type_label || '').toLowerCase().includes(searchQuery.toLowerCase())
-    ).sort((a, b) => {
-        const aVal = a[sortField]?.toString().toLowerCase() || '';
-        const bVal = b[sortField]?.toString().toLowerCase() || '';
-        return sortDirection === 'asc' 
-            ? aVal.localeCompare(bVal) 
-            : bVal.localeCompare(aVal);
-    });
+    useEffect(() => {
+        if (!showSortMenu) return;
+        const handler = (e) => setShowSortMenu(false);
+        document.addEventListener('click', handler);
+        return () => document.removeEventListener('click', handler);
+    }, [showSortMenu]);
+
+    const filteredStructures = useMemo(() => {
+        let result = [...structures];
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(s =>
+                getBilingualStructureName(s, i18n.language).toLowerCase().includes(q) ||
+                s.structure_code.toLowerCase().includes(q) ||
+                (getBilingualStructureTypeLabel(s, i18n.language) || '').toLowerCase().includes(q)
+            );
+        }
+        if (filterType) {
+            result = result.filter(s => String(s.structure_type_id) === String(filterType));
+        }
+        result.sort((a, b) => {
+            let cmp = 0;
+            if (sortField === 'name') {
+                cmp = getBilingualStructureName(a, i18n.language).toLowerCase().localeCompare(getBilingualStructureName(b, i18n.language).toLowerCase(), i18n.language === 'ar' ? 'ar' : undefined);
+            } else if (sortField === 'code') {
+                cmp = a.structure_code.toLowerCase().localeCompare(b.structure_code.toLowerCase());
+            } else if (sortField === 'type') {
+                cmp = (getBilingualStructureTypeLabel(a, i18n.language) || '').toLowerCase().localeCompare((getBilingualStructureTypeLabel(b, i18n.language) || '').toLowerCase());
+            } else if (sortField === 'status') {
+                cmp = (a.is_active === b.is_active) ? 0 : a.is_active ? -1 : 1;
+            }
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
+        return result;
+    }, [structures, searchQuery, filterType, sortField, sortDirection, i18n.language]);
+
+    const hasActiveFilters = searchQuery.trim() || filterType;
+    const clearAllFilters = () => { setSearchQuery(''); setFilterType(''); setSortField('name'); setSortDirection('asc'); };
 
     const handleSelect = (structure) => {
         handleSelectStructureForRelations(structure);
-        setIsModalOpen(true);
+        setIsHierarchyModalOpen(true);
     };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleCloseHierarchyModal = () => {
+        setIsHierarchyModalOpen(false);
         handleSelectStructureForRelations(null);
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            {/* Search Header */}
-            <div className="structures-search-header">
-                <div className="search-input-wrapper">
-                    <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.35-4.35"/>
-                    </svg>
-                    <input
-                        type="text"
-                        className="search-input"
-                        placeholder={t('organizationalStructure.searchPlaceholder')}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+        <>
+            {/* Search / Filter / Sort Toolbar */}
+            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-5)', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
+                    <Search size={18} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('organizationalStructure.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '42px', paddingLeft: 'var(--space-10)', paddingRight: searchQuery ? 'var(--space-10)' : 'var(--space-4)' }} />
+                    {searchQuery && (
+                        <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                    )}
                 </div>
-                <span className="results-count">{filteredStructures.length} {t('organizationalStructure.of')} {structures.length} {t('organizationalStructure.structures')}</span>
-            </div>
-
-            {/* Structures Table */}
-            <div className="card">
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="loading-spinner" />
-                        <p>{t('organizationalStructure.loading')}</p>
-                    </div>
-                ) : filteredStructures.length === 0 ? (
-                    <div className="empty-state">
-                        <h3 className="empty-state-title">
-                            {searchQuery ? t('organizationalStructure.noStructuresFound') : t('organizationalStructure.noStructures')}
-                        </h3>
-                        <p className="empty-state-text">
-                            {searchQuery ? t('organizationalStructure.adjustSearch') : t('organizationalStructure.createToStart')}
-                        </p>
-                    </div>
-                ) : (
-                    <div className="table-container">
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th 
-                                        className="sortable-header"
-                                        onClick={() => {
-                                            setSortField('structure_code');
-                                            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                                        }}
-                                    >
-                                        {t('organizationalStructure.code')}
-                                        {sortField === 'structure_code' && (
-                                            <span className="sort-indicator">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
-                                        )}
-                                    </th>
-                                    <th 
-                                        className="sortable-header"
-                                        onClick={() => {
-                                            setSortField('structure_name');
-                                            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                                        }}
-                                    >
-                                        {t('organizationalStructure.structureName')}
-                                        {sortField === 'structure_name' && (
-                                            <span className="sort-indicator">{sortDirection === 'asc' ? ' ↑' : ' ↓'}</span>
-                                        )}
-                                    </th>
-                                    <th>{t('common.type')}</th>
-                                    <th>{t('common.status')}</th>
-                                    <th className="actions-header">{t('common.actions')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredStructures.map((structure) => (
-                                    <tr key={structure.organizational_structure_id}>
-                                        <td>
-                                            <div className="code-cell">
-                                                <div className="code-avatar">
-                                                    {structure.structure_code.slice(0, 2)}
-                                                </div>
-                                                <span className="code-text">{structure.structure_code}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="structure-name-cell">
-                                                <span className="structure-name">{structure.structure_name}</span>
-                                                <span className="structure-id">ID: {structure.organizational_structure_id}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span className="badge badge-info">{structure.structure_type_label || t('common.na')}</span>
-                                        </td>
-                                        <td>
-                                            <span className={`badge ${structure.is_active ? 'badge-success' : 'badge-warning'}`}>
-                                                {structure.is_active ? t('common.active') : t('common.inactive')}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="org-actions">
-                                                <button 
-                                                    className="btn btn-secondary btn-sm"
-                                                    onClick={() => handleEdit(structure)}
-                                                    title={t('common.edit')}
-                                                >
-                                                    ✎
-                                                </button>
-                                                <button 
-                                                    className="btn btn-secondary btn-sm"
-                                                    onClick={() => handleSelect(structure)}
-                                                >
-                                                    {t('common.select')}
-                                                </button>
-                                                <button 
-                                                    className="btn btn-secondary btn-sm btn-danger-hover"
-                                                    onClick={() => handleDelete(structure.organizational_structure_id)}
-                                                    title={t('common.delete')}
-                                                >
-                                                    🗑
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                <div style={{ position: 'relative', minWidth: '180px' }}>
+                    <SlidersHorizontal size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none', zIndex: 1 }} />
+                    <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="form-input" style={{ width: '100%', height: '42px', paddingLeft: 'var(--space-10)', appearance: 'none', cursor: 'pointer' }}>
+                        <option value="">{t('organizationalStructure.allTypes')}</option>
+                        {structureTypes.map((rt) => (
+                            <option key={rt.organizational_structure_type_id} value={rt.organizational_structure_type_id}>
+                                {getBilingualStructureTypeLabel(rt, i18n.language) || rt.organizational_structure_type}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div style={{ position: 'relative' }}>
+                    <button onClick={(e) => { e.stopPropagation(); setShowSortMenu(!showSortMenu); }} className="btn" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-4)', height: '42px', border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-text-secondary)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: '500', fontSize: 'var(--font-size-sm)', whiteSpace: 'nowrap' }}>
+                        <ArrowUpDown size={16} />
+                        <span>{sortField === 'name' ? t('organizationalStructure.sortByName') : sortField === 'code' ? t('organizationalStructure.sortByCode') : sortField === 'type' ? t('organizationalStructure.sortByType') : t('common.status')}</span>
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                        <ChevronDown size={14} style={{ transform: showSortMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                    </button>
+                    {showSortMenu && (
+                        <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-lg)', padding: 'var(--space-2)', zIndex: 100, minWidth: '200px' }}>
+                            <div style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('common.sortBy')}</div>
+                            {[
+                                { field: 'name', dir: 'asc', label: `${t('organizationalStructure.sortByName')} — ↑` },
+                                { field: 'name', dir: 'desc', label: `${t('organizationalStructure.sortByName')} — ↓` },
+                                { field: 'code', dir: 'asc', label: `${t('organizationalStructure.sortByCode')} — ↑` },
+                                { field: 'code', dir: 'desc', label: `${t('organizationalStructure.sortByCode')} — ↓` },
+                                { field: 'type', dir: 'asc', label: `${t('organizationalStructure.sortByType')} — ↑` },
+                                { field: 'type', dir: 'desc', label: `${t('organizationalStructure.sortByType')} — ↓` },
+                                { field: 'status', dir: 'asc', label: `${t('common.status')} — ↑` },
+                                { field: 'status', dir: 'desc', label: `${t('common.status')} — ↓` },
+                            ].map(opt => (
+                                <button key={`${opt.field}-${opt.dir}`} onClick={() => { setSortField(opt.field); setSortDirection(opt.dir); setShowSortMenu(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: 'var(--space-2) var(--space-3)', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: sortField === opt.field && sortDirection === opt.dir ? '600' : '400', color: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-tertiary)' : 'var(--color-text-primary)', background: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-glow)' : 'transparent', transition: 'all var(--transition-fast)' }} onMouseEnter={(e) => { if (!(sortField === opt.field && sortDirection === opt.dir)) e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }} onMouseLeave={(e) => { if (!(sortField === opt.field && sortDirection === opt.dir)) e.currentTarget.style.background = 'transparent'; }}>
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                {hasActiveFilters && (
+                    <button onClick={clearAllFilters} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '42px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: '500', whiteSpace: 'nowrap', transition: 'all var(--transition-fast)' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'; }}>
+                        <X size={14} /> {t('organizationalStructure.clearFilters')}
+                    </button>
                 )}
             </div>
 
-            {/* Hierarchy Configuration Modal */}
+            {/* Results Count */}
+            {!loading && structures.length > 0 && (
+                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <span>{t('organizationalStructure.resultCount', { count: filteredStructures.length })}</span>
+                </div>
+            )}
+
+            {/* Structures Card List */}
+            <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden', backdropFilter: 'blur(10px)', boxShadow: 'var(--shadow-md)' }}>
+                <div style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)', background: 'var(--color-bg-secondary)' }}>
+                    <Building2 size={20} style={{ color: 'var(--color-accent-primary)' }} />
+                    <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>{t('organizationalStructure.structuresAndHierarchy')}</h2>
+                    <span style={{ marginLeft: 'auto', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', background: 'var(--color-bg-card)', padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-full)' }}>
+                        {filteredStructures.length} {t('common.total')}
+                    </span>
+                </div>
+                <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
+                    {loading ? (
+                        <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
+                            <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
+                            <span>{t('common.loading')}</span>
+                        </div>
+                    ) : filteredStructures.length === 0 ? (
+                        <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                            <Building2 size={48} style={{ marginBottom: 'var(--space-4)', opacity: 0.5 }} />
+                            <p style={{ fontSize: 'var(--font-size-lg)', marginBottom: 'var(--space-2)' }}>
+                                {hasActiveFilters ? t('organizationalStructure.noStructuresFound') : t('organizationalStructure.noStructures')}
+                            </p>
+                            {hasActiveFilters && (
+                                <button onClick={clearAllFilters} style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', textDecoration: 'underline' }}>
+                                    {t('organizationalStructure.clearFilters')}
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={{ padding: 'var(--space-2)' }}>
+                            {filteredStructures.map((structure, index) => (
+                                <div key={structure.organizational_structure_id} style={{
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    padding: 'var(--space-4)', marginBottom: index === filteredStructures.length - 1 ? 0 : 'var(--space-2)',
+                                    background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)',
+                                    border: '1px solid var(--color-border)', transition: 'all var(--transition-fast)'
+                                }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-border-hover)'; e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'var(--color-bg-secondary)'; }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flex: 1, minWidth: 0 }}>
+                                        <div style={{ width: '42px', height: '42px', background: 'var(--color-accent-glow)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent-primary)', flexShrink: 0 }}>
+                                            <Building2 size={20} />
+                                        </div>
+                                        <div style={{ minWidth: 0, flex: 1 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
+                                                <span style={{ fontWeight: '600', color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {getBilingualStructureName(structure, i18n.language)}
+                                                </span>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', padding: '1px 6px', background: 'rgba(99, 102, 241, 0.12)', color: 'var(--color-accent-tertiary)', borderRadius: '4px', fontSize: '11px', fontWeight: '600', flexShrink: 0 }}>
+                                                    {structure.structure_code}
+                                                </span>
+                                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: '11px', fontWeight: '600', flexShrink: 0, background: structure.is_active ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)', color: structure.is_active ? 'var(--color-success)' : 'var(--color-warning)' }}>
+                                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: structure.is_active ? 'var(--color-success)' : 'var(--color-warning)' }}></span>
+                                                    {structure.is_active ? t('common.active') : t('common.inactive')}
+                                                </span>
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                                                {(getBilingualStructureTypeLabel(structure, i18n.language) || structure.structure_type_label) && (
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)', background: 'var(--color-bg-card)', padding: '2px var(--space-2)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
+                                                        {getBilingualStructureTypeLabel(structure, i18n.language) || structure.structure_type_label}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexShrink: 0 }}>
+                                        <button onClick={() => handleSelect(structure)} title={t('organizationalStructure.hierarchyConfiguration')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-1)', width: '36px', height: '36px', border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-text-muted)', cursor: 'pointer', borderRadius: 'var(--radius-md)', transition: 'all var(--transition-fast)' }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent-primary)'; e.currentTarget.style.color = 'var(--color-accent-primary)'; e.currentTarget.style.background = 'var(--color-accent-glow)'; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)'; e.currentTarget.style.background = 'var(--color-bg-card)'; }}>
+                                            <Network size={16} />
+                                        </button>
+                                        <button onClick={() => handleEdit(structure)} title={t('common.edit')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-text-muted)', cursor: 'pointer', borderRadius: 'var(--radius-md)', transition: 'all var(--transition-fast)' }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent-primary)'; e.currentTarget.style.color = 'var(--color-accent-primary)'; e.currentTarget.style.background = 'var(--color-accent-glow)'; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)'; e.currentTarget.style.background = 'var(--color-bg-card)'; }}>
+                                            <Pencil size={16} />
+                                        </button>
+                                        <button onClick={() => handleDelete(structure.organizational_structure_id)} title={t('common.delete')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-text-muted)', cursor: 'pointer', borderRadius: 'var(--radius-md)', transition: 'all var(--transition-fast)' }} onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--color-error)'; e.currentTarget.style.color = 'var(--color-error)'; e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'; }} onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)'; e.currentTarget.style.background = 'var(--color-bg-card)'; }}>
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
             <HierarchyModal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
+                isOpen={isHierarchyModalOpen}
+                onClose={handleCloseHierarchyModal}
                 selectedStructure={selectedStructure}
                 structures={structures}
                 relations={relations}
@@ -460,15 +445,13 @@ const StructuresTabContent = ({
                 handleCancelRelation={handleCancelRelation}
                 handleEditRelation={handleEditRelation}
                 handleDeleteRelation={handleDeleteRelation}
-                t={t}
             />
-        </div>
+        </>
     );
 };
 
 const OrganizationalStructurePage = () => {
-    const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState('structures');
+    const { t, i18n } = useTranslation();
 
     // Structures state
     const [structures, setStructures] = useState([]);
@@ -481,6 +464,7 @@ const OrganizationalStructurePage = () => {
         is_active: true,
     });
     const [editingId, setEditingId] = useState(null);
+    const [formTranslations, setFormTranslations] = useState({});
 
     // Relations state
     const [relations, setRelations] = useState([]);
@@ -495,6 +479,8 @@ const OrganizationalStructurePage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
+    const [showFormModal, setShowFormModal] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         fetchStructures();
@@ -546,17 +532,33 @@ const OrganizationalStructurePage = () => {
         }));
     }, []);
 
+    const handleInputChange = useCallback((name, value) => {
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    }, []);
+
+    const handleFormTranslationChange = useCallback((langCode, value) => {
+        setFormTranslations((prev) => ({ ...prev, [langCode]: { ...(prev[langCode] || {}), ...value } }));
+    }, []);
+
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
+        setSaving(true);
         setError(null);
         setSuccessMessage(null);
 
         try {
+            const payload = { ...formData };
+            if (Object.keys(formTranslations).length > 0) {
+                payload.translations = formTranslations;
+            }
             if (editingId) {
-                await organizationalStructureService.update(editingId, formData);
+                await organizationalStructureService.update(editingId, payload);
                 setSuccessMessage(t('messages.updateSuccess'));
             } else {
-                await organizationalStructureService.create(formData);
+                await organizationalStructureService.create(payload);
                 setSuccessMessage(t('messages.createSuccess'));
             }
 
@@ -566,12 +568,16 @@ const OrganizationalStructurePage = () => {
                 structure_type_id: '',
                 is_active: true,
             });
+            setFormTranslations({});
             setEditingId(null);
+            setShowFormModal(false);
             await fetchStructures();
         } catch (err) {
             setError(t('organizationalStructure.saveError') + ': ' + err.message);
+        } finally {
+            setSaving(false);
         }
-    }, [editingId, formData, fetchStructures]);
+    }, [editingId, formData, formTranslations, fetchStructures]);
 
     const handleEdit = useCallback((structure) => {
         setFormData({
@@ -580,8 +586,16 @@ const OrganizationalStructurePage = () => {
             structure_type_id: structure.structure_type_id || '',
             is_active: structure.is_active,
         });
+        const translations = {};
+        if (structure.structure_name_ar) {
+            translations.ar = { structure_name: structure.structure_name_ar };
+        }
+        if (structure.structure_name_en) {
+            translations.en = { structure_name: structure.structure_name_en };
+        }
+        setFormTranslations(translations);
         setEditingId(structure.organizational_structure_id);
-        setActiveTab('form');
+        setShowFormModal(true);
     }, []);
 
     const handleDelete = useCallback(async (id) => {
@@ -595,30 +609,6 @@ const OrganizationalStructurePage = () => {
             }
         }
     }, [fetchStructures]);
-
-    const handleCancel = useCallback(() => {
-        setFormData({
-            structure_code: '',
-            structure_name: '',
-            structure_type_id: '',
-            is_active: true,
-        });
-        setEditingId(null);
-    }, []);
-
-    // ============ RELATIONS HANDLERS ============
-    const fetchRelations = useCallback(async (structureId) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await organizationalStructureRelationService.getByStructureId(structureId);
-            setRelations(Array.isArray(data) ? data : []);
-        } catch (err) {
-            setError(t('organizationalStructure.fetchRelationsError') + ': ' + err.message);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
 
     const handleSelectStructureForRelations = useCallback(async (structure) => {
         setSelectedStructure(structure);
@@ -669,7 +659,6 @@ const OrganizationalStructurePage = () => {
             setEditingRelation(null);
             const data = await organizationalStructureRelationService.getByStructureId(selectedStructure.organizational_structure_id);
             setRelations(Array.isArray(data) ? data : []);
-            setActiveTab('relations_list');
         } catch (err) {
             setError(t('organizationalStructure.relationSaveError') + ': ' + err.message);
         }
@@ -706,779 +695,99 @@ const OrganizationalStructurePage = () => {
 
     // ============ MAIN RENDER ============
     return (
-        <div className="page-container org-structure-page">
-            <style>{`
-                .org-structure-page {
-                    max-width: 1400px;
-                    margin: 0 auto;
-                    padding: var(--space-6);
-                }
-
-                .page-header-section {
-                    margin-bottom: var(--space-6);
-                }
-
-                .page-title-with-icon {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-4);
-                    margin-bottom: var(--space-2);
-                }
-
-                .page-title-icon {
-                    width: 48px;
-                    height: 48px;
-                    background: var(--gradient-primary);
-                    border-radius: var(--radius-lg);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 24px;
-                    box-shadow: var(--shadow-glow);
-                }
-
-                .page-title-text h1 {
-                    font-size: var(--font-size-2xl);
-                    font-weight: 700;
-                    color: var(--color-text-primary);
-                    margin: 0;
-                }
-
-                .page-title-text p {
-                    font-size: var(--font-size-sm);
-                    color: var(--color-text-secondary);
-                    margin: 0;
-                }
-
-                /* Search Header Styles */
-                .structures-search-header {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: var(--space-4);
-                    margin-bottom: var(--space-4);
-                }
-
-                .search-input-wrapper {
-                    position: relative;
-                    flex: 1;
-                    max-width: 500px;
-                }
-
-                .search-icon {
-                    position: absolute;
-                    left: var(--space-3);
-                    top: 50%;
-                    transform: translateY(-50%);
-                    width: 20px;
-                    height: 20px;
-                    color: var(--color-text-muted);
-                    pointer-events: none;
-                }
-
-                .search-input {
-                    width: 100%;
-                    padding: var(--space-3) var(--space-4) var(--space-3) var(--space-10);
-                    background: var(--color-bg-secondary);
-                    border: 1px solid var(--color-border);
-                    border-radius: var(--radius-lg);
-                    color: var(--color-text-primary);
-                    font-size: var(--font-size-base);
-                    transition: all var(--transition-fast);
-                }
-
-                .search-input:focus {
-                    outline: none;
-                    border-color: var(--color-accent-primary);
-                    box-shadow: 0 0 0 3px var(--color-accent-glow);
-                }
-
-                .results-count {
-                    font-size: var(--font-size-sm);
-                    color: var(--color-text-secondary);
-                }
-
-                /* Table Enhancements */
-                .code-cell {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-3);
-                }
-
-                .code-avatar {
-                    width: 32px;
-                    height: 32px;
-                    background: var(--gradient-primary);
-                    border-radius: var(--radius-md);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 600;
-                    font-size: var(--font-size-xs);
-                    color: white;
-                }
-
-                .code-text {
-                    font-weight: 500;
-                    color: var(--color-text-primary);
-                }
-
-                .structure-name-cell {
-                    display: flex;
-                    flex-direction: column;
-                }
-
-                .structure-name {
-                    font-weight: 500;
-                    color: var(--color-text-primary);
-                }
-
-                .structure-id {
-                    font-size: var(--font-size-xs);
-                    color: var(--color-text-muted);
-                }
-
-                .sortable-header {
-                    cursor: pointer;
-                    user-select: none;
-                    transition: color var(--transition-fast);
-                }
-
-                .sortable-header:hover {
-                    color: var(--color-accent-primary);
-                }
-
-                .sort-indicator {
-                    margin-left: var(--space-1);
-                    color: var(--color-accent-primary);
-                }
-
-                .actions-header {
-                    text-align: right;
-                }
-
-                .selected-row {
-                    background: rgba(99, 102, 241, 0.1) !important;
-                    border-left: 3px solid var(--color-accent-primary);
-                }
-
-                /* Button Sizes */
-                .btn-sm {
-                    padding: var(--space-2) var(--space-3);
-                    font-size: var(--font-size-sm);
-                }
-
-                .btn-icon {
-                    padding: var(--space-2);
-                    width: 36px;
-                    height: 36px;
-                }
-
-                .btn-danger-hover:hover {
-                    background: rgba(239, 68, 68, 0.1);
-                    color: var(--color-error);
-                    border-color: var(--color-error);
-                }
-
-
-                /* Notification Styles */
-                .notification-error,
-                .notification-success {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-3);
-                    padding: var(--space-4);
-                    border-radius: var(--radius-lg);
-                    margin-bottom: var(--space-4);
-                    animation: slideIn 0.3s ease-out;
-                }
-
-                .notification-error {
-                    background: rgba(239, 68, 68, 0.1);
-                    border: 1px solid rgba(239, 68, 68, 0.2);
-                    color: var(--color-error);
-                }
-
-                .notification-success {
-                    background: rgba(16, 185, 129, 0.1);
-                    border: 1px solid rgba(16, 185, 129, 0.2);
-                    color: var(--color-success);
-                }
-
-                .notification-icon {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: var(--radius-full);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    flex-shrink: 0;
-                }
-
-                .notification-error .notification-icon {
-                    background: rgba(239, 68, 68, 0.2);
-                }
-
-                .notification-success .notification-icon {
-                    background: rgba(16, 185, 129, 0.2);
-                }
-
-                .notification-close {
-                    margin-left: auto;
-                    background: none;
-                    border: none;
-                    color: inherit;
-                    cursor: pointer;
-                    opacity: 0.6;
-                    transition: opacity var(--transition-fast);
-                }
-
-                .notification-close:hover {
-                    opacity: 1;
-                }
-
-                @keyframes slideIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(-10px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                /* Form Row Layout */
-                .form-row {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                    gap: var(--space-4);
-                    margin-bottom: var(--space-4);
-                }
-
-                .form-header {
-                    margin-bottom: var(--space-6);
-                }
-
-                .form-title {
-                    font-size: var(--font-size-xl);
-                    font-weight: 600;
-                    color: var(--color-text-primary);
-                    margin: 0 0 var(--space-2) 0;
-                }
-
-                .form-subtitle {
-                    font-size: var(--font-size-sm);
-                    color: var(--color-text-secondary);
-                    margin: 0;
-                }
-
-                /* Form Checkbox Styles */
-                .form-group-checkbox {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-3);
-                    padding: var(--space-4);
-                    background: var(--color-bg-secondary);
-                    border-radius: var(--radius-lg);
-                }
-
-                .form-checkbox-label {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-2);
-                    cursor: pointer;
-                    font-weight: 500;
-                }
-
-                .form-checkbox {
-                    width: 20px;
-                    height: 20px;
-                    cursor: pointer;
-                }
-
-                .form-hint {
-                    margin-left: auto;
-                    font-size: var(--font-size-xs);
-                    color: var(--color-text-muted);
-                }
-
-                /* Tab Navigation */
-                .org-tabs-modern {
-                    display: flex;
-                    gap: var(--space-2);
-                    padding: var(--space-3);
-                    border-bottom: 1px solid var(--color-border);
-                }
-
-                .org-tab-modern {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-2);
-                    padding: var(--space-3) var(--space-4);
-                    border-radius: var(--radius-lg);
-                    font-size: var(--font-size-sm);
-                    font-weight: 500;
-                    color: var(--color-text-secondary);
-                    background: transparent;
-                    border: none;
-                    cursor: pointer;
-                    transition: all var(--transition-fast);
-                }
-
-                .org-tab-modern:hover {
-                    color: var(--color-text-primary);
-                    background: var(--color-bg-card-hover);
-                }
-
-                .org-tab-modern.active {
-                    color: var(--color-accent-tertiary);
-                    background: rgba(99, 102, 241, 0.1);
-                    box-shadow: var(--shadow-sm);
-                }
-
-                .tab-indicator {
-                    width: 8px;
-                    height: 8px;
-                    background: var(--color-accent-primary);
-                    border-radius: var(--radius-full);
-                }
-
-                /* Hierarchy Modal - Overlay */
-                .hierarchy-modal-overlay {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(0, 0, 0, 0.6);
-                    backdrop-filter: blur(8px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 9999;
-                    padding: var(--space-4);
-                    animation: hierarchyFadeIn 0.2s ease-out;
-                }
-
-                /* Hierarchy Modal - Dialog */
-                .hierarchy-modal-dialog {
-                    background: var(--color-bg-primary);
-                    border: 1px solid var(--color-border);
-                    border-radius: 16px;
-                    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4),
-                                0 0 0 1px rgba(99, 102, 241, 0.1);
-                    max-width: 520px;
-                    width: 100%;
-                    max-height: calc(100vh - var(--space-8));
-                    display: flex;
-                    flex-direction: column;
-                    overflow: hidden;
-                    animation: hierarchySlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                }
-
-                /* Hierarchy Modal - Header */
-                .hierarchy-modal-header {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: var(--space-5) var(--space-6);
-                    border-bottom: 1px solid var(--color-border);
-                    background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(139, 92, 246, 0.03) 100%);
-                    flex-shrink: 0;
-                }
-
-                .hierarchy-header-left {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-3);
-                    min-width: 0;
-                }
-
-                .hierarchy-header-icon {
-                    width: 36px;
-                    height: 36px;
-                    background: var(--gradient-primary);
-                    border-radius: 10px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    flex-shrink: 0;
-                }
-
-                .hierarchy-header-text {
-                    min-width: 0;
-                }
-
-                .hierarchy-modal-title {
-                    font-size: var(--font-size-lg);
-                    font-weight: 700;
-                    color: var(--color-text-primary);
-                    margin: 0;
-                    line-height: 1.3;
-                }
-
-                .hierarchy-modal-subtitle {
-                    font-size: var(--font-size-sm);
-                    color: var(--color-text-secondary);
-                    margin: 2px 0 0 0;
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-2);
-                    flex-wrap: wrap;
-                }
-
-                .hierarchy-code-badge {
-                    display: inline-flex;
-                    align-items: center;
-                    padding: 1px 8px;
-                    background: rgba(99, 102, 241, 0.12);
-                    color: var(--color-accent-tertiary);
-                    border-radius: 6px;
-                    font-size: var(--font-size-xs);
-                    font-weight: 600;
-                    letter-spacing: 0.02em;
-                }
-
-                .hierarchy-close-btn {
-                    width: 32px;
-                    height: 32px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    background: transparent;
-                    border: 1px solid transparent;
-                    border-radius: 8px;
-                    color: var(--color-text-muted);
-                    cursor: pointer;
-                    transition: all 0.15s ease;
-                    flex-shrink: 0;
-                }
-
-                .hierarchy-close-btn:hover {
-                    background: rgba(239, 68, 68, 0.08);
-                    border-color: rgba(239, 68, 68, 0.2);
-                    color: var(--color-error);
-                }
-
-                /* Hierarchy Modal - Body */
-                .hierarchy-modal-body {
-                    padding: var(--space-5) var(--space-6);
-                    overflow-y: auto;
-                    flex: 1;
-                    min-height: 0;
-                }
-
-                /* Hierarchy Sections */
-                .hierarchy-section {
-                    margin-bottom: var(--space-5);
-                }
-
-                .hierarchy-section:last-child {
-                    margin-bottom: 0;
-                }
-
-                .hierarchy-section-header {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-2);
-                    font-size: var(--font-size-xs);
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.06em;
-                    color: var(--color-text-muted);
-                    margin-bottom: var(--space-3);
-                }
-
-                .hierarchy-section-header svg {
-                    color: var(--color-accent-primary);
-                }
-
-                /* Connected Card */
-                .hierarchy-connected-card {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: var(--space-3);
-                    padding: var(--space-4);
-                    background: rgba(16, 185, 129, 0.04);
-                    border: 1px solid rgba(16, 185, 129, 0.15);
-                    border-radius: 12px;
-                }
-
-                .hierarchy-connected-info {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--space-3);
-                    min-width: 0;
-                }
-
-                .hierarchy-connected-indicator {
-                    width: 28px;
-                    height: 28px;
-                    background: rgba(16, 185, 129, 0.12);
-                    border-radius: 8px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: var(--color-success);
-                    flex-shrink: 0;
-                }
-
-                .hierarchy-connected-text {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 2px;
-                    min-width: 0;
-                }
-
-                .hierarchy-connected-label {
-                    font-size: var(--font-size-xs);
-                    color: var(--color-text-muted);
-                }
-
-                .hierarchy-connected-name {
-                    font-size: var(--font-size-sm);
-                    font-weight: 600;
-                    color: var(--color-text-primary);
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                }
-
-                .hierarchy-connected-actions {
-                    display: flex;
-                    gap: var(--space-2);
-                    flex-shrink: 0;
-                }
-
-                /* Empty Card */
-                .hierarchy-empty-card {
-                    text-align: center;
-                    padding: var(--space-6) var(--space-4);
-                    background: var(--color-bg-secondary);
-                    border: 1px dashed var(--color-border);
-                    border-radius: 12px;
-                }
-
-                .hierarchy-empty-icon {
-                    color: var(--color-text-muted);
-                    margin-bottom: var(--space-3);
-                    opacity: 0.5;
-                }
-
-                .hierarchy-empty-title {
-                    font-size: var(--font-size-base);
-                    font-weight: 600;
-                    color: var(--color-text-primary);
-                    margin: 0 0 var(--space-1) 0;
-                }
-
-                .hierarchy-empty-desc {
-                    font-size: var(--font-size-sm);
-                    color: var(--color-text-secondary);
-                    margin: 0 0 var(--space-4) 0;
-                }
-
-                /* Form Section */
-                .hierarchy-form-section {
-                    padding-top: var(--space-5);
-                    border-top: 1px solid var(--color-border);
-                }
-
-                .hierarchy-form-group {
-                    margin-bottom: var(--space-4);
-                }
-
-                .hierarchy-form-label {
-                    display: block;
-                    font-size: var(--font-size-sm);
-                    font-weight: 500;
-                    color: var(--color-text-secondary);
-                    margin-bottom: var(--space-2);
-                }
-
-                .hierarchy-form-select {
-                    width: 100%;
-                    padding: var(--space-3) var(--space-4);
-                    background: var(--color-bg-secondary);
-                    border: 1px solid var(--color-border);
-                    border-radius: 10px;
-                    color: var(--color-text-primary);
-                    font-size: var(--font-size-sm);
-                    transition: all 0.15s ease;
-                    appearance: none;
-                    background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-                    background-repeat: no-repeat;
-                    background-position: right 12px center;
-                    padding-right: 36px;
-                }
-
-                .hierarchy-form-select:focus {
-                    outline: none;
-                    border-color: var(--color-accent-primary);
-                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
-                }
-
-                .hierarchy-form-actions {
-                    display: flex;
-                    gap: var(--space-3);
-                    padding-top: var(--space-4);
-                    border-top: 1px solid var(--color-border);
-                }
-
-                /* Hierarchy Buttons */
-                .hierarchy-btn {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 6px;
-                    padding: 8px 14px;
-                    border-radius: 8px;
-                    font-size: var(--font-size-sm);
-                    font-weight: 500;
-                    cursor: pointer;
-                    transition: all 0.15s ease;
-                    border: 1px solid transparent;
-                    white-space: nowrap;
-                }
-
-                .hierarchy-btn-primary {
-                    background: var(--gradient-primary);
-                    color: white;
-                    border: none;
-                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                }
-
-                .hierarchy-btn-primary:hover {
-                    opacity: 0.9;
-                    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-                }
-
-                .hierarchy-btn-outline {
-                    background: transparent;
-                    color: var(--color-text-secondary);
-                    border: 1px solid var(--color-border);
-                }
-
-                .hierarchy-btn-outline:hover {
-                    background: var(--color-bg-secondary);
-                    border-color: var(--color-accent-primary);
-                    color: var(--color-accent-primary);
-                }
-
-                .hierarchy-btn-danger-outline {
-                    background: transparent;
-                    color: var(--color-text-secondary);
-                    border: 1px solid var(--color-border);
-                }
-
-                .hierarchy-btn-danger-outline:hover {
-                    background: rgba(239, 68, 68, 0.06);
-                    border-color: rgba(239, 68, 68, 0.3);
-                    color: var(--color-error);
-                }
-
-                @keyframes hierarchyFadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-
-                @keyframes hierarchySlideUp {
-                    from {
-                        opacity: 0;
-                        transform: translateY(12px) scale(0.98);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0) scale(1);
-                    }
-                }
-            `}</style>
-
+        <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1200px', margin: '0 auto' }}>
             {/* Page Header */}
-            <div className="page-header-section">
-                <div className="page-title-with-icon">
-                    <div className="page-title-icon">🏢</div>
-                    <div className="page-title-text">
-                        <h1>{t('nav.organizationalStructure')}</h1>
-                        <p>{t('organizationalStructure.subtitle')}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
+                <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
+                        <div style={{ width: '44px', height: '44px', background: 'var(--gradient-primary)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: 'var(--shadow-glow)' }}>
+                            <Building2 size={22} />
+                        </div>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 0 }}>
+                            {t('nav.organizationalStructure')}
+                        </h1>
                     </div>
+                    <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)', marginLeft: '57px' }}>
+                        {t('organizationalStructure.subtitle')}
+                    </p>
                 </div>
+                <button
+                    onClick={() => {
+                        if (showFormModal) {
+                            setFormData({ structure_code: '', structure_name: '', structure_type_id: '', is_active: true });
+                            setFormTranslations({});
+                            setEditingId(null);
+                        }
+                        setShowFormModal(!showFormModal);
+                    }}
+                    className="btn btn-primary"
+                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', whiteSpace: 'nowrap' }}
+                >
+                    {showFormModal ? <X size={18} /> : <Plus size={18} />}
+                    <span>{showFormModal ? t('common.cancel') : t('organizationalStructure.newStructure')}</span>
+                </button>
             </div>
 
-            {/* Notifications */}
+            {/* Error / Success Messages */}
             {error && (
-                <div className="notification-error">
-                    <div className="notification-icon">✕</div>
-                    <p>{error}</p>
-                    <button className="notification-close" onClick={() => setError(null)}>✕</button>
+                <div className="error-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <XCircle size={20} />
+                    <span>{error}</span>
+                    <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                        <X size={18} />
+                    </button>
                 </div>
             )}
 
             {successMessage && (
-                <div className="notification-success">
-                    <div className="notification-icon">✓</div>
-                    <p>{successMessage}</p>
-                    <button className="notification-close" onClick={() => setSuccessMessage(null)}>✕</button>
+                <div className="success-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <span>{successMessage}</span>
+                    <button onClick={() => setSuccessMessage(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                        <X size={18} />
+                    </button>
                 </div>
             )}
 
-            {/* Main Content */}
-            <div className="card">
-                {/* Tab Navigation */}
-                <div className="org-tabs-modern">
-                    <button
-                        type="button"
-                        className={`org-tab-modern ${activeTab === 'structures' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('structures')}
-                    >
-                        <span>⚡</span>
-                        {t('organizationalStructure.structuresAndHierarchy')}
-                        {selectedStructure && <span className="tab-indicator"></span>}
-                    </button>
-                    <button
-                        type="button"
-                        className={`org-tab-modern ${activeTab === 'form' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('form')}
-                    >
-                        <span>{editingId ? '✎' : '+'}</span>
-                        {editingId ? t('organizationalStructure.editStructure') : t('organizationalStructure.newStructure')}
-                    </button>
-                </div>
+            {/* Structures List */}
+            <StructuresList
+                loading={loading}
+                structures={structures}
+                handleEdit={handleEdit}
+                handleDelete={handleDelete}
+                relationFormData={relationFormData}
+                handleRelationFormChange={handleRelationFormChange}
+                handleSubmitRelation={handleSubmitRelation}
+                editingRelation={editingRelation}
+                handleCancelRelation={handleCancelRelation}
+                handleEditRelation={handleEditRelation}
+                handleDeleteRelation={handleDeleteRelation}
+                relations={relations}
+                selectedStructure={selectedStructure}
+                handleSelectStructureForRelations={handleSelectStructureForRelations}
+                structureTypes={structureTypes}
+                t={t}
+            />
 
-                {/* Tab Content */}
-                <div className="card-body">
-                    {activeTab === 'structures' && (
-                        <StructuresTabContent
-                            loading={loading}
-                            structures={structures}
-                            handleEdit={handleEdit}
-                            handleDelete={handleDelete}
-                            relationFormData={relationFormData}
-                            handleRelationFormChange={handleRelationFormChange}
-                            handleSubmitRelation={handleSubmitRelation}
-                            editingRelation={editingRelation}
-                            handleCancelRelation={handleCancelRelation}
-                            handleEditRelation={handleEditRelation}
-                            handleDeleteRelation={handleDeleteRelation}
-                            relations={relations}
-                            selectedStructure={selectedStructure}
-                            handleSelectStructureForRelations={handleSelectStructureForRelations}
-                            t={t}
-                        />
-                    )}
-                    {activeTab === 'form' && (
-                        <FormTabContent
-                            editingId={editingId}
-                            formData={formData}
-                            handleFormChange={handleFormChange}
-                            handleSubmit={handleSubmit}
-                            handleCancel={handleCancel}
-                            structureTypes={structureTypes}
-                            structureTypesLoading={structureTypesLoading}
-                            t={t}
-                        />
-                    )}
-                </div>
-            </div>
+            {/* Add/Edit Structure Modal */}
+            <StructureFormModal
+                isOpen={showFormModal}
+                onClose={() => {
+                    setShowFormModal(false);
+                    setFormData({ structure_code: '', structure_name: '', structure_type_id: '', is_active: true });
+                    setFormTranslations({});
+                    setEditingId(null);
+                }}
+                editingId={editingId}
+                formData={formData}
+                handleFormChange={handleFormChange}
+                handleInputChange={handleInputChange}
+                handleSubmit={handleSubmit}
+                structureTypes={structureTypes}
+                structureTypesLoading={structureTypesLoading}
+                saving={saving}
+                formTranslations={formTranslations}
+                handleFormTranslationChange={handleFormTranslationChange}
+            />
         </div>
     );
 };

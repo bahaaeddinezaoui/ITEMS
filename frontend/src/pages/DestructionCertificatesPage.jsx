@@ -6,9 +6,11 @@ import {
     stockItemService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const DestructionCertificatesPage = () => {
     const { user, isSuperuser } = useAuth();
+    const { t } = useTranslation();
 
     const roleCodes = useMemo(() => {
         return Array.isArray(user?.roles) ? user.roles.map((r) => r.role_code).filter(Boolean) : [];
@@ -16,7 +18,7 @@ const DestructionCertificatesPage = () => {
 
     const isExploitationChief = isSuperuser || roleCodes.includes('exploitation_chief');
     const isItBureauChief = isSuperuser || roleCodes.includes('it_bureau_chief');
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const canView = isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible;
     const canCreate = isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible;
@@ -64,7 +66,7 @@ const DestructionCertificatesPage = () => {
             const consumables = consData?.results || consData || [];
             setFailedConsumables(Array.isArray(consumables) ? consumables : []);
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to load destruction certificates');
+            setError(e?.response?.data?.error || t('destructionCertificates.loadError'));
         } finally {
             setLoading(false);
         }
@@ -93,7 +95,7 @@ const DestructionCertificatesPage = () => {
                 createForm.consumable_ids.length > 0;
 
             if (!hasAny) {
-                setError('Select at least one item');
+                setError(t('destructionCertificates.selectAtLeastOne'));
                 return;
             }
 
@@ -104,11 +106,11 @@ const DestructionCertificatesPage = () => {
             await stockItemConsumableDestructionCertificateService.create(formData);
             await fetchAll();
 
-            setSuccess('Destruction certificate created successfully');
+            setSuccess(t('destructionCertificates.createSuccess'));
             setShowCreateForm(false);
             setCreateForm({ stock_item_ids: [], consumable_ids: [] });
         } catch (err) {
-            const msg = err?.response?.data?.error || (typeof err?.response?.data === 'object' ? JSON.stringify(err.response.data) : '') || 'Failed to create destruction certificate';
+            const msg = err?.response?.data?.error || (typeof err?.response?.data === 'object' ? JSON.stringify(err.response.data) : '') || t('destructionCertificates.createError');
             setError(msg);
         } finally {
             setSubmitting(false);
@@ -122,9 +124,9 @@ const DestructionCertificatesPage = () => {
         try {
             await stockItemConsumableDestructionCertificateService.validate(id);
             await fetchAll();
-            setSuccess(`Certificate #${id} validated. Linked items were set to destroyed.`);
+            setSuccess(t('destructionCertificates.validatedSuccess', { id }))
         } catch (err) {
-            setError(err?.response?.data?.error || 'Failed to validate certificate');
+            setError(err?.response?.data?.error || t('destructionCertificates.validateError'));
         } finally {
             setSubmitting(false);
         }
@@ -151,7 +153,7 @@ const DestructionCertificatesPage = () => {
                 setShowMissingPdfModal(true);
                 return;
             }
-            setError(err?.response?.data?.error || 'Failed to consult PDF');
+            setError(err?.response?.data?.error || t('destructionCertificates.consultPdfError'));
         }
     };
 
@@ -183,7 +185,7 @@ const DestructionCertificatesPage = () => {
             window.open(url, '_blank', 'noopener,noreferrer');
             setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
         } catch (err) {
-            setError(err?.response?.data?.error || 'Failed to upload PDF');
+            setError(err?.response?.data?.error || t('destructionCertificates.uploadPdfError'));
         } finally {
             setSubmitting(false);
         }
@@ -193,7 +195,7 @@ const DestructionCertificatesPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     const selectableStockItems = failedStockItems.filter(
         (s) =>
@@ -217,8 +219,8 @@ const DestructionCertificatesPage = () => {
             />
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Destruction Certificates (Stock Items & Consumables)</h1>
-                    <p className="page-subtitle">Create and validate destruction certificates for suggested stock items and consumables</p>
+                    <h1 className="page-title">{t('destructionCertificates.title')}</h1>
+                    <p className="page-subtitle">{t('destructionCertificates.subtitle')}</p>
                 </div>
                 {canCreate && (
                     <div>
@@ -226,7 +228,7 @@ const DestructionCertificatesPage = () => {
                             className={`btn btn-${showCreateForm ? 'secondary' : 'primary'}`}
                             onClick={() => setShowCreateForm((v) => !v)}
                         >
-                            {showCreateForm ? 'Cancel' : '+ New Destruction Certificate'}
+                            {showCreateForm ? t('common.cancel') : t('destructionCertificates.newCertificate')}
                         </button>
                     </div>
                 )}
@@ -235,18 +237,18 @@ const DestructionCertificatesPage = () => {
                 <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
                     <div className="card" style={{ width: 'min(520px, 92vw)' }}>
                         <div className="card-header">
-                            <h2 className="card-title">PDF not found</h2>
+                            <h2 className="card-title">{t('destructionCertificates.pdfNotFound')}</h2>
                         </div>
                         <div className="card-body">
                             <p style={{ marginBottom: 'var(--space-4)' }}>
-                                The PDF file for this destruction certificate does not exist. Do you want to upload it now?
+                                {t('destructionCertificates.pdfNotFoundDesc')}
                             </p>
                             <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                                 <button className="btn btn-secondary" onClick={() => { setShowMissingPdfModal(false); setMissingPdfCertId(null); }} disabled={submitting}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button className="btn btn-primary" onClick={startUploadMissingPdf} disabled={submitting}>
-                                    Upload PDF
+                                    {t('destructionCertificates.uploadPdf')}
                                 </button>
                             </div>
                         </div>
@@ -273,17 +275,17 @@ const DestructionCertificatesPage = () => {
             {showCreateForm && canCreate && (
                 <div className="card" style={{ marginBottom: 'var(--space-6)', border: '2px solid var(--color-primary)' }}>
                     <div className="card-header">
-                        <h2 className="card-title">New Destruction Certificate</h2>
+                        <h2 className="card-title">{t('destructionCertificates.newCertificateTitle')}</h2>
                     </div>
                     <div className="card-body">
                         <form onSubmit={handleCreate}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-6)' }}>
                                 <div>
                                     <div className="form-group">
-                                        <label className="form-label">Stock items (suggested for destruction)</label>
+                                        <label className="form-label">{t('destructionCertificates.stockItemsSuggested')}</label>
                                         <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                             {selectableStockItems.length === 0 && (
-                                                <div style={{ color: 'var(--color-text-secondary)' }}>No eligible suggested stock items</div>
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('destructionCertificates.noEligibleStockItems')}</div>
                                             )}
                                             {selectableStockItems.map((s) => (
                                                 <label key={s.stock_item_id} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', padding: '4px 0' }}>
@@ -306,10 +308,10 @@ const DestructionCertificatesPage = () => {
 
                                 <div>
                                     <div className="form-group">
-                                        <label className="form-label">Consumables (suggested for destruction)</label>
+                                        <label className="form-label">{t('destructionCertificates.consumablesSuggested')}</label>
                                         <div style={{ maxHeight: 220, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                             {selectableConsumables.length === 0 && (
-                                                <div style={{ color: 'var(--color-text-secondary)' }}>No eligible suggested consumables</div>
+                                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('destructionCertificates.noEligibleConsumables')}</div>
                                             )}
                                             {selectableConsumables.map((c) => (
                                                 <label key={c.consumable_id} style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', padding: '4px 0' }}>
@@ -334,7 +336,7 @@ const DestructionCertificatesPage = () => {
 
                             <div style={{ marginTop: 'var(--space-6)' }}>
                                 <button type="submit" className="btn btn-primary" disabled={submitting}>
-                                    {submitting ? 'Creating...' : 'Create Certificate'}
+                                    {submitting ? t('destructionCertificates.creating') : t('destructionCertificates.createCertificate')}
                                 </button>
                             </div>
                         </form>
@@ -344,24 +346,24 @@ const DestructionCertificatesPage = () => {
 
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title">All Destruction Certificates</h2>
+                    <h2 className="card-title">{t('destructionCertificates.allCertificates')}</h2>
                 </div>
 
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Validated</th>
-                                <th>Digital Copy</th>
-                                <th>Actions</th>
+                                <th>{t('common.id')}</th>
+                                <th>{t('destructionCertificates.validated')}</th>
+                                <th>{t('destructionCertificates.digitalCopy')}</th>
+                                <th>{t('common.actions')}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {certificates.length === 0 ? (
                                 <tr>
                                     <td colSpan="4" style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
-                                        No destruction certificates found.
+                                        {t('destructionCertificates.noCertificatesFound')}
                                     </td>
                                 </tr>
                             ) : (
@@ -370,8 +372,8 @@ const DestructionCertificatesPage = () => {
                                     return (
                                         <tr key={c.destruction_certificate_id} className="hover-row">
                                             <td>#{c.destruction_certificate_id}</td>
-                                            <td>{validated ? 'Yes' : 'No'}</td>
-                                            <td>{c.digital_copy ? 'Yes' : 'No'}</td>
+                                            <td>{validated ? t('common.yes') : t('common.no')}</td>
+                                            <td>{c.digital_copy ? t('common.yes') : t('common.no')}</td>
                                             <td style={{ textAlign: 'right' }}>
                                                 {(canValidate) && !validated ? (
                                                     <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', justifyContent: 'flex-end' }}>
@@ -380,7 +382,7 @@ const DestructionCertificatesPage = () => {
                                                             onClick={() => handleValidate(c.destruction_certificate_id)}
                                                             disabled={submitting}
                                                         >
-                                                            Validate
+                                                            {t('destructionCertificates.validate')}
                                                         </button>
                                                     </div>
                                                 ) : validated ? (
@@ -390,7 +392,7 @@ const DestructionCertificatesPage = () => {
                                                             onClick={() => handleConsultPdf(c.destruction_certificate_id)}
                                                             disabled={submitting}
                                                         >
-                                                            Consult PDF
+                                                            {t('destructionCertificates.consultPdf')}
                                                         </button>
                                                     </div>
                                                 ) : (

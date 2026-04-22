@@ -26,6 +26,9 @@ import ConsumablesTypeAttributesPage from './pages/ConsumablesTypeAttributesPage
 import ConsumablesModelsPage from './pages/ConsumablesModelsPage';
 import ConsumableModelCompatibilityPage from './pages/ConsumableModelCompatibilityPage';
 import ConsumablesAttributeDefinitionsPage from './pages/ConsumablesAttributeDefinitionsPage';
+import AssetsBrandsPage from './pages/AssetsBrandsPage';
+import StockItemsBrandsPage from './pages/StockItemsBrandsPage';
+import ConsumablesBrandsPage from './pages/ConsumablesBrandsPage';
 import ConsumableInstanceCreatePage from './pages/ConsumableInstanceCreatePage';
 import LocationsPage from './pages/LocationsPage';
 import PositionsPage from './pages/PositionsPage';
@@ -34,6 +37,7 @@ import OrganizationalStructurePage from './pages/OrganizationalStructurePage';
 import MyItemsPage from './pages/MyItemsPage';
 import MySubmittedReportsPage from './pages/MySubmittedReportsPage';
 import OptionsPage from './pages/OptionsPage';
+import OptionsAccessHistoryPage from './pages/OptionsAccessHistoryPage';
 import ReportsPage from './pages/ReportsPage';
 import AssetIncidentReportsPage from './pages/AssetIncidentReportsPage';
 import AttributionOrdersPage from './pages/AttributionOrdersPage';
@@ -215,6 +219,14 @@ function App() {
                             }
                         />
                         <Route
+                            path="assets/brands"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <AssetsBrandsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
                             path="assets/attribute-definitions"
                             element={
                                 <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief', 'it_bureau_chief']}>
@@ -290,6 +302,14 @@ function App() {
                             }
                         />
                         <Route
+                            path="stock-items/brands"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <StockItemsBrandsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
                             path="stock-items/attribute-definitions"
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
@@ -355,6 +375,14 @@ function App() {
                             }
                         />
                         <Route
+                            path="consumables/brands"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <ConsumablesBrandsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
                             path="consumables/attribute-definitions"
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
@@ -366,6 +394,7 @@ function App() {
                         <Route path="my-reports" element={<MySubmittedReportsPage />} />
                         <Route path="my-items/assets/:assetId/maintenance-timeline" element={<AssetMaintenanceTimelinePage />} />
                         <Route path="options" element={<OptionsPage />} />
+                        <Route path="options/access-history" element={<OptionsAccessHistoryPage />} />
 
                         <Route
                             path="reports"

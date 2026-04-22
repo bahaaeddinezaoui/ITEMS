@@ -12,7 +12,7 @@ const DashboardHome = () => {
         if (user?.person) {
             return `${user.person.first_name} ${user.person.last_name}`;
         }
-        return user?.username || 'User';
+        return user?.username || t('common.user');
     };
 
     const roleCodes = useMemo(() => {

@@ -18,6 +18,7 @@ from .models import (
     StockItemMovement,
     PersonRoleMapping,
 )
+from .translations import LocationTranslation, LocationTypeTranslation
 
 
 @dataclass(frozen=True)
@@ -33,6 +34,10 @@ class _ItemRow:
     status: str | None
     location_id: int | None
     location_name: str | None
+    location_name_ar: str | None = None
+    location_name_en: str | None = None
+    location_type_ar: str | None = None
+    location_type_en: str | None = None
 
 
 class LocationInventoryView(APIView):
@@ -109,6 +114,30 @@ class LocationInventoryView(APIView):
 
         items: list[_ItemRow] = []
 
+        def _get_loc_translations(loc):
+            """Return (name_ar, name_en, type_ar, type_en) for a Location instance."""
+            name_ar, name_en, type_ar, type_en = None, None, None, None
+            if loc:
+                try:
+                    name_ar = LocationTranslation.objects.get(location=loc, language_code='ar').location_name
+                except LocationTranslation.DoesNotExist:
+                    pass
+                try:
+                    name_en = LocationTranslation.objects.get(location=loc, language_code='en').location_name
+                except LocationTranslation.DoesNotExist:
+                    pass
+                lt = loc.location_type
+                if lt:
+                    try:
+                        type_ar = LocationTypeTranslation.objects.get(location_type=lt, language_code='ar').location_type_label
+                    except LocationTypeTranslation.DoesNotExist:
+                        pass
+                    try:
+                        type_en = LocationTypeTranslation.objects.get(location_type=lt, language_code='en').location_type_label
+                    except LocationTypeTranslation.DoesNotExist:
+                        pass
+            return name_ar, name_en, type_ar, type_en
+
         def _append_assets():
             qs = (
                 Asset.objects.select_related("asset_model", "asset_model__asset_type", "asset_model__asset_brand")
@@ -126,6 +155,7 @@ class LocationInventoryView(APIView):
                 if getattr(a, "current_location_id", None):
                     loc = Location.objects.filter(location_id=a.current_location_id).select_related("location_type").first()
 
+                _name_ar, _name_en, _type_ar, _type_en = _get_loc_translations(loc)
                 items.append(
                     _ItemRow(
                         item_type="asset",
@@ -139,6 +169,10 @@ class LocationInventoryView(APIView):
                         status=getattr(a, "asset_status", None),
                         location_id=getattr(a, "current_location_id", None),
                         location_name=getattr(loc, "location_name", None) if loc else None,
+                        location_name_ar=_name_ar,
+                        location_name_en=_name_en,
+                        location_type_ar=_type_ar,
+                        location_type_en=_type_en,
                     )
                 )
 
@@ -163,6 +197,7 @@ class LocationInventoryView(APIView):
                 if getattr(s, "current_location_id", None):
                     loc = Location.objects.filter(location_id=s.current_location_id).select_related("location_type").first()
 
+                _name_ar, _name_en, _type_ar, _type_en = _get_loc_translations(loc)
                 items.append(
                     _ItemRow(
                         item_type="stock_item",
@@ -176,6 +211,10 @@ class LocationInventoryView(APIView):
                         status=getattr(s, "stock_item_status", None),
                         location_id=getattr(s, "current_location_id", None),
                         location_name=getattr(loc, "location_name", None) if loc else None,
+                        location_name_ar=_name_ar,
+                        location_name_en=_name_en,
+                        location_type_ar=_type_ar,
+                        location_type_en=_type_en,
                     )
                 )
 
@@ -200,6 +239,7 @@ class LocationInventoryView(APIView):
                 if getattr(c, "current_location_id", None):
                     loc = Location.objects.filter(location_id=c.current_location_id).select_related("location_type").first()
 
+                _name_ar, _name_en, _type_ar, _type_en = _get_loc_translations(loc)
                 items.append(
                     _ItemRow(
                         item_type="consumable",
@@ -213,6 +253,10 @@ class LocationInventoryView(APIView):
                         status=getattr(c, "consumable_status", None),
                         location_id=getattr(c, "current_location_id", None),
                         location_name=getattr(loc, "location_name", None) if loc else None,
+                        location_name_ar=_name_ar,
+                        location_name_en=_name_en,
+                        location_type_ar=_type_ar,
+                        location_type_en=_type_en,
                     )
                 )
 
@@ -230,10 +274,15 @@ class LocationInventoryView(APIView):
                 continue
             if it.location_id not in loc_map:
                 loc = Location.objects.filter(location_id=it.location_id).select_related("location_type").first()
+                _name_ar, _name_en, _type_ar, _type_en = _get_loc_translations(loc)
                 loc_map[it.location_id] = {
                     "location_id": it.location_id,
                     "location_name": getattr(loc, "location_name", None) if loc else it.location_name,
+                    "location_name_ar": _name_ar,
+                    "location_name_en": _name_en,
                     "location_type": getattr(getattr(loc, "location_type", None), "location_type_label", None) if loc else None,
+                    "location_type_ar": _type_ar,
+                    "location_type_en": _type_en,
                     "asset_count": 0,
                     "stock_item_count": 0,
                     "consumable_count": 0,
@@ -267,6 +316,10 @@ class LocationInventoryView(APIView):
                     "status": i.status,
                     "location_id": i.location_id,
                     "location_name": i.location_name,
+                    "location_name_ar": i.location_name_ar,
+                    "location_name_en": i.location_name_en,
+                    "location_type_ar": i.location_type_ar,
+                    "location_type_en": i.location_type_en,
                 }
                 for i in items
             ],

@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { stockItemModelService, consumableModelService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const DRAFT_ACCESSORIES_KEY = 'attribution_order_create_draft_accessories';
 
 const AttributionOrderAssetAccessoriesDraftPage = () => {
     const navigate = useNavigate();
     const { rowId } = useParams();
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const context = searchParams.get('context');
 
@@ -60,7 +62,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                 setStockItems(Array.isArray(sData) ? sData : (sData?.results || []));
                 setConsumables(Array.isArray(cData) ? cData : (cData?.results || []));
             } catch (e) {
-                setError('Failed to load items');
+                setError(t('accessoriesDraft.loadError'));
             } finally {
                 setLoading(false);
             }
@@ -148,21 +150,21 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
         }
     };
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">Accessories</h1>
-                    <p className="page-subtitle">Draft asset row #{rowId}</p>
+                    <h1 className="page-title">{t('accessoriesDraft.title')}</h1>
+                    <p className="page-subtitle">{t('accessoriesDraft.draftAssetRow')} #{rowId}</p>
                 </div>
                 <button
                     type="button"
                     className="btn btn-secondary"
                     onClick={goBack}
-                    title="Back"
-                    aria-label="Back"
+                    title={t('common.back')}
+                    aria-label={t('common.back')}
                 >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 18l-6-6 6-6" />
@@ -175,21 +177,21 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
                 <div className="card">
                     <div className="card-header">
-                        <h2 className="card-title">Stock Items</h2>
+                        <h2 className="card-title">{t('accessoriesDraft.stockItems')}</h2>
                     </div>
                     <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button type="button" className="btn btn-primary" style={{ width: 'auto' }} onClick={addDraftStockItem}>
-                                + Add Stock Item
+                                + {t('accessoriesDraft.addStockItem')}
                             </button>
                         </div>
                         <div className="table-container">
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Model</th>
-                                        <th>Name</th>
-                                        <th>Inventory #</th>
+                                        <th>{t('accessoriesDraft.model')}</th>
+                                        <th>{t('accessoriesDraft.name')}</th>
+                                        <th>{t('accessoriesDraft.inventoryNumber')}</th>
                                         <th style={{ width: '90px' }}> </th>
                                     </tr>
                                 </thead>
@@ -197,7 +199,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                     {draftStockItems.length === 0 ? (
                                         <tr>
                                             <td colSpan="4" style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
-                                                No stock item accessories.
+                                                {t('accessoriesDraft.noStockItemAccessories')}
                                             </td>
                                         </tr>
                                     ) : (
@@ -211,10 +213,10 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             value={row.stock_item_model}
                                                             onChange={(e) => updateDraftStockItem(idx, 'stock_item_model', e.target.value)}
                                                         >
-                                                            <option value="">Select Model</option>
+                                                            <option value="">{t('accessoriesDraft.selectModel')}</option>
                                                             {stockItems.map((m) => (
                                                                 <option key={m.stock_item_model_id} value={m.stock_item_model_id}>
-                                                                    {[m.brand_name, m.model_name].filter(Boolean).join(' ') || `Model #${m.stock_item_model_id}`}
+                                                                    {[m.brand_name, m.model_name].filter(Boolean).join(' ') || `${t('accessoriesDraft.model')} #${m.stock_item_model_id}`}
                                                                 </option>
                                                             ))}
                                                         </select>
@@ -224,7 +226,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             className="form-input"
                                                             value={row.stock_item_name}
                                                             onChange={(e) => updateDraftStockItem(idx, 'stock_item_name', e.target.value)}
-                                                            placeholder="Name"
+                                                            placeholder={t('accessoriesDraft.name')}
                                                         />
                                                     </td>
                                                     <td>
@@ -232,7 +234,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             className="form-input"
                                                             value={row.stock_item_inventory_number}
                                                             onChange={(e) => updateDraftStockItem(idx, 'stock_item_inventory_number', e.target.value)}
-                                                            placeholder="Inv #"
+                                                            placeholder={t('accessoriesDraft.invPlaceholder')}
                                                         />
                                                     </td>
                                                     <td>
@@ -242,7 +244,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             style={{ width: 'auto' }}
                                                             onClick={() => removeDraftStockItem(idx)}
                                                         >
-                                                            Remove
+                                                            {t('common.remove')}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -257,22 +259,22 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
 
                 <div className="card">
                     <div className="card-header">
-                        <h2 className="card-title">Consumables</h2>
+                        <h2 className="card-title">{t('accessoriesDraft.consumables')}</h2>
                     </div>
                     <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button type="button" className="btn btn-primary" style={{ width: 'auto' }} onClick={addDraftConsumable}>
-                                + Add Consumable
+                                + {t('accessoriesDraft.addConsumable')}
                             </button>
                         </div>
                         <div className="table-container">
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Model</th>
-                                        <th>Name</th>
-                                        <th>Serial #</th>
-                                        <th>Inventory #</th>
+                                        <th>{t('accessoriesDraft.model')}</th>
+                                        <th>{t('accessoriesDraft.name')}</th>
+                                        <th>{t('accessoriesDraft.serialNumber')}</th>
+                                        <th>{t('accessoriesDraft.inventoryNumber')}</th>
                                         <th style={{ width: '90px' }}> </th>
                                     </tr>
                                 </thead>
@@ -280,7 +282,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                     {draftConsumables.length === 0 ? (
                                         <tr>
                                             <td colSpan="5" style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
-                                                No consumable accessories.
+                                                {t('accessoriesDraft.noConsumableAccessories')}
                                             </td>
                                         </tr>
                                     ) : (
@@ -294,10 +296,10 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             value={row.consumable_model}
                                                             onChange={(e) => updateDraftConsumable(idx, 'consumable_model', e.target.value)}
                                                         >
-                                                            <option value="">Select Model</option>
+                                                            <option value="">{t('accessoriesDraft.selectModel')}</option>
                                                             {consumables.map((m) => (
                                                                 <option key={m.consumable_model_id} value={m.consumable_model_id}>
-                                                                    {[m.brand_name, m.model_name].filter(Boolean).join(' ') || `Model #${m.consumable_model_id}`}
+                                                                    {[m.brand_name, m.model_name].filter(Boolean).join(' ') || `${t('accessoriesDraft.model')} #${m.consumable_model_id}`}
                                                                 </option>
                                                             ))}
                                                         </select>
@@ -307,7 +309,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             className="form-input"
                                                             value={row.consumable_name}
                                                             onChange={(e) => updateDraftConsumable(idx, 'consumable_name', e.target.value)}
-                                                            placeholder="Name"
+                                                            placeholder={t('accessoriesDraft.name')}
                                                         />
                                                     </td>
                                                     <td>
@@ -315,7 +317,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             className="form-input"
                                                             value={row.consumable_serial_number}
                                                             onChange={(e) => updateDraftConsumable(idx, 'consumable_serial_number', e.target.value)}
-                                                            placeholder="Serial #"
+                                                            placeholder={t('accessoriesDraft.serialPlaceholder')}
                                                         />
                                                     </td>
                                                     <td>
@@ -323,7 +325,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             className="form-input"
                                                             value={row.consumable_inventory_number}
                                                             onChange={(e) => updateDraftConsumable(idx, 'consumable_inventory_number', e.target.value)}
-                                                            placeholder="Inv #"
+                                                            placeholder={t('accessoriesDraft.invPlaceholder')}
                                                         />
                                                     </td>
                                                     <td>
@@ -333,7 +335,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
                                                             style={{ width: 'auto' }}
                                                             onClick={() => removeDraftConsumable(idx)}
                                                         >
-                                                            Remove
+                                                            {t('common.remove')}
                                                         </button>
                                                     </td>
                                                 </tr>

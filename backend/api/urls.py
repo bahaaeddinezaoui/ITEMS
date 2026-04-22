@@ -82,6 +82,7 @@ urlpatterns = [
     path('auth/admin-reset-password/', AdminResetUserPasswordView.as_view(), name='admin-reset-password'),
     path('user-accounts/', UserAccountCreateView.as_view(), name='user-accounts'),
     path('location-inventory/', LocationInventoryView.as_view(), name='location-inventory'),
+    path('i18n/', include('api.urls_i18n')),
     # All endpoints have been restored and are now available
     path('', include(router.urls)),
 ]

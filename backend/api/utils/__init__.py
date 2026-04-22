@@ -7,6 +7,7 @@ from .i18n import (
     get_translation_for_entity,
     translate_field,
     get_translation_model,
+    save_translations,
     TRANSLATION_MODEL_MAP,
 )
 
@@ -15,5 +16,6 @@ __all__ = [
     'get_translation_for_entity',
     'translate_field',
     'get_translation_model',
+    'save_translations',
     'TRANSLATION_MODEL_MAP',
 ]

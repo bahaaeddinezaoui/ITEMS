@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { purchaseOrderService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const PurchaseOrderDetailsPage = () => {
-    const { user } = useAuth();
+    const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
     const { orderId } = useParams();
+    const { t } = useTranslation();
 
-    const isStockConsumableResponsible = user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
+    const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -22,7 +24,7 @@ const PurchaseOrderDetailsPage = () => {
             setOrder(data || null);
         } catch (e) {
             setOrder(null);
-            setError(e?.response?.data?.error || 'Failed to load purchase order');
+            setError(e?.response?.data?.error || t('purchaseOrderDetails.loadError'));
         } finally {
             setLoading(false);
         }
@@ -42,15 +44,15 @@ const PurchaseOrderDetailsPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">Purchase order details</h1>
-                    <p className="page-subtitle">View order lines and progress.</p>
+                    <h1 className="page-title">{t('purchaseOrderDetails.title')}</h1>
+                    <p className="page-subtitle">{t('purchaseOrderDetails.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                     <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        Back
+                        {t('common.back')}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={load} disabled={loading}>
-                        Refresh
+                        {t('common.refresh')}
                     </button>
                 </div>
             </div>
@@ -62,9 +64,9 @@ const PurchaseOrderDetailsPage = () => {
             )}
 
             {loading ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
             ) : !order ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>Not found.</div>
+                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.notFound')}</div>
             ) : (
                 <>
                     {(() => {
@@ -77,30 +79,30 @@ const PurchaseOrderDetailsPage = () => {
                         return (
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 className="card-title" style={{ margin: 0 }}>Header</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderDetails.header')}</h2>
                             <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                                 {hasRemaining && (
                                     <button type="button" className="btn btn-primary" onClick={() => navigate(`/dashboard/purchase-orders/${order.purchase_order_id}/receive`)}>
-                                        Receive items
+                                        {t('purchaseOrderDetails.receiveItems')}
                                     </button>
                                 )}
                                 <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${order.purchase_order_id}/backorder-reports`)}>
-                                    Backorder reports
+                                    {t('purchaseOrderDetails.backorderReports')}
                                 </button>
                             </div>
                         </div>
                         <div className="card-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
                             <div>
-                                <div style={{ fontWeight: 600 }}>Order #{order.purchase_order_id}</div>
+                                <div style={{ fontWeight: 600 }}>{t('purchaseOrderDetails.order')} #{order.purchase_order_id}</div>
                                 <div style={{ color: 'var(--color-text-secondary)' }}>{order.purchase_order_code || ''}</div>
                             </div>
                             <div>
-                                <div style={{ fontWeight: 600 }}>Supplier</div>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{order.supplier_name ? order.supplier_name : (order.supplier_id ? `Supplier #${order.supplier_id}` : '')}</div>
+                                <div style={{ fontWeight: 600 }}>{t('purchaseOrderDetails.supplier')}</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{order.supplier_name ? order.supplier_name : (order.supplier_id ? `${t('purchaseOrderDetails.supplier')} #${order.supplier_id}` : '')}</div>
                             </div>
                             <div>
-                                <div style={{ fontWeight: 600 }}>Signed by finance</div>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{order.is_signed_by_finance ? 'Yes' : 'No'}</div>
+                                <div style={{ fontWeight: 600 }}>{t('purchaseOrderDetails.signedByFinance')}</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{order.is_signed_by_finance ? t('common.yes') : t('common.no')}</div>
                             </div>
                         </div>
                     </div>
@@ -109,21 +111,21 @@ const PurchaseOrderDetailsPage = () => {
 
                     <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Stock item model lines</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderDetails.stockItemModelLines')}</h2>
                         </div>
                         <div className="card-body">
                             {(order.stock_item_models || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>None</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
                             ) : (
                                 <div style={{ overflowX: 'auto' }}>
                                     <table className="table" style={{ width: '100%' }}>
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
-                                                <th>Model</th>
-                                                <th>Ordered</th>
-                                                <th>Received</th>
-                                                <th>Unit price</th>
+                                                <th>{t('common.id')}</th>
+                                                <th>{t('purchaseOrderDetails.model')}</th>
+                                                <th>{t('purchaseOrderDetails.ordered')}</th>
+                                                <th>{t('purchaseOrderDetails.received')}</th>
+                                                <th>{t('purchaseOrderDetails.unitPrice')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -145,21 +147,21 @@ const PurchaseOrderDetailsPage = () => {
 
                     <div className="card">
                         <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>Consumable model lines</h2>
+                            <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderDetails.consumableModelLines')}</h2>
                         </div>
                         <div className="card-body">
                             {(order.consumable_models || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>None</div>
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
                             ) : (
                                 <div style={{ overflowX: 'auto' }}>
                                     <table className="table" style={{ width: '100%' }}>
                                         <thead>
                                             <tr>
-                                                <th>ID</th>
-                                                <th>Model</th>
-                                                <th>Ordered</th>
-                                                <th>Received</th>
-                                                <th>Unit price</th>
+                                                <th>{t('common.id')}</th>
+                                                <th>{t('purchaseOrderDetails.model')}</th>
+                                                <th>{t('purchaseOrderDetails.ordered')}</th>
+                                                <th>{t('purchaseOrderDetails.received')}</th>
+                                                <th>{t('purchaseOrderDetails.unitPrice')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>

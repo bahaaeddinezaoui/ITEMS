@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { stockItemAttributeDefinitionService, stockItemTypeAttributeService, stockItemTypeService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const StockItemsTypeAttributesPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
 
     const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
     const typeId = query.get('typeId');
@@ -27,7 +29,7 @@ const StockItemsTypeAttributesPage = () => {
 
     useEffect(() => {
         if (!typeId) {
-            setError('typeId is required');
+            setError(t('stockItemTypeAttributes.typeIdRequired'));
             return;
         }
         fetchAll();
@@ -47,7 +49,7 @@ const StockItemsTypeAttributesPage = () => {
             setAttributeDefinitions(Array.isArray(defs) ? defs : []);
             setTypeAttributes(Array.isArray(attrs) ? attrs : []);
         } catch (err) {
-            setError('Failed to load type attributes: ' + err.message);
+            setError(t('stockItemTypeAttributes.loadError') + ': ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -61,7 +63,7 @@ const StockItemsTypeAttributesPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.stock_item_attribute_definition) {
-            setError('Please select an attribute definition');
+            setError(t('stockItemTypeAttributes.selectDefinition'));
             return;
         }
         setSaving(true);
@@ -78,19 +80,19 @@ const StockItemsTypeAttributesPage = () => {
             setShowForm(false);
             await fetchAll();
         } catch (err) {
-            setError('Failed to add attribute to type: ' + err.message);
+            setError(t('stockItemTypeAttributes.addError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async (definitionId) => {
-        if (!window.confirm('Remove this attribute from the stock item type?')) return;
+        if (!window.confirm(t('stockItemTypeAttributes.confirmRemove'))) return;
         try {
             await stockItemTypeAttributeService.delete(Number(typeId), Number(definitionId));
             await fetchAll();
         } catch (err) {
-            setError('Failed to remove type attribute: ' + err.message);
+            setError(t('stockItemTypeAttributes.removeError') + ': ' + err.message);
         }
     };
 
@@ -106,14 +108,14 @@ const StockItemsTypeAttributesPage = () => {
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">Stock Item Type Attributes</h1>
-                    <p className="page-subtitle">{stockItemType ? stockItemType.stock_item_type_label : 'Type'} • Manage attributes</p>
+                    <h1 className="page-title">{t('stockItemTypeAttributes.title')}</h1>
+                    <p className="page-subtitle">{stockItemType ? stockItemType.stock_item_type_label : t('stockItemTypeAttributes.type')} • {t('stockItemTypeAttributes.manageAttributes')}</p>
                 </div>
                 <button
                     onClick={() => navigate('/dashboard/stock-items/types')}
                     style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                    title="Back to Types"
-                    aria-label="Back to Types"
+                    title={t('stockItemTypeAttributes.backToTypes')}
+                    aria-label={t('stockItemTypeAttributes.backToTypes')}
                 >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 18l-6-6 6-6" />
@@ -143,12 +145,12 @@ const StockItemsTypeAttributesPage = () => {
                     alignItems: 'center',
                     backgroundColor: 'var(--color-bg-secondary)'
                 }}>
-                    <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Attributes</h2>
+                    <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('stockItemTypeAttributes.attributes')}</h2>
                     <button
                         onClick={() => setShowForm(!showForm)}
                         style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
                     >
-                        + Add
+                        + {t('common.add')}
                     </button>
                 </div>
 
@@ -161,7 +163,7 @@ const StockItemsTypeAttributesPage = () => {
                                 onChange={handleChange}
                                 style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
                             >
-                                <option value="">Select attribute definition</option>
+                                <option value="">{t('stockItemTypeAttributes.selectAttributeDefinition')}</option>
                                 {availableDefinitions.map(def => (
                                     <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
                                         {def.description} ({def.data_type || 'n/a'}{def.unit ? ` • ${def.unit}` : ''})
@@ -177,12 +179,12 @@ const StockItemsTypeAttributesPage = () => {
                                         checked={form.is_mandatory}
                                         onChange={handleChange}
                                     />
-                                    Mandatory
+                                    {t('stockItemTypeAttributes.mandatory')}
                                 </label>
                                 <input
                                     type="text"
                                     name="default_value"
-                                    placeholder="Default value (optional)"
+                                    placeholder={t('stockItemTypeAttributes.defaultValuePlaceholder')}
                                     value={form.default_value}
                                     onChange={handleChange}
                                     style={{ padding: 'var(--space-2)' }}
@@ -190,17 +192,17 @@ const StockItemsTypeAttributesPage = () => {
                             </div>
 
                             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>{t('common.save')}</button>
+                                <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>{t('common.cancel')}</button>
                             </div>
                         </form>
                     </div>
                 )}
 
                 <div style={{ overflowY: 'auto', flex: 1, padding: 'var(--space-4)' }}>
-                    {loading && <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>}
+                    {loading && <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>}
                     {!loading && typeAttributes.length === 0 && (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned to this type.</div>
+                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('stockItemTypeAttributes.noAttributes')}</div>
                     )}
 
                     {typeAttributes.map(attr => (
@@ -215,11 +217,11 @@ const StockItemsTypeAttributesPage = () => {
                             }}
                         >
                             <div>
-                                <div style={{ fontWeight: '500' }}>{attr.definition?.description || `Definition ${attr.stock_item_attribute_definition}`}</div>
+                                <div style={{ fontWeight: '500' }}>{attr.definition?.description || `${t('stockItemTypeAttributes.definition')} ${attr.stock_item_attribute_definition}`}</div>
                                 <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
                                     {(attr.definition?.data_type || 'n/a')}{attr.definition?.unit ? ` • ${attr.definition.unit}` : ''}
-                                    {attr.is_mandatory ? ' • mandatory' : ''}
-                                    {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                    {attr.is_mandatory ? ` • ${t('stockItemTypeAttributes.mandatory').toLowerCase()}` : ''}
+                                    {attr.default_value ? ` • ${t('stockItemTypeAttributes.defaultLabel')} ${attr.default_value}` : ''}
                                 </div>
                             </div>
                             <button

@@ -148,44 +148,47 @@ def translate_field(entity: Any, language_code: str,
 
 # Map of base models to their translation models
 TRANSLATION_MODEL_MAP = {
-    'AssetType': 'api.models.AssetTypeTranslation',
-    'ConsumableType': 'api.models.ConsumableTypeTranslation',
-    'StockItemType': 'api.models.StockItemTypeTranslation',
-    'LocationType': 'api.models.LocationTypeTranslation',
-    'OrganizationalStructureType': 'api.models.OrganizationalStructureTypeTranslation',
-    'PhysicalCondition': 'api.models.PhysicalConditionTranslation',
-    'Role': 'api.models.RoleTranslation',
-    'Position': 'api.models.PositionTranslation',
-    'AssetAttributeDefinition': 'api.models.AssetAttributeDefinitionTranslation',
-    'ConsumableAttributeDefinition': 'api.models.ConsumableAttributeDefinitionTranslation',
-    'StockItemAttributeDefinition': 'api.models.StockItemAttributeDefinitionTranslation',
-    'MaintenanceTypicalStep': 'api.models.MaintenanceTypicalStepTranslation',
-    'ExternalMaintenanceTypicalStep': 'api.models.ExternalMaintenanceTypicalStepTranslation',
-    'Person': 'api.models.PersonTranslation',
-    'Supplier': 'api.models.SupplierTranslation',
-    'Warehouse': 'api.models.WarehouseTranslation',
-    'Location': 'api.models.LocationTranslation',
-    'OrganizationalStructure': 'api.models.OrganizationalStructureTranslation',
-    'AssetMovement': 'api.models.AssetMovementTranslation',
-    'ConsumableMovement': 'api.models.ConsumableMovementTranslation',
-    'StockItemMovement': 'api.models.StockItemMovementTranslation',
-    'PersonReportsProblemOnAsset': 'api.models.PersonReportsProblemOnAssetTranslation',
-    'PersonReportsProblemOnConsumable': 'api.models.PersonReportsProblemOnConsumableTranslation',
-    'PersonReportsProblemOnStockItem': 'api.models.PersonReportsProblemOnStockItemTranslation',
-    'Maintenance': 'api.models.MaintenanceTranslation',
-    'AssetConditionHistory': 'api.models.AssetConditionHistoryTranslation',
-    'ConsumableConditionHistory': 'api.models.ConsumableConditionHistoryTranslation',
-    'StockItemConditionHistory': 'api.models.StockItemConditionHistoryTranslation',
-    'Asset': 'api.models.AssetTranslation',
-    'Consumable': 'api.models.ConsumableTranslation',
-    'StockItem': 'api.models.StockItemTranslation',
-    'AssetModel': 'api.models.AssetModelTranslation',
-    'ConsumableModel': 'api.models.ConsumableModelTranslation',
-    'StockItemModel': 'api.models.StockItemModelTranslation',
-    'AdministrativeCertificate': 'api.models.AdministrativeCertificateTranslation',
-    'CompanyAssetRequest': 'api.models.CompanyAssetRequestTranslation',
-    'ExternalMaintenanceDocument': 'api.models.ExternalMaintenanceDocumentTranslation',
-    'MaintenanceStepItemRequest': 'api.models.MaintenanceStepItemRequestTranslation',
+    'AssetType': 'api.translations.AssetTypeTranslation',
+    'ConsumableType': 'api.translations.ConsumableTypeTranslation',
+    'StockItemType': 'api.translations.StockItemTypeTranslation',
+    'AssetBrand': 'api.translations.AssetBrandTranslation',
+    'StockItemBrand': 'api.translations.StockItemBrandTranslation',
+    'ConsumableBrand': 'api.translations.ConsumableBrandTranslation',
+    'LocationType': 'api.translations.LocationTypeTranslation',
+    'OrganizationalStructureType': 'api.translations.OrganizationalStructureTypeTranslation',
+    'PhysicalCondition': 'api.translations.PhysicalConditionTranslation',
+    'Role': 'api.translations.RoleTranslation',
+    'Position': 'api.translations.PositionTranslation',
+    'AssetAttributeDefinition': 'api.translations.AssetAttributeDefinitionTranslation',
+    'ConsumableAttributeDefinition': 'api.translations.ConsumableAttributeDefinitionTranslation',
+    'StockItemAttributeDefinition': 'api.translations.StockItemAttributeDefinitionTranslation',
+    'MaintenanceTypicalStep': 'api.translations.MaintenanceTypicalStepTranslation',
+    'ExternalMaintenanceTypicalStep': 'api.translations.ExternalMaintenanceTypicalStepTranslation',
+    'Person': 'api.translations.PersonTranslation',
+    'Supplier': 'api.translations.SupplierTranslation',
+    'Warehouse': 'api.translations.WarehouseTranslation',
+    'Location': 'api.translations.LocationTranslation',
+    'OrganizationalStructure': 'api.translations.OrganizationalStructureTranslation',
+    'AssetMovement': 'api.translations.AssetMovementTranslation',
+    'ConsumableMovement': 'api.translations.ConsumableMovementTranslation',
+    'StockItemMovement': 'api.translations.StockItemMovementTranslation',
+    'PersonReportsProblemOnAsset': 'api.translations.PersonReportsProblemOnAssetTranslation',
+    'PersonReportsProblemOnConsumable': 'api.translations.PersonReportsProblemOnConsumableTranslation',
+    'PersonReportsProblemOnStockItem': 'api.translations.PersonReportsProblemOnStockItemTranslation',
+    'Maintenance': 'api.translations.MaintenanceTranslation',
+    'AssetConditionHistory': 'api.translations.AssetConditionHistoryTranslation',
+    'ConsumableConditionHistory': 'api.translations.ConsumableConditionHistoryTranslation',
+    'StockItemConditionHistory': 'api.translations.StockItemConditionHistoryTranslation',
+    'Asset': 'api.translations.AssetTranslation',
+    'Consumable': 'api.translations.ConsumableTranslation',
+    'StockItem': 'api.translations.StockItemTranslation',
+    'AssetModel': 'api.translations.AssetModelTranslation',
+    'ConsumableModel': 'api.translations.ConsumableModelTranslation',
+    'StockItemModel': 'api.translations.StockItemModelTranslation',
+    'AdministrativeCertificate': 'api.translations.AdministrativeCertificateTranslation',
+    'CompanyAssetRequest': 'api.translations.CompanyAssetRequestTranslation',
+    'ExternalMaintenanceDocument': 'api.translations.ExternalMaintenanceDocumentTranslation',
+    'MaintenanceStepItemRequest': 'api.translations.MaintenanceStepItemRequestTranslation',
 }
 
 
@@ -196,3 +199,64 @@ def get_translation_model(base_model_name: str) -> Optional[Type[models.Model]]:
     if model_path:
         return import_string(model_path)
     return None
+
+
+def save_translations(entity, translations_data: dict, base_model_name: str = None) -> None:
+    """
+    Create or update translation rows for an entity.
+    
+    Args:
+        entity: The base entity instance
+        translations_data: Dict of {language_code: {field_name: value}}
+            Example: {"ar": {"asset_type_label": "حاسوب"}, "fr": {"asset_type_label": "Ordinateur"}}
+        base_model_name: Name of the base model (e.g., 'AssetType'). If None, inferred from entity class.
+    
+    Returns:
+        None
+    """
+    if not translations_data:
+        return
+    
+    if not base_model_name:
+        base_model_name = entity.__class__.__name__
+    
+    translation_model = get_translation_model(base_model_name)
+    if not translation_model:
+        return
+    
+    # Find the FK field name on the translation model
+    fk_field = None
+    for field in translation_model._meta.fields:
+        if field.is_relation and field.many_to_one:
+            fk_field = field.name
+            break
+    
+    if not fk_field:
+        return
+    
+    for language_code, field_values in translations_data.items():
+        if not field_values:
+            continue
+        
+        # Filter out empty values
+        non_empty_values = {k: v for k, v in field_values.items() if v}
+        if not non_empty_values:
+            continue
+        
+        lookup = {fk_field: entity, 'language_code': language_code}
+        qs = translation_model.objects.filter(**lookup)
+        if qs.exists():
+            qs.update(**non_empty_values)
+            continue
+
+        create_kwargs = {**lookup, **non_empty_values}
+
+        # Some translation tables are managed=False and may not have a working auto-increment
+        # sequence backing the AutoField primary key. In that case, creating without an explicit
+        # id can raise a 500 at runtime. Allocate the next id manually when needed.
+        pk_field = translation_model._meta.pk
+        if pk_field is not None and pk_field.name == 'id':
+            last = translation_model.objects.order_by('-id').first()
+            create_kwargs['id'] = (last.id + 1) if last else 1
+
+        translation_model.objects.create(**create_kwargs)

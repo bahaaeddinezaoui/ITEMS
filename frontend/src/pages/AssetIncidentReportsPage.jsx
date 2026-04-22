@@ -1,32 +1,33 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { assetIncidentReportService, assetService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const REASONS = [
-    { value: 'stolen', label: 'Stolen' },
-    { value: 'lost', label: 'Lost' },
-    { value: 'irrecoverably_damaged', label: 'Irrecoverably Damaged' },
+const getReasons = (t) => [
+    { value: 'stolen', label: t('assetIncidentReports.stolen') },
+    { value: 'lost', label: t('assetIncidentReports.lost') },
+    { value: 'irrecoverably_damaged', label: t('assetIncidentReports.irrecoverablyDamaged') },
 ];
 const INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY = 'incidentReportCompositionStatusStrategy';
 
 const REVIEW_ROLE_CONFIG = {
     it_bureau_chief: {
-        label: 'IT Bureau Chief',
+        labelKey: 'assetIncidentReports.role.itBureauChief',
         noteField: 'it_bureau_chief_note',
         signField: 'is_signed_by_it_bureau_chief',
     },
     exploitation_chief: {
-        label: 'Exploitation Chief',
+        labelKey: 'assetIncidentReports.role.exploitationChief',
         noteField: 'exploitation_chief_note',
         signField: 'is_signed_by_exploitation_chief',
     },
     protection_and_security_bureau_chief: {
-        label: 'Protection & Security Bureau Chief',
+        labelKey: 'assetIncidentReports.role.protectionSecurityBureauChief',
         noteField: 'protection_and_security_bureau_chief_note',
         signField: 'is_signed_by_protection_and_security_bureau_chief',
     },
     school_headquarter: {
-        label: 'School Headquarter',
+        labelKey: 'assetIncidentReports.role.schoolHeadquarter',
         noteField: 'school_headquarter_note',
         signField: 'is_signed_by_school_headquarter',
     },
@@ -40,6 +41,8 @@ const REVIEW_ROLE_ORDER = [
 ];
 
 const AssetIncidentReportsPage = () => {
+    const { t } = useTranslation();
+    const REASONS = getReasons(t);
     const { user, isSuperuser } = useAuth();
 
     const roleCodes = useMemo(
@@ -61,6 +64,7 @@ const AssetIncidentReportsPage = () => {
     const [success, setSuccess] = useState('');
 
     const [assets, setAssets] = useState([]);
+    const [assetsLoading, setAssetsLoading] = useState(false);
     const [reports, setReports] = useState([]);
     const [reportQuery, setReportQuery] = useState('');
     const [reasonFilter, setReasonFilter] = useState('');
@@ -113,37 +117,30 @@ const AssetIncidentReportsPage = () => {
         setError('');
         setSuccess('');
         const shouldLoadAssets = canCreate || availableReviewRoles.includes('exploitation_chief');
-        const [reportResult, assetResult] = await Promise.allSettled([
-            assetIncidentReportService.getAll(),
-            shouldLoadAssets ? assetService.getAll() : Promise.resolve([]),
-        ]);
 
-        if (reportResult.status === 'fulfilled') {
-            const reportData = reportResult.value;
-            const reportList = reportData?.results || reportData || [];
-            setReports(Array.isArray(reportList) ? reportList : []);
-        } else {
+        // Load reports first (critical path) — show page as soon as they're ready
+        try {
+            const reportData = await assetIncidentReportService.getAll({ page_size: 200 });
+            setReports(Array.isArray(reportData) ? reportData : []);
+        } catch (e) {
             setReports([]);
-            setError(reportResult.reason?.response?.data?.error || 'Failed to load incident reports');
-        }
-
-        if (!shouldLoadAssets) {
-            setAssets([]);
-        } else if (assetResult.status === 'fulfilled') {
-            const assetData = assetResult.value;
-            const assetList = assetData?.results || assetData || [];
-            setAssets(Array.isArray(assetList) ? assetList : []);
-        } else {
-            setAssets([]);
-            if (reportResult.status === 'fulfilled') {
-                setError('Incident reports loaded, but asset search is unavailable');
-            }
-        }
-
-        if (reportResult.status === 'fulfilled' && (assetResult.status === 'fulfilled' || !shouldLoadAssets)) {
-            setError('');
+            setError(e?.response?.data?.error || t('assetIncidentReports.failedToLoad'));
         }
         setLoading(false);
+
+        // Load assets in the background (non-blocking)
+        if (shouldLoadAssets) {
+            setAssetsLoading(true);
+            try {
+                const assetData = await assetService.getAll({ page_size: 1000 });
+                setAssets(Array.isArray(assetData) ? assetData : []);
+            } catch {
+                setAssets([]);
+            }
+            setAssetsLoading(false);
+        } else {
+            setAssets([]);
+        }
     };
 
     useEffect(() => {
@@ -231,9 +228,9 @@ const AssetIncidentReportsPage = () => {
             await loadData();
             setShowItemStatusModal(false);
             resetCreateForm();
-            setSuccess('Incident report created successfully');
+            setSuccess(t('assetIncidentReports.createdSuccessfully'));
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to create incident report');
+            setError(e?.response?.data?.error || t('assetIncidentReports.failedToCreate'));
         } finally {
             setSubmitting(false);
         }
@@ -300,7 +297,7 @@ const AssetIncidentReportsPage = () => {
 
     const signChip = (label, signed) => {
         const dot = signed ? 'var(--color-success)' : 'var(--color-warning)';
-        const text = signed ? 'Signed' : 'Pending';
+        const text = signed ? t('assetIncidentReports.signed') : t('common.pending');
         return (
             <span style={chipStyle} title={`${label}: ${text}`}>
                 <span style={{ width: 8, height: 8, borderRadius: 999, background: dot, display: 'inline-block' }} />
@@ -377,11 +374,11 @@ const AssetIncidentReportsPage = () => {
         setError('');
         setSuccess('');
         if (!form.asset) {
-            setError('Select an asset first');
+            setError(t('assetIncidentReports.selectAssetFirst'));
             return;
         }
         if (!form.reason) {
-            setError('Reason is required');
+            setError(t('assetIncidentReports.reasonRequired'));
             return;
         }
 
@@ -444,10 +441,10 @@ const AssetIncidentReportsPage = () => {
             }
             await assetIncidentReportService.update(reviewingReport.asset_incident_report_id, payload);
             await loadData();
-            setSuccess(`${roleConfig.label} review saved`);
+            setSuccess(t('assetIncidentReports.reviewSaved', { role: t(roleConfig.labelKey) }));
             closeReviewModal();
         } catch (e2) {
-            setError(e2?.response?.data?.error || 'Failed to save review');
+            setError(e2?.response?.data?.error || t('assetIncidentReports.failedToSaveReview'));
         } finally {
             setReviewSubmitting(false);
         }
@@ -486,30 +483,30 @@ const AssetIncidentReportsPage = () => {
                 is_signed_by_owner: !!ownerDraft.is_signed_by_owner,
             });
             await loadData();
-            setSuccess('Owner note saved');
+            setSuccess(t('assetIncidentReports.ownerNoteSaved'));
             closeOwnerModal();
         } catch (e2) {
-            setError(e2?.response?.data?.error || 'Failed to save owner note');
+            setError(e2?.response?.data?.error || t('assetIncidentReports.failedToSaveOwnerNote'));
         } finally {
             setOwnerSubmitting(false);
         }
     };
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     return (
         <>
             <div className="page-header">
                 <div>
-                    <h1 className="page-title">Incident Reports</h1>
-                    <p className="page-subtitle">Consult incident reports, collect owner notes, and sign with role-specific notes</p>
+                    <h1 className="page-title">{t('assetIncidentReports.title')}</h1>
+                    <p className="page-subtitle">{t('assetIncidentReports.subtitle')}</p>
                 </div>
                 {canCreate && (
                     <button
                         className={`btn btn-${showCreateForm ? 'secondary' : 'primary'}`}
                         onClick={() => setShowCreateForm((prev) => !prev)}
                     >
-                        {showCreateForm ? 'Cancel' : '+ New Incident Report'}
+                        {showCreateForm ? t('common.cancel') : `+ ${t('assetIncidentReports.newReport')}`}
                     </button>
                 )}
             </div>
@@ -524,18 +521,18 @@ const AssetIncidentReportsPage = () => {
             {canCreate && showCreateForm && (
                 <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                     <div className="card-header">
-                        <h2 className="card-title">Create Incident Report</h2>
+                        <h2 className="card-title">{t('assetIncidentReports.createReport')}</h2>
                     </div>
                     <div className="card-body">
                         <form onSubmit={handleCreate}>
                             <div className="form-group">
-                                <label className="form-label">Search asset by serial number</label>
+                                <label className="form-label">{t('assetIncidentReports.searchBySerial')}</label>
                                 <input
                                     className="form-input"
                                     type="text"
                                     value={serialSearch}
                                     onChange={(e) => setSerialSearch(e.target.value)}
-                                    placeholder="Type full or partial serial number"
+                                    placeholder={t('assetIncidentReports.searchPlaceholder')}
                                 />
                             </div>
 
@@ -543,17 +540,17 @@ const AssetIncidentReportsPage = () => {
                                 <table className="data-table">
                                     <thead>
                                         <tr>
-                                            <th>Asset ID</th>
-                                            <th>Serial Number</th>
-                                            <th>Name</th>
-                                            <th>Status</th>
-                                            <th>Select</th>
+                                            <th>{t('assets.assetId')}</th>
+                                            <th>{t('assets.serialNumber')}</th>
+                                            <th>{t('common.name')}</th>
+                                            <th>{t('common.status')}</th>
+                                            <th>{t('common.select')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredAssets.length === 0 ? (
                                             <tr>
-                                                <td colSpan="5" style={{ textAlign: 'center' }}>No assets found for this serial search.</td>
+                                                <td colSpan="5" style={{ textAlign: 'center' }}>{t('assetIncidentReports.noAssetsFound')}</td>
                                             </tr>
                                         ) : (
                                             filteredAssets.map((asset) => (
@@ -568,7 +565,7 @@ const AssetIncidentReportsPage = () => {
                                                             className={`btn btn-${Number(form.asset) === Number(asset.asset_id) ? 'secondary' : 'primary'}`}
                                                             onClick={() => setForm((prev) => ({ ...prev, asset: asset.asset_id }))}
                                                         >
-                                                            {Number(form.asset) === Number(asset.asset_id) ? 'Selected' : 'Select'}
+                                                            {Number(form.asset) === Number(asset.asset_id) ? t('common.selected') : t('common.select')}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -580,13 +577,13 @@ const AssetIncidentReportsPage = () => {
 
                             {selectedAsset && (
                                 <div className="badge badge-info" style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-3)' }}>
-                                    Selected Asset: #{selectedAsset.asset_id} - {selectedAsset.asset_name || 'Unnamed'} ({selectedAsset.asset_serial_number || 'No serial'})
+                                    {t('assetIncidentReports.selectedAsset')}: #{selectedAsset.asset_id} - {selectedAsset.asset_name || t('common.unknown')} ({selectedAsset.asset_serial_number || t('assetIncidentReports.noSerial')})
                                 </div>
                             )}
 
                             <div className="form-grid">
                                 <div className="form-group">
-                                    <label className="form-label">Reason</label>
+                                    <label className="form-label">{t('assetIncidentReports.reason')}</label>
                                     <select
                                         className="form-select"
                                         value={form.reason}
@@ -599,7 +596,7 @@ const AssetIncidentReportsPage = () => {
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Digital Copy (PDF)</label>
+                                    <label className="form-label">{t('assetIncidentReports.digitalCopy')}</label>
                                     <input
                                         className="form-input"
                                         type="file"
@@ -616,23 +613,23 @@ const AssetIncidentReportsPage = () => {
                                         checked={!!form.is_signed_by_exploitation_chief}
                                         onChange={(e) => setForm((prev) => ({ ...prev, is_signed_by_exploitation_chief: e.target.checked }))}
                                     />
-                                    <span>Signed by exploitation chief</span>
+                                    <span>{t('assetIncidentReports.signedByExploitationChief')}</span>
                                 </label>
                             </div>
 
                             <div className="form-group">
-                                <label className="form-label">Exploitation Chief Note</label>
+                                <label className="form-label">{t('assetIncidentReports.exploitationChiefNote')}</label>
                                 <textarea
                                     className="form-textarea"
                                     rows={3}
                                     value={form.exploitation_chief_note}
                                     onChange={(e) => setForm((prev) => ({ ...prev, exploitation_chief_note: e.target.value }))}
-                                    placeholder="Optional note from exploitation chief"
+                                    placeholder={t('assetIncidentReports.exploitationChiefNotePlaceholder')}
                                 />
                             </div>
 
                             <button type="submit" className="btn btn-primary" disabled={submitting}>
-                                {submitting ? 'Creating...' : 'Create Incident Report'}
+                                {submitting ? t('assetIncidentReports.creating') : t('assetIncidentReports.createReport')}
                             </button>
                         </form>
                     </div>
@@ -651,12 +648,12 @@ const AssetIncidentReportsPage = () => {
                     }}
                 >
                     <div style={{ display: 'grid', gap: '0.25rem' }}>
-                        <h2 className="card-title" style={{ margin: 0 }}>All incident reports</h2>
+                        <h2 className="card-title" style={{ margin: 0 }}>{t('assetIncidentReports.allIncidentReports')}</h2>
                         <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
-                            {filteredReports.length} shown
+                            {filteredReports.length} {t('assetIncidentReports.shown')}
                             {reasonFilter ? ` • ${REASONS.find((r) => r.value === reasonFilter)?.label || reasonFilter}` : ''}
                             {statusFilter ? ` • ${statusFilter}` : ''}
-                            {reportQuery.trim() ? ' • search applied' : ''}
+                            {reportQuery.trim() ? ` • ${t('assetIncidentReports.searchApplied')}` : ''}
                         </div>
                     </div>
 
@@ -665,7 +662,7 @@ const AssetIncidentReportsPage = () => {
                             className="form-input"
                             value={reportQuery}
                             onChange={(e) => setReportQuery(e.target.value)}
-                            placeholder="Search incident reports…"
+                            placeholder={t('assetIncidentReports.searchReportsPlaceholder')}
                             style={{ width: 320, maxWidth: '100%' }}
                         />
                         <select
@@ -673,9 +670,9 @@ const AssetIncidentReportsPage = () => {
                             value={reasonFilter}
                             onChange={(e) => setReasonFilter(e.target.value)}
                             style={{ width: 190 }}
-                            aria-label="Filter by reason"
+                            aria-label={t('assetIncidentReports.filterByReason')}
                         >
-                            <option value="">All reasons</option>
+                            <option value="">{t('assetIncidentReports.allReasons')}</option>
                             {REASONS.map((r) => (
                                 <option key={r.value} value={r.value}>
                                     {r.label}
@@ -687,9 +684,9 @@ const AssetIncidentReportsPage = () => {
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             style={{ width: 170 }}
-                            aria-label="Filter by status"
+                            aria-label={t('assetIncidentReports.filterByStatus')}
                         >
-                            <option value="">All status</option>
+                            <option value="">{t('assetIncidentReports.allStatus')}</option>
                             {statusOptions.map((s) => (
                                 <option key={s} value={s}>
                                     {s}
@@ -697,7 +694,7 @@ const AssetIncidentReportsPage = () => {
                             ))}
                         </select>
                         <button type="button" className="btn btn-secondary" onClick={loadData} disabled={loading || submitting || reviewSubmitting || ownerSubmitting}>
-                            Refresh
+                            {t('common.refresh')}
                         </button>
                     </div>
                 </div>
@@ -705,8 +702,8 @@ const AssetIncidentReportsPage = () => {
                 <div style={{ padding: 'var(--space-4)' }}>
                     {filteredReports.length === 0 ? (
                         <div className="empty-state">
-                            <h3 className="empty-state-title">No results</h3>
-                            <p className="empty-state-text">Try adjusting filters or search.</p>
+                            <h3 className="empty-state-title">{t('common.noResults')}</h3>
+                            <p className="empty-state-text">{t('assetIncidentReports.tryAdjustingFilters')}</p>
                         </div>
                     ) : (
                         <div
@@ -717,7 +714,7 @@ const AssetIncidentReportsPage = () => {
                             }}
                         >
                             {filteredReports.map((report) => {
-                                const assetTitle = report.asset_name || `Asset #${report.asset}`;
+                                const assetTitle = report.asset_name || t('assetIncidentReports.assetFallback', { id: report.asset });
                                 const serial = report.asset_serial_number || '-';
                                 const reasonLabel = REASONS.find((r) => r.value === report.reason)?.label || report.reason || '-';
                                 const status = report.status || '-';
@@ -737,17 +734,17 @@ const AssetIncidentReportsPage = () => {
                                             <div style={{ minWidth: 0 }}>
                                                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                                                     <span style={{ ...chipStyle, borderColor: 'rgba(99, 102, 241, 0.35)', color: 'var(--color-text-primary)' }}>
-                                                        incident
+                                                        {t('assetIncidentReports.incident')}
                                                     </span>
                                                     <span style={chipStyle}>#{report.asset_incident_report_id}</span>
-                                                    <span style={chipStyle}>asset #{report.asset}</span>
+                                                    <span style={chipStyle}>{t('assetIncidentReports.asset')} #{report.asset}</span>
                                                 </div>
 
                                                 <div style={{ marginTop: '0.6rem', color: 'var(--color-text-primary)', fontWeight: 700, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                                     {assetTitle}
                                                 </div>
                                                 <div style={{ marginTop: '0.25rem', color: 'var(--color-text-secondary)', fontSize: '0.92rem' }}>
-                                                    <span style={{ color: 'var(--color-text-muted)' }}>serial</span> {serial}
+                                                    <span style={{ color: 'var(--color-text-muted)' }}>{t('assetIncidentReports.serial')}</span> {serial}
                                                 </div>
                                             </div>
 
@@ -758,26 +755,26 @@ const AssetIncidentReportsPage = () => {
                                         </div>
 
                                         <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                            {signChip('Owner', !!report.is_signed_by_owner)}
-                                            {signChip('IT', !!report.is_signed_by_it_bureau_chief)}
-                                            {signChip('Exploit', !!report.is_signed_by_exploitation_chief)}
-                                            {signChip('Protect', !!report.is_signed_by_protection_and_security_bureau_chief)}
-                                            {signChip('HQ', !!report.is_signed_by_school_headquarter)}
+                                            {signChip(t('assetIncidentReports.signOwner'), !!report.is_signed_by_owner)}
+                                            {signChip(t('assetIncidentReports.signIT'), !!report.is_signed_by_it_bureau_chief)}
+                                            {signChip(t('assetIncidentReports.signExploit'), !!report.is_signed_by_exploitation_chief)}
+                                            {signChip(t('assetIncidentReports.signProtect'), !!report.is_signed_by_protection_and_security_bureau_chief)}
+                                            {signChip(t('assetIncidentReports.signHQ'), !!report.is_signed_by_school_headquarter)}
                                         </div>
 
                                         <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
                                             {availableReviewRoles.length > 0 && (
                                                 <button type="button" className="btn btn-secondary" onClick={() => openReviewModal(report)}>
-                                                    Review / Sign
+                                                    {t('assetIncidentReports.reviewSign')}
                                                 </button>
                                             )}
                                             {isOwnerOfReport(report) && (
                                                 <button type="button" className="btn btn-primary" onClick={() => openOwnerModal(report)}>
-                                                    Owner note
+                                                    {t('assetIncidentReports.ownerNote')}
                                                 </button>
                                             )}
                                             <div style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-                                                {report.asset_serial_number ? `SN ${report.asset_serial_number}` : ''}
+                                                {report.asset_serial_number ? `${t('assetIncidentReports.sn')} ${report.asset_serial_number}` : ''}
                                             </div>
                                         </div>
                                     </div>
@@ -792,7 +789,7 @@ const AssetIncidentReportsPage = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h3 className="modal-title">Review Incident Report #{reviewingReport.asset_incident_report_id}</h3>
+                            <h3 className="modal-title">{t('assetIncidentReports.reviewReportTitle', { id: reviewingReport.asset_incident_report_id })}</h3>
                             <button
                                 type="button"
                                 className="modal-close"
@@ -804,7 +801,7 @@ const AssetIncidentReportsPage = () => {
                         </div>
                         <form onSubmit={submitRoleReview} className="modal-body">
                             <div className="form-group">
-                                <label className="form-label">Signing as</label>
+                                <label className="form-label">{t('assetIncidentReports.signingAs')}</label>
                                 <select
                                     className="form-select"
                                     value={reviewRole}
@@ -813,20 +810,20 @@ const AssetIncidentReportsPage = () => {
                                 >
                                     {availableReviewRoles.map((roleCode) => (
                                         <option key={roleCode} value={roleCode}>
-                                            {REVIEW_ROLE_CONFIG[roleCode]?.label || roleCode}
+                                            {t(REVIEW_ROLE_CONFIG[roleCode]?.labelKey) || roleCode}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
                             <div className="form-group">
-                                <label className="form-label">Your note</label>
+                                <label className="form-label">{t('assetIncidentReports.yourNote')}</label>
                                 <textarea
                                     className="form-textarea"
                                     rows={4}
                                     value={reviewDraft.note}
                                     onChange={(e) => setReviewDraft((prev) => ({ ...prev, note: e.target.value }))}
-                                    placeholder="Add your note"
+                                    placeholder={t('assetIncidentReports.addYourNote')}
                                     disabled={reviewSubmitting}
                                 />
                             </div>
@@ -839,7 +836,7 @@ const AssetIncidentReportsPage = () => {
                                         onChange={(e) => setReviewDraft((prev) => ({ ...prev, signed: e.target.checked }))}
                                         disabled={reviewSubmitting}
                                     />
-                                    <span>Sign this report as {REVIEW_ROLE_CONFIG[reviewRole]?.label || reviewRole}</span>
+                                    <span>{t('assetIncidentReports.signReportAs', { role: t(REVIEW_ROLE_CONFIG[reviewRole]?.labelKey) || reviewRole })}</span>
                                 </label>
                             </div>
 
@@ -860,17 +857,17 @@ const AssetIncidentReportsPage = () => {
                                                 }
                                                 disabled={reviewSubmitting}
                                             />
-                                            <span>Apply asset status to all composing items</span>
+                                            <span>{t('assetIncidentReports.applyStatusToAll')}</span>
                                         </label>
                                     </div>
 
                                     {!reviewDraft.apply_status_to_all_composing_items && (
                                         <div className="form-grid">
                                             <div className="form-group">
-                                                <label className="form-label">Stock Items</label>
+                                                <label className="form-label">{t('assetIncidentReports.stockItems')}</label>
                                                 <div style={{ maxHeight: 180, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                                     {reviewingAssetStockItems.length === 0 ? (
-                                                        <div style={{ color: 'var(--color-text-secondary)' }}>No composing stock items.</div>
+                                                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('assetIncidentReports.noComposingStockItems')}</div>
                                                     ) : (
                                                         reviewingAssetStockItems.map((item) => {
                                                             const itemId = Number(item?.stock_item_id);
@@ -891,7 +888,7 @@ const AssetIncidentReportsPage = () => {
                                                                         }
                                                                         disabled={reviewSubmitting}
                                                                     />
-                                                                    <span>#{itemId} - {item?.stock_item_name || 'Unnamed'}</span>
+                                                                    <span>#{itemId} - {item?.stock_item_name || t('common.unknown')}</span>
                                                                 </label>
                                                             );
                                                         })
@@ -899,10 +896,10 @@ const AssetIncidentReportsPage = () => {
                                                 </div>
                                             </div>
                                             <div className="form-group">
-                                                <label className="form-label">Consumables</label>
+                                                <label className="form-label">{t('assetIncidentReports.consumables')}</label>
                                                 <div style={{ maxHeight: 180, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                                     {reviewingAssetConsumables.length === 0 ? (
-                                                        <div style={{ color: 'var(--color-text-secondary)' }}>No composing consumables.</div>
+                                                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('assetIncidentReports.noComposingConsumables')}</div>
                                                     ) : (
                                                         reviewingAssetConsumables.map((item) => {
                                                             const itemId = Number(item?.consumable_id);
@@ -923,7 +920,7 @@ const AssetIncidentReportsPage = () => {
                                                                         }
                                                                         disabled={reviewSubmitting}
                                                                     />
-                                                                    <span>#{itemId} - {item?.consumable_name || 'Unnamed'}</span>
+                                                                    <span>#{itemId} - {item?.consumable_name || t('common.unknown')}</span>
                                                                 </label>
                                                             );
                                                         })
@@ -937,10 +934,10 @@ const AssetIncidentReportsPage = () => {
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
                                 <button type="button" className="btn btn-secondary" onClick={closeReviewModal} disabled={reviewSubmitting}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={reviewSubmitting || !reviewRole}>
-                                    {reviewSubmitting ? 'Saving...' : 'Save Review'}
+                                    {reviewSubmitting ? t('common.saving') : t('assetIncidentReports.saveReview')}
                                 </button>
                             </div>
                         </form>
@@ -952,7 +949,7 @@ const AssetIncidentReportsPage = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h3 className="modal-title">Set status for each composing item</h3>
+                            <h3 className="modal-title">{t('assetIncidentReports.setStatusForItems')}</h3>
                             <button
                                 type="button"
                                 className="modal-close"
@@ -964,16 +961,16 @@ const AssetIncidentReportsPage = () => {
                         </div>
                         <form onSubmit={submitItemStatusModal} className="modal-body">
                             <div className="form-group">
-                                <label className="form-label">Stock Items</label>
+                                <label className="form-label">{t('assetIncidentReports.stockItems')}</label>
                                 <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                     {selectedAssetStockItems.length === 0 ? (
-                                        <div style={{ color: 'var(--color-text-secondary)' }}>No composing stock items.</div>
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('assetIncidentReports.noComposingStockItems')}</div>
                                     ) : (
                                         selectedAssetStockItems.map((item) => {
                                             const itemId = Number(item?.stock_item_id);
                                             return (
                                                 <div key={itemId} style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                                                    <span>#{itemId} - {item?.stock_item_name || 'Unnamed'}</span>
+                                                    <span>#{itemId} - {item?.stock_item_name || t('common.unknown')}</span>
                                                     <select
                                                         className="form-select"
                                                         value={itemStatusDraft.stock_item_statuses?.[itemId] || form.reason}
@@ -1000,16 +997,16 @@ const AssetIncidentReportsPage = () => {
                             </div>
 
                             <div className="form-group">
-                                <label className="form-label">Consumables</label>
+                                <label className="form-label">{t('assetIncidentReports.consumables')}</label>
                                 <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                     {selectedAssetConsumables.length === 0 ? (
-                                        <div style={{ color: 'var(--color-text-secondary)' }}>No composing consumables.</div>
+                                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('assetIncidentReports.noComposingConsumables')}</div>
                                     ) : (
                                         selectedAssetConsumables.map((item) => {
                                             const itemId = Number(item?.consumable_id);
                                             return (
                                                 <div key={itemId} style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 'var(--space-2)', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-                                                    <span>#{itemId} - {item?.consumable_name || 'Unnamed'}</span>
+                                                    <span>#{itemId} - {item?.consumable_name || t('common.unknown')}</span>
                                                     <select
                                                         className="form-select"
                                                         value={itemStatusDraft.consumable_statuses?.[itemId] || form.reason}
@@ -1037,10 +1034,10 @@ const AssetIncidentReportsPage = () => {
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowItemStatusModal(false)} disabled={submitting}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={submitting}>
-                                    {submitting ? 'Submitting...' : 'Submit Incident Report'}
+                                    {submitting ? t('common.submitting') : t('assetIncidentReports.submitIncidentReport')}
                                 </button>
                             </div>
                         </form>
@@ -1051,7 +1048,7 @@ const AssetIncidentReportsPage = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h3 className="modal-title">Owner Note - Incident Report #{ownerEditingReport.asset_incident_report_id}</h3>
+                            <h3 className="modal-title">{t('assetIncidentReports.ownerNoteTitle', { id: ownerEditingReport.asset_incident_report_id })}</h3>
                             <button
                                 type="button"
                                 className="modal-close"
@@ -1063,13 +1060,13 @@ const AssetIncidentReportsPage = () => {
                         </div>
                         <form onSubmit={submitOwnerReview} className="modal-body">
                             <div className="form-group">
-                                <label className="form-label">Owner Note</label>
+                                <label className="form-label">{t('assetIncidentReports.ownerNoteLabel')}</label>
                                 <textarea
                                     className="form-textarea"
                                     rows={5}
                                     value={ownerDraft.owner_note}
                                     onChange={(e) => setOwnerDraft((prev) => ({ ...prev, owner_note: e.target.value }))}
-                                    placeholder="Describe what happened according to you"
+                                    placeholder={t('assetIncidentReports.ownerNotePlaceholder')}
                                     disabled={ownerSubmitting}
                                 />
                             </div>
@@ -1081,15 +1078,15 @@ const AssetIncidentReportsPage = () => {
                                         onChange={(e) => setOwnerDraft((prev) => ({ ...prev, is_signed_by_owner: e.target.checked }))}
                                         disabled={ownerSubmitting}
                                     />
-                                    <span>I confirm and sign this owner note</span>
+                                    <span>{t('assetIncidentReports.confirmSignOwnerNote')}</span>
                                 </label>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
                                 <button type="button" className="btn btn-secondary" onClick={closeOwnerModal} disabled={ownerSubmitting}>
-                                    Cancel
+                                    {t('common.cancel')}
                                 </button>
                                 <button type="submit" className="btn btn-primary" disabled={ownerSubmitting}>
-                                    {ownerSubmitting ? 'Saving...' : 'Save Owner Note'}
+                                    {ownerSubmitting ? t('common.saving') : t('assetIncidentReports.saveOwnerNote')}
                                 </button>
                             </div>
                         </form>

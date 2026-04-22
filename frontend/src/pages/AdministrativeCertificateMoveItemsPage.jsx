@@ -9,15 +9,17 @@ import {
     consumableService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const AdministrativeCertificateMoveItemsPage = () => {
-    const { user } = useAuth();
-    const isAssetResponsible = user?.roles?.some(
+    const { user, isSuperuser } = useAuth();
+    const isAssetResponsible = isSuperuser || user?.roles?.some(
         (role) => role.role_code === 'asset_responsible' || role.role_code === 'exploitation_chief' || role.role_code === 'it_bureau_chief'
     );
 
     const { certificateId } = useParams();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -83,7 +85,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                 setIncluded(null);
             }
         } catch (e) {
-            setError('Failed to load certificate items');
+            setError(t('certMoveItems.loadError'));
         } finally {
             setLoading(false);
         }
@@ -169,7 +171,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                         anySuccess = true;
                     }
                 } catch (e) {
-                    const msg = e?.response?.data?.error || 'Failed';
+                    const msg = e?.response?.data?.error || t('common.failed');
                     setBulkErrors((prev) => [...prev, `${it.kind} #${it.id}: ${msg}`]);
                 } finally {
                     setBulkProgress({ done: i + 1, total: items.length });
@@ -188,7 +190,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
             }
 
             await loadAll();
-            setSuccess('Bulk move finished');
+            setSuccess(t('poMoveItems.bulkMoveFinished'));
         } finally {
             setBulkSubmitting(false);
         }
@@ -222,10 +224,10 @@ const AdministrativeCertificateMoveItemsPage = () => {
                 }
             }
 
-            setSuccess(`${kind} #${id} moved`);
+            setSuccess(t('poMoveItems.itemMoved', { kind, id }));
             await loadAll();
         } catch (e) {
-            setError(e?.response?.data?.error || 'Failed to move item');
+            setError(e?.response?.data?.error || t('poMoveItems.moveError'));
         } finally {
             setSubmittingKey(null);
         }
@@ -235,12 +237,12 @@ const AdministrativeCertificateMoveItemsPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     if (!certificate) {
         return (
             <div className="page-container">
-                <div className="alert alert-error">Certificate not found.</div>
+                <div className="alert alert-error">{t('certMoveItems.notFound')}</div>
             </div>
         );
     }
@@ -249,9 +251,9 @@ const AdministrativeCertificateMoveItemsPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">Move Items (Administrative Certificate)</h1>
+                    <h1 className="page-title">{t('certMoveItems.title')}</h1>
                     <p className="page-subtitle">
-                        Certificate #{certificate.administrative_certificate_id} | Order #{orderId || '-'}
+                        {t('certMoveItems.certificate')} #{certificate.administrative_certificate_id} | {t('purchaseOrderDetails.order')} #{orderId || '-'}
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
@@ -260,17 +262,17 @@ const AdministrativeCertificateMoveItemsPage = () => {
                         className="btn btn-secondary"
                         onClick={() => navigate('/dashboard/administrative-certificates')}
                     >
-                        Back
+                        {t('common.back')}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={loadAll}>
-                        Refresh
+                        {t('common.refresh')}
                     </button>
                 </div>
             </div>
 
             {!isFullySigned && (
                 <div className="alert alert-error" style={{ marginBottom: 'var(--space-4)' }}>
-                    This certificate is not fully signed yet.
+                    {t('certMoveItems.notFullySigned')}
                 </div>
             )}
 
@@ -287,7 +289,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
 
             <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                 <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>Bulk Move</h2>
+                    <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.bulkMove')}</h2>
                 </div>
                 <div className="card-body">
                     <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -297,7 +299,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                             onChange={(e) => setBulkDestinationId(e.target.value)}
                             style={{ minWidth: 280 }}
                         >
-                            <option value="">Select destination location</option>
+                            <option value="">{t('poMoveItems.selectDestination')}</option>
                             {allLocationOptions.map((l) => (
                                 <option key={l.id} value={l.id}>
                                     {l.name || `#${l.id}`}
@@ -310,16 +312,16 @@ const AdministrativeCertificateMoveItemsPage = () => {
                             disabled={!isFullySigned || bulkSubmitting || !bulkDestinationId || bulkItems.length === 0}
                             onClick={handleBulkMove}
                         >
-                            {bulkSubmitting ? `Moving... (${bulkProgress.done}/${bulkProgress.total})` : 'Move All Items'}
+                            {bulkSubmitting ? t('poMoveItems.movingProgress', { done: bulkProgress.done, total: bulkProgress.total }) : t('poMoveItems.moveAllItems')}
                         </button>
                         <div style={{ color: 'var(--color-text-secondary)' }}>
-                            Total items: {bulkItems.length}
+                            {t('poMoveItems.totalItems')}: {bulkItems.length}
                         </div>
                     </div>
 
                     {bulkErrors.length > 0 && (
                         <div className="alert alert-error" style={{ marginTop: 'var(--space-4)' }}>
-                            <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Some items failed to move</div>
+                            <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('poMoveItems.someItemsFailed')}</div>
                             <div style={{ maxHeight: 220, overflowY: 'auto' }}>
                                 {bulkErrors.map((m, idx) => (
                                     <div key={idx}>{m}</div>
@@ -332,21 +334,21 @@ const AdministrativeCertificateMoveItemsPage = () => {
 
             <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                 <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>Assets</h2>
+                    <h2 className="card-title" style={{ margin: 0 }}>{t('certMoveItems.assets')}</h2>
                 </div>
                 <div className="card-body">
                     {(assets || []).length === 0 ? (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>No assets for this order.</div>
+                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('certMoveItems.noAssetsForOrder')}</div>
                     ) : (
                         <div style={{ overflowX: 'auto' }}>
                             <table className="table" style={{ width: '100%' }}>
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Status</th>
-                                        <th>Destination</th>
-                                        <th style={{ textAlign: 'right' }}>Action</th>
+                                        <th>{t('common.id')}</th>
+                                        <th>{t('poMoveItems.name')}</th>
+                                        <th>{t('common.status')}</th>
+                                        <th>{t('poMoveItems.destination')}</th>
+                                        <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -363,7 +365,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                         value={destinationsByKey[key] || ''}
                                                         onChange={(e) => setDestination(key, e.target.value)}
                                                     >
-                                                        <option value="">Select location</option>
+                                                        <option value="">{t('poMoveItems.selectLocation')}</option>
                                                         {allLocationOptions.map((l) => (
                                                             <option key={l.id} value={l.id}>
                                                                 {l.name || `#${l.id}`}
@@ -378,7 +380,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                         disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
                                                         onClick={() => doMove({ kind: 'asset', id: a.asset_id })}
                                                     >
-                                                        {submittingKey === key ? 'Moving...' : 'Move'}
+                                                        {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
                                                     </button>
                                                 </td>
                                             </tr>
@@ -393,28 +395,28 @@ const AdministrativeCertificateMoveItemsPage = () => {
 
             <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
                 <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>Stock Items</h2>
+                    <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.stockItems')}</h2>
                 </div>
                 <div className="card-body">
                     {includedStockItems.length === 0 && accessoryStockItems.length === 0 ? (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>No stock items for this order.</div>
+                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('certMoveItems.noStockItemsForOrder')}</div>
                     ) : (
                         <>
                             <div style={{ marginBottom: 'var(--space-4)' }}>
-                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Included Stock Items</div>
+                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('certMoveItems.includedStockItems')}</div>
                                 {includedStockItems.length === 0 ? (
-                                    <div style={{ color: 'var(--color-text-secondary)' }}>None.</div>
+                                    <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
                                 ) : (
                                     <div style={{ overflowX: 'auto' }}>
                                         <table className="table" style={{ width: '100%' }}>
                                             <thead>
                                                 <tr>
-                                                    <th>ID</th>
-                                                    <th>Name</th>
-                                                    <th>Status</th>
-                                                    <th>Asset</th>
-                                                    <th>Destination</th>
-                                                    <th style={{ textAlign: 'right' }}>Action</th>
+                                                    <th>{t('common.id')}</th>
+                                                    <th>{t('poMoveItems.name')}</th>
+                                                    <th>{t('common.status')}</th>
+                                                    <th>{t('certMoveItems.asset')}</th>
+                                                    <th>{t('poMoveItems.destination')}</th>
+                                                    <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -432,7 +434,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                                     value={destinationsByKey[key] || ''}
                                                                     onChange={(e) => setDestination(key, e.target.value)}
                                                                 >
-                                                                    <option value="">Select location</option>
+                                                                    <option value="">{t('poMoveItems.selectLocation')}</option>
                                                                     {allLocationOptions.map((l) => (
                                                                         <option key={l.id} value={l.id}>
                                                                             {l.name || `#${l.id}`}
@@ -447,7 +449,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                                     disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
                                                                     onClick={() => doMove({ kind: 'stock_item', id: s.id })}
                                                                 >
-                                                                    {submittingKey === key ? 'Moving...' : 'Move'}
+                                                                    {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -460,20 +462,20 @@ const AdministrativeCertificateMoveItemsPage = () => {
                             </div>
 
                             <div>
-                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Accessory Stock Items</div>
+                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('certMoveItems.accessoryStockItems')}</div>
                                 {accessoryStockItems.length === 0 ? (
-                                    <div style={{ color: 'var(--color-text-secondary)' }}>None.</div>
+                                    <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
                                 ) : (
                                     <div style={{ overflowX: 'auto' }}>
                                         <table className="table" style={{ width: '100%' }}>
                                             <thead>
                                                 <tr>
-                                                    <th>ID</th>
-                                                    <th>Name</th>
-                                                    <th>Status</th>
-                                                    <th>Asset</th>
-                                                    <th>Destination</th>
-                                                    <th style={{ textAlign: 'right' }}>Action</th>
+                                                    <th>{t('common.id')}</th>
+                                                    <th>{t('poMoveItems.name')}</th>
+                                                    <th>{t('common.status')}</th>
+                                                    <th>{t('certMoveItems.asset')}</th>
+                                                    <th>{t('poMoveItems.destination')}</th>
+                                                    <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -491,7 +493,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                                     value={destinationsByKey[key] || ''}
                                                                     onChange={(e) => setDestination(key, e.target.value)}
                                                                 >
-                                                                    <option value="">Select location</option>
+                                                                    <option value="">{t('poMoveItems.selectLocation')}</option>
                                                                     {allLocationOptions.map((l) => (
                                                                         <option key={l.id} value={l.id}>
                                                                             {l.name || `#${l.id}`}
@@ -506,7 +508,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                                     disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
                                                                     onClick={() => doMove({ kind: 'stock_item', id: s.id })}
                                                                 >
-                                                                    {submittingKey === key ? 'Moving...' : 'Move'}
+                                                                    {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -524,28 +526,28 @@ const AdministrativeCertificateMoveItemsPage = () => {
 
             <div className="card">
                 <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>Consumables</h2>
+                    <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.consumables')}</h2>
                 </div>
                 <div className="card-body">
                     {includedConsumables.length === 0 && accessoryConsumables.length === 0 ? (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>No consumables for this order.</div>
+                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('certMoveItems.noConsumablesForOrder')}</div>
                     ) : (
                         <>
                             <div style={{ marginBottom: 'var(--space-4)' }}>
-                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Included Consumables</div>
+                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('certMoveItems.includedConsumables')}</div>
                                 {includedConsumables.length === 0 ? (
-                                    <div style={{ color: 'var(--color-text-secondary)' }}>None.</div>
+                                    <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
                                 ) : (
                                     <div style={{ overflowX: 'auto' }}>
                                         <table className="table" style={{ width: '100%' }}>
                                             <thead>
                                                 <tr>
-                                                    <th>ID</th>
-                                                    <th>Name</th>
-                                                    <th>Status</th>
-                                                    <th>Asset</th>
-                                                    <th>Destination</th>
-                                                    <th style={{ textAlign: 'right' }}>Action</th>
+                                                    <th>{t('common.id')}</th>
+                                                    <th>{t('poMoveItems.name')}</th>
+                                                    <th>{t('common.status')}</th>
+                                                    <th>{t('certMoveItems.asset')}</th>
+                                                    <th>{t('poMoveItems.destination')}</th>
+                                                    <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -563,7 +565,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                                     value={destinationsByKey[key] || ''}
                                                                     onChange={(e) => setDestination(key, e.target.value)}
                                                                 >
-                                                                    <option value="">Select location</option>
+                                                                    <option value="">{t('poMoveItems.selectLocation')}</option>
                                                                     {allLocationOptions.map((l) => (
                                                                         <option key={l.id} value={l.id}>
                                                                             {l.name || `#${l.id}`}
@@ -578,7 +580,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                                     disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
                                                                     onClick={() => doMove({ kind: 'consumable', id: c.id })}
                                                                 >
-                                                                    {submittingKey === key ? 'Moving...' : 'Move'}
+                                                                    {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -591,20 +593,20 @@ const AdministrativeCertificateMoveItemsPage = () => {
                             </div>
 
                             <div>
-                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>Accessory Consumables</div>
+                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('certMoveItems.accessoryConsumables')}</div>
                                 {accessoryConsumables.length === 0 ? (
-                                    <div style={{ color: 'var(--color-text-secondary)' }}>None.</div>
+                                    <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
                                 ) : (
                                     <div style={{ overflowX: 'auto' }}>
                                         <table className="table" style={{ width: '100%' }}>
                                             <thead>
                                                 <tr>
-                                                    <th>ID</th>
-                                                    <th>Name</th>
-                                                    <th>Status</th>
-                                                    <th>Asset</th>
-                                                    <th>Destination</th>
-                                                    <th style={{ textAlign: 'right' }}>Action</th>
+                                                    <th>{t('common.id')}</th>
+                                                    <th>{t('poMoveItems.name')}</th>
+                                                    <th>{t('common.status')}</th>
+                                                    <th>{t('certMoveItems.asset')}</th>
+                                                    <th>{t('poMoveItems.destination')}</th>
+                                                    <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -622,7 +624,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                                     value={destinationsByKey[key] || ''}
                                                                     onChange={(e) => setDestination(key, e.target.value)}
                                                                 >
-                                                                    <option value="">Select location</option>
+                                                                    <option value="">{t('poMoveItems.selectLocation')}</option>
                                                                     {allLocationOptions.map((l) => (
                                                                         <option key={l.id} value={l.id}>
                                                                             {l.name || `#${l.id}`}
@@ -637,7 +639,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
                                                                     disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
                                                                     onClick={() => doMove({ kind: 'consumable', id: c.id })}
                                                                 >
-                                                                    {submittingKey === key ? 'Moving...' : 'Move'}
+                                                                    {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
                                                                 </button>
                                                             </td>
                                                         </tr>

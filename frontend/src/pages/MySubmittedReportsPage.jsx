@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { problemReportService } from '../services/api';
+import { useTranslation } from 'react-i18next';
 
 const MySubmittedReportsPage = () => {
+    const { t } = useTranslation();
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -15,8 +17,8 @@ const MySubmittedReportsPage = () => {
             const data = await problemReportService.getMine();
             setReports(Array.isArray(data) ? data : []);
         } catch (err) {
-            const msg = err?.response?.data?.error || err?.message || 'Failed to load your reports';
-            setError(typeof msg === 'string' ? msg : 'Failed to load your reports');
+            const msg = err?.response?.data?.error || err?.message || t('mySubmittedReports.loadError');
+            setError(typeof msg === 'string' ? msg : t('mySubmittedReports.loadError'));
             setReports([]);
         } finally {
             setLoading(false);
@@ -53,8 +55,8 @@ const MySubmittedReportsPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">My Submitted Reports</h1>
-                <p className="page-subtitle">View all problem reports you have submitted</p>
+                <h1 className="page-title">{t('mySubmittedReports.title')}</h1>
+                <p className="page-subtitle">{t('mySubmittedReports.subtitle')}</p>
             </div>
 
             {error && (
@@ -65,61 +67,61 @@ const MySubmittedReportsPage = () => {
 
             <div className="filters-bar">
                 <div className="filter-item" style={{ maxWidth: 260 }}>
-                    <label className="form-label">Type</label>
+                    <label className="form-label">{t('mySubmittedReports.type')}</label>
                     <select
                         className="form-input"
                         value={typeFilter}
                         onChange={(e) => setTypeFilter(e.target.value)}
                     >
-                        <option value="">All</option>
-                        <option value="asset">Asset</option>
-                        <option value="stock_item">Stock Item</option>
-                        <option value="consumable">Consumable</option>
+                        <option value="">{t('common.all')}</option>
+                        <option value="asset">{t('reports.asset')}</option>
+                        <option value="stock_item">{t('reports.stockItem')}</option>
+                        <option value="consumable">{t('reports.consumable')}</option>
                     </select>
                 </div>
 
                 <div className="filter-item" style={{ maxWidth: 480 }}>
-                    <label className="form-label">Search</label>
+                    <label className="form-label">{t('common.search')}</label>
                     <input
                         className="form-input"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search by report ID, item ID, type, observation..."
+                        placeholder={t('mySubmittedReports.searchPlaceholder')}
                     />
                 </div>
 
                 <div className="filter-item" style={{ marginLeft: 'auto', alignSelf: 'flex-end' }}>
                     <button className="btn btn-secondary" onClick={loadReports} disabled={loading}>
-                        Refresh
+                        {t('common.refresh')}
                     </button>
                 </div>
             </div>
 
             <div className="card">
                 <div className="card-header">
-                    <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>Submitted Reports</h2>
+                    <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>{t('mySubmittedReports.submittedReports')}</h2>
                 </div>
 
                 <div className="table-container">
                     {loading ? (
                         <div className="empty-state">
                             <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>Loading...</p>
+                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('common.loading')}</p>
                         </div>
                     ) : filteredReports.length === 0 ? (
                         <div className="empty-state">
-                            <h3 className="empty-state-title">No reports found</h3>
-                            <p className="empty-state-text">You have not submitted any matching problem reports.</p>
+                            <h3 className="empty-state-title">{t('mySubmittedReports.noReports')}</h3>
+                            <p className="empty-state-text">{t('mySubmittedReports.noReportsDesc')}</p>
                         </div>
                     ) : (
                         <table className="data-table">
                             <thead>
                                 <tr>
-                                    <th>Report ID</th>
-                                    <th>Type</th>
-                                    <th>Item ID</th>
-                                    <th>Date</th>
-                                    <th>Observation</th>
+                                    <th>{t('mySubmittedReports.reportId')}</th>
+                                    <th>{t('mySubmittedReports.type')}</th>
+                                    <th>{t('mySubmittedReports.itemId')}</th>
+                                    <th>{t('common.date')}</th>
+                                    <th>{t('mySubmittedReports.observation')}</th>
                                 </tr>
                             </thead>
                             <tbody>

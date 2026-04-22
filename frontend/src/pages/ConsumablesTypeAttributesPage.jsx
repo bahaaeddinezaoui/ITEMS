@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { consumableAttributeDefinitionService, consumableTypeAttributeService, consumableTypeService } from '../services/api';
 
 const ConsumablesTypeAttributesPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -27,7 +29,7 @@ const ConsumablesTypeAttributesPage = () => {
 
     useEffect(() => {
         if (!typeId) {
-            setError('typeId is required');
+            setError(t('consumablesTypeAttributes.typeIdRequired'));
             return;
         }
         fetchAll();
@@ -47,7 +49,7 @@ const ConsumablesTypeAttributesPage = () => {
             setAttributeDefinitions(Array.isArray(defs) ? defs : []);
             setTypeAttributes(Array.isArray(attrs) ? attrs : []);
         } catch (err) {
-            setError('Failed to load type attributes: ' + err.message);
+            setError(t('consumablesTypeAttributes.loadError') + ': ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -61,7 +63,7 @@ const ConsumablesTypeAttributesPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.consumable_attribute_definition) {
-            setError('Please select an attribute definition');
+            setError(t('consumablesTypeAttributes.selectDefinition'));
             return;
         }
         setSaving(true);
@@ -78,19 +80,19 @@ const ConsumablesTypeAttributesPage = () => {
             setShowForm(false);
             await fetchAll();
         } catch (err) {
-            setError('Failed to add attribute to type: ' + err.message);
+            setError(t('consumablesTypeAttributes.addError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async (definitionId) => {
-        if (!window.confirm('Remove this attribute from the consumable type?')) return;
+        if (!window.confirm(t('consumablesTypeAttributes.confirmRemove'))) return;
         try {
             await consumableTypeAttributeService.delete(Number(typeId), Number(definitionId));
             await fetchAll();
         } catch (err) {
-            setError('Failed to remove type attribute: ' + err.message);
+            setError(t('consumablesTypeAttributes.removeError') + ': ' + err.message);
         }
     };
 
@@ -106,14 +108,14 @@ const ConsumablesTypeAttributesPage = () => {
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">Consumable Type Attributes</h1>
-                    <p className="page-subtitle">{consumableType ? consumableType.consumable_type_label : 'Type'} • Manage attributes</p>
+                    <h1 className="page-title">{t('consumablesTypeAttributes.title')}</h1>
+                    <p className="page-subtitle">{consumableType ? consumableType.consumable_type_label : t('common.type')} • {t('consumablesTypeAttributes.manageAttributes')}</p>
                 </div>
                 <button
                     onClick={() => navigate('/dashboard/consumables/types')}
                     style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                    title="Back to Types"
-                    aria-label="Back to Types"
+                    title={t('consumablesTypeAttributes.backToTypes')}
+                    aria-label={t('consumablesTypeAttributes.backToTypes')}
                 >
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M15 18l-6-6 6-6" />
@@ -143,12 +145,12 @@ const ConsumablesTypeAttributesPage = () => {
                     alignItems: 'center',
                     backgroundColor: 'var(--color-bg-secondary)'
                 }}>
-                    <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>Attributes</h2>
+                    <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('consumablesTypeAttributes.attributes')}</h2>
                     <button
                         onClick={() => setShowForm(!showForm)}
                         style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
                     >
-                        + Add
+                        + {t('common.add')}
                     </button>
                 </div>
 
@@ -161,7 +163,7 @@ const ConsumablesTypeAttributesPage = () => {
                                 onChange={handleChange}
                                 style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
                             >
-                                <option value="">Select attribute definition</option>
+                                <option value="">{t('consumablesTypeAttributes.selectDefinition')}</option>
                                 {availableDefinitions.map(def => (
                                     <option key={def.consumable_attribute_definition_id} value={def.consumable_attribute_definition_id}>
                                         {def.description} ({def.data_type || 'n/a'}{def.unit ? ` • ${def.unit}` : ''})
@@ -177,12 +179,12 @@ const ConsumablesTypeAttributesPage = () => {
                                         checked={form.is_mandatory}
                                         onChange={handleChange}
                                     />
-                                    Mandatory
+                                    {t('common.mandatory')}
                                 </label>
                                 <input
                                     type="text"
                                     name="default_value"
-                                    placeholder="Default value (optional)"
+                                    placeholder={t('consumablesTypeAttributes.defaultValuePlaceholder')}
                                     value={form.default_value}
                                     onChange={handleChange}
                                     style={{ padding: 'var(--space-2)' }}
@@ -190,17 +192,17 @@ const ConsumablesTypeAttributesPage = () => {
                             </div>
 
                             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
+                                <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>{t('common.save')}</button>
+                                <button type="button" onClick={() => setShowForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>{t('common.cancel')}</button>
                             </div>
                         </form>
                     </div>
                 )}
 
                 <div style={{ overflowY: 'auto', flex: 1, padding: 'var(--space-4)' }}>
-                    {loading && <div style={{ color: 'var(--color-text-secondary)' }}>Loading...</div>}
+                    {loading && <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>}
                     {!loading && typeAttributes.length === 0 && (
-                        <div style={{ color: 'var(--color-text-secondary)' }}>No attributes assigned to this type.</div>
+                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('consumablesTypeAttributes.noAttributes')}</div>
                     )}
 
                     {typeAttributes.map(attr => (
@@ -218,8 +220,8 @@ const ConsumablesTypeAttributesPage = () => {
                                 <div style={{ fontWeight: '500' }}>{attr.definition?.description || `Definition ${attr.consumable_attribute_definition}`}</div>
                                 <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
                                     {(attr.definition?.data_type || 'n/a')}{attr.definition?.unit ? ` • ${attr.definition.unit}` : ''}
-                                    {attr.is_mandatory ? ' • mandatory' : ''}
-                                    {attr.default_value ? ` • default: ${attr.default_value}` : ''}
+                                    {attr.is_mandatory ? ` • ${t('common.mandatory').toLowerCase()}` : ''}
+                                    {attr.default_value ? ` • ${t('consumablesTypeAttributes.default')}: ${attr.default_value}` : ''}
                                 </div>
                             </div>
                             <button

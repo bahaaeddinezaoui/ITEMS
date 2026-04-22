@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     attributionOrderService,
@@ -13,6 +14,7 @@ import {
 } from '../services/api';
 
 const AttributionOrdersPage = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [warehouses, setWarehouses] = useState([]);
     const [assetTypes, setAssetTypes] = useState([]);
@@ -169,7 +171,7 @@ const AttributionOrdersPage = () => {
             const itemsData = await attributionOrderService.getIncludedItems(order.attribution_order_id);
             setIncludedItems(itemsData);
         } catch (err) {
-            setError('Failed to fetch assets or receipt for this order');
+            setError(t('attributionOrders.fetchAssetsOrReceiptError'));
         } finally {
             setLoading(false);
         }
@@ -181,7 +183,7 @@ const AttributionOrdersPage = () => {
             const data = await attributionOrderService.getAll();
             setOrdersList(data);
         } catch (err) {
-            setError('Failed to fetch attribution orders');
+            setError(t('attributionOrders.fetchOrdersError'));
         } finally {
             setLoading(false);
         }
@@ -199,7 +201,7 @@ const AttributionOrdersPage = () => {
             setAssetTypes(tData);
             setLoading(false);
         } catch (err) {
-            setError('Failed to fetch initial data');
+            setError(t('attributionOrders.fetchInitialDataError'));
             setLoading(false);
         }
     };
@@ -376,7 +378,7 @@ const AttributionOrdersPage = () => {
                 }
             }
 
-            setSuccess('Attribution Order and Assets created successfully!');
+            setSuccess(t('attributionOrders.createSuccess'));
             // Reset form
             setOrderData({
                 attribution_order_full_code: '',
@@ -402,7 +404,7 @@ const AttributionOrdersPage = () => {
             const apiData = err?.response?.data;
             const apiError = apiData?.error;
             setError(
-                apiError || (apiData ? JSON.stringify(apiData) : null) || 'Failed to create Attribution Order and Assets'
+                apiError || (apiData ? JSON.stringify(apiData) : null) || t('attributionOrders.createError')
             );
         } finally {
             setSubmitting(false);
@@ -431,35 +433,35 @@ const AttributionOrdersPage = () => {
                 operation: 'entry'
             });
 
-            setSuccess('Receipt Report successfully created and linked to this order.');
+            setSuccess(t('attributionOrders.receiptCreatedSuccess'));
             setShowReceiptForm(false);
             setReceiptData({ report_full_code: '', digital_copy: null });
             setOrderReceipt(receipt);
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to create Receipt Report');
+            setError(err.response?.data?.error || t('attributionOrders.receiptCreateError'))
         } finally {
             setSubmitting(false);
         }
     };
 
-    if (loading) return <div className="loading">Loading...</div>;
+    if (loading) return <div className="loading">{t('common.loading')}</div>;
 
     return (
         <>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">{viewMode === 'list' ? 'Attribution Orders' : viewMode === 'detail' ? `Order Details: ${selectedOrder?.attribution_order_full_code || ''}` : 'Create Attribution Order'}</h1>
+                    <h1 className="page-title">{viewMode === 'list' ? t('attributionOrders.title') : viewMode === 'detail' ? `${t('attributionOrders.orderDetails')}: ${selectedOrder?.attribution_order_full_code || ''}` : t('attributionOrders.createTitle')}</h1>
                     <p className="page-subtitle">
-                        {viewMode === 'list' ? 'Consult and manage your attribution orders' : viewMode === 'detail' ? 'Consult associated order details and assets' : 'Register new equipment and link them to an attribution order'}
+                        {viewMode === 'list' ? t('attributionOrders.subtitle') : viewMode === 'detail' ? t('attributionOrders.detailSubtitle') : t('attributionOrders.createSubtitle')}
                     </p>
                     {viewMode === 'detail' && (
                         <button
                             className="btn btn-secondary"
                             onClick={() => setViewMode('list')}
                             style={{ marginTop: 'var(--space-2)' }}
-                            title="Back"
-                            aria-label="Back"
+                            title={t('common.back')}
+                            aria-label={t('common.back')}
                         >
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M15 18l-6-6 6-6" />
@@ -471,8 +473,8 @@ const AttributionOrdersPage = () => {
                     <button
                         className="btn btn-secondary"
                         onClick={() => setViewMode('list')}
-                        title="Back to List"
-                        aria-label="Back to List"
+                        title={t('attributionOrders.backToList')}
+                        aria-label={t('attributionOrders.backToList')}
                     >
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M15 18l-6-6 6-6" />
@@ -487,15 +489,15 @@ const AttributionOrdersPage = () => {
             {viewMode === 'list' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 className="card-title" style={{ margin: 0 }}>All Attribution Orders</h2>
+                        <h2 className="card-title" style={{ margin: 0 }}>{t('attributionOrders.allOrders')}</h2>
                         <button className="btn btn-primary" style={{ width: 'auto' }} onClick={() => setViewMode('create')}>
-                            + New Order
+                            + {t('attributionOrders.newOrder')}
                         </button>
                     </div>
 
                     {ordersList.length === 0 ? (
                         <div className="card" style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
-                            <p style={{ color: 'var(--color-text-light)' }}>No attribution orders found.</p>
+                            <p style={{ color: 'var(--color-text-light)' }}>{t('attributionOrders.noOrders')}</p>
                         </div>
                     ) : (
                         <div style={{
@@ -565,7 +567,7 @@ const AttributionOrdersPage = () => {
                                         fontSize: 'var(--font-size-sm)',
                                         fontWeight: '600'
                                     }}>
-                                        View Details →
+                                        {t('attributionOrders.viewDetails')}
                                     </div>
                                 </div>
                             ))}
@@ -587,7 +589,7 @@ const AttributionOrdersPage = () => {
                                 }}
                             >
                                 {showReceiptForm ? (
-                                    <>Cancel Receipt Report</>
+                                    <>{t('attributionOrders.cancelReceiptReport')}</>
                                 ) : (
                                     <>
                                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 'var(--space-2)', verticalAlign: 'middle' }}>
@@ -597,7 +599,7 @@ const AttributionOrdersPage = () => {
                                             <line x1="16" y1="17" x2="8" y2="17" />
                                             <polyline points="10 9 9 9 8 9" />
                                         </svg>
-                                        Create Receipt Report
+                                        {t('attributionOrders.createReceiptReport')}
                                     </>
                                 )}
                             </button>
@@ -606,24 +608,24 @@ const AttributionOrdersPage = () => {
                     {showReceiptForm && (
                         <div className="card" style={{ border: '2px solid var(--color-primary)' }}>
                             <div className="card-header">
-                                <h2 className="card-title">New Receipt Report</h2>
+                                <h2 className="card-title">{t('attributionOrders.newReceiptReport')}</h2>
                             </div>
                             <div className="card-body">
                                 <form onSubmit={handleReceiptSubmit}>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)', marginBottom: 'var(--space-6)' }}>
                                         <div className="form-group">
-                                            <label className="form-label">Report Full Code</label>
+                                            <label className="form-label">{t('attributionOrders.reportFullCode')}</label>
                                             <input
                                                 type="text"
                                                 className="form-input"
                                                 value={receiptData.report_full_code}
                                                 onChange={(e) => setReceiptData({ ...receiptData, report_full_code: e.target.value })}
-                                                placeholder="e.g. PV-2024-001"
+                                                placeholder={t('attributionOrders.fullCodePlaceholder')}
                                                 required
                                             />
                                         </div>
                                         <div className="form-group">
-                                            <label className="form-label">Digital Copy (Attachment)</label>
+                                            <label className="form-label">{t('attributionOrders.digitalCopyAttachment')}</label>
                                             <input
                                                 type="file"
                                                 className="form-input"
@@ -633,7 +635,7 @@ const AttributionOrdersPage = () => {
                                         </div>
                                     </div>
                                     <button type="submit" className="btn btn-primary" disabled={submitting}>
-                                        {submitting ? 'Submitting...' : 'Save Receipt Report'}
+                                        {submitting ? t('common.submitting') : t('attributionOrders.saveReceiptReport')}
                                     </button>
                                 </form>
                             </div>
@@ -648,11 +650,11 @@ const AttributionOrdersPage = () => {
                                     {selectedOrder?.attribution_order_full_code}
                                 </h2>
                                 <p style={{ color: 'var(--color-text-secondary)', margin: 'var(--space-1) 0 0 0' }}>
-                                    Order ID: #{selectedOrder?.attribution_order_id}
+                                    {t('attributionOrders.orderId', { id: selectedOrder?.attribution_order_id })}
                                 </p>
                             </div>
                             <div style={{ textAlign: 'right' }}>
-                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Order Date</div>
+                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('attributionOrders.orderDate')}</div>
                                 <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600' }}>
                                     {selectedOrder ? new Date(selectedOrder.attribution_order_date).toLocaleDateString() : ''}
                                 </div>
@@ -677,9 +679,9 @@ const AttributionOrdersPage = () => {
                                     </svg>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Warehouse</div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{t('attributionOrders.warehouse')}</div>
                                     <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '600' }}>
-                                        {selectedOrder && warehouses.find(w => w.warehouse_id === selectedOrder.warehouse)?.warehouse_name || 'N/A'}
+                                        {selectedOrder && warehouses.find(w => w.warehouse_id === selectedOrder.warehouse)?.warehouse_name || t('common.na')}
                                     </div>
                                 </div>
                             </div>
@@ -705,9 +707,9 @@ const AttributionOrdersPage = () => {
                                     </svg>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Barcode</div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{t('attributionOrders.barcode')}</div>
                                     <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '600' }}>
-                                        {selectedOrder?.attribution_order_barcode || 'No barcode'}
+                                        {selectedOrder?.attribution_order_barcode || t('attributionOrders.noBarcode')}
                                     </div>
                                 </div>
                             </div>
@@ -717,7 +719,7 @@ const AttributionOrdersPage = () => {
                     {orderReceipt && (
                         <div className="card" style={{ padding: 'var(--space-8)', borderLeft: '6px solid var(--color-success)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
-                                <h3 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', margin: 0 }}>Receipt Report</h3>
+                                <h3 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', margin: 0 }}>{t('attributionOrders.receiptReport')}</h3>
                                 {orderReceipt.digital_copy ? (
                                     <button
                                         type="button"
@@ -725,20 +727,20 @@ const AttributionOrdersPage = () => {
                                         className="btn btn-primary"
                                         style={{ padding: 'var(--space-2) var(--space-6)' }}
                                     >
-                                        Consult Document
+                                        {t('attributionOrders.consultDocument')}
                                     </button>
                                 ) : (
-                                    <span className="badge">No Attachment</span>
+                                    <span className="badge">{t('attributionOrders.noAttachment')}</span>
                                 )}
                             </div>
                             
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)' }}>
                                 <div>
-                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Report Code</div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{t('attributionOrders.reportCode')}</div>
                                     <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600' }}>{orderReceipt.report_full_code || '-'}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>Submission Date</div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{t('attributionOrders.submissionDate')}</div>
                                     <div style={{ fontSize: 'var(--font-size-md)' }}>
                                         {orderReceipt.report_datetime ? new Date(orderReceipt.report_datetime).toLocaleString() : '-'}
                                     </div>
@@ -786,18 +788,18 @@ const AttributionOrdersPage = () => {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', margin: 0 }}>Associated Assets</h3>
+                                    <h3 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '700', margin: 0 }}>{t('attributionOrders.associatedAssets')}</h3>
                                     <p style={{ color: 'var(--color-text-secondary)', margin: 'var(--space-1) 0 0 0' }}>
-                                        {orderAssets.length === 0 ? 'No assets linked to this order' : `${orderAssets.length} asset${orderAssets.length === 1 ? '' : 's'} linked`}
+                                        {orderAssets.length === 0 ? t('attributionOrders.noAssetsLinked') : t('attributionOrders.assetsLinked', { count: orderAssets.length })}
                                     </p>
                                 </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
                                 {orderAssets.length > 0 && (
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginRight: 'var(--space-4)' }}>
-                                        <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>First Asset</div>
+                                        <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>{t('attributionOrders.firstAsset')}</div>
                                         <div style={{ fontSize: 'var(--font-size-md)', fontWeight: '600' }}>
-                                            {orderAssets[0].asset_name || orderAssets[0].asset_inventory_number || `Asset #${orderAssets[0].asset_id}`}
+                                            {orderAssets[0].asset_name || orderAssets[0].asset_inventory_number || t('attributionOrders.assetFallback', { id: orderAssets[0].asset_id })}
                                         </div>
                                     </div>
                                 )}
@@ -807,7 +809,7 @@ const AttributionOrdersPage = () => {
                                     fontSize: 'var(--font-size-lg)',
                                     whiteSpace: 'nowrap'
                                 }}>
-                                    View All →
+                                    {t('attributionOrders.viewAll')}
                                 </div>
                             </div>
                         </div>
@@ -817,16 +819,16 @@ const AttributionOrdersPage = () => {
                     {includedItems.stock_items.length > 0 && (
                         <div className="card">
                             <div className="card-header">
-                                <h2 className="card-title">Included Stock Items</h2>
+                                <h2 className="card-title">{t('attributionOrders.includedStockItems')}</h2>
                             </div>
                             <div className="table-container">
                                 <table className="data-table">
                                     <thead>
                                         <tr>
-                                            <th>Item Name</th>
-                                            <th>Model</th>
-                                            <th>Asset</th>
-                                            <th>Status</th>
+                                            <th>{t('attributionOrders.itemName')}</th>
+                                            <th>{t('common.type')}</th>
+                                            <th>{t('attributionOrders.assets')}</th>
+                                            <th>{t('common.status')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -834,7 +836,7 @@ const AttributionOrdersPage = () => {
                                             <tr key={item.id}>
                                                 <td style={{ fontWeight: '500' }}>{item.name || '-'}</td>
                                                 <td>{item.model || '-'}</td>
-                                                <td>{item.asset_name || `Asset #${item.asset_id}`}</td>
+                                                <td>{item.asset_name || t('attributionOrders.assetFallback', { id: item.asset_id })}</td>
                                                 <td><span className={`status-badge status-${item.status?.replace(/\s+/g, '-').toLowerCase()}`}>{item.status}</span></td>
                                             </tr>
                                         ))}
@@ -848,16 +850,16 @@ const AttributionOrdersPage = () => {
                     {includedItems.consumables.length > 0 && (
                         <div className="card">
                             <div className="card-header">
-                                <h2 className="card-title">Included Consumables</h2>
+                                <h2 className="card-title">{t('attributionOrders.includedConsumables')}</h2>
                             </div>
                             <div className="table-container">
                                 <table className="data-table">
                                     <thead>
                                         <tr>
-                                            <th>Item Name</th>
-                                            <th>Model</th>
-                                            <th>Asset</th>
-                                            <th>Status</th>
+                                            <th>{t('attributionOrders.itemName')}</th>
+                                            <th>{t('common.type')}</th>
+                                            <th>{t('attributionOrders.assets')}</th>
+                                            <th>{t('common.status')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -865,7 +867,7 @@ const AttributionOrdersPage = () => {
                                             <tr key={item.id}>
                                                 <td style={{ fontWeight: '500' }}>{item.name || '-'}</td>
                                                 <td>{item.model || '-'}</td>
-                                                <td>{item.asset_name || `Asset #${item.asset_id}`}</td>
+                                                <td>{item.asset_name || t('attributionOrders.assetFallback', { id: item.asset_id })}</td>
                                                 <td><span className={`status-badge status-${item.status?.replace(/\s+/g, '-').toLowerCase()}`}>{item.status}</span></td>
                                             </tr>
                                         ))}
@@ -879,24 +881,24 @@ const AttributionOrdersPage = () => {
                 <form onSubmit={handleSubmit}>
                     <div className="card" style={{ marginBottom: 'var(--space-8)' }}>
                         <div className="card-header">
-                            <h2 className="card-title">Order Information</h2>
+                            <h2 className="card-title">{t('attributionOrders.orderInformation')}</h2>
                         </div>
                         <div className="card-body">
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-6)' }}>
                                 <div className="form-group">
-                                    <label className="form-label">Full Code</label>
+                                    <label className="form-label">{t('attributionOrders.fullCode')}</label>
                                     <input
                                         type="text"
                                         name="attribution_order_full_code"
                                         className="form-input"
                                         value={orderData.attribution_order_full_code}
                                         onChange={handleOrderChange}
-                                        placeholder="e.g. ORD-2024-001"
+                                        placeholder={t('attributionOrders.fullCodePlaceholder')}
                                         required
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Date</label>
+                                    <label className="form-label">{t('attributionOrders.date')}</label>
                                     <input
                                         type="date"
                                         name="attribution_order_date"
@@ -907,7 +909,7 @@ const AttributionOrdersPage = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Warehouse</label>
+                                    <label className="form-label">{t('attributionOrders.warehouse')}</label>
                                     <select
                                         name="warehouse"
                                         className="form-input"
@@ -915,7 +917,7 @@ const AttributionOrdersPage = () => {
                                         onChange={handleOrderChange}
                                         required
                                     >
-                                        <option value="">Select Warehouse</option>
+                                        <option value="">{t('attributionOrders.selectWarehouse')}</option>
                                         {warehouses.map(w => (
                                             <option key={w.warehouse_id} value={w.warehouse_id}>
                                                 {w.warehouse_name}
@@ -924,14 +926,14 @@ const AttributionOrdersPage = () => {
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Barcode</label>
+                                    <label className="form-label">{t('attributionOrders.barcode')}</label>
                                     <input
                                         type="text"
                                         name="attribution_order_barcode"
                                         className="form-input"
                                         value={orderData.attribution_order_barcode}
                                         onChange={handleOrderChange}
-                                        placeholder="Scan barcode..."
+                                        placeholder={t('attributionOrders.scanBarcode')}
                                     />
                                 </div>
                             </div>
@@ -940,13 +942,13 @@ const AttributionOrdersPage = () => {
 
                     <div className="card">
                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 className="card-title">Assets</h2>
+                            <h2 className="card-title">{t('attributionOrders.assets')}</h2>
                             <button type="button" onClick={addAssetRow} className="btn btn-secondary" style={{ padding: 'var(--space-2) var(--space-4)', fontSize: 'var(--font-size-sm)' }}>
                                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 'var(--space-2)' }}>
                                     <line x1="12" y1="5" x2="12" y2="19" />
                                     <line x1="5" y1="12" x2="19" y2="12" />
                                 </svg>
-                                Add Asset
+                                {t('attributionOrders.addAsset')}
                             </button>
                         </div>
 
@@ -959,28 +961,28 @@ const AttributionOrdersPage = () => {
                                 marginBottom: 'var(--space-6)'
                             }}>
                                 <div className="form-group">
-                                    <label className="form-label">Bulk Type</label>
+                                    <label className="form-label">{t('attributionOrders.bulkType')}</label>
                                     <select
                                         className="form-input"
                                         value={bulkAdd.asset_type}
                                         onChange={(e) => handleBulkTypeChange(e.target.value)}
                                     >
-                                        <option value="">Select Type</option>
-                                        {assetTypes.map(t => (
-                                            <option key={t.asset_type_id} value={t.asset_type_id}>{t.asset_type_label}</option>
+                                        <option value="">{t('attributionOrders.selectType')}</option>
+                                        {assetTypes.map(at => (
+                                            <option key={at.asset_type_id} value={at.asset_type_id}>{at.asset_type_label}</option>
                                         ))}
                                     </select>
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Bulk Model</label>
+                                    <label className="form-label">{t('attributionOrders.bulkModel')}</label>
                                     <select
                                         className="form-input"
                                         value={bulkAdd.asset_model}
                                         onChange={(e) => setBulkAdd((prev) => ({ ...prev, asset_model: e.target.value }))}
                                         disabled={!bulkAdd.asset_type}
                                     >
-                                        <option value="">Select Model</option>
+                                        <option value="">{t('attributionOrders.selectModel')}</option>
                                         {(assetModels[bulkAdd.asset_type] || []).map(m => (
                                             <option key={m.asset_model_id} value={m.asset_model_id}>{m.model_name}</option>
                                         ))}
@@ -988,7 +990,7 @@ const AttributionOrdersPage = () => {
                                 </div>
 
                                 <div className="form-group">
-                                    <label className="form-label">Quantity</label>
+                                    <label className="form-label">{t('attributionOrders.quantity')}</label>
                                     <input
                                         type="number"
                                         className="form-input"
@@ -1005,7 +1007,7 @@ const AttributionOrdersPage = () => {
                                     disabled={!bulkAdd.asset_type || !bulkAdd.asset_model || Number(bulkAdd.quantity) < 1}
                                     style={{ padding: 'var(--space-2) var(--space-4)', height: '40px' }}
                                 >
-                                    Add Quantity
+                                    {t('attributionOrders.addQuantity')}
                                 </button>
                             </div>
                         </div>
@@ -1014,12 +1016,12 @@ const AttributionOrdersPage = () => {
                             <table className="data-table">
                                 <thead>
                                     <tr>
-                                        <th>Type</th>
-                                        <th>Model</th>
-                                        <th>Serial Number</th>
-                                        <th>Inventory ID</th>
-                                        <th>Name</th>
-                                        <th style={{ textAlign: 'center' }}>Actions</th>
+                                        <th>{t('common.type')}</th>
+                                        <th>{t('attributionOrders.selectModel')}</th>
+                                        <th>{t('attributionOrders.serialNumber')}</th>
+                                        <th>{t('attributionOrders.inventoryId')}</th>
+                                        <th>{t('common.name')}</th>
+                                        <th style={{ textAlign: 'center' }}>{t('common.actions')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1033,9 +1035,9 @@ const AttributionOrdersPage = () => {
                                                     onChange={(e) => handleAssetChange(index, 'asset_type', e.target.value)}
                                                     required
                                                 >
-                                                    <option value="">Select Type</option>
-                                                    {assetTypes.map(t => (
-                                                        <option key={t.asset_type_id} value={t.asset_type_id}>{t.asset_type_label}</option>
+                                                    <option value="">{t('attributionOrders.selectType')}</option>
+                                                    {assetTypes.map(at => (
+                                                        <option key={at.asset_type_id} value={at.asset_type_id}>{at.asset_type_label}</option>
                                                     ))}
                                                 </select>
                                             </td>
@@ -1048,7 +1050,7 @@ const AttributionOrdersPage = () => {
                                                     required
                                                     disabled={!asset.asset_type}
                                                 >
-                                                    <option value="">Select Model</option>
+                                                    <option value="">{t('attributionOrders.selectModel')}</option>
                                                     {(assetModels[asset.asset_type] || []).map(m => (
                                                         <option key={m.asset_model_id} value={m.asset_model_id}>{m.model_name}</option>
                                                     ))}
@@ -1061,7 +1063,7 @@ const AttributionOrdersPage = () => {
                                                     style={{ padding: 'var(--space-2)' }}
                                                     value={asset.asset_serial_number}
                                                     onChange={(e) => handleAssetChange(index, 'asset_serial_number', e.target.value)}
-                                                    placeholder="S/N"
+                                                    placeholder={t('attributionOrders.snPlaceholder')}
                                                 />
                                             </td>
                                             <td>
@@ -1071,7 +1073,7 @@ const AttributionOrdersPage = () => {
                                                     style={{ padding: 'var(--space-2)' }}
                                                     value={asset.asset_inventory_number}
                                                     onChange={(e) => handleAssetChange(index, 'asset_inventory_number', e.target.value)}
-                                                    placeholder="Inv #"
+                                                    placeholder={t('attributionOrders.invPlaceholder')}
                                                     maxLength="6"
                                                 />
                                             </td>
@@ -1082,7 +1084,7 @@ const AttributionOrdersPage = () => {
                                                     style={{ padding: 'var(--space-2)' }}
                                                     value={asset.asset_name}
                                                     onChange={(e) => handleAssetChange(index, 'asset_name', e.target.value)}
-                                                    placeholder="Asset Name"
+                                                    placeholder={t('attributionOrders.assetName')}
                                                 />
                                             </td>
                                             <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
@@ -1092,7 +1094,7 @@ const AttributionOrdersPage = () => {
                                                     className="btn btn-secondary"
                                                     style={{ padding: '6px', marginRight: '8px' }}
                                                     disabled={!asset.asset_model}
-                                                    title={!asset.asset_model ? 'Select a model first' : 'Configure included stock items'}
+                                                    title={!asset.asset_model ? t('attributionOrders.selectModelFirst') : t('attributionOrders.configureIncludedStockItems')}
                                                 >
                                                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                                                         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
@@ -1106,7 +1108,7 @@ const AttributionOrdersPage = () => {
                                                     className="btn btn-secondary"
                                                     style={{ padding: '6px', marginRight: '8px' }}
                                                     disabled={!asset.asset_model}
-                                                    title={!asset.asset_model ? 'Select a model first' : 'Configure included consumables'}
+                                                    title={!asset.asset_model ? t('attributionOrders.selectModelFirst') : t('attributionOrders.configureIncludedConsumables')}
                                                 >
                                                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                                                         <path d="M12 2v6m0 0v14m0-14c-2 0-6 1-6 5s4 5 6 5 6-1 6-5-4-5-6-5z"/>
@@ -1118,7 +1120,7 @@ const AttributionOrdersPage = () => {
                                                     onClick={() => configureAccessoriesForRow(asset)}
                                                     className="btn btn-secondary"
                                                     style={{ padding: '6px', marginRight: '8px' }}
-                                                    title="Accessories"
+                                                    title={t('attributionOrders.accessories')}
                                                 >
                                                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
                                                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.19 9.19a2 2 0 1 1-2.83-2.83l8.48-8.48" />
@@ -1128,7 +1130,7 @@ const AttributionOrdersPage = () => {
                                                     type="button"
                                                     onClick={() => removeAssetRow(index)}
                                                     className="logout-btn"
-                                                    title="Remove row"
+                                                    title={t('attributionOrders.removeRow')}
                                                     disabled={assets.length === 0}
                                                 >
                                                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1149,9 +1151,9 @@ const AttributionOrdersPage = () => {
                             {submitting ? (
                                 <>
                                     <div className="loading-spinner" style={{ marginRight: 'var(--space-2)' }}></div>
-                                    Creating...
+                                    {t('common.creating')}
                                 </>
-                            ) : 'Create Attribution Order & Assets'}
+                            ) : t('attributionOrders.createOrderAndAssets')}
                         </button>
                     </div>
                 </form>
@@ -1161,12 +1163,12 @@ const AttributionOrdersPage = () => {
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-6)' }} onClick={() => setPreviewReceipt(false)}>
                     <div className="card" style={{ width: '100%', maxWidth: '900px', height: '90vh', display: 'flex', flexDirection: 'column', padding: 'var(--space-4)' }} onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-                            <h2 style={{ margin: 0 }}>Consult Receipt Report: {orderReceipt.report_full_code || 'Attachment'}</h2>
-                            <button className="btn btn-secondary" onClick={() => setPreviewReceipt(false)}>Close</button>
+                            <h2 style={{ margin: 0 }}>{t('attributionOrders.consultReceiptReport', { code: orderReceipt.report_full_code || t('attributionOrders.attachment') })}</h2>
+                            <button className="btn btn-secondary" onClick={() => setPreviewReceipt(false)}>{t('common.close')}</button>
                         </div>
                         {getMimeType(orderReceipt.digital_copy) === 'application/pdf' ? (
                             <iframe
-                                title="Receipt Report Preview"
+                                title={t('attributionOrders.receiptReportPreview')}
                                 src={`data:application/pdf;base64,${orderReceipt.digital_copy}`}
                                 style={{ flexGrow: 1, border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', width: '100%', height: '100%' }}
                             />
@@ -1174,7 +1176,7 @@ const AttributionOrdersPage = () => {
                             <div style={{ flexGrow: 1, overflow: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--color-bg-alt)', borderRadius: 'var(--radius-md)' }}>
                                 <img
                                     src={`data:${getMimeType(orderReceipt.digital_copy)};base64,${orderReceipt.digital_copy}`}
-                                    alt="Receipt Report Preview"
+                                    alt={t('attributionOrders.receiptReportPreview')}
                                     style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                                 />
                             </div>

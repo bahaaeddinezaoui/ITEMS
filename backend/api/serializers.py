@@ -1,16 +1,41 @@
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, LocationRelation, Position, PositionRoleMapping, OrganizationalStructureType, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable, AuthenticationLog, UserSession
+from .translations import LocationTranslation, LocationTypeTranslation, OrganizationalStructureTypeTranslation, OrganizationalStructureTranslation, PositionTranslation, RoleTranslation, AssetTypeTranslation, StockItemTypeTranslation, ConsumableTypeTranslation, AssetBrandTranslation, StockItemBrandTranslation, ConsumableBrandTranslation, PersonTranslation, AssetAttributeDefinitionTranslation, ConsumableAttributeDefinitionTranslation, StockItemAttributeDefinitionTranslation, AssetTranslation, StockItemTranslation, ConsumableTranslation, AssetModelTranslation, StockItemModelTranslation, ConsumableModelTranslation
 
 
 class PersonSerializer(serializers.ModelSerializer):
     """Serializer for Person model"""
     role_code = serializers.SerializerMethodField()
+    first_name_en = serializers.SerializerMethodField()
+    first_name_ar = serializers.SerializerMethodField()
+    last_name_en = serializers.SerializerMethodField()
+    last_name_ar = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = Person
-        fields = ['person_id', 'first_name', 'last_name', 'sex', 'birth_date', 'is_approved', 'role_code']
+        fields = ['person_id', 'first_name', 'last_name', 'sex', 'birth_date', 'is_approved', 'role_code', 'first_name_en', 'first_name_ar', 'last_name_en', 'last_name_ar', 'translations']
         read_only_fields = ['person_id']
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = PersonTranslation.objects.get(person=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except PersonTranslation.DoesNotExist:
+            return None
+
+    def get_first_name_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'first_name')
+
+    def get_first_name_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'first_name')
+
+    def get_last_name_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'last_name')
+
+    def get_last_name_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'last_name')
 
     def get_role_code(self, obj):
         # Returns the role code of the first role associated with this person
@@ -18,18 +43,84 @@ class PersonSerializer(serializers.ModelSerializer):
         mapping = PersonRoleMapping.objects.filter(person=obj).select_related('role').first()
         return mapping.role.role_code if mapping and mapping.role else None
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if ret.get('sex'):
+            ret['sex'] = ret['sex'].strip()
+        return ret
+
 
 class RoleSerializer(serializers.ModelSerializer):
     """Serializer for Role model"""
+    role_label_ar = serializers.SerializerMethodField()
+    role_label_en = serializers.SerializerMethodField()
+    description_ar = serializers.SerializerMethodField()
+    description_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = Role
-        fields = ['role_id', 'role_code', 'role_label', 'description']
+        fields = ['role_id', 'role_code', 'role_label', 'description', 'role_label_ar', 'role_label_en', 'description_ar', 'description_en', 'translations']
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = RoleTranslation.objects.get(role=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except RoleTranslation.DoesNotExist:
+            return None
+
+    def get_role_label_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'role_label')
+
+    def get_role_label_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'role_label')
+
+    def get_description_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'description')
+
+    def get_description_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'description')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class PhysicalConditionSerializer(serializers.ModelSerializer):
+    condition_label_ar = serializers.SerializerMethodField()
+    condition_label_en = serializers.SerializerMethodField()
+
     class Meta:
         model = PhysicalCondition
-        fields = ['condition_id', 'condition_code', 'condition_label', 'description']
+        fields = ['condition_id', 'condition_code', 'condition_label', 'condition_label_ar', 'condition_label_en', 'description']
+
+    def _get_translated_label(self, obj, lang_code):
+        try:
+            from .translations import PhysicalConditionTranslation
+            translation = PhysicalConditionTranslation.objects.get(
+                physical_condition=obj, language_code=lang_code
+            )
+            return translation.condition_label or None
+        except Exception:
+            return None
+
+    def get_condition_label_ar(self, obj):
+        return self._get_translated_label(obj, 'ar')
+
+    def get_condition_label_en(self, obj):
+        return self._get_translated_label(obj, 'en')
 
 
 class LoginSerializer(serializers.Serializer):
@@ -58,98 +149,416 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class AssetTypeSerializer(serializers.ModelSerializer):
     """Serializer for AssetType model"""
+    asset_type_label_ar = serializers.SerializerMethodField()
+    asset_type_label_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = AssetType
-        fields = ['asset_type_id', 'asset_type_label', 'asset_type_code']
+        fields = ['asset_type_id', 'asset_type_label', 'asset_type_code', 'asset_type_label_ar', 'asset_type_label_en', 'translations']
         read_only_fields = ['asset_type_id']
+
+    def _get_translated_label(self, obj, lang_code):
+        try:
+            translation = AssetTypeTranslation.objects.get(asset_type=obj, language_code=lang_code)
+            return translation.asset_type_label
+        except AssetTypeTranslation.DoesNotExist:
+            return None
+
+    def get_asset_type_label_ar(self, obj):
+        return self._get_translated_label(obj, 'ar')
+
+    def get_asset_type_label_en(self, obj):
+        return self._get_translated_label(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class AssetBrandSerializer(serializers.ModelSerializer):
     """Serializer for AssetBrand model"""
+    brand_name_ar = serializers.SerializerMethodField()
+    brand_name_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = AssetBrand
-        fields = ['asset_brand_id', 'brand_name', 'brand_code', 'is_active']
+        fields = ['asset_brand_id', 'brand_name', 'brand_code', 'is_active', 'brand_name_ar', 'brand_name_en', 'translations']
         read_only_fields = ['asset_brand_id']
+
+    def _get_translated_name(self, obj, lang_code):
+        try:
+            translation = AssetBrandTranslation.objects.get(asset_brand=obj, language_code=lang_code)
+            return translation.brand_name
+        except AssetBrandTranslation.DoesNotExist:
+            return None
+
+    def get_brand_name_ar(self, obj):
+        return self._get_translated_name(obj, 'ar')
+
+    def get_brand_name_en(self, obj):
+        return self._get_translated_name(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class AssetModelSerializer(serializers.ModelSerializer):
     """Serializer for AssetModel model"""
     brand_name = serializers.CharField(source='asset_brand.brand_name', read_only=True)
     asset_type_label = serializers.CharField(source='asset_type.asset_type_label', read_only=True)
-    
+    model_name_ar = serializers.SerializerMethodField()
+    model_name_en = serializers.SerializerMethodField()
+    notes_ar = serializers.SerializerMethodField()
+    notes_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = AssetModel
         fields = [
             'asset_model_id', 'asset_brand', 'brand_name', 'asset_type', 'asset_type_label',
             'model_name', 'model_code', 'release_year', 'discontinued_year',
-            'is_active', 'notes', 'warranty_expiry_in_months'
+            'is_active', 'notes', 'warranty_expiry_in_months',
+            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en', 'translations'
         ]
         read_only_fields = ['asset_model_id']
+
+    def _get_translation_field(self, obj, lang_code, field_name):
+        try:
+            translation = AssetModelTranslation.objects.get(asset_model=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except AssetModelTranslation.DoesNotExist:
+            return None
+
+    def get_model_name_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'model_name')
+
+    def get_model_name_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'model_name')
+
+    def get_notes_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'notes')
+
+    def get_notes_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'notes')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class StockItemTypeSerializer(serializers.ModelSerializer):
     """Serializer for StockItemType model"""
+    stock_item_type_label_ar = serializers.SerializerMethodField()
+    stock_item_type_label_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = StockItemType
-        fields = ['stock_item_type_id', 'stock_item_type_label', 'stock_item_type_code']
+        fields = ['stock_item_type_id', 'stock_item_type_label', 'stock_item_type_code', 'stock_item_type_label_ar', 'stock_item_type_label_en', 'translations']
         read_only_fields = ['stock_item_type_id']
+
+    def _get_translated_label(self, obj, lang_code):
+        try:
+            translation = StockItemTypeTranslation.objects.get(stock_item_type=obj, language_code=lang_code)
+            return translation.stock_item_type_label
+        except StockItemTypeTranslation.DoesNotExist:
+            return None
+
+    def get_stock_item_type_label_ar(self, obj):
+        return self._get_translated_label(obj, 'ar')
+
+    def get_stock_item_type_label_en(self, obj):
+        return self._get_translated_label(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class StockItemBrandSerializer(serializers.ModelSerializer):
     """Serializer for StockItemBrand model"""
+    brand_name_ar = serializers.SerializerMethodField()
+    brand_name_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = StockItemBrand
-        fields = ['stock_item_brand_id', 'brand_name', 'brand_code', 'is_active']
+        fields = ['stock_item_brand_id', 'brand_name', 'brand_code', 'is_active', 'brand_name_ar', 'brand_name_en', 'translations']
         read_only_fields = ['stock_item_brand_id']
+
+    def _get_translated_name(self, obj, lang_code):
+        try:
+            translation = StockItemBrandTranslation.objects.get(stock_item_brand=obj, language_code=lang_code)
+            return translation.brand_name
+        except StockItemBrandTranslation.DoesNotExist:
+            return None
+
+    def get_brand_name_ar(self, obj):
+        return self._get_translated_name(obj, 'ar')
+
+    def get_brand_name_en(self, obj):
+        return self._get_translated_name(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class StockItemModelSerializer(serializers.ModelSerializer):
     """Serializer for StockItemModel model"""
     brand_name = serializers.CharField(source='stock_item_brand.brand_name', read_only=True)
     stock_item_type_label = serializers.CharField(source='stock_item_type.stock_item_type_label', read_only=True)
-    
+    model_name_ar = serializers.SerializerMethodField()
+    model_name_en = serializers.SerializerMethodField()
+    notes_ar = serializers.SerializerMethodField()
+    notes_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = StockItemModel
         fields = [
             'stock_item_model_id', 'stock_item_brand', 'brand_name', 'stock_item_type', 'stock_item_type_label',
             'model_name', 'model_code', 'release_year', 'discontinued_year',
-            'is_active', 'notes', 'warranty_expiry_in_months'
+            'is_active', 'notes', 'warranty_expiry_in_months',
+            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en', 'translations'
         ]
         read_only_fields = ['stock_item_model_id']
+
+    def _get_translation_field(self, obj, lang_code, field_name):
+        try:
+            translation = StockItemModelTranslation.objects.get(stock_item_model=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except StockItemModelTranslation.DoesNotExist:
+            return None
+
+    def get_model_name_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'model_name')
+
+    def get_model_name_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'model_name')
+
+    def get_notes_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'notes')
+
+    def get_notes_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'notes')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class ConsumableTypeSerializer(serializers.ModelSerializer):
     """Serializer for ConsumableType model"""
+    consumable_type_label_ar = serializers.SerializerMethodField()
+    consumable_type_label_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = ConsumableType
-        fields = ['consumable_type_id', 'consumable_type_label', 'consumable_type_code']
+        fields = ['consumable_type_id', 'consumable_type_label', 'consumable_type_code', 'consumable_type_label_ar', 'consumable_type_label_en', 'translations']
         read_only_fields = ['consumable_type_id']
+
+    def _get_translated_label(self, obj, lang_code):
+        try:
+            translation = ConsumableTypeTranslation.objects.get(consumable_type=obj, language_code=lang_code)
+            return translation.consumable_type_label
+        except ConsumableTypeTranslation.DoesNotExist:
+            return None
+
+    def get_consumable_type_label_ar(self, obj):
+        return self._get_translated_label(obj, 'ar')
+
+    def get_consumable_type_label_en(self, obj):
+        return self._get_translated_label(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class ConsumableBrandSerializer(serializers.ModelSerializer):
     """Serializer for ConsumableBrand model"""
+    brand_name_ar = serializers.SerializerMethodField()
+    brand_name_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = ConsumableBrand
-        fields = ['consumable_brand_id', 'brand_name', 'brand_code', 'is_active']
+        fields = ['consumable_brand_id', 'brand_name', 'brand_code', 'is_active', 'brand_name_ar', 'brand_name_en', 'translations']
         read_only_fields = ['consumable_brand_id']
+
+    def _get_translated_name(self, obj, lang_code):
+        try:
+            translation = ConsumableBrandTranslation.objects.get(consumable_brand=obj, language_code=lang_code)
+            return translation.brand_name
+        except ConsumableBrandTranslation.DoesNotExist:
+            return None
+
+    def get_brand_name_ar(self, obj):
+        return self._get_translated_name(obj, 'ar')
+
+    def get_brand_name_en(self, obj):
+        return self._get_translated_name(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class ConsumableModelSerializer(serializers.ModelSerializer):
     """Serializer for ConsumableModel model"""
     brand_name = serializers.CharField(source='consumable_brand.brand_name', read_only=True)
     consumable_type_label = serializers.CharField(source='consumable_type.consumable_type_label', read_only=True)
-    
+    model_name_ar = serializers.SerializerMethodField()
+    model_name_en = serializers.SerializerMethodField()
+    notes_ar = serializers.SerializerMethodField()
+    notes_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = ConsumableModel
         fields = [
             'consumable_model_id', 'consumable_brand', 'brand_name', 'consumable_type', 'consumable_type_label',
             'model_name', 'model_code', 'release_year', 'discontinued_year',
-            'is_active', 'notes', 'warranty_expiry_in_months'
+            'is_active', 'notes', 'warranty_expiry_in_months',
+            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en', 'translations'
         ]
         read_only_fields = ['consumable_model_id']
+
+    def _get_translation_field(self, obj, lang_code, field_name):
+        try:
+            translation = ConsumableModelTranslation.objects.get(consumable_model=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except ConsumableModelTranslation.DoesNotExist:
+            return None
+
+    def get_model_name_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'model_name')
+
+    def get_model_name_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'model_name')
+
+    def get_notes_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'notes')
+
+    def get_notes_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'notes')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class AssetModelDefaultStockItemSerializer(serializers.ModelSerializer):
@@ -176,20 +585,104 @@ class AssetModelDefaultConsumableSerializer(serializers.ModelSerializer):
 
 class LocationTypeSerializer(serializers.ModelSerializer):
     """Serializer for LocationType model"""
+    location_type_label_ar = serializers.SerializerMethodField()
+    location_type_label_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = LocationType
-        fields = ['location_type_id', 'location_type_label', 'location_type_code']
+        fields = ['location_type_id', 'location_type_label', 'location_type_code', 'location_type_label_ar', 'location_type_label_en', 'translations']
         read_only_fields = ['location_type_id']
+
+    def _get_translated_label(self, obj, lang_code):
+        try:
+            translation = LocationTypeTranslation.objects.get(location_type=obj, language_code=lang_code)
+            return translation.location_type_label
+        except LocationTypeTranslation.DoesNotExist:
+            return None
+
+    def get_location_type_label_ar(self, obj):
+        return self._get_translated_label(obj, 'ar')
+
+    def get_location_type_label_en(self, obj):
+        return self._get_translated_label(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class LocationSerializer(serializers.ModelSerializer):
     """Serializer for Location model"""
     location_type_label = serializers.CharField(source='location_type.location_type_label', read_only=True)
     location_type_code = serializers.CharField(source='location_type.location_type_code', read_only=True)
+    location_type_label_ar = serializers.SerializerMethodField()
+    location_type_label_en = serializers.SerializerMethodField()
+    location_name_ar = serializers.SerializerMethodField()
+    location_name_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = Location
-        fields = ['location_id', 'location_name', 'location_type', 'location_type_label', 'location_type_code']
+        fields = ['location_id', 'location_name', 'location_type', 'location_type_label', 'location_type_code', 'location_type_label_ar', 'location_type_label_en', 'location_name_ar', 'location_name_en', 'translations']
         read_only_fields = ['location_id']
+
+    def _get_translated_name(self, obj, lang_code):
+        try:
+            translation = LocationTranslation.objects.get(location=obj, language_code=lang_code)
+            return translation.location_name
+        except LocationTranslation.DoesNotExist:
+            return None
+
+    def get_location_name_ar(self, obj):
+        return self._get_translated_name(obj, 'ar')
+
+    def get_location_name_en(self, obj):
+        return self._get_translated_name(obj, 'en')
+
+    def _get_translated_type_label(self, obj, lang_code):
+        try:
+            location_type = obj.location_type
+            if not location_type:
+                return None
+            translation = LocationTypeTranslation.objects.get(location_type=location_type, language_code=lang_code)
+            return translation.location_type_label
+        except LocationTypeTranslation.DoesNotExist:
+            return None
+
+    def get_location_type_label_ar(self, obj):
+        return self._get_translated_type_label(obj, 'ar')
+
+    def get_location_type_label_en(self, obj):
+        return self._get_translated_type_label(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class LocationRelationSerializer(serializers.ModelSerializer):
@@ -198,12 +691,37 @@ class LocationRelationSerializer(serializers.ModelSerializer):
     parent_location = serializers.PrimaryKeyRelatedField(queryset=Location.objects.all())
     child_location_name = serializers.CharField(source='child_location.location_name', read_only=True)
     parent_location_name = serializers.CharField(source='parent_location.location_name', read_only=True)
-    
+    child_location_name_ar = serializers.SerializerMethodField()
+    child_location_name_en = serializers.SerializerMethodField()
+    parent_location_name_ar = serializers.SerializerMethodField()
+    parent_location_name_en = serializers.SerializerMethodField()
+
+    def _get_translated_name(self, location, lang_code):
+        try:
+            translation = LocationTranslation.objects.get(location=location, language_code=lang_code)
+            return translation.location_name
+        except LocationTranslation.DoesNotExist:
+            return None
+
+    def get_child_location_name_ar(self, obj):
+        return self._get_translated_name(obj.child_location, 'ar')
+
+    def get_child_location_name_en(self, obj):
+        return self._get_translated_name(obj.child_location, 'en')
+
+    def get_parent_location_name_ar(self, obj):
+        return self._get_translated_name(obj.parent_location, 'ar')
+
+    def get_parent_location_name_en(self, obj):
+        return self._get_translated_name(obj.parent_location, 'en')
+
     class Meta:
         model = LocationRelation
         fields = [
             'child_location', 'parent_location', 'relation_id',
-            'child_location_name', 'parent_location_name'
+            'child_location_name', 'parent_location_name',
+            'child_location_name_ar', 'child_location_name_en',
+            'parent_location_name_ar', 'parent_location_name_en'
         ]
 
 
@@ -233,10 +751,51 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
 
 class PositionSerializer(serializers.ModelSerializer):
     """Serializer for Position model"""
+    position_label_ar = serializers.SerializerMethodField()
+    position_label_en = serializers.SerializerMethodField()
+    description_ar = serializers.SerializerMethodField()
+    description_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = Position
-        fields = ['position_id', 'position_code', 'position_label', 'description']
+        fields = ['position_id', 'position_code', 'position_label', 'description', 'position_label_ar', 'position_label_en', 'description_ar', 'description_en', 'translations']
         read_only_fields = ['position_id']
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = PositionTranslation.objects.get(position=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except PositionTranslation.DoesNotExist:
+            return None
+
+    def get_position_label_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'position_label')
+
+    def get_position_label_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'position_label')
+
+    def get_description_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'description')
+
+    def get_description_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'description')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class PositionRoleMappingSerializer(serializers.ModelSerializer):
@@ -244,13 +803,44 @@ class PositionRoleMappingSerializer(serializers.ModelSerializer):
     position = serializers.PrimaryKeyRelatedField(queryset=Position.objects.all())
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all())
     position_label = serializers.CharField(source='position.position_label', read_only=True)
+    position_code = serializers.CharField(source='position.position_code', read_only=True)
     role_code = serializers.CharField(source='role.role_code', read_only=True)
     role_label = serializers.CharField(source='role.role_label', read_only=True)
+    position_label_ar = serializers.SerializerMethodField()
+    position_label_en = serializers.SerializerMethodField()
+    role_label_ar = serializers.SerializerMethodField()
+    role_label_en = serializers.SerializerMethodField()
 
     class Meta:
         model = PositionRoleMapping
-        fields = ['position', 'position_label', 'role', 'role_code', 'role_label', 'created_at']
+        fields = ['position', 'position_label', 'position_code', 'position_label_ar', 'position_label_en', 'role', 'role_code', 'role_label', 'role_label_ar', 'role_label_en', 'created_at']
         read_only_fields = ['created_at']
+
+    def _get_position_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = PositionTranslation.objects.get(position=obj.position, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except PositionTranslation.DoesNotExist:
+            return None
+
+    def _get_role_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = RoleTranslation.objects.get(role=obj.role, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except RoleTranslation.DoesNotExist:
+            return None
+
+    def get_position_label_ar(self, obj):
+        return self._get_position_translated_field(obj, 'ar', 'position_label')
+
+    def get_position_label_en(self, obj):
+        return self._get_position_translated_field(obj, 'en', 'position_label')
+
+    def get_role_label_ar(self, obj):
+        return self._get_role_translated_field(obj, 'ar', 'role_label')
+
+    def get_role_label_en(self, obj):
+        return self._get_role_translated_field(obj, 'en', 'role_label')
 
     def create(self, validated_data):
         instance = PositionRoleMapping()
@@ -269,26 +859,109 @@ class PositionRoleMappingSerializer(serializers.ModelSerializer):
 
 class OrganizationalStructureTypeSerializer(serializers.ModelSerializer):
     """Serializer for OrganizationalStructureType model"""
+    organizational_structure_type_ar = serializers.SerializerMethodField()
+    organizational_structure_type_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = OrganizationalStructureType
-        fields = ['organizational_structure_type_id', 'organizational_structure_type']
+        fields = ['organizational_structure_type_id', 'organizational_structure_type', 'organizational_structure_type_ar', 'organizational_structure_type_en', 'translations']
         read_only_fields = ['organizational_structure_type_id']
+
+    def _get_translated_type(self, obj, lang_code):
+        try:
+            translation = OrganizationalStructureTypeTranslation.objects.get(organizational_structure_type=obj, language_code=lang_code)
+            return translation.organizational_structure_type_label
+        except OrganizationalStructureTypeTranslation.DoesNotExist:
+            return None
+
+    def get_organizational_structure_type_ar(self, obj):
+        return self._get_translated_type(obj, 'ar')
+
+    def get_organizational_structure_type_en(self, obj):
+        return self._get_translated_type(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class OrganizationalStructureSerializer(serializers.ModelSerializer):
     """Serializer for OrganizationalStructure model"""
     structure_type_label = serializers.CharField(source='structure_type.organizational_structure_type', read_only=True)
+    structure_type_label_ar = serializers.SerializerMethodField()
+    structure_type_label_en = serializers.SerializerMethodField()
+    structure_name_ar = serializers.SerializerMethodField()
+    structure_name_en = serializers.SerializerMethodField()
     structure_type_id = serializers.PrimaryKeyRelatedField(
         queryset=OrganizationalStructureType.objects.all(),
         source='structure_type',
         required=False,
         allow_null=True
     )
+    translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = OrganizationalStructure
-        fields = ['organizational_structure_id', 'structure_code', 'structure_name', 'structure_type_id', 'structure_type_label', 'is_active']
+        fields = ['organizational_structure_id', 'structure_code', 'structure_name', 'structure_type_id', 'structure_type_label', 'structure_type_label_ar', 'structure_type_label_en', 'structure_name_ar', 'structure_name_en', 'is_active', 'translations']
         read_only_fields = ['organizational_structure_id']
+
+    def _get_translated_name(self, obj, lang_code):
+        try:
+            translation = OrganizationalStructureTranslation.objects.get(organizational_structure=obj, language_code=lang_code)
+            return translation.structure_name
+        except OrganizationalStructureTranslation.DoesNotExist:
+            return None
+
+    def get_structure_name_ar(self, obj):
+        return self._get_translated_name(obj, 'ar')
+
+    def get_structure_name_en(self, obj):
+        return self._get_translated_name(obj, 'en')
+
+    def _get_translated_type_label(self, obj, lang_code):
+        try:
+            structure_type = obj.structure_type
+            if not structure_type:
+                return None
+            translation = OrganizationalStructureTypeTranslation.objects.get(organizational_structure_type=structure_type, language_code=lang_code)
+            return translation.organizational_structure_type_label
+        except OrganizationalStructureTypeTranslation.DoesNotExist:
+            return None
+
+    def get_structure_type_label_ar(self, obj):
+        return self._get_translated_type_label(obj, 'ar')
+
+    def get_structure_type_label_en(self, obj):
+        return self._get_translated_type_label(obj, 'en')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class OrganizationalStructureRelationSerializer(serializers.ModelSerializer):
@@ -300,11 +973,36 @@ class OrganizationalStructureRelationSerializer(serializers.ModelSerializer):
     # Include nested data for better readability
     organizational_structure_name = serializers.CharField(source='child_organizational_structure.structure_name', read_only=True)
     parent_organizational_structure_name = serializers.CharField(source='parent_organizational_structure.structure_name', read_only=True)
+    child_organizational_structure_name_ar = serializers.SerializerMethodField()
+    child_organizational_structure_name_en = serializers.SerializerMethodField()
+    parent_organizational_structure_name_ar = serializers.SerializerMethodField()
+    parent_organizational_structure_name_en = serializers.SerializerMethodField()
     
     class Meta:
         model = OrganizationalStructureRelation
         fields = ['child_organizational_structure', 'parent_organizational_structure', 'organizational_structure_name', 
-                  'parent_organizational_structure_name', 'relation_id']
+                  'parent_organizational_structure_name', 'child_organizational_structure_name_ar',
+                  'child_organizational_structure_name_en', 'parent_organizational_structure_name_ar',
+                  'parent_organizational_structure_name_en', 'relation_id']
+
+    def _get_translated_name(self, structure, lang_code):
+        try:
+            translation = OrganizationalStructureTranslation.objects.get(organizational_structure=structure, language_code=lang_code)
+            return translation.structure_name
+        except OrganizationalStructureTranslation.DoesNotExist:
+            return None
+
+    def get_child_organizational_structure_name_ar(self, obj):
+        return self._get_translated_name(obj.child_organizational_structure, 'ar')
+
+    def get_child_organizational_structure_name_en(self, obj):
+        return self._get_translated_name(obj.child_organizational_structure, 'en')
+
+    def get_parent_organizational_structure_name_ar(self, obj):
+        return self._get_translated_name(obj.parent_organizational_structure, 'ar')
+
+    def get_parent_organizational_structure_name_en(self, obj):
+        return self._get_translated_name(obj.parent_organizational_structure, 'en')
 
     def create(self, validated_data):
         # Handle the assignment using _id suffixes to avoid instance checks on ForeignKey PKs
@@ -352,6 +1050,10 @@ class AssetSerializer(serializers.ModelSerializer):
     stock_item_composition = serializers.SerializerMethodField()
     consumable_composition = serializers.SerializerMethodField()
 
+    asset_name_ar = serializers.SerializerMethodField()
+    asset_name_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = Asset
         fields = [
@@ -359,47 +1061,138 @@ class AssetSerializer(serializers.ModelSerializer):
             'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag', 'destruction_certificate_id',
             'failed_external_maintenance_id',
             'included_stock_items', 'included_consumables',
-            'stock_item_composition', 'consumable_composition'
+            'stock_item_composition', 'consumable_composition',
+            'asset_name_ar', 'asset_name_en', 'translations'
         ]
         read_only_fields = ['asset_id']
 
     def get_stock_item_composition(self, obj):
-        from .models import AssetIsComposedOfStockItemHistory
-        # Get current composition (where end_datetime is null)
-        current = AssetIsComposedOfStockItemHistory.objects.filter(asset=obj, end_datetime__isnull=True).select_related('stock_item')
+        items = getattr(obj, '_current_stock_items', None)
+        if items is None:
+            from .models import AssetIsComposedOfStockItemHistory
+            items = AssetIsComposedOfStockItemHistory.objects.filter(asset=obj, end_datetime__isnull=True).select_related('stock_item')
         return [
             {
                 'stock_item_id': item.stock_item.stock_item_id,
                 'stock_item_name': item.stock_item.stock_item_name,
                 'stock_item_status': item.stock_item.stock_item_status
-            } for item in current
+            } for item in items
         ]
 
     def get_consumable_composition(self, obj):
-        from .models import AssetIsComposedOfConsumableHistory
-        # Get current composition (where end_datetime is null)
-        current = AssetIsComposedOfConsumableHistory.objects.filter(asset=obj, end_datetime__isnull=True).select_related('consumable')
+        items = getattr(obj, '_current_consumables', None)
+        if items is None:
+            from .models import AssetIsComposedOfConsumableHistory
+            items = AssetIsComposedOfConsumableHistory.objects.filter(asset=obj, end_datetime__isnull=True).select_related('consumable')
         return [
             {
                 'consumable_id': item.consumable.consumable_id,
                 'consumable_name': item.consumable.consumable_name,
                 'consumable_status': item.consumable.consumable_status
-            } for item in current
+            } for item in items
         ]
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = AssetTranslation.objects.get(asset=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except AssetTranslation.DoesNotExist:
+            return None
+
+    def get_asset_name_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'asset_name')
+
+    def get_asset_name_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'asset_name')
 
     def create(self, validated_data):
         # Remove non-model fields before creating the Asset
         included_stock_items = validated_data.pop('included_stock_items', [])
         included_consumables = validated_data.pop('included_consumables', [])
-        return Asset.objects.create(**validated_data)
+        translations_data = validated_data.pop('translations', None)
+        instance = Asset.objects.create(**validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            # Also save English version in translation table
+            en_data = translations_data.get('en', {})
+            if not en_data and instance.asset_name:
+                en_data = {'asset_name': instance.asset_name}
+                translations_data['en'] = en_data
+            elif instance.asset_name and 'asset_name' not in en_data:
+                en_data['asset_name'] = instance.asset_name
+            save_translations(instance, translations_data)
+        elif instance.asset_name:
+            # No translations provided, but save English name in translation table
+            from api.utils.i18n import save_translations
+            save_translations(instance, {'en': {'asset_name': instance.asset_name}})
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        included_stock_items = validated_data.pop('included_stock_items', None)
+        included_consumables = validated_data.pop('included_consumables', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            # Ensure English version is also saved
+            en_data = translations_data.get('en', {})
+            if instance.asset_name and 'asset_name' not in en_data:
+                en_data['asset_name'] = instance.asset_name
+                translations_data['en'] = en_data
+            save_translations(instance, translations_data)
+        elif instance.asset_name:
+            from api.utils.i18n import save_translations
+            save_translations(instance, {'en': {'asset_name': instance.asset_name}})
+        return instance
 
 
 class AssetAttributeDefinitionSerializer(serializers.ModelSerializer):
     """Serializer for AssetAttributeDefinition model"""
+    description_ar = serializers.SerializerMethodField()
+    description_en = serializers.SerializerMethodField()
+    unit_ar = serializers.SerializerMethodField()
+    unit_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = AssetAttributeDefinition
-        fields = ['asset_attribute_definition_id', 'data_type', 'unit', 'description', 'maintenance_domain']
+        fields = ['asset_attribute_definition_id', 'data_type', 'unit', 'description', 'description_ar', 'description_en', 'unit_ar', 'unit_en', 'translations']
         read_only_fields = ['asset_attribute_definition_id']
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = AssetAttributeDefinitionTranslation.objects.get(asset_attribute_definition=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except AssetAttributeDefinitionTranslation.DoesNotExist:
+            return None
+
+    def get_description_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'description')
+
+    def get_description_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'description')
+
+    def get_unit_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'unit')
+
+    def get_unit_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'unit')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class AssetTypeAttributeSerializer(serializers.ModelSerializer):
@@ -521,11 +1314,51 @@ class AssetIsAssignedToPersonSerializer(serializers.ModelSerializer):
 
 class StockItemAttributeDefinitionSerializer(serializers.ModelSerializer):
     """Serializer for StockItemAttributeDefinition model"""
+    description_ar = serializers.SerializerMethodField()
+    description_en = serializers.SerializerMethodField()
+    unit_ar = serializers.SerializerMethodField()
+    unit_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = StockItemAttributeDefinition
-        fields = ['stock_item_attribute_definition_id', 'data_type', 'unit', 'description', 'maintenance_domain']
+        fields = ['stock_item_attribute_definition_id', 'data_type', 'unit', 'description', 'description_ar', 'description_en', 'unit_ar', 'unit_en', 'translations']
         read_only_fields = ['stock_item_attribute_definition_id']
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = StockItemAttributeDefinitionTranslation.objects.get(stock_item_attribute_definition=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except StockItemAttributeDefinitionTranslation.DoesNotExist:
+            return None
+
+    def get_description_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'description')
+
+    def get_description_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'description')
+
+    def get_unit_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'unit')
+
+    def get_unit_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'unit')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class StockItemTypeAttributeSerializer(serializers.ModelSerializer):
@@ -628,11 +1461,51 @@ class StockItemAttributeValueSerializer(serializers.ModelSerializer):
 
 class ConsumableAttributeDefinitionSerializer(serializers.ModelSerializer):
     """Serializer for ConsumableAttributeDefinition model"""
+    description_ar = serializers.SerializerMethodField()
+    description_en = serializers.SerializerMethodField()
+    unit_ar = serializers.SerializerMethodField()
+    unit_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = ConsumableAttributeDefinition
-        fields = ['consumable_attribute_definition_id', 'data_type', 'unit', 'description', 'maintenance_domain']
+        fields = ['consumable_attribute_definition_id', 'data_type', 'unit', 'description', 'description_ar', 'description_en', 'unit_ar', 'unit_en', 'translations']
         read_only_fields = ['consumable_attribute_definition_id']
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = ConsumableAttributeDefinitionTranslation.objects.get(consumable_attribute_definition=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except ConsumableAttributeDefinitionTranslation.DoesNotExist:
+            return None
+
+    def get_description_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'description')
+
+    def get_description_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'description')
+
+    def get_unit_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'unit')
+
+    def get_unit_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'unit')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class ConsumableTypeAttributeSerializer(serializers.ModelSerializer):
@@ -735,10 +1608,60 @@ class ConsumableAttributeValueSerializer(serializers.ModelSerializer):
 
 class StockItemSerializer(serializers.ModelSerializer):
     """Serializer for StockItem model"""
+    stock_item_name_ar = serializers.SerializerMethodField()
+    stock_item_name_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = StockItem
-        fields = ['stock_item_id', 'stock_item_model', 'stock_item_inventory_number', 'stock_item_name', 'stock_item_status', 'stock_item_consumable_destruction_certificate_id']
+        fields = ['stock_item_id', 'stock_item_model', 'stock_item_inventory_number', 'stock_item_name', 'stock_item_status', 'stock_item_consumable_destruction_certificate_id', 'stock_item_name_ar', 'stock_item_name_en', 'translations']
         read_only_fields = ['stock_item_id']
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = StockItemTranslation.objects.get(stock_item=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except StockItemTranslation.DoesNotExist:
+            return None
+
+    def get_stock_item_name_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'stock_item_name')
+
+    def get_stock_item_name_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'stock_item_name')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = StockItem.objects.create(**validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            # Also save English version in translation table
+            en_data = translations_data.get('en', {})
+            if not en_data and instance.stock_item_name:
+                en_data = {'stock_item_name': instance.stock_item_name}
+                translations_data['en'] = en_data
+            elif instance.stock_item_name and 'stock_item_name' not in en_data:
+                en_data['stock_item_name'] = instance.stock_item_name
+            save_translations(instance, translations_data)
+        elif instance.stock_item_name:
+            from api.utils.i18n import save_translations
+            save_translations(instance, {'en': {'stock_item_name': instance.stock_item_name}})
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            en_data = translations_data.get('en', {})
+            if instance.stock_item_name and 'stock_item_name' not in en_data:
+                en_data['stock_item_name'] = instance.stock_item_name
+                translations_data['en'] = en_data
+            save_translations(instance, translations_data)
+        elif instance.stock_item_name:
+            from api.utils.i18n import save_translations
+            save_translations(instance, {'en': {'stock_item_name': instance.stock_item_name}})
+        return instance
 
 
 class StockItemIsAssignedToPersonSerializer(serializers.ModelSerializer):
@@ -762,10 +1685,60 @@ class StockItemIsAssignedToPersonSerializer(serializers.ModelSerializer):
 
 class ConsumableSerializer(serializers.ModelSerializer):
     """Serializer for Consumable model"""
+    consumable_name_ar = serializers.SerializerMethodField()
+    consumable_name_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = Consumable
-        fields = ['consumable_id', 'consumable_model', 'consumable_serial_number', 'consumable_inventory_number', 'consumable_name', 'consumable_status', 'stock_item_consumable_destruction_certificate_id']
+        fields = ['consumable_id', 'consumable_model', 'consumable_serial_number', 'consumable_inventory_number', 'consumable_name', 'consumable_status', 'stock_item_consumable_destruction_certificate_id', 'consumable_name_ar', 'consumable_name_en', 'translations']
         read_only_fields = ['consumable_id']
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        try:
+            translation = ConsumableTranslation.objects.get(consumable=obj, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except ConsumableTranslation.DoesNotExist:
+            return None
+
+    def get_consumable_name_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'consumable_name')
+
+    def get_consumable_name_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'consumable_name')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = Consumable.objects.create(**validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            # Also save English version in translation table
+            en_data = translations_data.get('en', {})
+            if not en_data and instance.consumable_name:
+                en_data = {'consumable_name': instance.consumable_name}
+                translations_data['en'] = en_data
+            elif instance.consumable_name and 'consumable_name' not in en_data:
+                en_data['consumable_name'] = instance.consumable_name
+            save_translations(instance, translations_data)
+        elif instance.consumable_name:
+            from api.utils.i18n import save_translations
+            save_translations(instance, {'en': {'consumable_name': instance.consumable_name}})
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            en_data = translations_data.get('en', {})
+            if instance.consumable_name and 'consumable_name' not in en_data:
+                en_data['consumable_name'] = instance.consumable_name
+                translations_data['en'] = en_data
+            save_translations(instance, translations_data)
+        elif instance.consumable_name:
+            from api.utils.i18n import save_translations
+            save_translations(instance, {'en': {'consumable_name': instance.consumable_name}})
+        return instance
 
 
 class ConsumableIsAssignedToPersonSerializer(serializers.ModelSerializer):
@@ -813,6 +1786,16 @@ class PersonReportsProblemOnConsumableSerializer(serializers.ModelSerializer):
 
 class MaintenanceTypicalStepSerializer(serializers.ModelSerializer):
     """Serializer for MaintenanceTypicalStep model"""
+    description_ar = serializers.SerializerMethodField()
+    description_en = serializers.SerializerMethodField()
+    maintenance_type_ar = serializers.SerializerMethodField()
+    maintenance_type_en = serializers.SerializerMethodField()
+    operation_type_ar = serializers.SerializerMethodField()
+    operation_type_en = serializers.SerializerMethodField()
+    maintenance_domain_ar = serializers.SerializerMethodField()
+    maintenance_domain_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = MaintenanceTypicalStep
         fields = [
@@ -820,11 +1803,75 @@ class MaintenanceTypicalStepSerializer(serializers.ModelSerializer):
             'estimated_cost',
             'actual_cost',
             'description',
+            'description_ar',
+            'description_en',
+            'translations',
             'maintenance_type',
+            'maintenance_type_ar',
+            'maintenance_type_en',
             'operation_type',
-            'maintenance_domain'
+            'operation_type_ar',
+            'operation_type_en',
+            'maintenance_domain',
+            'maintenance_domain_ar',
+            'maintenance_domain_en',
         ]
         read_only_fields = ['maintenance_typical_step_id']
+
+    def _get_translation(self, obj, lang_code):
+        try:
+            from .translations import MaintenanceTypicalStepTranslation
+            return MaintenanceTypicalStepTranslation.objects.get(
+                maintenance_typical_step=obj, language_code=lang_code
+            )
+        except Exception:
+            return None
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        translation = self._get_translation(obj, lang_code)
+        if translation:
+            return getattr(translation, field_name, None)
+        return None
+
+    def get_description_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'description')
+
+    def get_description_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'description')
+
+    def get_maintenance_type_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'maintenance_type')
+
+    def get_maintenance_type_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'maintenance_type')
+
+    def get_operation_type_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'operation_type')
+
+    def get_operation_type_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'operation_type')
+
+    def get_maintenance_domain_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'maintenance_domain')
+
+    def get_maintenance_domain_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'maintenance_domain')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class MaintenanceStepSerializer(serializers.ModelSerializer):
@@ -891,7 +1938,7 @@ class MaintenanceStepSerializer(serializers.ModelSerializer):
         fields = [
             'maintenance_step_id', 'maintenance', 'maintenance_typical_step', 'maintenance_typical_step_id',
             'person', 'person_id',
-            'maintenance_step_status',
+            'maintenance_step_status', 'note',
             'asset_condition_history', 'stock_item_condition_history', 'consumable_condition_history',
             'start_datetime', 'end_datetime', 'is_successful'
         ]
@@ -902,7 +1949,20 @@ class MaintenanceSerializer(serializers.ModelSerializer):
     """Serializer for Maintenance model"""
 
     performed_by_person_name = serializers.SerializerMethodField()
+    performed_by_person_name_ar = serializers.SerializerMethodField()
+    performed_by_person_name_en = serializers.SerializerMethodField()
     asset_name = serializers.SerializerMethodField()
+    asset_serial_number = serializers.SerializerMethodField()
+    asset_inventory_number = serializers.SerializerMethodField()
+    asset_service_tag = serializers.SerializerMethodField()
+    asset_status = serializers.SerializerMethodField()
+    asset_model_name = serializers.SerializerMethodField()
+    asset_brand_name = serializers.SerializerMethodField()
+    asset_brand_name_ar = serializers.SerializerMethodField()
+    asset_brand_name_en = serializers.SerializerMethodField()
+    asset_type_label = serializers.SerializerMethodField()
+    asset_type_label_ar = serializers.SerializerMethodField()
+    asset_type_label_en = serializers.SerializerMethodField()
     has_steps = serializers.SerializerMethodField()
     has_external_maintenances = serializers.SerializerMethodField()
     total_cost = serializers.SerializerMethodField()
@@ -919,27 +1979,161 @@ class MaintenanceSerializer(serializers.ModelSerializer):
             'is_successful',
             'performed_by_person',
             'performed_by_person_name',
+            'performed_by_person_name_ar',
+            'performed_by_person_name_en',
             'asset_name',
+            'asset_serial_number',
+            'asset_inventory_number',
+            'asset_service_tag',
+            'asset_status',
+            'asset_model_name',
+            'asset_brand_name',
+            'asset_brand_name_ar',
+            'asset_brand_name_en',
+            'asset_type_label',
+            'asset_type_label_ar',
+            'asset_type_label_en',
             'has_steps',
             'has_external_maintenances',
             'total_cost',
         ]
         read_only_fields = ['maintenance_id']
 
-    def get_performed_by_person_name(self, obj):
+    def _get_person_name(self, obj, lang_code=None):
         person = getattr(obj, 'performed_by_person', None)
         if not person:
             return None
+        if lang_code:
+            try:
+                translation = PersonTranslation.objects.get(person=person, language_code=lang_code)
+                first = getattr(translation, 'first_name', '') or ''
+                last = getattr(translation, 'last_name', '') or ''
+                full = (first + ' ' + last).strip()
+                return full or None
+            except PersonTranslation.DoesNotExist:
+                return None
         first = getattr(person, 'first_name', '') or ''
         last = getattr(person, 'last_name', '') or ''
         full = (first + ' ' + last).strip()
         return full or None
+
+    def get_performed_by_person_name(self, obj):
+        return self._get_person_name(obj)
+
+    def get_performed_by_person_name_ar(self, obj):
+        return self._get_person_name(obj, 'ar')
+
+    def get_performed_by_person_name_en(self, obj):
+        return self._get_person_name(obj, 'en')
 
     def get_asset_name(self, obj):
         asset = getattr(obj, 'asset', None)
         if not asset:
             return None
         return getattr(asset, 'asset_name', None) or None
+
+    def get_asset_serial_number(self, obj):
+        asset = getattr(obj, 'asset', None)
+        if not asset:
+            return None
+        return getattr(asset, 'asset_serial_number', None) or None
+
+    def get_asset_inventory_number(self, obj):
+        asset = getattr(obj, 'asset', None)
+        if not asset:
+            return None
+        return getattr(asset, 'asset_inventory_number', None) or None
+
+    def get_asset_service_tag(self, obj):
+        asset = getattr(obj, 'asset', None)
+        if not asset:
+            return None
+        return getattr(asset, 'asset_service_tag', None) or None
+
+    def get_asset_status(self, obj):
+        asset = getattr(obj, 'asset', None)
+        if not asset:
+            return None
+        return getattr(asset, 'asset_status', None) or None
+
+    def get_asset_model_name(self, obj):
+        asset = getattr(obj, 'asset', None)
+        if not asset:
+            return None
+        model = getattr(asset, 'asset_model', None)
+        if not model:
+            return None
+        return getattr(model, 'model_name', None) or None
+
+    def _get_brand(self, obj):
+        asset = getattr(obj, 'asset', None)
+        if not asset:
+            return None
+        model = getattr(asset, 'asset_model', None)
+        if not model:
+            return None
+        return getattr(model, 'asset_brand', None)
+
+    def get_asset_brand_name(self, obj):
+        brand = self._get_brand(obj)
+        if not brand:
+            return None
+        return getattr(brand, 'brand_name', None) or None
+
+    def get_asset_brand_name_ar(self, obj):
+        brand = self._get_brand(obj)
+        if not brand:
+            return None
+        try:
+            translation = AssetBrandTranslation.objects.get(asset_brand=brand, language_code='ar')
+            return translation.brand_name or None
+        except AssetBrandTranslation.DoesNotExist:
+            return None
+
+    def get_asset_brand_name_en(self, obj):
+        brand = self._get_brand(obj)
+        if not brand:
+            return None
+        try:
+            translation = AssetBrandTranslation.objects.get(asset_brand=brand, language_code='en')
+            return translation.brand_name or None
+        except AssetBrandTranslation.DoesNotExist:
+            return None
+
+    def _get_asset_type(self, obj):
+        asset = getattr(obj, 'asset', None)
+        if not asset:
+            return None
+        model = getattr(asset, 'asset_model', None)
+        if not model:
+            return None
+        return getattr(model, 'asset_type', None)
+
+    def get_asset_type_label(self, obj):
+        atype = self._get_asset_type(obj)
+        if not atype:
+            return None
+        return getattr(atype, 'asset_type_label', None) or None
+
+    def get_asset_type_label_ar(self, obj):
+        atype = self._get_asset_type(obj)
+        if not atype:
+            return None
+        try:
+            translation = AssetTypeTranslation.objects.get(asset_type=atype, language_code='ar')
+            return translation.asset_type_label or None
+        except AssetTypeTranslation.DoesNotExist:
+            return None
+
+    def get_asset_type_label_en(self, obj):
+        atype = self._get_asset_type(obj)
+        if not atype:
+            return None
+        try:
+            translation = AssetTypeTranslation.objects.get(asset_type=atype, language_code='en')
+            return translation.asset_type_label or None
+        except AssetTypeTranslation.DoesNotExist:
+            return None
 
     def get_has_steps(self, obj):
         return obj.steps.exists()
@@ -1272,10 +2466,10 @@ class AssetIncidentReportSerializer(serializers.ModelSerializer):
         return f"{person.first_name} {person.last_name}".strip()
 
     def get_stock_item_ids(self, obj):
-        return list(obj.included_stock_items.values_list('stock_item_id', flat=True))
+        return [item.stock_item_id for item in obj.included_stock_items.all()]
 
     def get_consumable_ids(self, obj):
-        return list(obj.included_consumables.values_list('consumable_id', flat=True))
+        return [item.consumable_id for item in obj.included_consumables.all()]
 
 
 class ExternalMaintenanceProviderSerializer(serializers.ModelSerializer):
@@ -1289,6 +2483,16 @@ class ExternalMaintenanceProviderSerializer(serializers.ModelSerializer):
 
 
 class ExternalMaintenanceTypicalStepSerializer(serializers.ModelSerializer):
+    description_ar = serializers.SerializerMethodField()
+    description_en = serializers.SerializerMethodField()
+    maintenance_type_ar = serializers.SerializerMethodField()
+    maintenance_type_en = serializers.SerializerMethodField()
+    operation_type_ar = serializers.SerializerMethodField()
+    operation_type_en = serializers.SerializerMethodField()
+    maintenance_domain_ar = serializers.SerializerMethodField()
+    maintenance_domain_en = serializers.SerializerMethodField()
+    translations = serializers.DictField(write_only=True, required=False)
+
     class Meta:
         model = ExternalMaintenanceTypicalStep
         fields = [
@@ -1296,10 +2500,75 @@ class ExternalMaintenanceTypicalStepSerializer(serializers.ModelSerializer):
             'estimated_cost',
             'actual_cost',
             'maintenance_type',
+            'maintenance_type_ar',
+            'maintenance_type_en',
             'description',
-            'maintenance_domain'
+            'description_ar',
+            'description_en',
+            'translations',
+            'maintenance_domain',
+            'maintenance_domain_ar',
+            'maintenance_domain_en',
+            'operation_type',
+            'operation_type_ar',
+            'operation_type_en',
         ]
         read_only_fields = ['external_maintenance_typical_step_id']
+
+    def _get_translation(self, obj, lang_code):
+        try:
+            from .translations import ExternalMaintenanceTypicalStepTranslation
+            return ExternalMaintenanceTypicalStepTranslation.objects.get(
+                external_maintenance_typical_step=obj, language_code=lang_code
+            )
+        except Exception:
+            return None
+
+    def _get_translated_field(self, obj, lang_code, field_name):
+        translation = self._get_translation(obj, lang_code)
+        if translation:
+            return getattr(translation, field_name, None)
+        return None
+
+    def get_description_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'description')
+
+    def get_description_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'description')
+
+    def get_maintenance_type_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'maintenance_type')
+
+    def get_maintenance_type_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'maintenance_type')
+
+    def get_operation_type_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'operation_type')
+
+    def get_operation_type_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'operation_type')
+
+    def get_maintenance_domain_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'maintenance_domain')
+
+    def get_maintenance_domain_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'maintenance_domain')
+
+    def create(self, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().create(validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
+
+    def update(self, instance, validated_data):
+        translations_data = validated_data.pop('translations', None)
+        instance = super().update(instance, validated_data)
+        if translations_data:
+            from api.utils.i18n import save_translations
+            save_translations(instance, translations_data)
+        return instance
 
 
 class ExternalMaintenanceStepSerializer(serializers.ModelSerializer):
@@ -1315,6 +2584,8 @@ class ExternalMaintenanceStepSerializer(serializers.ModelSerializer):
         source='external_maintenance_typical_step.description',
         read_only=True,
     )
+    external_maintenance_typical_step_description_ar = serializers.SerializerMethodField()
+    external_maintenance_typical_step_description_en = serializers.SerializerMethodField()
 
     class Meta:
         model = ExternalMaintenanceStep
@@ -1325,10 +2596,38 @@ class ExternalMaintenanceStepSerializer(serializers.ModelSerializer):
             'external_maintenance',
             'external_maintenance_typical_step',
             'external_maintenance_typical_step_description',
+            'external_maintenance_typical_step_description_ar',
+            'external_maintenance_typical_step_description_en',
             'start_datetime',
             'end_datetime',
             'is_successful',
         ]
+
+    def get_external_maintenance_typical_step_description_ar(self, obj):
+        typical_step = getattr(obj, 'external_maintenance_typical_step', None)
+        if not typical_step:
+            return None
+        try:
+            from .translations import ExternalMaintenanceTypicalStepTranslation
+            translation = ExternalMaintenanceTypicalStepTranslation.objects.get(
+                external_maintenance_typical_step=typical_step, language_code='ar'
+            )
+            return translation.description or None
+        except Exception:
+            return None
+
+    def get_external_maintenance_typical_step_description_en(self, obj):
+        typical_step = getattr(obj, 'external_maintenance_typical_step', None)
+        if not typical_step:
+            return None
+        try:
+            from .translations import ExternalMaintenanceTypicalStepTranslation
+            translation = ExternalMaintenanceTypicalStepTranslation.objects.get(
+                external_maintenance_typical_step=typical_step, language_code='en'
+            )
+            return translation.description or None
+        except Exception:
+            return None
 
 
 class ExternalMaintenanceDocumentSerializer(serializers.ModelSerializer):
