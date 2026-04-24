@@ -97,6 +97,7 @@ from .models import (
     StockItemMovement,
     ConsumableMovement,
     MaintenanceStepItemRequest,
+    PersonAssignment,
     AssetMovement,
     PhysicalCondition,
     AssetConditionHistory,
@@ -1738,6 +1739,135 @@ class UserAccountCreateView(APIView):
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
         except IntegrityError as exc:
             return Response({"error": f"Could not create account due to a data conflict: {exc}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserAccountDetailView(APIView):
+    """Superuser-only endpoint to get/update a user account by person_id."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        actor = SuperuserWriteMixin()._get_user_account(request)
+        if not actor:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not actor.is_superuser():
+            return Response({"error": "Only superusers can view user account details"}, status=status.HTTP_403_FORBIDDEN)
+
+        person_id = request.query_params.get("person_id")
+        if not person_id:
+            return Response({"error": "person_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ua = UserAccount.objects.get(person_id=int(person_id))
+        except (ValueError, TypeError, UserAccount.DoesNotExist):
+            return Response({"error": "User account not found for this person"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get role
+        role_code = None
+        role_label = None
+        mapping = PersonRoleMapping.objects.filter(person=ua.person).select_related('role').first()
+        if mapping and mapping.role:
+            role_code = mapping.role.role_code
+            role_label = mapping.role.role_label
+
+        # Get assignment
+        assignment = PersonAssignment.objects.filter(person=ua.person).select_related('position').first()
+        position_label = assignment.position.position_label if assignment and assignment.position else None
+        position_id = assignment.position.position_id if assignment and assignment.position else None
+
+        return Response({
+            "user_id": ua.user_id,
+            "username": ua.username,
+            "is_approved": ua.is_approved,
+            "account_status": ua.account_status,
+            "created_at_datetime": ua.created_at_datetime,
+            "person_id": ua.person_id,
+            "role_code": role_code,
+            "role_label": role_label,
+            "position_id": position_id,
+            "position_label": position_label,
+        }, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        actor = SuperuserWriteMixin()._get_user_account(request)
+        if not actor:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not actor.is_superuser():
+            return Response({"error": "Only superusers can update user accounts"}, status=status.HTTP_403_FORBIDDEN)
+
+        person_id = request.data.get("person_id")
+        if not person_id:
+            return Response({"error": "person_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ua = UserAccount.objects.get(person_id=int(person_id))
+        except (ValueError, TypeError, UserAccount.DoesNotExist):
+            return Response({"error": "User account not found for this person"}, status=status.HTTP_404_NOT_FOUND)
+
+        username = request.data.get("username")
+        account_status = request.data.get("account_status")
+        is_approved = request.data.get("is_approved")
+        role_code = request.data.get("role_code")
+
+        update_fields = []
+
+        if username is not None:
+            username = username.strip()
+            if UserAccount.objects.filter(username=username).exclude(user_id=ua.user_id).exists():
+                return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            ua.username = username
+            update_fields.append("username")
+
+        if account_status is not None:
+            ua.account_status = account_status
+            update_fields.append("account_status")
+
+        if is_approved is not None:
+            ua.is_approved = is_approved
+            update_fields.append("is_approved")
+            if is_approved and ua.account_status == "pending_approval":
+                ua.account_status = "active"
+                if "account_status" not in update_fields:
+                    update_fields.append("account_status")
+
+        if update_fields:
+            ua.modified_at_datetime = timezone.now()
+            update_fields.append("modified_at_datetime")
+            ua.save(update_fields=update_fields)
+
+        # Update role if provided
+        if role_code is not None:
+            if role_code:
+                role = Role.objects.filter(role_code=role_code).order_by("role_id").first()
+                if not role:
+                    return Response({"error": f"Role not found for role_code '{role_code}'"}, status=status.HTTP_400_BAD_REQUEST)
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "DELETE FROM person_role_mapping WHERE person_id = %s",
+                        [ua.person_id],
+                    )
+                    cursor.execute(
+                        "INSERT INTO person_role_mapping (role_id, person_id) VALUES (%s, %s) ON CONFLICT (role_id, person_id) DO NOTHING",
+                        [role.role_id, ua.person_id],
+                    )
+            else:
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        "DELETE FROM person_role_mapping WHERE person_id = %s",
+                        [ua.person_id],
+                    )
+
+        # If user account is approved, also approve the person
+        if ua.is_approved and ua.person and not ua.person.is_approved:
+            ua.person.is_approved = True
+            ua.person.save(update_fields=["is_approved"])
+
+        return Response({
+            "message": "User account updated successfully",
+            "user_id": ua.user_id,
+            "username": ua.username,
+            "is_approved": ua.is_approved,
+            "account_status": ua.account_status,
+        }, status=status.HTTP_200_OK)
 
 
 class MaintenanceStepViewSet(viewsets.ModelViewSet):
@@ -4870,6 +5000,9 @@ class LoginView(APIView):
 
         if user.account_status != "active":
             return Response({"error": "Account is not active"}, status=status.HTTP_403_FORBIDDEN)
+
+        if not user.is_approved:
+            return Response({"error": "Account pending approval"}, status=status.HTTP_403_FORBIDDEN)
 
         user.last_login = timezone.now()
         user.failed_login_attempts = 0
@@ -12154,6 +12287,363 @@ class InventoryReportViewSet(viewsets.ViewSet):
                     stock_item_counts.get(location_id, 0) +
                     consumable_counts.get(location_id, 0)
                 )
+            })
+
+        return Response(data, status=status.HTTP_200_OK)
+
+
+def _validate_strong_password(password):
+    """Validate that a password meets strong password conditions.
+    Returns an error message string if invalid, or None if valid."""
+    if len(password) < 8:
+        return "Password must be at least 8 characters long."
+    if not any(c.isupper() for c in password):
+        return "Password must contain at least one uppercase letter."
+    if not any(c.islower() for c in password):
+        return "Password must contain at least one lowercase letter."
+    if not any(c.isdigit() for c in password):
+        return "Password must contain at least one digit."
+    if not any(c in "!@#$%^&*()_+-=[]{}|;':\",./<>?`~" for c in password):
+        return "Password must contain at least one special character."
+    return None
+
+
+class SignupView(APIView):
+    """Public signup endpoint — creates a Person, PersonAssignment, and UserAccount.
+    The account is created with is_approved=False by default; a superuser must approve it."""
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    def get(self, request):
+        """Public endpoint returning dropdown data needed for the signup form."""
+        from api.translations import RoleTranslation, PositionTranslation, OrganizationalStructureTranslation, LocationTranslation
+        lang = request.query_params.get("lang", "en")
+        roles = Role.objects.all().order_by("role_id")
+        positions = Position.objects.all().order_by("position_id")
+        org_structures = OrganizationalStructure.objects.all().order_by("organizational_structure_id")
+        locations = Location.objects.all().order_by("location_id")
+
+        def _role_label(r):
+            if lang == "ar":
+                t = RoleTranslation.objects.filter(role=r, language_code="ar").first()
+                return t.role_label if t else r.role_label
+            return r.role_label
+
+        def _position_label(p):
+            if lang == "ar":
+                t = PositionTranslation.objects.filter(position=p, language_code="ar").first()
+                return t.position_label if t else p.position_label
+            return p.position_label
+
+        def _structure_name(s):
+            if lang == "ar":
+                t = OrganizationalStructureTranslation.objects.filter(organizational_structure=s, language_code="ar").first()
+                return t.structure_name if t else s.structure_name
+            return s.structure_name
+
+        def _location_name(l):
+            if lang == "ar":
+                t = LocationTranslation.objects.filter(location=l, language_code="ar").first()
+                return t.location_name if t else l.location_name
+            return l.location_name
+
+        return Response({
+            "roles": [
+                {"role_id": r.role_id, "role_code": r.role_code, "role_label": _role_label(r)}
+                for r in roles
+            ],
+            "positions": [
+                {"position_id": p.position_id, "position_label": _position_label(p)}
+                for p in positions
+            ],
+            "organizational_structures": [
+                {"organizational_structure_id": o.organizational_structure_id, "structure_name": _structure_name(o)}
+                for o in org_structures
+            ],
+            "locations": [
+                {"location_id": l.location_id, "location_name": _location_name(l)}
+                for l in locations
+            ],
+        })
+
+    def post(self, request):
+        data = request.data
+
+        # --- Required fields ---
+        first_name = (data.get("first_name") or "").strip()
+        last_name = (data.get("last_name") or "").strip()
+        first_name_en = (data.get("first_name_en") or "").strip()
+        first_name_ar = (data.get("first_name_ar") or "").strip()
+        last_name_en = (data.get("last_name_en") or "").strip()
+        last_name_ar = (data.get("last_name_ar") or "").strip()
+        sex = (data.get("sex") or "").strip()
+        birth_date = data.get("birth_date")
+        username = (data.get("username") or "").strip()
+        password = data.get("password") or ""
+        role_code = (data.get("role_code") or "").strip()
+        position_id = data.get("position_id")
+        organizational_structure_id = data.get("organizational_structure_id")
+        location_id = data.get("location_id")
+
+        # --- Validations ---
+        if not first_name or not last_name:
+            return Response({"error": "First name and last name are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not first_name_en or not first_name_ar:
+            return Response({"error": "First name in English and Arabic are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not last_name_en or not last_name_ar:
+            return Response({"error": "Last name in English and Arabic are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if sex not in ("Male", "Female"):
+            return Response({"error": "Sex must be 'Male' or 'Female'."}, status=status.HTTP_400_BAD_REQUEST)
+        if not birth_date:
+            return Response({"error": "Birth date is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not username:
+            return Response({"error": "Username is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if not password:
+            return Response({"error": "Password is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Username uniqueness
+        if UserAccount.objects.filter(username=username).exists():
+            return Response({"error": "Username already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Strong password
+        pwd_error = _validate_strong_password(password)
+        if pwd_error:
+            return Response({"error": pwd_error}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Role
+        role = None
+        if role_code:
+            role = Role.objects.filter(role_code=role_code).order_by("role_id").first()
+            if not role:
+                return Response({"error": f"Role not found for role_code '{role_code}'"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Position
+        position = None
+        if position_id:
+            try:
+                position = Position.objects.get(position_id=int(position_id))
+            except (ValueError, TypeError, Position.DoesNotExist):
+                return Response({"error": "Invalid position_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Organizational structure
+        org_structure = None
+        if organizational_structure_id:
+            try:
+                org_structure = OrganizationalStructure.objects.get(
+                    organizational_structure_id=int(organizational_structure_id)
+                )
+            except (ValueError, TypeError, OrganizationalStructure.DoesNotExist):
+                return Response({"error": "Invalid organizational_structure_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Location
+        location = None
+        if location_id:
+            try:
+                location = Location.objects.get(location_id=int(location_id))
+            except (ValueError, TypeError, Location.DoesNotExist):
+                return Response({"error": "Invalid location_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            now_ts = timezone.now()
+
+            with transaction.atomic():
+                # 1. Create Person
+                last_person = Person.objects.order_by("-person_id").first()
+                next_person_id = (last_person.person_id + 1) if last_person else 1
+                person = Person.objects.create(
+                    person_id=next_person_id,
+                    first_name=first_name_en,
+                    last_name=last_name_en,
+                    sex=sex,
+                    birth_date=birth_date,
+                    is_approved=False,
+                )
+
+                # Save person translations (en + ar)
+                from api.translations import PersonTranslation
+                last_pt = PersonTranslation.objects.order_by('-id').first()
+                pt_id = (last_pt.id + 1) if last_pt else 1
+                PersonTranslation.objects.create(
+                    id=pt_id,
+                    person=person,
+                    language_code='en',
+                    first_name=first_name_en,
+                    last_name=last_name_en,
+                )
+                last_pt = PersonTranslation.objects.order_by('-id').first()
+                pt_id = (last_pt.id + 1) if last_pt else 1
+                PersonTranslation.objects.create(
+                    id=pt_id,
+                    person=person,
+                    language_code='ar',
+                    first_name=first_name_ar,
+                    last_name=last_name_ar,
+                )
+
+                # 2. Create PersonAssignment if position provided
+                if position:
+                    last_pa = PersonAssignment.objects.order_by("-assignment_id").first()
+                    next_pa_id = (last_pa.assignment_id + 1) if last_pa else 1
+                    PersonAssignment.objects.create(
+                        assignment_id=next_pa_id,
+                        person=person,
+                        position=position,
+                        assignment_start_date=now_ts.date(),
+                        employment_type=data.get("employment_type", ""),
+                    )
+
+                # 3. Create UserAccount (not approved by default)
+                last_user = UserAccount.objects.order_by("-user_id").first()
+                next_user_id = (last_user.user_id + 1) if last_user else 1
+                account = UserAccount.objects.create(
+                    user_id=next_user_id,
+                    person=person,
+                    username=username,
+                    password_hash=hash_password(password),
+                    created_at_datetime=now_ts,
+                    disabled_at_datetime=now_ts,
+                    last_login=now_ts,
+                    account_status="pending_approval",
+                    failed_login_attempts=0,
+                    password_last_changed_datetime=now_ts,
+                    is_approved=False,
+                    modified_at_datetime=now_ts,
+                )
+
+                # 4. Assign role if provided
+                if role is not None:
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            """
+                            INSERT INTO person_role_mapping (role_id, person_id)
+                            VALUES (%s, %s)
+                            ON CONFLICT (role_id, person_id) DO NOTHING
+                            """,
+                            [role.role_id, person.person_id],
+                        )
+
+            return Response(
+                {
+                    "message": "Signup successful. Your account is pending approval by an administrator.",
+                    "user_id": account.user_id,
+                    "username": account.username,
+                    "is_approved": account.is_approved,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+        except IntegrityError as exc:
+            return Response({"error": f"Could not create account due to a data conflict: {exc}"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ApproveUserAccountView(APIView):
+    """Superuser-only endpoint to approve a user account."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        actor = SuperuserWriteMixin()._get_user_account(request)
+        if not actor:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not actor.is_superuser():
+            return Response({"error": "Only superusers can approve accounts"}, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = request.data.get("user_id")
+        username = (request.data.get("username") or "").strip()
+
+        if not user_id and not username:
+            return Response({"error": "user_id or username is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            if username:
+                target = UserAccount.objects.get(username=username)
+            else:
+                target = UserAccount.objects.get(user_id=int(user_id))
+        except (ValueError, TypeError, UserAccount.DoesNotExist):
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if target.is_approved:
+            return Response({"message": "Account is already approved"}, status=status.HTTP_200_OK)
+
+        target.is_approved = True
+        target.account_status = "active"
+        target.save(update_fields=["is_approved", "account_status"])
+
+        # Also approve the person
+        person = target.person
+        if person and not person.is_approved:
+            person.is_approved = True
+            person.save(update_fields=["is_approved"])
+
+        return Response(
+            {
+                "message": "Account approved successfully",
+                "user_id": target.user_id,
+                "username": target.username,
+                "is_approved": True,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class PendingUserAccountsView(APIView):
+    """Superuser-only endpoint to list unapproved user accounts."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        actor = SuperuserWriteMixin()._get_user_account(request)
+        if not actor:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        if not actor.is_superuser():
+            return Response({"error": "Only superusers can view pending accounts"}, status=status.HTTP_403_FORBIDDEN)
+
+        pending = UserAccount.objects.filter(is_approved=False).select_related("person")
+        data = []
+        for ua in pending:
+            person_data = {
+                "person_id": ua.person.person_id,
+                "first_name": ua.person.first_name,
+                "last_name": ua.person.last_name,
+                "sex": ua.person.sex,
+                "birth_date": ua.person.birth_date,
+            } if ua.person else None
+
+            # Get translations
+            first_name_en = first_name_ar = last_name_en = last_name_ar = None
+            if ua.person:
+                from api.translations import PersonTranslation
+                for pt in PersonTranslation.objects.filter(person=ua.person):
+                    if pt.language_code == 'en':
+                        first_name_en = pt.first_name
+                        last_name_en = pt.last_name
+                    elif pt.language_code == 'ar':
+                        first_name_ar = pt.first_name
+                        last_name_ar = pt.last_name
+
+            # Get role
+            role_code = None
+            role_label = None
+            mapping = PersonRoleMapping.objects.filter(person=ua.person).select_related('role').first()
+            if mapping and mapping.role:
+                role_code = mapping.role.role_code
+                role_label = mapping.role.role_label
+
+            # Get assignment
+            assignment = PersonAssignment.objects.filter(person=ua.person).select_related('position').first()
+            position_label = assignment.position.position_label if assignment and assignment.position else None
+
+            data.append({
+                "user_id": ua.user_id,
+                "username": ua.username,
+                "is_approved": ua.is_approved,
+                "account_status": ua.account_status,
+                "created_at_datetime": ua.created_at_datetime,
+                "person": person_data,
+                "first_name_en": first_name_en,
+                "first_name_ar": first_name_ar,
+                "last_name_en": last_name_en,
+                "last_name_ar": last_name_ar,
+                "role_code": role_code,
+                "role_label": role_label,
+                "position_label": position_label,
             })
 
         return Response(data, status=status.HTTP_200_OK)

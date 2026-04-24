@@ -100146,3 +100146,139 @@ Response Body: {"detail":"Authentication credentials were not provided."}
 [2026-04-24 09:49:29.556907] END   GET /api/positions/ -> 200
 [2026-04-24 09:49:29.559628] END   GET /api/position-role-mappings/ -> 200
 [2026-04-24 09:49:29.681081] END   GET /api/roles/ -> 200
+[2026-04-24 11:10:53.212767] START GET /api/auth/signup/
+[2026-04-24 11:10:53.348308] END   GET /api/auth/signup/ -> 200
+[2026-04-24 11:11:13.662469] START GET /api/auth/signup/
+[2026-04-24 11:11:13.913547] END   GET /api/auth/signup/ -> 200
+[2026-04-24 11:11:24.088527] START GET /api/auth/signup/
+[2026-04-24 11:11:24.230103] END   GET /api/auth/signup/ -> 200
+[2026-04-24 11:11:44.583270] START GET /api/auth/signup/
+[2026-04-24 11:11:44.777422] END   GET /api/auth/signup/ -> 200
+[2026-04-24 11:11:44.810027] START GET /api/auth/signup/
+[2026-04-24 11:11:44.891852] END   GET /api/auth/signup/ -> 200
+[2026-04-24 11:12:55.058117] START POST /api/auth/signup/
+[2026-04-24 11:12:55.300864] END   POST /api/auth/signup/ -> 400
+Response Body: {"error":"Username already exists."}
+[2026-04-24 11:13:04.455145] START POST /api/auth/signup/
+[2026-04-24 11:13:04.675318] END   POST /api/auth/signup/ -> 400
+Response Body: {"error":"Could not create account due to a data conflict: null value in column \"disabled_at_datetime\" of relation \"user_account\" violates not-null constraint\nDETAIL:  Failing row contains (18, 1016, signuptest, 022a20b0be46431546c4a4e1cecc8fce0d1b2d7b8007905b62ea63ac5cc265a9..., 2026-04-24 10:13:04.567878, null, null, pending_approval, 0, 2026-04-24 10:13:04.567878, null, null, null, f).\n"}
+[2026-04-24 11:15:23.735623] START POST /api/auth/signup/
+[2026-04-24 11:15:24.259373] END   POST /api/auth/signup/ -> 201
+[2026-04-24 11:17:36.209004] START POST /api/auth/login/
+[2026-04-24 11:17:36.531855] END   POST /api/auth/login/ -> 403
+Response Body: {"error":"Account pending approval"}
+[2026-04-24 11:17:48.857161] START POST /api/auth/login/
+[2026-04-24 11:17:48.980021] END   POST /api/auth/login/ -> 403
+Response Body: {"error":"Account pending approval"}
+[2026-04-24 11:17:49.747884] START POST /api/auth/login/
+[2026-04-24 11:17:49.837734] END   POST /api/auth/login/ -> 403
+Response Body: {"error":"Account pending approval"}
+[2026-04-24 11:20:45.641439] START POST /api/auth/login/
+[2026-04-24 11:20:46.345781] END   POST /api/auth/login/ -> 200
+[2026-04-24 11:20:46.577690] START GET /api/dashboard/kpis/
+[2026-04-24 11:20:46.833760] END   GET /api/dashboard/kpis/ -> 200
+[2026-04-24 11:20:46.848894] START GET /api/dashboard/kpis/
+[2026-04-24 11:20:46.928883] END   GET /api/dashboard/kpis/ -> 200
+[2026-04-24 11:21:06.445057] START POST /api/auth/login/
+[2026-04-24 11:21:06.596183] END   POST /api/auth/login/ -> 403
+Response Body: {"error":"Account is not active"}
+[2026-04-24 11:26:45.333128] START POST /api/auth/login/
+[2026-04-24 11:26:45.756607] END   POST /api/auth/login/ -> 200
+[2026-04-24 11:26:45.818134] START GET /api/dashboard/kpis/
+[2026-04-24 11:26:45.957417] END   GET /api/dashboard/kpis/ -> 200
+[2026-04-24 11:26:45.973410] START GET /api/dashboard/kpis/
+[2026-04-24 11:26:46.082907] END   GET /api/dashboard/kpis/ -> 200
+[2026-04-24 11:26:52.624900] START GET /api/maintenances/technician-stats/
+[2026-04-24 11:26:52.825389] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-24 11:26:52.835459] START GET /api/maintenances/technician-stats/
+[2026-04-24 11:26:52.916612] END   GET /api/maintenances/technician-stats/ -> 200
+[2026-04-24 11:26:53.832808] START GET /api/maintenances/
+[2026-04-24 11:26:53.841227] START GET /api/persons/
+[2026-04-24 11:26:53.842416] START GET /api/persons/
+[2026-04-24 11:26:53.848659] START GET /api/assets/
+[2026-04-24 11:26:54.042431] END   GET /api/maintenances/ -> 200
+[2026-04-24 11:26:54.074842] END   GET /api/persons/ -> 200
+[2026-04-24 11:26:54.078759] START GET /api/maintenances/
+[2026-04-24 11:26:54.094121] START GET /api/persons/
+[2026-04-24 11:26:54.118317] END   GET /api/persons/ -> 200
+[2026-04-24 11:26:54.127552] START GET /api/persons/
+[2026-04-24 11:26:54.188762] END   GET /api/maintenances/ -> 200
+[2026-04-24 11:26:54.215685] END   GET /api/persons/ -> 200
+[2026-04-24 11:26:54.236849] END   GET /api/persons/ -> 200
+[2026-04-24 11:26:59.594052] START GET /api/positions/
+[2026-04-24 11:26:59.617687] START GET /api/roles/
+[2026-04-24 11:26:59.623861] START GET /api/position-role-mappings/
+[2026-04-24 11:26:59.785340] END   GET /api/roles/ -> 200
+[2026-04-24 11:26:59.802073] END   GET /api/positions/ -> 200
+[2026-04-24 11:26:59.801985] START GET /api/roles/
+[2026-04-24 11:26:59.818040] START GET /api/positions/
+[2026-04-24 11:26:59.849290] END   GET /api/position-role-mappings/ -> 200
+[2026-04-24 11:26:59.857449] START GET /api/position-role-mappings/
+[2026-04-24 11:26:59.947232] END   GET /api/roles/ -> 200
+[2026-04-24 11:26:59.975891] END   GET /api/position-role-mappings/ -> 200
+[2026-04-24 11:27:00.055557] END   GET /api/positions/ -> 200
+[2026-04-24 11:27:00.350336] START GET /api/my-items/
+[2026-04-24 11:27:00.438359] END   GET /api/my-items/ -> 200
+[2026-04-24 11:27:00.449924] START GET /api/my-items/
+[2026-04-24 11:27:00.516813] END   GET /api/my-items/ -> 200
+[2026-04-24 11:27:01.732591] START GET /api/dashboard/kpis/
+[2026-04-24 11:27:01.827702] END   GET /api/dashboard/kpis/ -> 200
+[2026-04-24 11:27:01.836213] START GET /api/dashboard/kpis/
+[2026-04-24 11:27:01.929180] END   GET /api/dashboard/kpis/ -> 200
+[2026-04-24 11:27:02.004226] END   GET /api/assets/ -> 200
+[2026-04-24 11:27:02.032070] START GET /api/assets/
+[2026-04-24 11:27:02.298233] START GET /api/organizational-structures/
+[2026-04-24 11:27:02.307214] START GET /api/organizational-structure-types/
+[2026-04-24 11:27:02.442042] END   GET /api/organizational-structure-types/ -> 200
+[2026-04-24 11:27:02.461275] START GET /api/organizational-structure-types/
+[2026-04-24 11:27:02.515368] END   GET /api/organizational-structures/ -> 200
+[2026-04-24 11:27:02.526728] START GET /api/organizational-structures/
+[2026-04-24 11:27:02.564118] END   GET /api/organizational-structure-types/ -> 200
+[2026-04-24 11:27:02.677950] END   GET /api/organizational-structures/ -> 200
+[2026-04-24 11:27:02.888523] START GET /api/auth/pending-users/
+[2026-04-24 11:27:02.967314] END   GET /api/auth/pending-users/ -> 200
+[2026-04-24 11:27:02.980298] START GET /api/auth/pending-users/
+[2026-04-24 11:27:03.169180] END   GET /api/auth/pending-users/ -> 200
+[2026-04-24 11:27:03.662998] START GET /api/roles/
+[2026-04-24 11:27:03.667054] START GET /api/persons/
+[2026-04-24 11:27:04.057313] END   GET /api/roles/ -> 200
+[2026-04-24 11:27:04.060129] END   GET /api/persons/ -> 200
+[2026-04-24 11:27:04.076083] START GET /api/roles/
+[2026-04-24 11:27:04.077845] START GET /api/persons/
+[2026-04-24 11:27:04.375810] END   GET /api/roles/ -> 200
+[2026-04-24 11:27:04.465534] END   GET /api/persons/ -> 200
+[2026-04-24 11:27:11.490912] END   GET /api/assets/ -> 200
+[2026-04-24 11:34:18.711577] START GET /api/roles/
+[2026-04-24 11:34:18.718591] START GET /api/persons/
+[2026-04-24 11:34:19.106114] END   GET /api/roles/ -> 200
+[2026-04-24 11:34:19.119790] START GET /api/roles/
+[2026-04-24 11:34:19.164011] END   GET /api/persons/ -> 200
+[2026-04-24 11:34:19.171624] START GET /api/persons/
+[2026-04-24 11:34:19.237351] END   GET /api/roles/ -> 200
+[2026-04-24 11:34:19.315192] END   GET /api/persons/ -> 200
+[2026-04-24 11:35:01.360093] START GET /api/persons/
+[2026-04-24 11:35:01.362514] START GET /api/roles/
+[2026-04-24 11:35:01.529667] END   GET /api/roles/ -> 200
+[2026-04-24 11:35:01.560729] END   GET /api/persons/ -> 200
+[2026-04-24 11:36:04.577602] START GET /api/persons/
+[2026-04-24 11:36:04.578900] START GET /api/roles/
+[2026-04-24 11:36:05.043028] END   GET /api/roles/ -> 200
+[2026-04-24 11:36:05.060103] START GET /api/roles/
+[2026-04-24 11:36:05.099608] END   GET /api/persons/ -> 200
+[2026-04-24 11:36:05.107148] START GET /api/persons/
+[2026-04-24 11:36:05.190927] END   GET /api/roles/ -> 200
+[2026-04-24 11:36:05.269864] END   GET /api/persons/ -> 200
+[2026-04-24 11:36:14.105276] START GET /api/persons/
+[2026-04-24 11:36:14.106844] START GET /api/roles/
+[2026-04-24 11:36:14.317047] END   GET /api/roles/ -> 200
+[2026-04-24 11:36:14.328330] START GET /api/roles/
+[2026-04-24 11:36:14.369357] END   GET /api/persons/ -> 200
+[2026-04-24 11:36:14.376731] START GET /api/persons/
+[2026-04-24 11:36:14.456445] END   GET /api/roles/ -> 200
+[2026-04-24 11:36:14.529451] END   GET /api/persons/ -> 200
+[2026-04-24 11:36:24.135610] START GET /api/user-accounts/detail/
+[2026-04-24 11:36:24.349408] END   GET /api/user-accounts/detail/ -> 200
+[2026-04-24 11:40:33.078718] START GET /api/user-accounts/detail/
+[2026-04-24 11:40:33.489635] END   GET /api/user-accounts/detail/ -> 200
+[2026-04-24 11:40:58.259434] START GET /api/user-accounts/detail/
+[2026-04-24 11:40:58.365862] END   GET /api/user-accounts/detail/ -> 200

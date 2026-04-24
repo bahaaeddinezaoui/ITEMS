@@ -237,6 +237,14 @@ const DashboardHome = () => {
                         iconBg: 'var(--gradient-primary)',
                     },
                     {
+                        key: 'user_approval',
+                        title: t('nav.userApproval'),
+                        subtitle: t('userApproval.subtitle'),
+                        to: '/dashboard/user-approval',
+                        visible: isSuperuser,
+                        iconBg: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)',
+                    },
+                    {
                         key: 'organizational_structure',
                         title: t('nav.organizationalStructure'),
                         subtitle: t('nav.organizationalStructure'),

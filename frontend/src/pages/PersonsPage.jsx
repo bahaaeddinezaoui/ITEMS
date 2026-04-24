@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { authService, personService, roleService, userAccountService } from '../services/api';
-import { Search, SlidersHorizontal, ArrowUpDown, Plus, X, ChevronDown, UserPlus, Users } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowUpDown, Plus, X, ChevronDown, UserPlus, Users, ShieldCheck, Edit3 } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
 
 const PersonsPage = () => {
@@ -12,6 +12,19 @@ const PersonsPage = () => {
     const [showModal, setShowModal] = useState(false);
     const [showAccountModal, setShowAccountModal] = useState(false);
     const [selectedPersonForAccount, setSelectedPersonForAccount] = useState(null);
+    const [showApprovalModal, setShowApprovalModal] = useState(false);
+    const [approvalPerson, setApprovalPerson] = useState(null);
+    const [approvalUserAccount, setApprovalUserAccount] = useState(null);
+    const [approvalLoading, setApprovalLoading] = useState(false);
+    const [approvalSubmitting, setApprovalSubmitting] = useState(false);
+    const [approvalError, setApprovalError] = useState('');
+    const [approvalEditData, setApprovalEditData] = useState({
+        first_name: '', last_name: '', sex: 'Male', birth_date: '', is_approved: false,
+    });
+    const [approvalEditTranslations, setApprovalEditTranslations] = useState({});
+    const [approvalAccountEditData, setApprovalAccountEditData] = useState({
+        username: '', account_status: 'active', is_approved: false, role_code: '',
+    });
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
@@ -252,6 +265,92 @@ const PersonsPage = () => {
     ];
 
     const isSuperuser = authService.isSuperuser();
+
+    const openApprovalModal = async (person) => {
+        setApprovalPerson(person);
+        setApprovalError('');
+        setApprovalLoading(true);
+        setShowApprovalModal(true);
+
+        setApprovalEditData({
+            first_name: person.first_name || '',
+            last_name: person.last_name || '',
+            sex: person.sex || 'Male',
+            birth_date: person.birth_date || '',
+            is_approved: person.is_approved || false,
+        });
+        setApprovalEditTranslations({
+            en: { first_name: person.first_name_en || '', last_name: person.last_name_en || '' },
+            ar: { first_name: person.first_name_ar || '', last_name: person.last_name_ar || '' },
+        });
+
+        try {
+            const ua = await userAccountService.getByPersonId(person.person_id);
+            setApprovalUserAccount(ua);
+            setApprovalAccountEditData({
+                username: ua.username || '',
+                account_status: ua.account_status || 'active',
+                is_approved: ua.is_approved || false,
+                role_code: ua.role_code || '',
+            });
+        } catch {
+            setApprovalUserAccount(null);
+            setApprovalAccountEditData({
+                username: '', account_status: 'active', is_approved: false, role_code: '',
+            });
+        } finally {
+            setApprovalLoading(false);
+        }
+    };
+
+    const handleApprovalEditChange = (name, value) => {
+        setApprovalEditData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleApprovalTranslationChange = (langCode, value) => {
+        setApprovalEditTranslations((prev) => ({ ...prev, [langCode]: { ...(prev[langCode] || {}), ...value } }));
+    };
+
+    const handleApprovalAccountEditChange = (name, value) => {
+        setApprovalAccountEditData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleApprovalSubmit = async (e) => {
+        e.preventDefault();
+        if (!approvalPerson) return;
+        setApprovalSubmitting(true);
+        setApprovalError('');
+
+        try {
+            // Update person info
+            const personPayload = { ...approvalEditData };
+            if (Object.keys(approvalEditTranslations).length > 0) {
+                personPayload.translations = approvalEditTranslations;
+            }
+            await personService.update(approvalPerson.person_id, personPayload);
+
+            // Update user account if exists
+            if (approvalUserAccount) {
+                await userAccountService.update({
+                    person_id: approvalPerson.person_id,
+                    username: approvalAccountEditData.username,
+                    account_status: approvalAccountEditData.account_status,
+                    is_approved: approvalAccountEditData.is_approved,
+                    role_code: approvalAccountEditData.role_code || '',
+                });
+            }
+
+            setShowApprovalModal(false);
+            setApprovalPerson(null);
+            setApprovalUserAccount(null);
+            loadPersons();
+        } catch (err) {
+            const msg = err?.response?.data?.error || err?.response?.data?.detail || t('persons.approvalError');
+            setApprovalError(msg);
+        } finally {
+            setApprovalSubmitting(false);
+        }
+    };
 
     const stats = useMemo(() => {
         const total = persons.length;
@@ -761,39 +860,74 @@ const PersonsPage = () => {
                                         }}>
                                             #{person.person_id}
                                         </span>
-                                        {isSuperuser && (
-                                            <button
-                                                onClick={() => openCreateAccountModal(person)}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '4px',
-                                                    padding: '4px 10px',
-                                                    border: '1px solid var(--color-border)',
-                                                    background: 'var(--color-bg-card)',
-                                                    color: 'var(--color-text-secondary)',
-                                                    borderRadius: 'var(--radius-md)',
-                                                    cursor: 'pointer',
-                                                    fontSize: 'var(--font-size-xs)',
-                                                    fontWeight: '500',
-                                                    transition: 'all var(--transition-fast)',
-                                                    whiteSpace: 'nowrap'
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
-                                                    e.currentTarget.style.color = 'var(--color-accent-tertiary)';
-                                                    e.currentTarget.style.background = 'var(--color-accent-glow)';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.borderColor = 'var(--color-border)';
-                                                    e.currentTarget.style.color = 'var(--color-text-secondary)';
-                                                    e.currentTarget.style.background = 'var(--color-bg-card)';
-                                                }}
-                                            >
-                                                <UserPlus size={12} />
-                                                {t('persons.createAccount')}
-                                            </button>
-                                        )}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                                            {isSuperuser && (
+                                                <button
+                                                    onClick={() => openApprovalModal(person)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                        padding: '4px 10px',
+                                                        border: person.is_approved ? '1px solid var(--color-border)' : '1px solid rgba(239, 68, 68, 0.3)',
+                                                        background: person.is_approved ? 'var(--color-bg-card)' : 'rgba(239, 68, 68, 0.08)',
+                                                        color: person.is_approved ? 'var(--color-text-secondary)' : 'var(--color-error)',
+                                                        borderRadius: 'var(--radius-md)',
+                                                        cursor: 'pointer',
+                                                        fontSize: 'var(--font-size-xs)',
+                                                        fontWeight: '500',
+                                                        transition: 'all var(--transition-fast)',
+                                                        whiteSpace: 'nowrap'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                                                        e.currentTarget.style.color = 'var(--color-accent-tertiary)';
+                                                        e.currentTarget.style.background = 'var(--color-accent-glow)';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.borderColor = person.is_approved ? 'var(--color-border)' : 'rgba(239, 68, 68, 0.3)';
+                                                        e.currentTarget.style.color = person.is_approved ? 'var(--color-text-secondary)' : 'var(--color-error)';
+                                                        e.currentTarget.style.background = person.is_approved ? 'var(--color-bg-card)' : 'rgba(239, 68, 68, 0.08)';
+                                                    }}
+                                                >
+                                                    <ShieldCheck size={12} />
+                                                    {person.is_approved ? t('persons.reviewPerson') : t('persons.reviewAndApprove')}
+                                                </button>
+                                            )}
+                                            {isSuperuser && (
+                                                <button
+                                                    onClick={() => openCreateAccountModal(person)}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                        padding: '4px 10px',
+                                                        border: '1px solid var(--color-border)',
+                                                        background: 'var(--color-bg-card)',
+                                                        color: 'var(--color-text-secondary)',
+                                                        borderRadius: 'var(--radius-md)',
+                                                        cursor: 'pointer',
+                                                        fontSize: 'var(--font-size-xs)',
+                                                        fontWeight: '500',
+                                                        transition: 'all var(--transition-fast)',
+                                                        whiteSpace: 'nowrap'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
+                                                        e.currentTarget.style.color = 'var(--color-accent-tertiary)';
+                                                        e.currentTarget.style.background = 'var(--color-accent-glow)';
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        e.currentTarget.style.borderColor = 'var(--color-border)';
+                                                        e.currentTarget.style.color = 'var(--color-text-secondary)';
+                                                        e.currentTarget.style.background = 'var(--color-bg-card)';
+                                                    }}
+                                                >
+                                                    <UserPlus size={12} />
+                                                    {t('persons.createAccount')}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1002,6 +1136,374 @@ const PersonsPage = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Review & Approve Modal */}
+            {showApprovalModal && (
+                <div className="modal-overlay" onClick={() => setShowApprovalModal(false)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '860px' }}>
+                        {/* Header */}
+                        <div className="modal-header" style={{
+                            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.06) 100%)',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <div style={{
+                                    width: '36px', height: '36px',
+                                    borderRadius: 'var(--radius-md)',
+                                    background: 'var(--gradient-primary)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: 'var(--shadow-glow)',
+                                }}>
+                                    <ShieldCheck size={18} color="white" />
+                                </div>
+                                <div>
+                                    <h3 className="modal-title" style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>
+                                        {t('persons.reviewAndApprove')}
+                                    </h3>
+                                    <p style={{ margin: 0, fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', fontWeight: '500' }}>
+                                        {approvalPerson && `#${approvalPerson.person_id} — ${approvalPerson.first_name} ${approvalPerson.last_name}`}
+                                    </p>
+                                </div>
+                            </div>
+                            <button className="modal-close" onClick={() => setShowApprovalModal(false)}>
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {approvalLoading ? (
+                            <div className="modal-body" style={{ textAlign: 'center', padding: 'var(--space-10)' }}>
+                                <div className="loading-spinner" style={{ margin: '0 auto' }} />
+                                <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('persons.loadingInfo')}</p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleApprovalSubmit}>
+                                <div className="modal-body" style={{ padding: 'var(--space-5)' }}>
+                                    {approvalError && (
+                                        <div style={{
+                                            padding: 'var(--space-3) var(--space-4)',
+                                            background: 'rgba(239, 68, 68, 0.08)',
+                                            border: '1px solid rgba(239, 68, 68, 0.25)',
+                                            borderRadius: 'var(--radius-md)',
+                                            color: 'var(--color-error)',
+                                            fontSize: 'var(--font-size-sm)',
+                                            marginBottom: 'var(--space-4)',
+                                            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                        }}>
+                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                                            </svg>
+                                            {approvalError}
+                                        </div>
+                                    )}
+
+                                    {/* Two-column layout */}
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: approvalUserAccount ? '1fr 1fr' : '1fr',
+                                        gap: 'var(--space-5)',
+                                    }}>
+                                        {/* LEFT COLUMN — Person Information */}
+                                        <div style={{
+                                            background: 'var(--color-bg-card)',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-lg)',
+                                            overflow: 'hidden',
+                                        }}>
+                                            {/* Section header */}
+                                            <div style={{
+                                                padding: 'var(--space-3) var(--space-4)',
+                                                background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%)',
+                                                borderBottom: '1px solid var(--color-border)',
+                                                display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                            }}>
+                                                <div style={{
+                                                    width: '28px', height: '28px',
+                                                    borderRadius: 'var(--radius-md)',
+                                                    background: 'rgba(59, 130, 246, 0.15)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                }}>
+                                                    <Edit3 size={14} style={{ color: '#3b82f6' }} />
+                                                </div>
+                                                <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '700', color: 'var(--color-text-primary)' }}>
+                                                    {t('persons.personInfo')}
+                                                </span>
+                                            </div>
+
+                                            {/* Section body */}
+                                            <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                                                <div className="form-group" style={{ margin: 0 }}>
+                                                    <TranslatableInput
+                                                        label={t('persons.firstName')}
+                                                        baseFieldName="first_name"
+                                                        value={approvalEditData.first_name}
+                                                        onChange={handleApprovalEditChange}
+                                                        translations={Object.fromEntries(Object.entries(approvalEditTranslations).map(([k, v]) => [k, v.first_name || '']))}
+                                                        onTranslationChange={(langCode, value) => handleApprovalTranslationChange(langCode, { first_name: value })}
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className="form-group" style={{ margin: 0 }}>
+                                                    <TranslatableInput
+                                                        label={t('persons.lastName')}
+                                                        baseFieldName="last_name"
+                                                        value={approvalEditData.last_name}
+                                                        onChange={handleApprovalEditChange}
+                                                        translations={Object.fromEntries(Object.entries(approvalEditTranslations).map(([k, v]) => [k, v.last_name || '']))}
+                                                        onTranslationChange={(langCode, value) => handleApprovalTranslationChange(langCode, { last_name: value })}
+                                                        required
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+                                                    <div className="form-group" style={{ margin: 0 }}>
+                                                        <label className="form-label">{t('persons.sex')}</label>
+                                                        <select
+                                                            className="form-input"
+                                                            value={approvalEditData.sex}
+                                                            onChange={(e) => handleApprovalEditChange('sex', e.target.value)}
+                                                            required
+                                                        >
+                                                            <option value="Male">{t('persons.male')}</option>
+                                                            <option value="Female">{t('persons.female')}</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="form-group" style={{ margin: 0 }}>
+                                                        <label className="form-label">{t('persons.birthDate')}</label>
+                                                        <input
+                                                            type="date"
+                                                            className="form-input"
+                                                            value={approvalEditData.birth_date}
+                                                            onChange={(e) => handleApprovalEditChange('birth_date', e.target.value)}
+                                                            required
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Approval toggle */}
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                    padding: 'var(--space-3) var(--space-4)',
+                                                    background: approvalEditData.is_approved
+                                                        ? 'rgba(34, 197, 94, 0.08)'
+                                                        : 'rgba(245, 158, 11, 0.08)',
+                                                    border: approvalEditData.is_approved
+                                                        ? '1px solid rgba(34, 197, 94, 0.25)'
+                                                        : '1px solid rgba(245, 158, 11, 0.25)',
+                                                    borderRadius: 'var(--radius-md)',
+                                                    marginTop: 'var(--space-1)',
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                        {approvalEditData.is_approved ? (
+                                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#22c55e" strokeWidth="2.5">
+                                                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+                                                            </svg>
+                                                        ) : (
+                                                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f59e0b" strokeWidth="2.5">
+                                                                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                                                            </svg>
+                                                        )}
+                                                        <span style={{
+                                                            fontSize: 'var(--font-size-sm)',
+                                                            fontWeight: '600',
+                                                            color: approvalEditData.is_approved ? '#22c55e' : '#f59e0b',
+                                                        }}>
+                                                            {approvalEditData.is_approved ? t('persons.approved') : t('persons.pending')}
+                                                        </span>
+                                                    </div>
+                                                    <label style={{
+                                                        display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                        cursor: 'pointer', fontSize: 'var(--font-size-xs)',
+                                                        color: 'var(--color-text-secondary)', fontWeight: '500',
+                                                    }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={approvalEditData.is_approved}
+                                                            onChange={(e) => handleApprovalEditChange('is_approved', e.target.checked)}
+                                                            style={{ width: '16px', height: '16px', accentColor: 'var(--color-accent-primary)' }}
+                                                        />
+                                                        {t('persons.isApproved')}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* RIGHT COLUMN — User Account Information */}
+                                        {approvalUserAccount ? (
+                                            <div style={{
+                                                background: 'var(--color-bg-card)',
+                                                border: '1px solid var(--color-border)',
+                                                borderRadius: 'var(--radius-lg)',
+                                                overflow: 'hidden',
+                                            }}>
+                                                {/* Section header */}
+                                                <div style={{
+                                                    padding: 'var(--space-3) var(--space-4)',
+                                                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.05) 100%)',
+                                                    borderBottom: '1px solid var(--color-border)',
+                                                    display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                }}>
+                                                    <div style={{
+                                                        width: '28px', height: '28px',
+                                                        borderRadius: 'var(--radius-md)',
+                                                        background: 'rgba(139, 92, 246, 0.15)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    }}>
+                                                        <Users size={14} style={{ color: '#8b5cf6' }} />
+                                                    </div>
+                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '700', color: 'var(--color-text-primary)' }}>
+                                                        {t('persons.accountInfo')}
+                                                    </span>
+                                                </div>
+
+                                                {/* Section body */}
+                                                <div style={{ padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                                                    <div className="form-group" style={{ margin: 0 }}>
+                                                        <label className="form-label">{t('auth.username')}</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-input"
+                                                            value={approvalAccountEditData.username}
+                                                            onChange={(e) => handleApprovalAccountEditChange('username', e.target.value)}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+                                                        <div className="form-group" style={{ margin: 0 }}>
+                                                            <label className="form-label">{t('persons.accountStatus')}</label>
+                                                            <select
+                                                                className="form-input"
+                                                                value={approvalAccountEditData.account_status}
+                                                                onChange={(e) => handleApprovalAccountEditChange('account_status', e.target.value)}
+                                                            >
+                                                                <option value="active">{t('common.active')}</option>
+                                                                <option value="pending_approval">{t('persons.pendingApproval')}</option>
+                                                                <option value="disabled">{t('common.inactive')}</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="form-group" style={{ margin: 0 }}>
+                                                            <label className="form-label">{t('persons.roleOptional')}</label>
+                                                            <select
+                                                                className="form-input"
+                                                                value={approvalAccountEditData.role_code}
+                                                                onChange={(e) => handleApprovalAccountEditChange('role_code', e.target.value)}
+                                                            >
+                                                                <option value="">{t('persons.noRole')}</option>
+                                                                {roles.map((role) => (
+                                                                    <option key={role.role_id} value={role.role_code}>
+                                                                        {role.role_label} ({role.role_code})
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Account approval toggle */}
+                                                    <div style={{
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        padding: 'var(--space-3) var(--space-4)',
+                                                        background: approvalAccountEditData.is_approved
+                                                            ? 'rgba(34, 197, 94, 0.08)'
+                                                            : 'rgba(245, 158, 11, 0.08)',
+                                                        border: approvalAccountEditData.is_approved
+                                                            ? '1px solid rgba(34, 197, 94, 0.25)'
+                                                            : '1px solid rgba(245, 158, 11, 0.25)',
+                                                        borderRadius: 'var(--radius-md)',
+                                                        marginTop: 'var(--space-1)',
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                            {approvalAccountEditData.is_approved ? (
+                                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#22c55e" strokeWidth="2.5">
+                                                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+                                                                </svg>
+                                                            ) : (
+                                                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#f59e0b" strokeWidth="2.5">
+                                                                    <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                                                                </svg>
+                                                            )}
+                                                            <span style={{
+                                                                fontSize: 'var(--font-size-sm)',
+                                                                fontWeight: '600',
+                                                                color: approvalAccountEditData.is_approved ? '#22c55e' : '#f59e0b',
+                                                            }}>
+                                                                {approvalAccountEditData.is_approved ? t('persons.approved') : t('persons.pending')}
+                                                            </span>
+                                                        </div>
+                                                        <label style={{
+                                                            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                            cursor: 'pointer', fontSize: 'var(--font-size-xs)',
+                                                            color: 'var(--color-text-secondary)', fontWeight: '500',
+                                                        }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={approvalAccountEditData.is_approved}
+                                                                onChange={(e) => handleApprovalAccountEditChange('is_approved', e.target.checked)}
+                                                                style={{ width: '16px', height: '16px', accentColor: 'var(--color-accent-primary)' }}
+                                                            />
+                                                            {t('persons.accountApproved')}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            /* No account — placeholder card */
+                                            <div style={{
+                                                background: 'var(--color-bg-card)',
+                                                border: '1px dashed var(--color-border)',
+                                                borderRadius: 'var(--radius-lg)',
+                                                display: 'flex', flexDirection: 'column',
+                                                alignItems: 'center', justifyContent: 'center',
+                                                padding: 'var(--space-8)',
+                                                gap: 'var(--space-3)',
+                                                minHeight: '200px',
+                                            }}>
+                                                <div style={{
+                                                    width: '48px', height: '48px',
+                                                    borderRadius: 'var(--radius-full)',
+                                                    background: 'rgba(245, 158, 11, 0.1)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                }}>
+                                                    <Users size={22} style={{ color: '#f59e0b' }} />
+                                                </div>
+                                                <p style={{
+                                                    fontSize: 'var(--font-size-sm)', fontWeight: '600',
+                                                    color: 'var(--color-text-secondary)', textAlign: 'center', margin: 0,
+                                                }}>
+                                                    {t('persons.noAccountForPerson')}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="modal-footer" style={{
+                                    padding: 'var(--space-4) var(--space-5)',
+                                    borderTop: '1px solid var(--color-border)',
+                                    background: 'var(--color-bg-card)',
+                                }}>
+                                    <button type="button" className="btn btn-secondary" onClick={() => setShowApprovalModal(false)}>
+                                        {t('common.cancel')}
+                                    </button>
+                                    <button type="submit" className="btn btn-primary" disabled={approvalSubmitting} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        {approvalSubmitting ? (
+                                            <>
+                                                <span className="loading-spinner" />
+                                                {t('common.saving')}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ShieldCheck size={16} />
+                                                {t('persons.saveAndApprove')}
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+                        )}
                     </div>
                 </div>
             )}

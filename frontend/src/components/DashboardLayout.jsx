@@ -141,6 +141,15 @@ const DashboardLayout = () => {
                                     {t('nav.persons')}
                                 </NavLink>
 
+                                <NavLink to="/dashboard/user-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                        <circle cx="9" cy="7" r="4" />
+                                        <polyline points="16 11 18 13 22 9" />
+                                    </svg>
+                                    {t('nav.userApproval')}
+                                </NavLink>
+
                                 <NavLink to="/dashboard/locations" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <rect x="3" y="3" width="18" height="18" rx="2" />

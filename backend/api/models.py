@@ -61,6 +61,7 @@ class UserAccount(models.Model):
     created_by_user_id = models.IntegerField(blank=True, null=True, db_column='created_by_user_id')
     modified_by_user_id = models.IntegerField(blank=True, null=True, db_column='modified_by_user_id')
     modified_at_datetime = models.DateTimeField(blank=True, null=True, db_column='modified_at_datetime')
+    is_approved = models.BooleanField(default=False, db_column='is_approved')
 
     class Meta:
         managed = False
@@ -91,6 +92,23 @@ class UserAccount(models.Model):
             person=self.person,
             role__role_code='superuser'
         ).exists()
+
+
+class PersonAssignment(models.Model):
+    """Maps to person_assignment table"""
+    assignment_id = models.AutoField(primary_key=True, db_column='assignment_id')
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='person_id')
+    position = models.ForeignKey('Position', on_delete=models.CASCADE, db_column='position_id')
+    assignment_start_date = models.DateField(blank=True, null=True, db_column='assignment_start_date')
+    assignment_end_date = models.DateField(blank=True, null=True, db_column='assignment_end_date')
+    employment_type = models.CharField(max_length=48, blank=True, null=True, db_column='employment_type')
+
+    class Meta:
+        managed = False
+        db_table = 'person_assignment'
+
+    def __str__(self):
+        return f'{self.person} - {self.position}'
 
 
 class AssetType(models.Model):

@@ -98,6 +98,26 @@ export const authService = {
         });
         return response.data;
     },
+
+    signup: async (signupData) => {
+        const response = await api.post('auth/signup/', signupData);
+        return response.data;
+    },
+
+    getSignupDropdowns: async (lang = 'en') => {
+        const response = await api.get('auth/signup/', { params: { lang } });
+        return response.data;
+    },
+
+    getPendingUsers: async () => {
+        const response = await api.get('auth/pending-users/');
+        return response.data;
+    },
+
+    approveUser: async (userId) => {
+        const response = await api.post('auth/approve-user/', { user_id: userId });
+        return response.data;
+    },
 };
 
 export const stockItemConsumableDestructionCertificateService = {
@@ -349,6 +369,14 @@ export const personService = {
 export const userAccountService = {
     create: async (data) => {
         const response = await api.post('user-accounts/', data);
+        return response.data;
+    },
+    getByPersonId: async (personId) => {
+        const response = await api.get('user-accounts/detail/', { params: { person_id: personId } });
+        return response.data;
+    },
+    update: async (data) => {
+        const response = await api.patch('user-accounts/detail/', data);
         return response.data;
     },
 };

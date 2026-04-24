@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import UserApprovalPage from './pages/UserApprovalPage';
 import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import PersonsPage from './pages/PersonsPage';
@@ -129,6 +131,14 @@ function App() {
                             </PublicRoute>
                         }
                     />
+                    <Route
+                        path="/signup"
+                        element={
+                            <PublicRoute>
+                                <SignupPage />
+                            </PublicRoute>
+                        }
+                    />
 
                     {/* Protected Routes */}
                     <Route
@@ -146,6 +156,14 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={[]}>
                                     <PersonsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="user-approval"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['superuser']}>
+                                    <UserApprovalPage />
                                 </RoleProtectedRoute>
                             }
                         />

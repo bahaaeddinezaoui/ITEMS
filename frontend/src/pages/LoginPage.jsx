@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 
@@ -136,8 +137,12 @@ const LoginPage = () => {
 
     return (
         <div className="login-page">
-            {/* Language Switcher */}
-            <div className="login-lang-switcher">
+            {/* Top Bar: Back button + Language Switcher */}
+            <div className="login-top-bar">
+                <Link to="/" className="login-back-btn">
+                    <ArrowLeft size={18} />
+                    <span>{t('common.back')}</span>
+                </Link>
                 <LanguageSwitcher />
             </div>
 
@@ -223,6 +228,15 @@ const LoginPage = () => {
                                 t('auth.login')
                             )}
                         </button>
+
+                        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                            <Link
+                                to="/signup"
+                                style={{ color: 'var(--color-primary)', textDecoration: 'none', fontSize: '14px' }}
+                            >
+                                {t('signup.noAccount')}
+                            </Link>
+                        </div>
                     </form>
                     </div>
                 </div>
