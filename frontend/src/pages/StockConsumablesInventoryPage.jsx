@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Package } from 'lucide-react';
 import { locationInventoryService, locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 
@@ -121,10 +123,16 @@ const StockConsumablesInventoryPage = () => {
             .join(' ');
     };
 
-    const getItemTypeIcon = (itemType) => {
-        if (itemType === 'stock_item') return '📦';
-        if (itemType === 'consumable') return '🧴';
-        return '📋';
+    const getItemTypeLabel = (itemType) => {
+        if (itemType === 'stock_item') return t('stockConsumablesInventory.stockItems');
+        if (itemType === 'consumable') return t('stockConsumablesInventory.consumables');
+        return '-';
+    };
+
+    const getItemTypeBadgeClass = (itemType) => {
+        if (itemType === 'stock_item') return 'badge-info';
+        if (itemType === 'consumable') return 'badge-warning';
+        return 'badge-info';
     };
 
     const getStatusBadge = (status) => {
@@ -140,7 +148,7 @@ const StockConsumablesInventoryPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">📦🧴 {t('stockConsumablesInventory.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Package size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockConsumablesInventory.title')}</h1>
                 <p className="page-subtitle">{t('stockConsumablesInventory.subtitle')}</p>
             </div>
 
@@ -224,37 +232,33 @@ const StockConsumablesInventoryPage = () => {
             {inventoryData && inventoryData.locations && inventoryData.locations.length > 0 && (
                 <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
                     <div className="card-header">
-                        <h2 className="card-title">📊 {t('stockConsumablesInventory.itemsByLocation')}</h2>
+                        <h2 className="card-title">{t('stockConsumablesInventory.itemsByLocation')}</h2>
                     </div>
-                    <div className="table-container">
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>{t('stockConsumablesInventory.location')}</th>
-                                    <th>{t('stockConsumablesInventory.type')}</th>
-                                    <th style={{ textAlign: 'center' }}>{t('stockConsumablesInventory.stockItems')}</th>
-                                    <th style={{ textAlign: 'center' }}>{t('stockConsumablesInventory.consumables')}</th>
-                                    <th style={{ textAlign: 'center' }}>{t('stockConsumablesInventory.total')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {inventoryData.locations.map(loc => (
-                                    <tr key={loc.location_id}>
-                                        <td><strong>{getBilingualName(loc.location_name_ar, loc.location_name_en, loc.location_name, i18n.language)}</strong></td>
-                                        <td style={{ color: 'var(--color-text-secondary)' }}>{getBilingualTypeLabel(loc.location_type_ar, loc.location_type_en, loc.location_type, i18n.language) || t('stockConsumablesInventory.unknown')}</td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <span className="badge badge-info">{loc.stock_item_count}</span>
-                                        </td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <span className="badge badge-info">{loc.consumable_count}</span>
-                                        </td>
-                                        <td style={{ textAlign: 'center', fontWeight: 700 }}>
-                                            {loc.stock_item_count + loc.consumable_count}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="card-body">
+                        <div className="sci-location-grid">
+                            {inventoryData.locations.map(loc => (
+                                <div key={loc.location_id} className="sci-location-card">
+                                    <div className="sci-location-card-head">
+                                        <strong className="sci-location-card-name">{getBilingualName(loc.location_name_ar, loc.location_name_en, loc.location_name, i18n.language)}</strong>
+                                        <span className="sci-location-card-type">{getBilingualTypeLabel(loc.location_type_ar, loc.location_type_en, loc.location_type, i18n.language) || t('stockConsumablesInventory.unknown')}</span>
+                                    </div>
+                                    <div className="sci-location-card-stats">
+                                        <div className="sci-location-stat">
+                                            <span className="sci-location-stat-value">{loc.stock_item_count}</span>
+                                            <span className="sci-location-stat-label">{t('stockConsumablesInventory.stockItems')}</span>
+                                        </div>
+                                        <div className="sci-location-stat">
+                                            <span className="sci-location-stat-value">{loc.consumable_count}</span>
+                                            <span className="sci-location-stat-label">{t('stockConsumablesInventory.consumables')}</span>
+                                        </div>
+                                        <div className="sci-location-stat sci-location-stat-total">
+                                            <span className="sci-location-stat-value">{loc.stock_item_count + loc.consumable_count}</span>
+                                            <span className="sci-location-stat-label">{t('stockConsumablesInventory.total')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
@@ -262,7 +266,7 @@ const StockConsumablesInventoryPage = () => {
             <div className="card">
                 <div className="card-header">
                     <h2 className="card-title">
-                        📋 {t('stockConsumablesInventory.itemDetails')} {filteredItems.length > 0 ? <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>({filteredItems.length} {t('stockConsumablesInventory.items')})</span> : null}
+                        {t('stockConsumablesInventory.itemDetails')} {filteredItems.length > 0 ? <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>({filteredItems.length} {t('stockConsumablesInventory.items')})</span> : null}
                     </h2>
                 </div>
                 {loading ? (
@@ -280,51 +284,42 @@ const StockConsumablesInventoryPage = () => {
                         <div className="empty-state-text">{t('stockConsumablesInventory.noItemsMatch')}</div>
                     </div>
                 ) : (
-                    <div className="table-container">
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>{t('stockConsumablesInventory.type')}</th>
-                                    <th>{t('stockConsumablesInventory.name')}</th>
-                                    <th>{t('stockConsumablesInventory.inventoryNumber')}</th>
-                                    <th>{t('stockConsumablesInventory.modelBrand')}</th>
-                                    <th>{t('stockConsumablesInventory.category')}</th>
-                                    <th>{t('common.status')}</th>
-                                    <th>{t('stockConsumablesInventory.location')}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredItems.map((item, index) => (
-                                    <tr key={`${item.item_type}-${item.item_id}-${index}`}>
-                                        <td><span style={{ fontSize: 18 }}>{getItemTypeIcon(item.item_type)}</span></td>
-                                        <td>
-                                            <strong>{item.name}</strong>
+                    <div className="card-body">
+                        <div className="sci-item-grid">
+                            {filteredItems.map((item, index) => (
+                                <div key={`${item.item_type}-${item.item_id}-${index}`} className="sci-item-card">
+                                    <div className="sci-item-card-head">
+                                        <span className={`badge ${getItemTypeBadgeClass(item.item_type)}`}>{getItemTypeLabel(item.item_type)}</span>
+                                        <span className={`badge ${getStatusBadge(item.status)}`}>{formatStatusLabel(item.status)}</span>
+                                    </div>
+                                    <div className="sci-item-card-body">
+                                        <div className="sci-item-card-name">
+                                            <strong>{item.name || '-'}</strong>
                                             {item.serial_number && (
-                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                                                    S/N: {item.serial_number}
-                                                </div>
+                                                <span className="sci-item-card-serial">{item.serial_number}</span>
                                             )}
-                                        </td>
-                                        <td style={{ fontFamily: 'monospace' }}>{item.inventory_number || '-'}</td>
-                                        <td>
-                                            {item.model || '-'}
+                                        </div>
+                                        <div className="sci-item-card-details">
+                                            {item.inventory_number && (
+                                                <span className="sci-item-card-tag sci-item-card-mono">{item.inventory_number}</span>
+                                            )}
+                                            {item.model && (
+                                                <span className="sci-item-card-tag">{item.model}</span>
+                                            )}
                                             {item.brand && (
-                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                                                    {item.brand}
-                                                </div>
+                                                <span className="sci-item-card-tag">{item.brand}</span>
                                             )}
-                                        </td>
-                                        <td>{item.type || '-'}</td>
-                                        <td>
-                                            <span className={`badge ${getStatusBadge(item.status)}`}>
-                                                {formatStatusLabel(item.status)}
+                                            {item.type && (
+                                                <span className="sci-item-card-tag">{item.type}</span>
+                                            )}
+                                            <span className="sci-item-card-tag">
+                                                {getBilingualName(item.location_name_ar, item.location_name_en, item.location_name, i18n.language) || '-'}
                                             </span>
-                                        </td>
-                                        <td>{getBilingualName(item.location_name_ar, item.location_name_en, item.location_name, i18n.language) || '-'}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>

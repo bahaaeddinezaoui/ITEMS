@@ -73,7 +73,7 @@ const PurchaseOrderDetailsPage = () => {
         <div className="page-container">
             <div className="dashboard-hero" style={{ marginBottom: 0 }}>
                 <div className="dashboard-hero-main">
-                    <h1 className="page-title" style={{ marginBottom: 'var(--space-2)' }}>{t('purchaseOrderDetails.title')}</h1>
+                    <h1 className="page-title" style={{ marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><FileText size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('purchaseOrderDetails.title')}</h1>
                     <p className="page-subtitle">{t('purchaseOrderDetails.subtitle')}</p>
                     {!!order && (
                         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', marginTop: 'var(--space-4)' }}>

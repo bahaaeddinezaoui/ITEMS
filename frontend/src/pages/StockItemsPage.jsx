@@ -920,9 +920,7 @@ const StockItemsPage = () => {
                             <ArrowLeft size={18} />
                         </button>
                         <div>
-                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
-                                {t('stockItems.title')}
-                            </h1>
+                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Package size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItems.title')}</h1>
                             <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <Tag size={14} />
                                 {selectedStockItemType?.stock_item_type_label || `Type #${typeIdParam || ''}`} • {formatModelLabel(selectedStockItemModel) || selectedStockItemModel?.model_name || `Model #${modelIdParam || ''}`}
@@ -1054,7 +1052,7 @@ const StockItemsPage = () => {
                                 <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
                                 <input type="text" placeholder={t('stockItems.searchPlaceholder', 'Search stock items...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
                             </div>
-                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', minWidth: '130px' }}>
+                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '44px', minWidth: '130px' }}>
                                 <option value="">{t('stockItems.allStatuses', 'All Statuses')}</option>
                                 <option value="in_stock">{t('stockItems.statusInStock')}</option>
                                 <option value="assigned">{t('stockItems.statusAssigned')}</option>
@@ -1550,7 +1548,7 @@ const StockItemsPage = () => {
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)' }}>
                     <div>
-                        <h1 className="page-title">{t('stockItems.title')}</h1>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Package size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItems.title')}</h1>
                         <p className="page-subtitle">{t('stockItems.subtitle')}</p>
                     </div>
                 </div>

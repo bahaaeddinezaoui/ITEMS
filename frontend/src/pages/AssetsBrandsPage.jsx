@@ -198,9 +198,7 @@ const AssetsBrandsPage = () => {
                         <ArrowLeft size={18} />
                     </button>
                     <div>
-                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
-                            {t('assetBrands.title', 'Asset Brands')}
-                        </h1>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Tag size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetBrands.title', 'Asset Brands')}</h1>
                         <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)' }}>
                             {t('assetBrands.subtitle', 'Manage asset brands')}
                         </p>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { assetService, personService, problemReportService, locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { BarChart3 } from 'lucide-react';
 
 const ReportsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -278,7 +279,7 @@ const ReportsPage = () => {
         return (
             <>
                 <div className="page-header">
-                    <h1 className="page-title">{t('reports.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><BarChart3 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('reports.title')}</h1>
                     <p className="page-subtitle">{t('reports.subtitle')}</p>
                 </div>
 
@@ -292,7 +293,7 @@ const ReportsPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">{t('reports.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><BarChart3 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('reports.title')}</h1>
                 <p className="page-subtitle">{t('reports.subtitle')}</p>
             </div>
 

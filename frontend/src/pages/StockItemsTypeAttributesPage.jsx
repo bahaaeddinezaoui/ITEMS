@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { stockItemAttributeDefinitionService, stockItemTypeAttributeService, stockItemTypeService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { SlidersHorizontal } from 'lucide-react';
+import { stockItemAttributeDefinitionService, stockItemTypeAttributeService, stockItemTypeService } from '../services/api';
 
 const StockItemsTypeAttributesPage = () => {
     const navigate = useNavigate();
@@ -107,7 +108,7 @@ const StockItemsTypeAttributesPage = () => {
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">{t('stockItemTypeAttributes.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><SlidersHorizontal size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItemTypeAttributes.title')}</h1>
                     <p className="page-subtitle">{stockItemType ? stockItemType.stock_item_type_label : t('stockItemTypeAttributes.type')} • {t('stockItemTypeAttributes.manageAttributes')}</p>
                 </div>
                 <button

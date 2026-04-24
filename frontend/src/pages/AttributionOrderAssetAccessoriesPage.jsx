@@ -8,6 +8,7 @@ import {
     attributionOrderAssetConsumableAccessoryService,
 } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { Wrench } from 'lucide-react';
 
 const AttributionOrderAssetAccessoriesPage = () => {
     const navigate = useNavigate();
@@ -64,7 +65,6 @@ const AttributionOrderAssetAccessoriesPage = () => {
 
     useEffect(() => {
         loadAll();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orderIdNum, assetIdNum]);
 
     const stockItemLookup = useMemo(() => {
@@ -162,7 +162,7 @@ const AttributionOrderAssetAccessoriesPage = () => {
             {/* Header Card */}
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">{t('assetAccessories.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Wrench size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetAccessories.title')}</h1>
                     <p className="page-subtitle">
                         {t('assetAccessories.order')} #{orderIdNum} • {asset?.asset_name ? asset.asset_name : `${t('assetAccessories.asset')} #${assetIdNum}`}
                     </p>

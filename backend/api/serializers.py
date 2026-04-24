@@ -2175,6 +2175,22 @@ class MaintenanceSerializer(serializers.ModelSerializer):
     has_external_maintenances = serializers.SerializerMethodField()
     total_cost = serializers.SerializerMethodField()
 
+    MAINTENANCE_STATUS_CHOICES = [
+        "pending",
+        "started",
+        "in_progress",
+        "completed",
+        "failed",
+        "cancelled",
+    ]
+
+    def validate_maintenance_status(self, value):
+        if value is not None and value not in self.MAINTENANCE_STATUS_CHOICES:
+            raise serializers.ValidationError(
+                f"Invalid maintenance_status. Allowed: {', '.join(self.MAINTENANCE_STATUS_CHOICES)}"
+            )
+        return value
+
     class Meta:
         model = Maintenance
         fields = [

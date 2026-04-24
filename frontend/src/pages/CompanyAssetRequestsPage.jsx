@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
 import { companyAssetRequestService, attributionOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { ClipboardCheck } from 'lucide-react';
 
 const getRequestSignatureFields = (t) => [
     { key: 'is_signed_by_company', label: t('companyAssetRequests.company'), fullLabel: t('companyAssetRequests.signedByCompany'), short: 'C' },
@@ -300,7 +301,7 @@ const CompanyAssetRequestsPage = () => {
             <div className="card company-asset-requests-hero">
                 <div className="company-asset-requests-header">
                     <div>
-                        <h1 className="page-title">{t('companyAssetRequests.title')}</h1>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><ClipboardCheck size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('companyAssetRequests.title')}</h1>
                         <p className="page-subtitle">{t('companyAssetRequests.subtitle')}</p>
                     </div>
                     <button className="btn btn-primary company-asset-requests-create-btn" onClick={() => setShowCreateForm(true)}>

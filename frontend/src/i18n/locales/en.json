@@ -252,7 +252,15 @@
     "noAttrValues": "No attribute values set for this asset.",
     "noValue": "No value",
     "suggestForDestruction": "Suggest for destruction",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "assignAsset": "Assign Asset",
+    "person": "Person",
+    "startDatetime": "Start Date & Time",
+    "endDatetime": "End Date & Time",
+    "conditionOnAssignment": "Condition on Assignment",
+    "conditionNew": "New",
+    "conditionGood": "Good",
+    "conditionNeedsRepair": "Needs Repair"
   },
   "assetTypes": {
     "title": "Asset Types",
@@ -916,7 +924,8 @@
     "assetStatusLost": "Lost",
     "assetStatusStolen": "Stolen",
     "assetStatusIrrecoverablyDamaged": "Irrecoverably Damaged",
-    "assetStatusDestroyed": "Destroyed"
+    "assetStatusDestroyed": "Destroyed",
+    "clickToChangeStatus": "Click to change status"
   },
   "stockItemAttributes": {
     "title": "Stock Item Attribute Definitions",
@@ -1139,7 +1148,17 @@
     "createSuccess": "Attribution Order and Assets created successfully!",
     "createError": "Failed to create Attribution Order and Assets",
     "receiptCreatedSuccess": "Receipt Report successfully created and linked to this order.",
-    "receiptCreateError": "Failed to create Receipt Report"
+    "receiptCreateError": "Failed to create Receipt Report",
+    "searchPlaceholder": "Search by code, barcode, or ID...",
+    "allWarehouses": "All Warehouses",
+    "sortByDate": "Date",
+    "sortByCode": "Code",
+    "sortById": "ID",
+    "ascending": "Asc",
+    "descending": "Desc",
+    "clearFilters": "Clear filters",
+    "resultCount": "{{count}} result(s)",
+    "noResultsFound": "No attribution orders match your search or filters"
   },
   "adminCertificates": {
     "title": "Administrative Certificates",

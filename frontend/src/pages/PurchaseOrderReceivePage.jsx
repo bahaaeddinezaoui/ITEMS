@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, RefreshCw, Send } from 'lucide-react';
+import { ArrowLeft, Package, RefreshCw, Send } from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -149,7 +149,7 @@ const PurchaseOrderReceivePage = () => {
         <div className="page-container">
             <div className="dashboard-hero" style={{ marginBottom: 0 }}>
                 <div className="dashboard-hero-main">
-                    <h1 className="page-title" style={{ marginBottom: 'var(--space-2)' }}>{t('purchaseOrderReceive.title')}</h1>
+                    <h1 className="page-title" style={{ marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Package size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('purchaseOrderReceive.title')}</h1>
                     <p className="page-subtitle">{t('purchaseOrderReceive.subtitle')}</p>
                     {!!order && (
                         <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', marginTop: 'var(--space-4)' }}>

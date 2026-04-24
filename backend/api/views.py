@@ -1077,6 +1077,49 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         return Maintenance.objects.none()
 
+    def partial_update(self, request, *args, **kwargs):
+        """Allow updating maintenance_status for chiefs and assigned technicians."""
+        maintenance = self.get_object()
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Only maintenance_status is allowed via this endpoint for non-superusers
+        allowed_fields = {"maintenance_status"}
+        data = request.data.copy()
+        disallowed = set(data.keys()) - allowed_fields
+        if disallowed and not user_account.is_superuser():
+            return Response(
+                {"error": f"Only {', '.join(allowed_fields)} can be updated. Remove: {', '.join(disallowed)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        is_allowed = False
+        if user_account.is_superuser():
+            is_allowed = True
+        else:
+            role_codes = set(
+                PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+            )
+            if "maintenance_chief" in role_codes or "it_bureau_chief" in role_codes:
+                is_allowed = True
+            elif getattr(maintenance, "performed_by_person_id", None) == person.person_id:
+                is_allowed = True
+            elif MaintenanceStep.objects.filter(maintenance_id=maintenance.maintenance_id, person_id=person.person_id).exists():
+                is_allowed = True
+
+        if not is_allowed:
+            return Response({"error": "Not allowed to update this maintenance"}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(maintenance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):
         denial = self._require_superuser(request, "create maintenances")
         if denial:
@@ -1172,28 +1215,27 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             )
 
         is_successful_raw = request.data.get("is_successful", "__missing__") if hasattr(request, "data") else "__missing__"
-        is_successful_value = "__missing__"
-        if is_successful_raw != "__missing__":
-            if is_successful_raw is None:
-                is_successful_value = None
-            elif isinstance(is_successful_raw, bool):
-                is_successful_value = is_successful_raw
-            elif isinstance(is_successful_raw, (int, float)):
-                is_successful_value = bool(is_successful_raw)
-            else:
-                s = str(is_successful_raw).strip().lower()
-                if s in {"true", "1", "yes", "y"}:
-                    is_successful_value = True
-                elif s in {"false", "0", "no", "n"}:
-                    is_successful_value = False
-                elif s in {"null", "none", ""}:
-                    is_successful_value = None
-                else:
-                    return Response({"error": "Invalid is_successful"}, status=status.HTTP_400_BAD_REQUEST)
+        if is_successful_raw == "__missing__":
+            return Response({"error": "is_successful is required (true/false)"}, status=status.HTTP_400_BAD_REQUEST)
 
-        update_payload = {"end_datetime": timezone.now()}
-        if is_successful_value != "__missing__":
-            update_payload["is_successful"] = is_successful_value
+        if isinstance(is_successful_raw, bool):
+            is_successful_value = is_successful_raw
+        elif isinstance(is_successful_raw, (int, float)):
+            is_successful_value = bool(is_successful_raw)
+        else:
+            s = str(is_successful_raw).strip().lower()
+            if s in {"true", "1", "yes", "y"}:
+                is_successful_value = True
+            elif s in {"false", "0", "no", "n"}:
+                is_successful_value = False
+            else:
+                return Response({"error": "Invalid is_successful"}, status=status.HTTP_400_BAD_REQUEST)
+
+        update_payload = {
+            "end_datetime": timezone.now(),
+            "is_successful": is_successful_value,
+            "maintenance_status": "completed" if is_successful_value else "failed",
+        }
 
         Maintenance.objects.filter(maintenance_id=maintenance.maintenance_id).update(**update_payload)
         maintenance.refresh_from_db()
@@ -1258,7 +1300,15 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         else:
             source_location = destination_location
         if last_move and source_location.location_id == destination_location.location_id:
-            return Response({"error": "Asset is already in this location"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    "asset_id": asset.asset_id,
+                    "source_location_id": source_location.location_id,
+                    "destination_location_id": destination_location.location_id,
+                    "status": "no_change",
+                },
+                status=status.HTTP_200_OK,
+            )
 
         last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
         next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
@@ -1905,6 +1955,63 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         except Exception:
             return
 
+    def _maybe_set_maintenance_in_progress_status(self, step: MaintenanceStep, *, new_status: str | None = None):
+        try:
+            if new_status != "In Progress":
+                return
+
+            maintenance = getattr(step, "maintenance", None)
+            if not maintenance:
+                return
+
+            step_id = getattr(step, "maintenance_step_id", None)
+            if step_id is None:
+                return
+
+            first_step = (
+                MaintenanceStep.objects.filter(maintenance_id=maintenance.maintenance_id)
+                .order_by("maintenance_step_id")
+                .first()
+            )
+            if not first_step or first_step.maintenance_step_id != step_id:
+                return
+
+            Maintenance.objects.filter(maintenance_id=maintenance.maintenance_id).filter(
+                Q(maintenance_status__isnull=True)
+                | Q(maintenance_status="")
+                | Q(maintenance_status="pending")
+                | Q(maintenance_status="started")
+            ).update(maintenance_status="in_progress")
+        except Exception:
+            return
+
+    def _maybe_set_maintenance_started_status(self, step: MaintenanceStep, *, new_status: str | None = None):
+        try:
+            if new_status != "started":
+                return
+
+            maintenance = getattr(step, "maintenance", None)
+            if not maintenance:
+                return
+
+            step_id = getattr(step, "maintenance_step_id", None)
+            if step_id is None:
+                return
+
+            first_step = (
+                MaintenanceStep.objects.filter(maintenance_id=maintenance.maintenance_id)
+                .order_by("maintenance_step_id")
+                .first()
+            )
+            if not first_step or first_step.maintenance_step_id != step_id:
+                return
+
+            Maintenance.objects.filter(maintenance_id=maintenance.maintenance_id).filter(
+                Q(maintenance_status__isnull=True) | Q(maintenance_status="") | Q(maintenance_status="pending")
+            ).update(maintenance_status="started")
+        except Exception:
+            return
+
     def _get_user_id(self, request):
         try:
             if hasattr(request, "user") and request.user and getattr(request.user, "is_authenticated", False):
@@ -2124,6 +2231,10 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
             except Exception:
                 pass
             self._maybe_set_maintenance_start_datetime(updated, new_status=new_status)
+            self._maybe_set_maintenance_started_status(updated, new_status=new_status)
+
+        if new_status == "In Progress" and old_status != "In Progress":
+            self._maybe_set_maintenance_in_progress_status(updated, new_status=new_status)
 
         try:
             if new_status != "done" or old_status == "done":
@@ -3109,6 +3220,25 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
         step.maintenance_step_status = "In Progress"
         step.save(update_fields=["maintenance_step_status"])
 
+        try:
+            maintenance = getattr(step, "maintenance", None)
+            step_id = getattr(step, "maintenance_step_id", None)
+            if maintenance and step_id is not None:
+                first_step = (
+                    MaintenanceStep.objects.filter(maintenance_id=maintenance.maintenance_id)
+                    .order_by("maintenance_step_id")
+                    .first()
+                )
+                if first_step and first_step.maintenance_step_id == step_id:
+                    Maintenance.objects.filter(maintenance_id=maintenance.maintenance_id).filter(
+                        Q(maintenance_status__isnull=True)
+                        | Q(maintenance_status="")
+                        | Q(maintenance_status="pending")
+                        | Q(maintenance_status="started")
+                    ).update(maintenance_status="in_progress")
+        except Exception:
+            pass
+
         return Response(self.get_serializer(req).data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="reject")
@@ -3140,6 +3270,22 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
         step = req.maintenance_step
         step.maintenance_step_status = "started"
         step.save(update_fields=["maintenance_step_status"])
+
+        try:
+            maintenance = getattr(step, "maintenance", None)
+            step_id = getattr(step, "maintenance_step_id", None)
+            if maintenance and step_id is not None:
+                first_step = (
+                    MaintenanceStep.objects.filter(maintenance_id=maintenance.maintenance_id)
+                    .order_by("maintenance_step_id")
+                    .first()
+                )
+                if first_step and first_step.maintenance_step_id == step_id:
+                    Maintenance.objects.filter(maintenance_id=maintenance.maintenance_id).filter(
+                        Q(maintenance_status__isnull=True) | Q(maintenance_status="") | Q(maintenance_status="pending")
+                    ).update(maintenance_status="started")
+        except Exception:
+            pass
 
         return Response(self.get_serializer(req).data, status=status.HTTP_200_OK)
 

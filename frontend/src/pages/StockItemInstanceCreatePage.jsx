@@ -181,22 +181,11 @@ const StockItemInstanceCreatePage = () => {
                         <ArrowLeft size={16} />
                         {t('common.back')}
                     </button>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                        <div style={{
-                            width: 48, height: 48, borderRadius: 'var(--radius-lg)',
-                            background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center',
-                            justifyContent: 'center', boxShadow: 'var(--shadow-glow)', flexShrink: 0,
-                        }}>
-                            <Package size={24} style={{ color: 'white' }} />
-                        </div>
-                        <div>
-                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
-                                {t('stockItemInstanceCreate.title')}
-                            </h1>
-                            <p className="page-subtitle" style={{ fontSize: 'var(--font-size-base)' }}>
-                                {t('stockItemInstanceCreate.subtitle')}
-                            </p>
-                        </div>
+                    <div>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Package size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItemInstanceCreate.title')}</h1>
+                        <p className="page-subtitle" style={{ fontSize: 'var(--font-size-base)' }}>
+                            {t('stockItemInstanceCreate.subtitle')}
+                        </p>
                     </div>
                 </div>
             </div>

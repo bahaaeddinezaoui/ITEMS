@@ -1669,6 +1669,11 @@ export const maintenanceService = {
         return response.data;
     },
 
+    patch: async (id, maintenanceData) => {
+        const response = await api.patch(`maintenances/${id}/`, maintenanceData);
+        return response.data;
+    },
+
     delete: async (id) => {
         await api.delete(`maintenances/${id}/`);
     },

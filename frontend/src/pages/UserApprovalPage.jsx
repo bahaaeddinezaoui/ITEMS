@@ -88,23 +88,7 @@ const UserApprovalPage = () => {
                 flexWrap: 'wrap'
             }}>
                 <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-                        <div style={{
-                            width: '40px',
-                            height: '40px',
-                            background: 'var(--gradient-primary)',
-                            borderRadius: 'var(--radius-md)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: 'var(--shadow-glow)'
-                        }}>
-                            <UserCheck size={20} color="white" />
-                        </div>
-                        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>
-                            {t('userApproval.title')}
-                        </h1>
-                    </div>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', letterSpacing: '-0.02em', margin: 0, marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><UserCheck size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('userApproval.title')}</h1>
                     <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', margin: 0 }}>
                         {t('userApproval.subtitle')}
                     </p>

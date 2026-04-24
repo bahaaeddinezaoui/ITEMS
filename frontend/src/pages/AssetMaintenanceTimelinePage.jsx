@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { assetMaintenanceTimelineService } from '../services/api';
 import MaintenanceTimeline from '../components/MaintenanceTimeline';
 import { useTranslation } from 'react-i18next';
+import { GitBranch } from 'lucide-react';
 
 const AssetMaintenanceTimelinePage = () => {
     const { assetId } = useParams();
@@ -58,7 +59,7 @@ const AssetMaintenanceTimelinePage = () => {
             <div className="page-header">
                 <div className="d-flex justify-content-between align-items-center">
                     <div>
-                        <h1 className="page-title">{t('assetMaintenanceTimeline.title')}</h1>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><GitBranch size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetMaintenanceTimeline.title')}</h1>
                         <p className="page-subtitle">
                             Asset #{assetId}
                             {assetInfo?.asset_name ? ` - ${assetInfo.asset_name}` : ''}

@@ -373,23 +373,7 @@ const PersonsPage = () => {
                 flexWrap: 'wrap'
             }}>
                 <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-                        <div style={{
-                            width: '40px',
-                            height: '40px',
-                            background: 'var(--gradient-primary)',
-                            borderRadius: 'var(--radius-md)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            boxShadow: 'var(--shadow-glow)'
-                        }}>
-                            <Users size={20} color="white" />
-                        </div>
-                        <h1 style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', letterSpacing: '-0.02em', margin: 0 }}>
-                            {t('nav.persons')}
-                        </h1>
-                    </div>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-2xl)', fontWeight: '700', letterSpacing: '-0.02em', margin: 0, marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Users size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('nav.persons')}</h1>
                     <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', margin: 0 }}>
                         {t('persons.subtitle')}
                     </p>
@@ -700,7 +684,7 @@ const PersonsPage = () => {
                         <circle cx="11" cy="11" r="8" />
                         <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
-                    <h3 className="empty-state-title">{t('persons.noResults')}</h3>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Users size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('persons.title')}</h1>
                     <p className="empty-state-text">{t('persons.tryDifferentFilters')}</p>
                 </div>
             ) : (

@@ -245,9 +245,7 @@ const AssetDestructionCertificatesPage = () => {
                 {/* Header */}
                 <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                     <div>
-                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>
-                            {t('assetDestructionCertificates.title')}
-                        </h1>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Shield size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetDestructionCertificates.title')}</h1>
                         <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
                             {t('assetDestructionCertificates.subtitle')}
                         </p>

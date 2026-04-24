@@ -8,6 +8,7 @@ import {
     warehouseService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { FileText } from 'lucide-react';
 
 const getSignatureFields = (t) => [
     { key: 'is_signed_by_warehouse_storage_magaziner', label: t('adminCertificates.magaziner'), short: 'M' },
@@ -254,7 +255,7 @@ const AdministrativeCertificatesPage = () => {
             <div className="card administrative-certificates-hero">
                 <div className="administrative-certificates-header">
                     <div>
-                        <h1 className="page-title">{t('adminCertificates.title')}</h1>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><FileText size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('adminCertificates.title')}</h1>
                         <p className="page-subtitle">{t('adminCertificates.subtitle')}</p>
                     </div>
                     <button

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { locationInventoryService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { MapPin } from 'lucide-react';
 import i18n from '../i18n';
 
 const getLocalizedLocationName = (item, currentLang) => {
@@ -64,7 +65,7 @@ const LocationInventoryPage = () => {
             ...commonOptions,
             { value: 'Included with Asset', label: t('locationInventory.includedWithAsset') },
         ];
-    }, [itemTypeFilter]);
+    }, [itemTypeFilter, t]);
 
     const statusLabelMap = {
         'in_stock': t('locationInventory.inStock'),
@@ -187,7 +188,7 @@ const LocationInventoryPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">📍 {t('locationInventory.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><MapPin size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('locationInventory.title')}</h1>
                 <p className="page-subtitle">{t('locationInventory.subtitle')}</p>
             </div>
 

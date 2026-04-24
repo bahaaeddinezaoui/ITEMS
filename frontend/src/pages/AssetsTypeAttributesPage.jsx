@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { SlidersHorizontal } from 'lucide-react';
 import { assetAttributeDefinitionService, assetTypeAttributeService, assetTypeService } from '../services/api';
 
 const AssetsTypeAttributesPage = () => {
@@ -107,7 +108,7 @@ const AssetsTypeAttributesPage = () => {
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">{t('assetsTypeAttributes.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><SlidersHorizontal size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetsTypeAttributes.title')}</h1>
                     <p className="page-subtitle">{assetType ? assetType.asset_type_label : t('common.type')} • {t('assetsTypeAttributes.manageAttributes')}</p>
                 </div>
                 <button

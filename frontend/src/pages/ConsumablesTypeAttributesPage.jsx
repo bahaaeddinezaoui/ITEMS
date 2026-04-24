@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { SlidersHorizontal } from 'lucide-react';
 import { consumableAttributeDefinitionService, consumableTypeAttributeService, consumableTypeService } from '../services/api';
 
 const ConsumablesTypeAttributesPage = () => {
@@ -107,7 +108,7 @@ const ConsumablesTypeAttributesPage = () => {
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">{t('consumablesTypeAttributes.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><SlidersHorizontal size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumablesTypeAttributes.title')}</h1>
                     <p className="page-subtitle">{consumableType ? consumableType.consumable_type_label : t('common.type')} • {t('consumablesTypeAttributes.manageAttributes')}</p>
                 </div>
                 <button

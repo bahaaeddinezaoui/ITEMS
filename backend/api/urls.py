@@ -77,6 +77,16 @@ urlpatterns = [
     path('auth/logout/', LogoutView.as_view(), name='logout'),
     path('my-items/', MyItemsView.as_view(), name='my-items'),
     path('dashboard/kpis/', DashboardKpiView.as_view(), name='dashboard-kpis'),
+    path(
+        'maintenance-steps/<int:pk>/request-stock-item/',
+        MaintenanceStepViewSet.as_view({'post': 'request_stock_item'}),
+        name='maintenance-step-request-stock-item',
+    ),
+    path(
+        'maintenance-steps/<int:pk>/request-consumable/',
+        MaintenanceStepViewSet.as_view({'post': 'request_consumable'}),
+        name='maintenance-step-request-consumable',
+    ),
     path('asset-maintenance-timeline/', AssetMaintenanceTimelineView.as_view(), name='asset-maintenance-timeline'),
     path('asset-maintenance-timeline/<int:asset_id>/', AssetMaintenanceTimelineView.as_view(), name='asset-maintenance-timeline-detail'),
     path('auth/change-password/', ChangePasswordView.as_view(), name='change-password'),

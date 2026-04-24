@@ -3,7 +3,7 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { backorderReportService, purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, RefreshCw, Package, Droplets, Clock, FileText, CheckCircle2, Truck } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Package, Droplets, Clock, FileText, CheckCircle2, Truck, BarChart3 } from 'lucide-react';
 
 const ModelCard = ({ item, type }) => {
     const ordered = Number(item.quantity_ordered ?? 0);
@@ -230,7 +230,7 @@ const PurchaseOrderBackorderReportsPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">{t('backorderReports.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><BarChart3 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('backorderReports.title')}</h1>
                     <p className="page-subtitle">{t('backorderReports.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>

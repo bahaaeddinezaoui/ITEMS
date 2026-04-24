@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const DeliveryNoteConsultPage = () => {
@@ -23,7 +24,6 @@ const DeliveryNoteConsultPage = () => {
                 window.URL.revokeObjectURL(pdfUrl);
             }
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -67,7 +67,7 @@ const DeliveryNoteConsultPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
                 <div>
-                    <h1 className="page-title">{t('deliveryNote.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><FileText size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('deliveryNote.title')}</h1>
                     <p className="page-subtitle">{t('deliveryNote.purchaseOrder')} #{orderId}{info?.delivery_note_code ? ` • ${t('deliveryNote.code')}: ${info.delivery_note_code}` : ''}</p>
                 </div>
                 <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>

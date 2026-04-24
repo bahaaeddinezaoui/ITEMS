@@ -181,22 +181,11 @@ const ConsumableInstanceCreatePage = () => {
                         <ArrowLeft size={16} />
                         {t('common.back')}
                     </button>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                        <div style={{
-                            width: 48, height: 48, borderRadius: 'var(--radius-lg)',
-                            background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', display: 'flex', alignItems: 'center',
-                            justifyContent: 'center', boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)', flexShrink: 0,
-                        }}>
-                            <Wrench size={24} style={{ color: 'white' }} />
-                        </div>
-                        <div>
-                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
-                                {t('consumableInstanceCreate.title')}
-                            </h1>
-                            <p className="page-subtitle" style={{ fontSize: 'var(--font-size-base)' }}>
-                                {t('consumableInstanceCreate.subtitle')}
-                            </p>
-                        </div>
+                    <div>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Wrench size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumableInstanceCreate.title')}</h1>
+                        <p className="page-subtitle" style={{ fontSize: 'var(--font-size-base)' }}>
+                            {t('consumableInstanceCreate.subtitle')}
+                        </p>
                     </div>
                 </div>
             </div>

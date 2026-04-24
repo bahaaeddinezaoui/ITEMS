@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { problemReportService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { FileText } from 'lucide-react';
 
 const MySubmittedReportsPage = () => {
     const { t } = useTranslation();
@@ -55,7 +56,7 @@ const MySubmittedReportsPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">{t('mySubmittedReports.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><FileText size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('mySubmittedReports.title')}</h1>
                 <p className="page-subtitle">{t('mySubmittedReports.subtitle')}</p>
             </div>
 

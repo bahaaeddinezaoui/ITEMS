@@ -967,25 +967,8 @@ const LocationsPage = () => {
             {/* Page Header */}
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-                        <div style={{
-                            width: '44px',
-                            height: '44px',
-                            background: 'var(--gradient-primary)',
-                            borderRadius: 'var(--radius-lg)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'white',
-                            boxShadow: 'var(--shadow-glow)'
-                        }}>
-                            <MapPin size={22} />
-                        </div>
-                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 0 }}>
-                            {t('nav.locations')}
-                        </h1>
-                    </div>
-                    <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)', marginLeft: '57px' }}>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><MapPin size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('nav.locations')}</h1>
+                    <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
                         {t('locations.subtitle')}
                     </p>
                 </div>

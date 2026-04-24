@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Wrench, Hash } from 'lucide-react';
+import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Wrench, Hash, Droplets } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
 import {
     authService,
@@ -1018,9 +1018,7 @@ const ConsumablesPage = () => {
                             <ArrowLeft size={18} />
                         </button>
                         <div>
-                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
-                                {t('consumables.title')}
-                            </h1>
+                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Droplets size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumables.title')}</h1>
                             <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <Tag size={14} />
                                 {selectedConsumableType?.consumable_type_label || `Type #${typeIdParam || ''}`} • {formatModelLabel(selectedConsumableModel) || selectedConsumableModel?.model_name || `Model #${modelIdParam || ''}`}
@@ -1152,7 +1150,7 @@ const ConsumablesPage = () => {
                                 <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
                                 <input type="text" placeholder={t('consumables.searchPlaceholder', 'Search consumables...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
                             </div>
-                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', minWidth: '130px' }}>
+                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '44px', minWidth: '130px' }}>
                                 <option value="">{t('consumables.allStatuses', 'All Statuses')}</option>
                                 <option value="in_stock">{t('consumables.statusInStock', 'In Stock')}</option>
                                 <option value="assigned">{t('consumables.statusAssigned', 'Assigned')}</option>
@@ -1656,7 +1654,7 @@ const ConsumablesPage = () => {
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">{t('consumables.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Droplets size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumables.title')}</h1>
                 <p className="page-subtitle">{t('consumables.subtitle')}</p>
             </div>
 

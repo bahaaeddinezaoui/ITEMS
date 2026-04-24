@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { stockItemModelService, consumableModelService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { Wrench } from 'lucide-react';
 
 const DRAFT_ACCESSORIES_KEY = 'attribution_order_create_draft_accessories';
 
@@ -68,7 +69,6 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
             }
         };
         fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rowId]);
 
     const stockModelLookup = useMemo(() => {
@@ -156,7 +156,7 @@ const AttributionOrderAssetAccessoriesDraftPage = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">{t('accessoriesDraft.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Wrench size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('accessoriesDraft.title')}</h1>
                     <p className="page-subtitle">{t('accessoriesDraft.draftAssetRow')} #{rowId}</p>
                 </div>
                 <button

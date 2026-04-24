@@ -10,6 +10,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { ArrowRightLeft } from 'lucide-react';
 
 const AdministrativeCertificateMoveItemsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -94,7 +95,6 @@ const AdministrativeCertificateMoveItemsPage = () => {
     useEffect(() => {
         if (!isAssetResponsible) return;
         loadAll();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAssetResponsible, certificateId]);
 
     const allLocationOptions = useMemo(() => {
@@ -251,7 +251,7 @@ const AdministrativeCertificateMoveItemsPage = () => {
         <div className="page-container">
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">{t('certMoveItems.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><ArrowRightLeft size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('certMoveItems.title')}</h1>
                     <p className="page-subtitle">
                         {t('certMoveItems.certificate')} #{certificate.administrative_certificate_id} | {t('purchaseOrderDetails.order')} #{orderId || '-'}
                     </p>

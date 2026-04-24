@@ -552,7 +552,7 @@ const AssetIncidentReportsPage = () => {
         <div style={{ display: 'grid', gap: 'var(--space-6)' }}>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
                 <div style={{ minWidth: 240 }}>
-                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>{t('assetIncidentReports.title')}</h1>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><AlertTriangle size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetIncidentReports.title')}</h1>
                     <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-base)', margin: 0 }}>{t('assetIncidentReports.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>

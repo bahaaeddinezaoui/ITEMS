@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { assetService, assetTypeService, assetBrandService, assetModelService, maintenanceService, personService, locationService, maintenanceTypicalStepService, externalMaintenanceTypicalStepService } from '../services/api';
@@ -68,6 +68,9 @@ const MaintenancesPage = () => {
     const [sortKey, setSortKey] = useState('maintenance_id');
     const [sortDirection, setSortDirection] = useState('desc');
 
+    const [statusEditingId, setStatusEditingId] = useState(null);
+    const [statusSaving, setStatusSaving] = useState(false);
+
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterTechnician, setFilterTechnician] = useState('');
@@ -107,6 +110,8 @@ const MaintenancesPage = () => {
     const [externalTypicalStepTranslations, setExternalTypicalStepTranslations] = useState({});
     const [typicalStepFieldChoices, setTypicalStepFieldChoices] = useState({ maintenance_type: [], operation_type: [], maintenance_domain: [] });
 
+    const lastReloadTsRef = useRef(0);
+
 
     const isChief = useMemo(() => {
         if (isSuperuser) return true;
@@ -130,12 +135,38 @@ const MaintenancesPage = () => {
         }
     };
 
+    const reloadMaintenancesIfStale = async () => {
+        const now = Date.now();
+        if (now - lastReloadTsRef.current < 1500) return;
+        lastReloadTsRef.current = now;
+        await loadMaintenances();
+    };
+
     useEffect(() => {
         loadMaintenances();
         if (isChief) {
             loadTechnicians();
             loadAssets();
         }
+    }, [isChief]);
+
+    useEffect(() => {
+        const onFocus = () => {
+            reloadMaintenancesIfStale();
+        };
+        const onVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                reloadMaintenancesIfStale();
+            }
+        };
+
+        window.addEventListener('focus', onFocus);
+        document.addEventListener('visibilitychange', onVisibilityChange);
+
+        return () => {
+            window.removeEventListener('focus', onFocus);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+        };
     }, [isChief]);
 
     const loadTypicalSteps = async () => {
@@ -552,8 +583,11 @@ const MaintenancesPage = () => {
 
         try {
             setLoading(true);
-            await maintenanceService.delete(maintenanceId);
-            loadMaintenances();
+            const updated = await maintenanceService.patch(maintenanceId, { maintenance_status: 'cancelled' });
+            setMaintenances((prev) =>
+                prev.map((m) => (m.maintenance_id === maintenanceId ? { ...m, ...updated } : m))
+            );
+            await reloadMaintenancesIfStale();
         } catch (err) {
             const msg = err?.response?.data?.error || err?.message || t('maintenances.cancelFailed');
             setError(typeof msg === 'string' ? msg : t('maintenances.cancelFailed'));
@@ -582,7 +616,6 @@ const MaintenancesPage = () => {
             'started': 'maintenances.statusStarted',
             'in_progress': 'maintenances.statusInProgress',
             'in progress': 'maintenances.statusInProgress',
-            'done': 'maintenances.statusDone',
             'completed': 'maintenances.statusCompleted',
             'failed': 'maintenances.statusFailed',
             'cancelled': 'maintenances.statusCancelled',
@@ -596,7 +629,7 @@ const MaintenancesPage = () => {
         if (s.includes('pending') || s.includes('wait')) return t('maintenances.statusPending');
         if (s.includes('fail')) return t('maintenances.statusFailed');
         if (s.includes('cancel')) return t('maintenances.statusCancelled');
-        if (s.includes('done') || s.includes('complet')) return t('maintenances.statusDone');
+        if (s.includes('complet')) return t('maintenances.statusCompleted');
         return status;
     };
 
@@ -654,6 +687,15 @@ const MaintenancesPage = () => {
         );
     };
 
+    const maintenanceStatusChoices = useMemo(() => [
+        'pending',
+        'started',
+        'in_progress',
+        'completed',
+        'failed',
+        'cancelled',
+    ], []);
+
     const statusOptions = useMemo(() => {
         const set = new Set();
         (Array.isArray(maintenances) ? maintenances : []).forEach((m) => {
@@ -661,6 +703,31 @@ const MaintenancesPage = () => {
         });
         return [...set].sort((a, b) => a.localeCompare(b));
     }, [maintenances]);
+
+    const canUpdateMaintenanceStatus = (maintenance) => {
+        if (isChief || isSuperuser) return true;
+        const userPersonId = user?.person?.person_id;
+        if (!userPersonId) return false;
+        return Number(userPersonId) === Number(maintenance?.performed_by_person);
+    };
+
+    const handleStatusChange = async (maintenanceId, newStatus) => {
+        setStatusEditingId(null);
+        if (!newStatus) return;
+        setStatusSaving(true);
+        try {
+            const updated = await maintenanceService.patch(maintenanceId, { maintenance_status: newStatus });
+            setMaintenances((prev) =>
+                prev.map((m) => (m.maintenance_id === maintenanceId ? { ...m, ...updated } : m))
+            );
+            await reloadMaintenancesIfStale();
+        } catch (err) {
+            const msg = err?.response?.data?.error || err?.response?.data?.maintenance_status?.[0] || t('common.saveFailed', 'Failed to save');
+            setError(typeof msg === 'string' ? msg : t('common.saveFailed', 'Failed to save'));
+        } finally {
+            setStatusSaving(false);
+        }
+    };
 
     const technicianOptions = useMemo(() => {
         const set = new Set();
@@ -765,7 +832,7 @@ const MaintenancesPage = () => {
     return (
         <>
             <div className="page-header">
-                <h1 className="page-title">{t('nav.maintenances')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Wrench size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('nav.maintenances')}</h1>
                 <p className="page-subtitle">{t('maintenances.subtitle')}</p>
             </div>
 
@@ -1040,17 +1107,54 @@ const MaintenancesPage = () => {
                                                 <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-text-primary)' }}>
                                                     {getAssetLabel(maintenance)}
                                                 </span>
-                                                {maintenance.maintenance_status && (
-                                                    <span style={{
-                                                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
-                                                        padding: '0.15rem 0.6rem', borderRadius: '9999px',
-                                                        fontSize: 'var(--font-size-xs)', fontWeight: 600,
-                                                        color: statusColor, background: `${statusColor}18`,
-                                                    }}>
-                                                        {isActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, animation: 'pulse 2s infinite' }} />}
-                                                        {translateMaintenanceStatus(maintenance.maintenance_status)}
-                                                    </span>
-                                                )}
+                                                {statusEditingId === maintenance.maintenance_id ? (
+                                                        <select
+                                                            autoFocus
+                                                            value={maintenance.maintenance_status || ''}
+                                                            onChange={(e) => handleStatusChange(maintenance.maintenance_id, e.target.value)}
+                                                            onBlur={() => setStatusEditingId(null)}
+                                                            disabled={statusSaving}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            style={{
+                                                                fontSize: 'var(--font-size-xs)',
+                                                                fontWeight: 600,
+                                                                padding: '0.15rem 0.4rem',
+                                                                borderRadius: 'var(--radius-md)',
+                                                                border: '1px solid var(--color-border)',
+                                                                background: 'var(--color-bg-primary)',
+                                                                color: 'var(--color-text-primary)',
+                                                                cursor: 'pointer',
+                                                                outline: 'none',
+                                                                minWidth: 0,
+                                                            }}
+                                                        >
+                                                            <option value="" disabled>{t('maintenances.selectStatus')}</option>
+                                                            {maintenanceStatusChoices.map((s) => (
+                                                                <option key={s} value={s}>{translateMaintenanceStatus(s)}</option>
+                                                            ))}
+                                                        </select>
+                                                    ) : (
+                                                        <span
+                                                            style={{
+                                                                display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                                                                padding: '0.15rem 0.6rem', borderRadius: '9999px',
+                                                                fontSize: 'var(--font-size-xs)', fontWeight: 600,
+                                                                color: statusColor, background: `${statusColor}18`,
+                                                                cursor: canUpdateMaintenanceStatus(maintenance) && !maintenance.end_datetime ? 'pointer' : 'default',
+                                                            }}
+                                                            onClick={(e) => {
+                                                                if (canUpdateMaintenanceStatus(maintenance) && !maintenance.end_datetime && !statusSaving) {
+                                                                    e.stopPropagation();
+                                                                    setStatusEditingId(maintenance.maintenance_id);
+                                                                }
+                                                            }}
+                                                            title={canUpdateMaintenanceStatus(maintenance) && !maintenance.end_datetime ? t('maintenances.clickToChangeStatus') : undefined}
+                                                        >
+                                                            {isActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusColor, animation: 'pulse 2s infinite' }} />}
+                                                            {maintenance.maintenance_status ? translateMaintenanceStatus(maintenance.maintenance_status) : '-'}
+                                                        </span>
+                                                    )
+                                                }
                                                 {maintenance.description && (
                                                     <span style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 300 }}>
                                                         — {maintenance.description}
@@ -1256,7 +1360,9 @@ const MaintenancesPage = () => {
                         className="modal"
                         onClick={(e) => e.stopPropagation()}
                         style={{
-                            maxWidth: 800,
+                            maxWidth: 1100,
+                            width: '95vw',
+                            minHeight: '85vh',
                             maxHeight: '95vh',
                             overflow: 'hidden',
                             display: 'flex',
@@ -1328,238 +1434,243 @@ const MaintenancesPage = () => {
                         </div>
 
                         <form onSubmit={(e) => { e.preventDefault(); if (createStep === CREATE_STEPS.length - 1) handleCreateSubmit(e); else handleCreateNext(); }} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                 {error && (
                                     <div style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', color: 'var(--color-error)', fontSize: 'var(--font-size-sm)' }}>
                                         {error}
                                     </div>
                                 )}
                                 {createStep === 0 && (
-                                <div className="wizard-step-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: 700, margin: '0 auto', width: '100%' }}>
-                                    {/* Asset Filters */}
-                                    <div style={{ padding: '0.75rem', backgroundColor: 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(var(--color-primary-rgb, 59, 130, 246), 0.12)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem', fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-primary)' }}>
-                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-                                            </svg>
-                                            {t('maintenances.filterAssets')}
-                                        </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterAssetType')}</label>
-                                                <select
-                                                    className="form-input"
-                                                    style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
-                                                    value={filterAssetType}
-                                                    onChange={(e) => {
-                                                        setFilterAssetType(e.target.value);
-                                                        setFilterAssetBrand('');
-                                                        setFilterAssetModel('');
-                                                        setSelectedAsset('');
-                                                        setAssetCurrentLocation(null);
-                                                    }}
-                                                >
-                                                    <option value="">{t('maintenances.allTypes')}</option>
-                                                    {assetTypes.map((at) => (
-                                                        <option key={at.asset_type_id} value={at.asset_type_id}>
-                                                            {i18n.language === 'ar' ? (at.asset_type_label_ar || at.asset_type_label) : (at.asset_type_label_en || at.asset_type_label)}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                <div className="wizard-step-content" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', margin: '0 auto', width: '100%', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
+                                    {/* Left Column: Asset Filters */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                                        <div style={{ padding: '1rem', backgroundColor: 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(var(--color-primary-rgb, 59, 130, 246), 0.12)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem', fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-primary)' }}>
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                                                </svg>
+                                                {t('maintenances.filterAssets')}
                                             </div>
-                                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterAssetBrand')}</label>
-                                                <select
-                                                    className="form-input"
-                                                    style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
-                                                    value={filterAssetBrand}
-                                                    onChange={(e) => {
-                                                        setFilterAssetBrand(e.target.value);
-                                                        setFilterAssetModel('');
-                                                        setSelectedAsset('');
-                                                        setAssetCurrentLocation(null);
-                                                    }}
-                                                >
-                                                    <option value="">{t('maintenances.allBrands')}</option>
-                                                    {filteredAssetBrands.map((b) => (
-                                                        <option key={b.asset_brand_id} value={b.asset_brand_id}>
-                                                            {i18n.language === 'ar' ? (b.brand_name_ar || b.brand_name) : (b.brand_name_en || b.brand_name)}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', flex: 1, minHeight: 0, gridAutoRows: '1fr', alignContent: 'stretch' }}>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterAssetType')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterAssetType}
+                                                        onChange={(e) => {
+                                                            setFilterAssetType(e.target.value);
+                                                            setFilterAssetBrand('');
+                                                            setFilterAssetModel('');
+                                                            setSelectedAsset('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allTypes')}</option>
+                                                        {assetTypes.map((at) => (
+                                                            <option key={at.asset_type_id} value={at.asset_type_id}>
+                                                                {i18n.language === 'ar' ? (at.asset_type_label_ar || at.asset_type_label) : (at.asset_type_label_en || at.asset_type_label)}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterAssetBrand')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterAssetBrand}
+                                                        onChange={(e) => {
+                                                            setFilterAssetBrand(e.target.value);
+                                                            setFilterAssetModel('');
+                                                            setSelectedAsset('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allBrands')}</option>
+                                                        {filteredAssetBrands.map((b) => (
+                                                            <option key={b.asset_brand_id} value={b.asset_brand_id}>
+                                                                {i18n.language === 'ar' ? (b.brand_name_ar || b.brand_name) : (b.brand_name_en || b.brand_name)}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterAssetModel')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterAssetModel}
+                                                        onChange={(e) => {
+                                                            setFilterAssetModel(e.target.value);
+                                                            setSelectedAsset('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allModels')}</option>
+                                                        {filteredAssetModels.map((m) => (
+                                                            <option key={m.asset_model_id} value={m.asset_model_id}>
+                                                                {m.model_name || `Model #${m.asset_model_id}`}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                {assetStatuses.length > 0 && (
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterAssetStatus')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterAssetStatus}
+                                                        onChange={(e) => {
+                                                            setFilterAssetStatus(e.target.value);
+                                                            setSelectedAsset('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allStatuses')}</option>
+                                                        {assetStatuses.map((s) => (
+                                                            <option key={s} value={s}>{translateAssetStatus(s)}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                )}
                                             </div>
-                                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterAssetModel')}</label>
-                                                <select
-                                                    className="form-input"
-                                                    style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
-                                                    value={filterAssetModel}
-                                                    onChange={(e) => {
-                                                        setFilterAssetModel(e.target.value);
-                                                        setSelectedAsset('');
-                                                        setAssetCurrentLocation(null);
-                                                    }}
-                                                >
-                                                    <option value="">{t('maintenances.allModels')}</option>
-                                                    {filteredAssetModels.map((m) => (
-                                                        <option key={m.asset_model_id} value={m.asset_model_id}>
-                                                            {m.model_name || `Model #${m.asset_model_id}`}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            {assetStatuses.length > 0 && (
-                                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterAssetStatus')}</label>
-                                                <select
-                                                    className="form-input"
-                                                    style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
-                                                    value={filterAssetStatus}
-                                                    onChange={(e) => {
-                                                        setFilterAssetStatus(e.target.value);
-                                                        setSelectedAsset('');
-                                                        setAssetCurrentLocation(null);
-                                                    }}
-                                                >
-                                                    <option value="">{t('maintenances.allStatuses')}</option>
-                                                    {assetStatuses.map((s) => (
-                                                        <option key={s} value={s}>{translateAssetStatus(s)}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            )}
                                         </div>
                                     </div>
 
-                                    <div className="form-group">
-                                        <label htmlFor="asset" className="form-label">{t('assets.asset')}</label>
-                                        <SearchableSelect
-                                            value={selectedAsset}
-                                            onChange={async (e) => {
-                                                const value = e.target.value;
-                                                setSelectedAsset(value);
-                                                setAssetCurrentLocation(null);
-                                                setSelectedMaintenanceLocation('');
-                                                if (!value) return;
-                                                try {
-                                                    setLoadingAssetLocation(true);
-                                                    const data = await assetService.getCurrentLocation(value);
-                                                    const location = data?.location || null;
-                                                    setAssetCurrentLocation(location);
-
-                                                    if (destinationMode === 'maintenance_room') {
-                                                        await loadMaintenanceLocations();
-                                                        setSelectedMaintenanceLocation(prev => {
-                                                            if (location && !isMaintenanceLocation(location) && Array.isArray(maintenanceLocations) && maintenanceLocations.length === 1) {
-                                                                return String(maintenanceLocations[0].location_id);
-                                                            }
-                                                            return prev;
-                                                        });
-                                                    } else if (destinationMode === 'other') {
-                                                        await loadAllLocations();
-                                                    }
-                                                } catch (err) {
-                                                    console.error(err);
+                                    {/* Right Column: Asset Selection + Current Location */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                                        <div className="form-group">
+                                            <label htmlFor="asset" className="form-label">{t('assets.asset')}</label>
+                                            <SearchableSelect
+                                                value={selectedAsset}
+                                                onChange={async (e) => {
+                                                    const value = e.target.value;
+                                                    setSelectedAsset(value);
                                                     setAssetCurrentLocation(null);
-                                                } finally {
-                                                    setLoadingAssetLocation(false);
-                                                }
-                                            }}
-                                            options={filteredAssets.map((a) => {
-                                                const modelInfo = assetModelLookup[a.asset_model];
-                                                const model = assetModels.find(m => m.asset_model_id === a.asset_model);
-                                                const brand = modelInfo ? assetBrands.find(b => b.asset_brand_id === modelInfo.asset_brand_id) : null;
-                                                const lang = i18n.language;
-                                                const brandName = brand ? (lang === 'ar' ? (brand.brand_name_ar || brand.brand_name) : (brand.brand_name_en || brand.brand_name)) : null;
-                                                const modelName = model?.model_name;
-                                                const primaryLabel = a.asset_name || [brandName, modelName].filter(Boolean).join(' ') || `#${a.asset_id}`;
-                                                return {
-                                                    value: a.asset_id,
-                                                    label: `${primaryLabel} (#${a.asset_id})`,
-                                                    searchText: [
-                                                        a.asset_name,
-                                                        brandName,
-                                                        modelName,
-                                                        a.asset_serial_number,
-                                                        a.asset_inventory_number,
-                                                        a.asset_service_tag,
-                                                        `#${a.asset_id}`,
-                                                    ].filter(Boolean).join(' '),
-                                                    asset: a,
-                                                };
-                                            })}
-                                            renderOption={(option, isSelected) => {
-                                                const a = option.asset;
-                                                const modelInfo = assetModelLookup[a.asset_model];
-                                                const model = assetModels.find(m => m.asset_model_id === a.asset_model);
-                                                const brand = modelInfo ? assetBrands.find(b => b.asset_brand_id === modelInfo.asset_brand_id) : null;
-                                                const lang = i18n.language;
-                                                const brandName = brand ? (lang === 'ar' ? (brand.brand_name_ar || brand.brand_name) : (brand.brand_name_en || brand.brand_name)) : null;
-                                                const modelName = model?.model_name;
-                                                const primaryLabel = a.asset_name || [brandName, modelName].filter(Boolean).join(' ') || `${t('assets.asset')} #${a.asset_id}`;
-                                                return (
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                            <span style={{ fontWeight: isSelected ? 600 : 500, fontSize: 'var(--font-size-sm)' }}>
-                                                                {primaryLabel}
-                                                            </span>
-                                                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 400 }}>
-                                                                #{a.asset_id}
-                                                            </span>
-                                                            {a.asset_status && (
-                                                                <span style={{
-                                                                    fontSize: 'var(--font-size-xs)',
-                                                                    padding: '1px 6px',
-                                                                    borderRadius: 'var(--radius-sm)',
-                                                                    backgroundColor: 'var(--color-bg-secondary)',
-                                                                    color: 'var(--color-text-secondary)',
-                                                                    marginInlineStart: 'auto',
-                                                                }}>
-                                                                    {translateAssetStatus(a.asset_status)}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
-                                                            {a.asset_name && brandName && <span>{brandName}</span>}
-                                                            {a.asset_name && modelName && <span>· {modelName}</span>}
-                                                            {a.asset_serial_number && <span>{a.asset_name ? '· ' : ''}{t('assets.serialNumber')}: {a.asset_serial_number}</span>}
-                                                            {a.asset_inventory_number && <span>· {t('assets.inventoryNumber')}: {a.asset_inventory_number}</span>}
-                                                            {a.asset_service_tag && <span>· {t('assets.serviceTag')}: {a.asset_service_tag}</span>}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            }}
-                                            searchPlaceholder={t('maintenances.searchAssetPlaceholder')}
-                                            placeholder={t('maintenances.selectAsset')}
-                                            required
-                                        />
-                                    </div>
+                                                    setSelectedMaintenanceLocation('');
+                                                    if (!value) return;
+                                                    try {
+                                                        setLoadingAssetLocation(true);
+                                                        const data = await assetService.getCurrentLocation(value);
+                                                        const location = data?.location || null;
+                                                        setAssetCurrentLocation(location);
 
-                                    <div className="form-group">
-                                        <label className="form-label">{t('maintenances.currentLocation')}</label>
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem',
-                                                padding: '0.5rem 0.75rem',
-                                                backgroundColor: 'var(--color-bg-secondary)',
-                                                border: '1px solid var(--color-border)',
-                                                borderRadius: 'var(--radius-md)',
-                                                color: 'var(--color-text-primary)',
-                                                fontSize: 'var(--font-size-sm)',
-                                                minHeight: 40,
-                                            }}
-                                        >
-                                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                                <circle cx="12" cy="10" r="3" />
-                                            </svg>
-                                            {loadingAssetLocation
-                                                ? <span style={{ color: 'var(--color-text-secondary)' }}>{t('maintenances.loadingLocation')}</span>
-                                                : assetCurrentLocation
-                                                    ? <span>{assetCurrentLocation.location_name}{(assetCurrentLocation.location_type_label_ar || assetCurrentLocation.location_type_label) ? ` (${getLocalizedField(assetCurrentLocation, 'location_type_label')})` : ''}</span>
-                                                    : <span style={{ color: 'var(--color-text-secondary)' }}>—</span>}
+                                                        if (destinationMode === 'maintenance_room') {
+                                                            await loadMaintenanceLocations();
+                                                            setSelectedMaintenanceLocation(prev => {
+                                                                if (location && !isMaintenanceLocation(location) && Array.isArray(maintenanceLocations) && maintenanceLocations.length === 1) {
+                                                                    return String(maintenanceLocations[0].location_id);
+                                                                }
+                                                                return prev;
+                                                            });
+                                                        } else if (destinationMode === 'other') {
+                                                            await loadAllLocations();
+                                                        }
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                        setAssetCurrentLocation(null);
+                                                    } finally {
+                                                        setLoadingAssetLocation(false);
+                                                    }
+                                                }}
+                                                options={filteredAssets.map((a) => {
+                                                    const modelInfo = assetModelLookup[a.asset_model];
+                                                    const model = assetModels.find(m => m.asset_model_id === a.asset_model);
+                                                    const brand = modelInfo ? assetBrands.find(b => b.asset_brand_id === modelInfo.asset_brand_id) : null;
+                                                    const lang = i18n.language;
+                                                    const brandName = brand ? (lang === 'ar' ? (brand.brand_name_ar || brand.brand_name) : (brand.brand_name_en || brand.brand_name)) : null;
+                                                    const modelName = model?.model_name;
+                                                    const primaryLabel = a.asset_name || [brandName, modelName].filter(Boolean).join(' ') || `#${a.asset_id}`;
+                                                    return {
+                                                        value: a.asset_id,
+                                                        label: `${primaryLabel} (#${a.asset_id})`,
+                                                        searchText: [
+                                                            a.asset_name,
+                                                            brandName,
+                                                            modelName,
+                                                            a.asset_serial_number,
+                                                            a.asset_inventory_number,
+                                                            a.asset_service_tag,
+                                                            `#${a.asset_id}`,
+                                                        ].filter(Boolean).join(' '),
+                                                        asset: a,
+                                                    };
+                                                })}
+                                                renderOption={(option, isSelected) => {
+                                                    const a = option.asset;
+                                                    const modelInfo = assetModelLookup[a.asset_model];
+                                                    const model = assetModels.find(m => m.asset_model_id === a.asset_model);
+                                                    const brand = modelInfo ? assetBrands.find(b => b.asset_brand_id === modelInfo.asset_brand_id) : null;
+                                                    const lang = i18n.language;
+                                                    const brandName = brand ? (lang === 'ar' ? (brand.brand_name_ar || brand.brand_name) : (brand.brand_name_en || brand.brand_name)) : null;
+                                                    const modelName = model?.model_name;
+                                                    const primaryLabel = a.asset_name || [brandName, modelName].filter(Boolean).join(' ') || `${t('assets.asset')} #${a.asset_id}`;
+                                                    return (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                <span style={{ fontWeight: isSelected ? 600 : 500, fontSize: 'var(--font-size-sm)' }}>
+                                                                    {primaryLabel}
+                                                                </span>
+                                                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 400 }}>
+                                                                    #{a.asset_id}
+                                                                </span>
+                                                                {a.asset_status && (
+                                                                    <span style={{
+                                                                        fontSize: 'var(--font-size-xs)',
+                                                                        padding: '1px 6px',
+                                                                        borderRadius: 'var(--radius-sm)',
+                                                                        backgroundColor: 'var(--color-bg-secondary)',
+                                                                        color: 'var(--color-text-secondary)',
+                                                                        marginInlineStart: 'auto',
+                                                                    }}>
+                                                                        {translateAssetStatus(a.asset_status)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                {a.asset_name && brandName && <span>{brandName}</span>}
+                                                                {a.asset_name && modelName && <span>· {modelName}</span>}
+                                                                {a.asset_serial_number && <span>{a.asset_name ? '· ' : ''}{t('assets.serialNumber')}: {a.asset_serial_number}</span>}
+                                                                {a.asset_inventory_number && <span>· {t('assets.inventoryNumber')}: {a.asset_inventory_number}</span>}
+                                                                {a.asset_service_tag && <span>· {t('assets.serviceTag')}: {a.asset_service_tag}</span>}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }}
+                                                searchPlaceholder={t('maintenances.searchAssetPlaceholder')}
+                                                placeholder={t('maintenances.selectAsset')}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">{t('maintenances.currentLocation')}</label>
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.5rem',
+                                                    padding: '0.5rem 0.75rem',
+                                                    backgroundColor: 'var(--color-bg-secondary)',
+                                                    border: '1px solid var(--color-border)',
+                                                    borderRadius: 'var(--radius-md)',
+                                                    color: 'var(--color-text-primary)',
+                                                    fontSize: 'var(--font-size-sm)',
+                                                    minHeight: 40,
+                                                }}
+                                            >
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                                    <circle cx="12" cy="10" r="3" />
+                                                </svg>
+                                                {loadingAssetLocation
+                                                    ? <span style={{ color: 'var(--color-text-secondary)' }}>{t('maintenances.loadingLocation')}</span>
+                                                    : assetCurrentLocation
+                                                        ? <span>{assetCurrentLocation.location_name}{(assetCurrentLocation.location_type_label_ar || assetCurrentLocation.location_type_label) ? ` (${getLocalizedField(assetCurrentLocation, 'location_type_label')})` : ''}</span>
+                                                        : <span style={{ color: 'var(--color-text-secondary)' }}>—</span>}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -162,9 +162,7 @@ const StockItemsAttributeDefinitionsPage = () => {
                         <ArrowLeft size={18} />
                     </button>
                     <div>
-                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)' }}>
-                            {t('stockItemAttributes.title')}
-                        </h1>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Settings2 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItemAttributes.title')}</h1>
                         <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
                             {t('stockItemAttributes.subtitle')}
                         </p>

@@ -385,7 +385,7 @@ const ConsumablesModelsPage = () => {
             <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
                 <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                     <div>
-                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)' }}>{t('consumableModels.title', 'Consumable Models')}</h1>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Layers size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumableModels.title', 'Consumable Models')}</h1>
                         <p className="page-subtitle">{t('consumableModels.selectTypeFirst', 'Select a type first')}</p>
                     </div>
                     <button className="btn btn-secondary" onClick={goBack} style={{ padding: 'var(--space-3) var(--space-4)' }}>
@@ -410,9 +410,7 @@ const ConsumablesModelsPage = () => {
                         <ArrowLeft size={18} />
                     </button>
                     <div>
-                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
-                            {t('consumableModels.title', 'Consumable Models')}
-                        </h1>
+                        <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Layers size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumableModels.models', 'Consumable Models')}</h1>
                         <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                             <Tag size={14} />
                             {consumableType?.consumable_type_label || `Type #${typeId}`}
@@ -512,12 +510,12 @@ const ConsumablesModelsPage = () => {
                             <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
                             <input type="text" placeholder={t('consumableModels.searchPlaceholder', 'Search models...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
                         </div>
-                        <select className="form-input" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={{ height: '40px', minWidth: '130px' }}>
+                        <select className="form-input" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={{ height: '44px', minWidth: '130px' }}>
                             <option value="">{t('consumableModels.allBrands', 'All Brands')}</option>
                             {consumableBrands.map(b => <option key={b.consumable_brand_id} value={b.consumable_brand_id}>{b.brand_name}</option>)}
                         </select>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', minWidth: '110px' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '44px', minWidth: '110px' }}>
                                 <option value="model_name">{t('consumableModels.sortByName', 'Name')}</option>
                                 <option value="model_code">{t('consumableModels.sortByCode', 'Code')}</option>
                                 <option value="brand_name">{t('consumableModels.sortByBrand', 'Brand')}</option>

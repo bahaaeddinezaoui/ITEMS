@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { authService, movementApprovalService, userSessionService, authenticationLogService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Smartphone, Globe, XCircle, Clock, Shield, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
+import { Monitor, Smartphone, Globe, XCircle, Clock, Shield, AlertCircle, CheckCircle2, Lock, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY = 'incidentReportCompositionStatusStrategy';
@@ -168,7 +168,7 @@ const OptionsPage = () => {
     return (
         <div className="page-container">
             <header className="page-header">
-                <h1 className="page-title">{t('options.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Settings size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('options.title')}</h1>
                 <p className="page-subtitle">{t('options.subtitle')}</p>
             </header>
 

@@ -893,9 +893,7 @@ const AssetsPage = () => {
                             <ArrowLeft size={18} />
                         </button>
                         <div>
-                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
-                                {t('nav.assets')}
-                            </h1>
+                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Box size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('nav.assets')}</h1>
                             <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <Tag size={14} />
                                 {selectedAssetType?.asset_type_label || `Type #${typeIdParam || ''}`} • {formatModelLabel(selectedAssetModel) || selectedAssetModel?.model_name || `Model #${modelIdParam || ''}`}
@@ -1006,7 +1004,7 @@ const AssetsPage = () => {
                                 <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
                                 <input type="text" placeholder={t('assets.searchPlaceholder', 'Search assets...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
                             </div>
-                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', minWidth: '130px' }}>
+                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '44px', minWidth: '130px' }}>
                                 <option value="">{t('assets.allStatuses', 'All Statuses')}</option>
                                 <option value="in_stock">{t('assets.inStock')}</option>
                                 <option value="assigned">{t('assets.assigned')}</option>
@@ -1179,8 +1177,8 @@ const AssetsPage = () => {
                                         </select>
                                     </div>
                                     <div className="form-actions">
-                                        <button type="submit" disabled={saving} className="btn btn-primary">{t('assets.assign')}</button>
-                                        <button type="button" onClick={() => setShowAssignForm(false)} className="btn btn-secondary">{t('common.cancel')}</button>
+                                        <button type="submit" disabled={saving} className="btn btn-primary">{saving ? t('assets.assigning') : t('assets.assign')}</button>
+                                        <button type="button" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }} className="btn btn-secondary">{t('common.cancel')}</button>
                                     </div>
                                 </form>
                             </div>
@@ -1410,7 +1408,7 @@ const AssetsPage = () => {
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">{t('nav.assets')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Box size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('nav.assets')}</h1>
                 <p className="page-subtitle">{t('assets.subtitle')}</p>
             </div>
 
@@ -2173,88 +2171,45 @@ const AssetsPage = () => {
             </div>
 
             {showAssignForm && assigningAsset && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        backgroundColor: 'white',
-                        padding: 'var(--space-6)',
-                        borderRadius: 'var(--radius-md)',
-                        width: '100%',
-                        maxWidth: '500px',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                    }}>
-                        <h2 style={{ marginBottom: 'var(--space-4)' }}>Assign Asset: {assigningAsset.asset_name}</h2>
-                        <form onSubmit={handleAssignSubmit}>
-                            <div style={{ marginBottom: 'var(--space-4)' }}>
-                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Assign to Person</label>
-                                <select
-                                    name="person"
-                                    value={assignFormData.person}
-                                    onChange={handleAssignInputChange}
-                                    required
-                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
-                                >
-                                    <option value="">Select a person...</option>
-                                    {persons.map(p => (
-                                        <option key={p.person_id} value={p.person_id}>
-                                            {p.first_name} {p.last_name} ({p.person_id})
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Start Date (Automatic)</label>
-                                    <input
-                                        type="datetime-local"
-                                        name="start_datetime"
-                                        value={assignFormData.start_datetime}
-                                        onChange={handleAssignInputChange}
-                                        required
-                                        readOnly
-                                        style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-secondary)', cursor: 'not-allowed' }}
-                                    />
+                <div className="modal-overlay" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }}>
+                    <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3 className="modal-title">{t('assets.assignAsset')}</h3>
+                            <button className="modal-close" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }}><X size={18} /></button>
+                        </div>
+                        <div className="modal-body">
+                            <form onSubmit={handleAssignSubmit}>
+                                <div className="form-group">
+                                    <label className="form-label">{t('assets.person')}</label>
+                                    <select name="person" value={assignFormData.person} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
+                                        <option value="">{t('assets.selectPerson')}</option>
+                                        {persons.map(p => <option key={p.person_id} value={p.person_id}>{p.person_name || `Person ${p.person_id}`}</option>)}
+                                    </select>
                                 </div>
-                            </div>
-                            <div style={{ marginBottom: 'var(--space-6)' }}>
-                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>Condition</label>
-                                <input
-                                    type="text"
-                                    name="condition_on_assignment"
-                                    value={assignFormData.condition_on_assignment}
-                                    onChange={handleAssignInputChange}
-                                    placeholder="e.g. Good, New"
-                                    required
-                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }}
-                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    {saving ? 'Assigning...' : 'Assign Asset'}
-                                </button>
-                            </div>
-                        </form>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label className="form-label">{t('assets.startDatetime')}</label>
+                                        <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">{t('assets.endDatetime')}</label>
+                                        <input type="datetime-local" name="end_datetime" value={assignFormData.end_datetime} onChange={handleAssignInputChange} className="form-input" style={{ height: '44px' }} />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">{t('assets.conditionOnAssignment')}</label>
+                                    <select name="condition_on_assignment" value={assignFormData.condition_on_assignment} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
+                                        <option value="New">{t('assets.conditionNew')}</option>
+                                        <option value="Good">{t('assets.conditionGood')}</option>
+                                        <option value="Needs Repair">{t('assets.conditionNeedsRepair')}</option>
+                                    </select>
+                                </div>
+                                <div className="form-actions">
+                                    <button type="submit" disabled={saving} className="btn btn-primary">{saving ? t('assets.assigning') : t('assets.assign')}</button>
+                                    <button type="button" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }} className="btn btn-secondary">{t('common.cancel')}</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}

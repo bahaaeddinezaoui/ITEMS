@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { assetModelService, authService, consumableModelService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { Link2 } from 'lucide-react';
 
 const ConsumableModelCompatibilityPage = () => {
     const navigate = useNavigate();
@@ -87,7 +88,7 @@ const ConsumableModelCompatibilityPage = () => {
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">{t('consumables.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Link2 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumables.title')}</h1>
                 <p className="page-subtitle">{t('consumableModelCompatibility.compatibility')} {consumableModel?.model_name ? `• ${consumableModel.model_name}` : ''}</p>
             </div>
 

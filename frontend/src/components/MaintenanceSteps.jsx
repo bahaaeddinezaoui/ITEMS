@@ -2055,76 +2055,136 @@ const MaintenanceSteps = ({
             )}
 
             {returnMaintenanceOpen && (
-                <div
-                    className="card"
-                    style={{
-                        position: 'fixed',
-                        insetInlineEnd: 20,
-                        bottom: 20,
-                        zIndex: 50,
-                        width: 520,
-                        padding: 'var(--space-4)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg-tertiary)',
-                    }}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ fontWeight: 700 }}>{t('mSteps.returnMaintenanceToOwner')}</div>
-                        <button
-                            className="btn btn-xs btn-secondary"
-                            style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                            onClick={closeReturnMaintenance}
-                            disabled={returnMaintenanceSubmitting}
+                <div className="modal-overlay" onClick={() => (returnMaintenanceSubmitting ? null : closeReturnMaintenance())}>
+                    <div
+                        className="modal"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            maxWidth: 620,
+                            borderRadius: 'var(--radius-lg)',
+                            overflow: 'hidden',
+                            border: '1px solid var(--color-border)',
+                            boxShadow: '0 18px 60px rgba(0,0,0,0.18)',
+                        }}
+                    >
+                        <div
+                            className="modal-header"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: '1rem',
+                                padding: '1rem 1.15rem',
+                                background: 'linear-gradient(180deg, var(--color-bg-secondary), var(--color-bg-primary))',
+                                borderBottom: '1px solid var(--color-border)',
+                            }}
                         >
-                            {t('mSteps.close')}
-                        </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
+                                <div
+                                    style={{
+                                        width: 38,
+                                        height: 38,
+                                        borderRadius: 12,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'var(--color-bg-primary)',
+                                        border: '1px solid var(--color-border)',
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <ArrowRightLeft size={18} style={{ color: 'var(--color-accent-primary)' }} />
+                                </div>
+                                <div style={{ minWidth: 0 }}>
+                                    <h3 className="modal-title" style={{ margin: 0, lineHeight: 1.25 }}>
+                                        {t('mSteps.returnMaintenanceToOwner')}
+                                    </h3>
+                                    <div style={{ marginTop: 2, fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                        #{maintenanceId}
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                className="modal-close"
+                                onClick={() => (returnMaintenanceSubmitting ? null : closeReturnMaintenance())}
+                                disabled={returnMaintenanceSubmitting}
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 12,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: '1px solid var(--color-border)',
+                                    background: 'var(--color-bg-primary)',
+                                }}
+                                aria-label={t('mSteps.close')}
+                                title={t('mSteps.close')}
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <div className="modal-body" style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {returnMaintenanceLoading ? (
+                                <div style={{ fontSize: 13, opacity: 0.85 }}>{t('mSteps.loadingRooms')}</div>
+                            ) : (
+                                <>
+                                    <div className="form-group" style={{ marginBottom: 6 }}>
+                                        <label className="form-label">{t('mSteps.destinationLocation')}</label>
+                                        <select
+                                            className="form-input"
+                                            value={returnMaintenanceDestinationLocationId}
+                                            onChange={(e) => setReturnMaintenanceDestinationLocationId(e.target.value)}
+                                            disabled={returnMaintenanceSubmitting}
+                                            style={{ padding: '0.7rem 0.75rem' }}
+                                        >
+                                            <option value="">{t('mSteps.selectLocation')}</option>
+                                            {returnMaintenanceLocations.map((r) => (
+                                                <option key={r.location_id} value={r.location_id}>
+                                                    {r.location_name}{(r.location_type_label_ar || r.location_type_label) ? ` (${getLocalizedField(r, 'location_type_label')})` : ''}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="alert alert-info" style={{ fontSize: 12, marginBottom: 0 }}>
+                                        {t('mSteps.returnMaintenanceInfo')}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <div
+                            className="modal-footer"
+                            style={{
+                                padding: '1.15rem',
+                                borderTop: '1px solid var(--color-border)',
+                                background: 'var(--color-bg-primary)',
+                                display: 'flex',
+                                gap: 12,
+                                justifyContent: 'flex-end',
+                                flexWrap: 'wrap',
+                            }}
+                        >
+                            <button
+                                className="btn btn-secondary"
+                                onClick={closeReturnMaintenance}
+                                disabled={returnMaintenanceSubmitting}
+                                style={{ width: 'auto', minWidth: 120, padding: '0.6rem 0.9rem' }}
+                            >
+                                {t('mSteps.cancel')}
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={submitReturnMaintenance}
+                                disabled={returnMaintenanceSubmitting || !returnMaintenanceDestinationLocationId}
+                                style={{ width: 'auto', minWidth: 160, padding: '0.6rem 0.9rem' }}
+                            >
+                                {returnMaintenanceSubmitting ? t('mSteps.submitting') : t('mSteps.requestReturn')}
+                            </button>
+                        </div>
                     </div>
-
-                    {returnMaintenanceLoading ? (
-                        <div style={{ fontSize: 13, opacity: 0.85 }}>{t('mSteps.loadingRooms')}</div>
-                    ) : (
-                        <>
-                            <div className="form-group" style={{ marginBottom: 10 }}>
-                                <label className="form-label">{t('mSteps.destinationLocation')}</label>
-                                <select
-                                    className="form-input"
-                                    value={returnMaintenanceDestinationLocationId}
-                                    onChange={(e) => setReturnMaintenanceDestinationLocationId(e.target.value)}
-                                    disabled={returnMaintenanceSubmitting}
-                                >
-                                    <option value="">{t('mSteps.selectLocation')}</option>
-                                    {returnMaintenanceLocations.map((r) => (
-                                        <option key={r.location_id} value={r.location_id}>
-                                            {r.location_name}{(r.location_type_label_ar || r.location_type_label) ? ` (${getLocalizedField(r, 'location_type_label')})` : ''}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="alert alert-info" style={{ fontSize: 12, marginBottom: 10 }}>
-                                {t('mSteps.returnMaintenanceInfo')}
-                            </div>
-
-                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', marginTop: 'var(--space-3)' }}>
-                                <button
-                                    className="btn btn-xs btn-secondary"
-                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                    onClick={closeReturnMaintenance}
-                                    disabled={returnMaintenanceSubmitting}
-                                >
-                                    {t('mSteps.cancel')}
-                                </button>
-                                <button
-                                    className="btn btn-xs btn-primary"
-                                    style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                                    onClick={submitReturnMaintenance}
-                                    disabled={returnMaintenanceSubmitting || !returnMaintenanceDestinationLocationId}
-                                >
-                                    {returnMaintenanceSubmitting ? t('mSteps.submitting') : t('mSteps.requestReturn')}
-                                </button>
-                            </div>
-                        </>
-                    )}
                 </div>
             )}
 

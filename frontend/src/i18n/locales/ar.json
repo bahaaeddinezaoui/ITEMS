@@ -252,7 +252,15 @@
     "noAttrValues": "لم يتم تعيين قيم خصائص لهذا الأصل.",
     "noValue": "بدون قيمة",
     "suggestForDestruction": "اقتراح للتلف",
-    "saving": "جاري الحفظ..."
+    "saving": "جاري الحفظ...",
+    "assignAsset": "تعيين الأصل",
+    "person": "الشخص",
+    "startDatetime": "تاريخ ووقت البدء",
+    "endDatetime": "تاريخ ووقت الانتهاء",
+    "conditionOnAssignment": "الحالة عند التعيين",
+    "conditionNew": "جديد",
+    "conditionGood": "جيد",
+    "conditionNeedsRepair": "يحتاج إصلاح"
   },
   "assetTypes": {
     "title": "أنواع الأصول",
@@ -916,7 +924,8 @@
     "assetStatusLost": "مفقود",
     "assetStatusStolen": "مسروق",
     "assetStatusIrrecoverablyDamaged": "تالف بشكل لا يمكن إصلاحه",
-    "assetStatusDestroyed": "متلف"
+    "assetStatusDestroyed": "متلف",
+    "clickToChangeStatus": "انقر لتغيير الحالة"
   },
   "stockItemAttributes": {
     "title": "تعريفات خصائص عناصر المخزون",
@@ -1139,7 +1148,17 @@
     "createSuccess": "تم إنشاء أمر الإسناد والأصول بنجاح!",
     "createError": "فشل في إنشاء أمر الإسناد والأصول",
     "receiptCreatedSuccess": "تم إنشاء تقرير الاستلام وربطه بهذا الأمر بنجاح.",
-    "receiptCreateError": "فشل في إنشاء تقرير الاستلام"
+    "receiptCreateError": "فشل في إنشاء تقرير الاستلام",
+    "searchPlaceholder": "البحث بالكود، الباركود، أو المعرف...",
+    "allWarehouses": "جميع المستودعات",
+    "sortByDate": "التاريخ",
+    "sortByCode": "الكود",
+    "sortById": "المعرف",
+    "ascending": "تصاعدي",
+    "descending": "تنازلي",
+    "clearFilters": "مسح الفلاتر",
+    "resultCount": "{{count}} نتيجة",
+    "noResultsFound": "لا توجد أوامر إسناد تطابق بحثك أو الفلاتر"
   },
   "adminCertificates": {
     "title": "الشهادات الإدارية",

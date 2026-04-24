@@ -10,7 +10,8 @@ import {
     RotateCcw,
     Activity,
     Calendar,
-    Trophy
+    Trophy,
+    BarChart3
 } from 'lucide-react';
 
 const MyMaintenanceStatsPage = () => {
@@ -71,7 +72,7 @@ const MyMaintenanceStatsPage = () => {
         <div className="page-container animate-fade-in-up">
             <header className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">{t('myMaintenanceStats.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><BarChart3 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('myMaintenanceStats.title')}</h1>
                     <p className="page-subtitle">{t('myMaintenanceStats.subtitle')}</p>
                 </div>
                 <button onClick={fetchStats} className="btn btn-secondary" style={{ width: 'auto' }}>

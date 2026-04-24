@@ -8,6 +8,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { Inbox } from 'lucide-react';
 
 const ItemRequestsInboxPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -247,9 +248,9 @@ const ItemRequestsInboxPage = () => {
 
     return (
         <>
-            <div className="page-header">
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                    <h1 className="page-title">{t('itemRequestsInbox.title')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Inbox size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('itemRequestsInbox.title')}</h1>
                     <p className="page-subtitle">{t('itemRequestsInbox.subtitle')}</p>
                 </div>
                 <div>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { assetModelService, authService, consumableModelService, stockItemModelService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { Link2 } from 'lucide-react';
 
 const AssetModelCompatibilityPage = () => {
     const navigate = useNavigate();
@@ -218,7 +219,7 @@ const AssetModelCompatibilityPage = () => {
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">{t('assets.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Link2 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assets.title')}</h1>
                 <p className="page-subtitle">{t('assetModelCompatibility.compatibility')} {assetModel?.model_name ? `• ${assetModel.model_name}` : ''}</p>
             </div>
 

@@ -1,6 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import {
+    Search,
+    SlidersHorizontal,
+    ArrowUpDown,
+    X,
+    ChevronDown,
+    ClipboardList
+} from 'lucide-react';
 import {
     attributionOrderService,
     warehouseService,
@@ -50,6 +58,13 @@ const AttributionOrdersPage = () => {
     const [includedItems, setIncludedItems] = useState({ stock_items: [], consumables: [] });
 
     const [searchParams, setSearchParams] = useSearchParams();
+
+    // Search, filter, sort state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterWarehouse, setFilterWarehouse] = useState('');
+    const [sortField, setSortField] = useState('date');
+    const [sortDirection, setSortDirection] = useState('desc');
+    const [showSortMenu, setShowSortMenu] = useState(false);
 
     const getMimeType = (b64) => {
         if (!b64) return 'application/octet-stream';
@@ -149,6 +164,62 @@ const AttributionOrdersPage = () => {
             // ignore
         }
     };
+
+    const filteredOrders = useMemo(() => {
+        let result = [...ordersList];
+
+        // Search
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(order => {
+                const code = (order.attribution_order_full_code || '').toLowerCase();
+                const barcode = (order.attribution_order_barcode || '').toLowerCase();
+                const id = `#${order.attribution_order_id}`;
+                return code.includes(q) || barcode.includes(q) || id.includes(q);
+            });
+        }
+
+        // Filter by warehouse
+        if (filterWarehouse) {
+            result = result.filter(order => String(order.warehouse) === String(filterWarehouse));
+        }
+
+        // Sort
+        result.sort((a, b) => {
+            let cmp = 0;
+            if (sortField === 'code') {
+                const codeA = (a.attribution_order_full_code || '').toLowerCase();
+                const codeB = (b.attribution_order_full_code || '').toLowerCase();
+                cmp = codeA.localeCompare(codeB);
+            } else if (sortField === 'date') {
+                const dateA = new Date(a.attribution_order_date || 0).getTime();
+                const dateB = new Date(b.attribution_order_date || 0).getTime();
+                cmp = dateA - dateB;
+            } else if (sortField === 'id') {
+                cmp = (a.attribution_order_id || 0) - (b.attribution_order_id || 0);
+            }
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
+
+        return result;
+    }, [ordersList, searchQuery, filterWarehouse, sortField, sortDirection]);
+
+    const hasActiveFilters = searchQuery.trim() || filterWarehouse;
+
+    const clearAllFilters = () => {
+        setSearchQuery('');
+        setFilterWarehouse('');
+        setSortField('date');
+        setSortDirection('desc');
+    };
+
+    // Close sort menu on outside click
+    useEffect(() => {
+        if (!showSortMenu) return;
+        const handler = (e) => setShowSortMenu(false);
+        document.addEventListener('click', handler);
+        return () => document.removeEventListener('click', handler);
+    }, [showSortMenu]);
 
     const handleRowClick = async (order) => {
         setSelectedOrder(order);
@@ -451,7 +522,7 @@ const AttributionOrdersPage = () => {
         <>
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                    <h1 className="page-title">{viewMode === 'list' ? t('attributionOrders.title') : viewMode === 'detail' ? `${t('attributionOrders.orderDetails')}: ${selectedOrder?.attribution_order_full_code || ''}` : t('attributionOrders.createTitle')}</h1>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><ClipboardList size={22} style={{ color: 'var(--color-accent-primary)' }} />{viewMode === 'list' ? t('attributionOrders.title') : viewMode === 'detail' ? `${t('attributionOrders.orderDetails')}: ${selectedOrder?.attribution_order_full_code || ''}` : t('attributionOrders.createTitle')}</h1>
                     <p className="page-subtitle">
                         {viewMode === 'list' ? t('attributionOrders.subtitle') : viewMode === 'detail' ? t('attributionOrders.detailSubtitle') : t('attributionOrders.createSubtitle')}
                     </p>
@@ -495,9 +566,258 @@ const AttributionOrdersPage = () => {
                         </button>
                     </div>
 
-                    {ordersList.length === 0 ? (
+                    {/* Search / Filter / Sort Toolbar */}
+                    <div style={{
+                        display: 'flex',
+                        gap: 'var(--space-3)',
+                        alignItems: 'center',
+                        flexWrap: 'wrap'
+                    }}>
+                        {/* Search */}
+                        <div style={{
+                            flex: 1,
+                            minWidth: '240px',
+                            position: 'relative'
+                        }}>
+                            <Search size={18} style={{
+                                position: 'absolute',
+                                left: 'var(--space-3)',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: 'var(--color-text-muted)',
+                                pointerEvents: 'none'
+                            }} />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder={t('attributionOrders.searchPlaceholder')}
+                                className="form-input"
+                                style={{
+                                    width: '100%',
+                                    height: '42px',
+                                    paddingLeft: 'var(--space-10)',
+                                    paddingRight: searchQuery ? 'var(--space-10)' : 'var(--space-4)'
+                                }}
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    style={{
+                                        position: 'absolute',
+                                        right: 'var(--space-3)',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--color-text-muted)',
+                                        cursor: 'pointer',
+                                        padding: '2px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Filter by Warehouse */}
+                        <div style={{ position: 'relative', minWidth: '180px' }}>
+                            <SlidersHorizontal size={16} style={{
+                                position: 'absolute',
+                                left: 'var(--space-3)',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: 'var(--color-text-muted)',
+                                pointerEvents: 'none',
+                                zIndex: 1
+                            }} />
+                            <select
+                                value={filterWarehouse}
+                                onChange={(e) => setFilterWarehouse(e.target.value)}
+                                className="form-input"
+                                style={{
+                                    width: '100%',
+                                    height: '42px',
+                                    paddingLeft: 'var(--space-10)',
+                                    appearance: 'none',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <option value="">{t('attributionOrders.allWarehouses')}</option>
+                                {warehouses.map(w => (
+                                    <option key={w.warehouse_id} value={w.warehouse_id}>
+                                        {w.warehouse_name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Sort */}
+                        <div style={{ position: 'relative' }}>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowSortMenu(!showSortMenu);
+                                }}
+                                className="btn"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 'var(--space-2)',
+                                    padding: 'var(--space-2) var(--space-4)',
+                                    height: '42px',
+                                    border: '1px solid var(--color-border)',
+                                    background: 'var(--color-bg-card)',
+                                    color: 'var(--color-text-secondary)',
+                                    borderRadius: 'var(--radius-md)',
+                                    cursor: 'pointer',
+                                    fontWeight: '500',
+                                    fontSize: 'var(--font-size-sm)',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                <ArrowUpDown size={16} />
+                                <span>{sortField === 'code' ? t('attributionOrders.sortByCode') : sortField === 'id' ? t('attributionOrders.sortById') : t('attributionOrders.sortByDate')}</span>
+                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                    {sortDirection === 'asc' ? t('attributionOrders.ascending') : t('attributionOrders.descending')}
+                                </span>
+                                <ChevronDown size={14} style={{ transform: showSortMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                            </button>
+                            {showSortMenu && (
+                                <div
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 'calc(100% + 4px)',
+                                        right: 0,
+                                        background: 'var(--color-bg-secondary)',
+                                        border: '1px solid var(--color-border)',
+                                        borderRadius: 'var(--radius-md)',
+                                        boxShadow: 'var(--shadow-lg)',
+                                        padding: 'var(--space-2)',
+                                        zIndex: 100,
+                                        minWidth: '200px'
+                                    }}
+                                >
+                                    <div style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        {t('common.sortBy')}
+                                    </div>
+                                    {[
+                                        { field: 'date', dir: 'desc', label: `${t('attributionOrders.sortByDate')} — ${t('attributionOrders.descending')}` },
+                                        { field: 'date', dir: 'asc', label: `${t('attributionOrders.sortByDate')} — ${t('attributionOrders.ascending')}` },
+                                        { field: 'code', dir: 'asc', label: `${t('attributionOrders.sortByCode')} — ${t('attributionOrders.ascending')}` },
+                                        { field: 'code', dir: 'desc', label: `${t('attributionOrders.sortByCode')} — ${t('attributionOrders.descending')}` },
+                                        { field: 'id', dir: 'asc', label: `${t('attributionOrders.sortById')} — ${t('attributionOrders.ascending')}` },
+                                        { field: 'id', dir: 'desc', label: `${t('attributionOrders.sortById')} — ${t('attributionOrders.descending')}` },
+                                    ].map(opt => (
+                                        <button
+                                            key={`${opt.field}-${opt.dir}`}
+                                            onClick={() => {
+                                                setSortField(opt.field);
+                                                setSortDirection(opt.dir);
+                                                setShowSortMenu(false);
+                                            }}
+                                            style={{
+                                                display: 'block',
+                                                width: '100%',
+                                                textAlign: 'left',
+                                                padding: 'var(--space-2) var(--space-3)',
+                                                border: 'none',
+                                                borderRadius: 'var(--radius-sm)',
+                                                cursor: 'pointer',
+                                                fontSize: 'var(--font-size-sm)',
+                                                fontWeight: sortField === opt.field && sortDirection === opt.dir ? '600' : '400',
+                                                color: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-tertiary)' : 'var(--color-text-primary)',
+                                                background: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-glow)' : 'transparent',
+                                                transition: 'all var(--transition-fast)'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (!(sortField === opt.field && sortDirection === opt.dir)) {
+                                                    e.currentTarget.style.background = 'var(--color-bg-card-hover)';
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (!(sortField === opt.field && sortDirection === opt.dir)) {
+                                                    e.currentTarget.style.background = 'transparent';
+                                                }
+                                            }}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Clear Filters */}
+                        {hasActiveFilters && (
+                            <button
+                                onClick={clearAllFilters}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 'var(--space-2)',
+                                    padding: 'var(--space-2) var(--space-3)',
+                                    height: '42px',
+                                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                                    background: 'rgba(239, 68, 68, 0.08)',
+                                    color: 'var(--color-error)',
+                                    borderRadius: 'var(--radius-md)',
+                                    cursor: 'pointer',
+                                    fontSize: 'var(--font-size-sm)',
+                                    fontWeight: '500',
+                                    whiteSpace: 'nowrap',
+                                    transition: 'all var(--transition-fast)'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)';
+                                }}
+                            >
+                                <X size={14} />
+                                {t('attributionOrders.clearFilters')}
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Results Count */}
+                    {!loading && ordersList.length > 0 && (
+                        <div style={{
+                            fontSize: 'var(--font-size-sm)',
+                            color: 'var(--color-text-muted)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-2)'
+                        }}>
+                            <span>{t('attributionOrders.resultCount', { count: filteredOrders.length })}</span>
+                        </div>
+                    )}
+
+                    {filteredOrders.length === 0 ? (
                         <div className="card" style={{ textAlign: 'center', padding: 'var(--space-12)' }}>
-                            <p style={{ color: 'var(--color-text-light)' }}>{t('attributionOrders.noOrders')}</p>
+                            <p style={{ color: 'var(--color-text-light)' }}>
+                                {hasActiveFilters ? t('attributionOrders.noResultsFound') : t('attributionOrders.noOrders')}
+                            </p>
+                            {hasActiveFilters && (
+                                <button
+                                    onClick={clearAllFilters}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--color-accent-primary)',
+                                        cursor: 'pointer',
+                                        fontSize: 'var(--font-size-sm)',
+                                        textDecoration: 'underline',
+                                        marginTop: 'var(--space-2)'
+                                    }}
+                                >
+                                    {t('attributionOrders.clearFilters')}
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <div style={{
@@ -505,7 +825,7 @@ const AttributionOrdersPage = () => {
                             gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
                             gap: 'var(--space-6)'
                         }}>
-                            {ordersList.map(order => (
+                            {filteredOrders.map(order => (
                                 <div
                                     key={order.attribution_order_id}
                                     className="card hover-row"

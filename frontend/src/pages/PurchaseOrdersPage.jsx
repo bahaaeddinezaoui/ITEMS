@@ -30,7 +30,8 @@ import {
     Banknote,
     MoreHorizontal,
     Clock,
-    FileBadge
+    FileBadge,
+    ShoppingCart
 } from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -434,9 +435,7 @@ const PurchaseOrdersPage = () => {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
                 <div>
-                    <h1 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '800', letterSpacing: '-0.03em', margin: 0 }}>
-                        {t('poOrders.title')}
-                    </h1>
+                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '800', letterSpacing: '-0.03em', margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><ShoppingCart size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('poOrders.title')}</h1>
                     <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', margin: 0, marginTop: 'var(--space-1)' }}>
                         {t('poOrders.subtitle')}
                     </p>
@@ -735,20 +734,20 @@ const PurchaseOrdersPage = () => {
                                                 <button
                                                     className="btn btn-secondary"
                                                     style={{ padding: '4px 6px', fontSize: 'var(--font-size-xs)', gap: 'var(--space-1)', minHeight: '26px' }}
-                                                    onClick={() => openAcceptanceReportModal(o)}
-                                                    disabled={isStockConsumableResponsible ? (o.has_remaining !== false) : false}
-                                                    title={t('poOrders.acceptanceReport')}
-                                                >
-                                                    <ClipboardCheck size={12} />
-                                                </button>
-                                                <button
-                                                    className="btn btn-secondary"
-                                                    style={{ padding: '4px 6px', fontSize: 'var(--font-size-xs)', gap: 'var(--space-1)', minHeight: '26px' }}
                                                     onClick={() => openDeliveryNoteModal(o)}
                                                     disabled={o.has_remaining !== false}
                                                     title={t('poOrders.deliveryNote')}
                                                 >
                                                     <FileText size={12} />
+                                                </button>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '4px 6px', fontSize: 'var(--font-size-xs)', gap: 'var(--space-1)', minHeight: '26px' }}
+                                                    onClick={() => openAcceptanceReportModal(o)}
+                                                    disabled={isStockConsumableResponsible ? (o.has_remaining !== false) : false}
+                                                    title={t('poOrders.acceptanceReport')}
+                                                >
+                                                    <ClipboardCheck size={12} />
                                                 </button>
                                                 <button
                                                     className="btn btn-secondary"

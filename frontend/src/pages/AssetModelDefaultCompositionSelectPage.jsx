@@ -10,6 +10,7 @@ import {
     stockItemTypeService,
 } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { Layers } from 'lucide-react';
 
 const AssetModelDefaultCompositionSelectPage = () => {
     const navigate = useNavigate();
@@ -254,7 +255,7 @@ const AssetModelDefaultCompositionSelectPage = () => {
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
             <div className="page-header" style={{ marginBottom: 'var(--space-4)' }}>
-                <h1 className="page-title">{t('assets.title')}</h1>
+                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Layers size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assets.title')}</h1>
                 <p className="page-subtitle">
                     {t('defaultCompositionSelect.defaultComposition')} {assetModel ? `• ${assetModel.model_name}` : `• ${t('defaultCompositionSelect.selectTypeModelDesc')}`}
                 </p>
