@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors } from 'lucide-react';
+import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Package, Hash } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
 import {
     authService,
@@ -19,7 +19,7 @@ import { useTranslation } from 'react-i18next';
 
 const StockItemsPage = () => {
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const location = useLocation();
     const [searchParams] = useSearchParams();
     const typeIdParam = searchParams.get('typeId');
@@ -126,7 +126,6 @@ const StockItemsPage = () => {
         stock_item_name: '',
         stock_item_inventory_number: '',
         stock_item_status: 'in_stock',
-        stock_item_warranty_expiry_in_months: '',
         stock_item_name_in_administrative_certificate: '',
         destruction_certificate_id: '',
         maintenance_step_id: null
@@ -162,7 +161,6 @@ const StockItemsPage = () => {
             stock_item_name: '',
             stock_item_inventory_number: '',
             stock_item_status: 'in_stock',
-            stock_item_warranty_expiry_in_months: '',
             stock_item_name_in_administrative_certificate: '',
             destruction_certificate_id: 0,
             maintenance_step_id: null
@@ -173,7 +171,6 @@ const StockItemsPage = () => {
         sp.delete('create');
         const qs = sp.toString();
         navigate(qs ? `${location.pathname}?${qs}` : location.pathname, { replace: true });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isInstancesMode, createParam, selectedStockItemModel, showStockItemForm]);
 
     useEffect(() => {
@@ -515,7 +512,6 @@ const StockItemsPage = () => {
                 stock_item_name: '',
                 stock_item_inventory_number: '',
                 stock_item_status: 'in_stock',
-                stock_item_warranty_expiry_in_months: '',
                 stock_item_name_in_administrative_certificate: '',
                 destruction_certificate_id: '',
                 maintenance_step_id: null
@@ -540,7 +536,6 @@ const StockItemsPage = () => {
             stock_item_name: item.stock_item_name || '',
             stock_item_inventory_number: item.stock_item_inventory_number || '',
             stock_item_status: item.stock_item_status || 'active',
-            stock_item_warranty_expiry_in_months: item.stock_item_warranty_expiry_in_months || '',
             stock_item_name_in_administrative_certificate: item.stock_item_name_in_administrative_certificate || '',
             destruction_certificate_id: item.destruction_certificate_id ?? '',
             maintenance_step_id: item.maintenance_step_id || null
@@ -896,8 +891,17 @@ const StockItemsPage = () => {
         return result;
     }, [stockItems, searchTerm, statusFilter]);
 
-    const formatStatus = (value) => {
-        return String(value || '').split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ');
+    const formatStatus = (value, item) => {
+        if (!value) return '';
+        const lang = i18n.language;
+        const statusAr = item?.stock_item_status_ar;
+        const statusEn = item?.stock_item_status_en;
+        if (lang === 'ar') {
+            if (statusAr && statusEn && statusAr !== statusEn) return `${statusAr} (${statusEn})`;
+            return statusAr || statusEn || String(value).split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ');
+        }
+        if (statusEn && statusAr && statusEn !== statusAr) return `${statusEn} (${statusAr})`;
+        return statusEn || statusAr || String(value).split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ');
     };
 
     if (isInstancesMode) {
@@ -932,13 +936,12 @@ const StockItemsPage = () => {
                             stock_item_name: '',
                             stock_item_inventory_number: '',
                             stock_item_status: 'not_delivered_to_company',
-                            stock_item_warranty_expiry_in_months: '',
                             stock_item_name_in_administrative_certificate: '',
                             destruction_certificate_id: 0,
                             maintenance_step_id: null
                         });
                         setShowStockItemForm(true);
-                    }} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                    }} style={{ padding: 'var(--space-3) var(--space-6)', width: 'auto' }}>
                         <Plus size={18} />
                         <span>{t('stockItems.addItem')}</span>
                     </button>
@@ -970,26 +973,44 @@ const StockItemsPage = () => {
                 {/* Add/Edit Stock Item Modal */}
                 {showStockItemForm && (
                     <div className="modal-overlay" onClick={() => setShowStockItemForm(false)}>
-                        <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3 className="modal-title">{editingStockItem ? t('stockItems.editItem') : t('stockItems.newItem')}</h3>
+                        <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header" style={{ gap: 'var(--space-4)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                    <div style={{
+                                        width: 40, height: 40, borderRadius: 'var(--radius-lg)',
+                                        background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center',
+                                        justifyContent: 'center', boxShadow: 'var(--shadow-glow)', flexShrink: 0,
+                                    }}>
+                                        <Package size={20} style={{ color: 'white' }} />
+                                    </div>
+                                    <div>
+                                        <h3 className="modal-title" style={{ margin: 0 }}>{editingStockItem ? t('stockItems.editItem') : t('stockItems.newItem')}</h3>
+                                        <p style={{ margin: 'var(--space-1) 0 0', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
+                                            {selectedStockItemModel?.model_name || ''}
+                                        </p>
+                                    </div>
+                                </div>
                                 <button className="modal-close" onClick={() => setShowStockItemForm(false)}><X size={18} /></button>
                             </div>
-                            <div className="modal-body">
-                                <form onSubmit={handleStockItemSubmit} className="form">
-                                    <div className="form-row">
+                            <form onSubmit={handleStockItemSubmit}>
+                                <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                                    <div className="form-group">
+                                        <TranslatableInput
+                                            label={t('stockItems.name')}
+                                            baseFieldName="stock_item_name"
+                                            value={stockItemFormData.stock_item_name}
+                                            onChange={(name, value) => handleStockItemInputChange({ target: { name, value } })}
+                                            translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.stock_item_name]))}
+                                            onTranslationChange={handleFormTranslationChange}
+                                            placeholder={t('stockItems.itemNamePlaceholder')}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                         <div className="form-group">
-                                            <TranslatableInput
-                                                label={t('stockItems.name')}
-                                                baseFieldName="stock_item_name"
-                                                value={stockItemFormData.stock_item_name}
-                                                onChange={(name, value) => handleStockItemInputChange({ target: { name, value } })}
-                                                translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.stock_item_name]))}
-                                                onTranslationChange={handleFormTranslationChange}
-                                                placeholder={t('stockItems.itemNamePlaceholder')}
-                                            />
-                                        </div>
-                                        <div className="form-group">
+                                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                <Tag size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                {t('common.status')}
+                                            </label>
                                             <select name="stock_item_status" value={stockItemFormData.stock_item_status} onChange={handleStockItemInputChange} className="form-input" style={{ height: '44px' }}>
                                                 <option value="not_delivered_to_company">{t('stockItems.statusNotDelivered')}</option>
                                                 <option value="in_stock">{t('stockItems.statusInStock')}</option>
@@ -1003,25 +1024,22 @@ const StockItemsPage = () => {
                                                 <option value="destroyed">{t('stockItems.statusDestroyed')}</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div className="form-row">
                                         <div className="form-group">
+                                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                <Hash size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                {t('stockItems.inventoryNumber')}
+                                            </label>
                                             <input type="text" name="stock_item_inventory_number" value={stockItemFormData.stock_item_inventory_number} onChange={handleStockItemInputChange} placeholder={t('stockItems.inventoryNumber')} className="form-input" style={{ height: '44px' }} />
                                         </div>
-                                        <div className="form-group">
-                                            <input type="number" name="stock_item_warranty_expiry_in_months" value={stockItemFormData.stock_item_warranty_expiry_in_months} onChange={handleStockItemInputChange} placeholder={t('stockItems.warrantyMonths')} className="form-input" style={{ height: '44px' }} />
-                                        </div>
                                     </div>
-                                    <div className="form-actions">
-                                        <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
-                                            {editingStockItem ? t('common.update') : t('common.save')}
-                                        </button>
-                                        <button type="button" onClick={() => setShowStockItemForm(false)} className="btn btn-secondary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
-                                            {t('common.cancel')}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" onClick={() => setShowStockItemForm(false)} className="btn btn-secondary">{t('common.cancel')}</button>
+                                    <button type="submit" disabled={saving} className="btn btn-primary">
+                                        {editingStockItem ? t('common.update') : t('common.save')}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 )}
@@ -1112,7 +1130,7 @@ const StockItemsPage = () => {
                                                         color: item.stock_item_status === 'in_stock' ? 'var(--color-success)' :
                                                                item.stock_item_status === 'not_delivered_to_company' ? 'var(--color-warning)' : 'var(--color-text-secondary)'
                                                     }}>
-                                                        {formatStatus(item.stock_item_status)}
+                                                        {formatStatus(item.stock_item_status, item)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1181,7 +1199,7 @@ const StockItemsPage = () => {
                                         {selectedStockItem.stock_item_name || t('stockItems.itemWithId', { id: selectedStockItem.stock_item_id })}
                                     </h3>
                                     <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                        {t('stockItems.inventoryNo')}: {selectedStockItem.stock_item_inventory_number || '—'} • {t('stockItems.status')}: {formatStatus(selectedStockItem.stock_item_status)}
+                                        {t('stockItems.inventoryNo')}: {selectedStockItem.stock_item_inventory_number || '—'} • {t('stockItems.status')}: {formatStatus(selectedStockItem.stock_item_status, selectedStockItem)}
                                     </span>
                                 </div>
                                 <button className="modal-close" onClick={closeStockItemDetailsModal}><X size={18} /></button>
@@ -1247,7 +1265,7 @@ const StockItemsPage = () => {
                                                 style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }}
                                             >
                                                 <option value="">{t('stockItems.selectAttrDefPlaceholder')}</option>
-                                                {attributeDefinitions.map((def) => (
+                                                {stockItemAttributeDefinitions.map((def) => (
                                                     <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
                                                         {def.description || t('stockItems.attributeWithId', { id: def.stock_item_attribute_definition_id })}
                                                     </option>
@@ -1804,7 +1822,6 @@ const StockItemsPage = () => {
                                             stock_item_name: '',
                                             stock_item_inventory_number: '',
                                             stock_item_status: 'not_delivered_to_company',
-                                            stock_item_warranty_expiry_in_months: '',
                                             stock_item_name_in_administrative_certificate: '',
                                             destruction_certificate_id: 0,
                                             maintenance_step_id: null
@@ -1860,10 +1877,6 @@ const StockItemsPage = () => {
                                                 <div>
                                                     <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('stockItems.inventoryNumber')}</label>
                                                     <input type="text" name="stock_item_inventory_number" value={stockItemFormData.stock_item_inventory_number} onChange={handleStockItemInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
-                                                </div>
-                                                <div>
-                                                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('stockItems.warrantyMonths')}</label>
-                                                    <input type="number" name="stock_item_warranty_expiry_in_months" value={stockItemFormData.stock_item_warranty_expiry_in_months} onChange={handleStockItemInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
                                                 </div>
                                             </div>
                                             <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)' }}>
@@ -2101,10 +2114,6 @@ const StockItemsPage = () => {
                             background: 'var(--color-bg-secondary)'
                         }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                                <div>
-                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{t('stockItems.warrantyMonths')}</div>
-                                    <div style={{ fontWeight: 600 }}>{selectedStockItem.stock_item_warranty_expiry_in_months ?? '—'}</div>
-                                </div>
                                 <div>
                                     <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', marginBottom: 2 }}>{t('stockItems.assignedTo')}</div>
                                     {(() => {

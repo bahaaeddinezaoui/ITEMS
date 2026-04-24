@@ -361,6 +361,13 @@ export const myItemsService = {
     },
 };
 
+export const dashboardService = {
+    getKpis: async () => {
+        const response = await api.get('dashboard/kpis/');
+        return response.data;
+    },
+};
+
 // Problem Reports service
 export const problemReportService = {
     getAll: async () => {

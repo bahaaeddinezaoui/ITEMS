@@ -693,6 +693,7 @@ class StockItem(models.Model):
     stock_item_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='stock_item_inventory_number')
     stock_item_name = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name')
     stock_item_status = models.CharField(max_length=30, blank=True, null=True, db_column='stock_item_status')
+    stock_item_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name_in_administrative_certificate')
 
     class Meta:
         managed = False
@@ -742,6 +743,7 @@ class Consumable(models.Model):
     consumable_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='consumable_inventory_number')
     consumable_name = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name')
     consumable_status = models.CharField(max_length=30, blank=True, null=True, db_column='consumable_status')
+    consumable_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name_in_administrative_certificate')
 
     class Meta:
         managed = False

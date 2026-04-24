@@ -1,11 +1,32 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
+    ArrowLeft,
+    Plus,
+    Trash2,
+    Package,
+    Wrench,
+    FileCheck,
+    Building2,
+    Hash,
+    CheckCircle2,
+    Lock,
+    RotateCcw,
+    ShoppingCart,
+    Box,
+    AlertCircle,
+    Loader2,
+    ChevronRight,
+    CircleDot,
+} from 'lucide-react';
+import {
     purchaseOrderService,
     stockItemModelService,
     stockItemTypeService,
+    stockItemService,
     consumableModelService,
     consumableTypeService,
+    consumableService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +34,18 @@ import { useTranslation } from 'react-i18next';
 const PurchaseOrderCreatePage = () => {
     const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+
+    const currentLang = i18n.language;
+
+    const getLocalizedLabel = (labelAr, labelEn, fallback) => {
+        if (currentLang === 'ar') {
+            if (labelAr && labelEn && labelAr !== labelEn) return `${labelAr} (${labelEn})`;
+            return labelAr || labelEn || fallback;
+        }
+        if (labelEn && labelAr && labelEn !== labelAr) return `${labelEn} (${labelAr})`;
+        return labelEn || labelAr || fallback;
+    };
 
     const DRAFT_KEY = 'purchase_order_create_draft_v1';
 
@@ -42,7 +74,11 @@ const PurchaseOrderCreatePage = () => {
     const [stockLines, setStockLines] = useState([]);
     const [consumableLines, setConsumableLines] = useState([]);
 
+    const [createdStockItemIds, setCreatedStockItemIds] = useState([]);
+    const [createdConsumableIds, setCreatedConsumableIds] = useState([]);
+
     const [draftHydrated, setDraftHydrated] = useState(false);
+    const [clearing, setClearing] = useState(false);
 
     const loadDraft = () => {
         try {
@@ -131,12 +167,18 @@ const PurchaseOrderCreatePage = () => {
             }
         }
 
+        if (Array.isArray(draft.createdStockItemIds)) {
+            setCreatedStockItemIds(draft.createdStockItemIds);
+        }
+        if (Array.isArray(draft.createdConsumableIds)) {
+            setCreatedConsumableIds(draft.createdConsumableIds);
+        }
+
         setDraftHydrated(true);
 
         if (completedIndex !== null) {
             navigate('/dashboard/purchase-orders/create', { replace: true });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -154,7 +196,6 @@ const PurchaseOrderCreatePage = () => {
             }
         };
         loadSuppliers();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -185,7 +226,6 @@ const PurchaseOrderCreatePage = () => {
         };
 
         loadTypes();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -197,7 +237,6 @@ const PurchaseOrderCreatePage = () => {
             consumableLines,
         };
         saveDraft(draft);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form, stockLines, consumableLines]);
 
     useEffect(() => {
@@ -207,7 +246,6 @@ const PurchaseOrderCreatePage = () => {
         typeIds.forEach((id) => {
             ensureStockModelsLoaded(id);
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [stockLines]);
 
     useEffect(() => {
@@ -217,7 +255,6 @@ const PurchaseOrderCreatePage = () => {
         typeIds.forEach((id) => {
             ensureConsumableModelsLoaded(id);
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [consumableLines]);
 
     if (!isStockConsumableResponsible) {
@@ -456,115 +493,273 @@ const PurchaseOrderCreatePage = () => {
         }
     };
 
+    const totalLines = (stockLines?.length || 0) + (consumableLines?.length || 0);
+    const committedLines = (stockLines?.filter(l => l.instances_added).length || 0) + (consumableLines?.filter(l => l.instances_added).length || 0);
+
     return (
-        <div className="page-container">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
-                <div>
-                    <h1 className="page-title">{t('poCreate.title')}</h1>
-                    <p className="page-subtitle">{t('poCreate.subtitle')}</p>
-                </div>
-                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+        <div className="page-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Page Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                     <button
                         type="button"
-                        className="btn btn-secondary"
-                        onClick={() => {
+                        onClick={() => navigate('/dashboard/purchase-orders')}
+                        disabled={submitting}
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)',
+                            background: 'transparent', border: 'none', color: 'var(--color-text-muted)',
+                            cursor: 'pointer', padding: 0, fontSize: 'var(--font-size-sm)', fontWeight: 500,
+                            transition: 'color var(--transition-fast)',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                    >
+                        <ArrowLeft size={16} />
+                        {t('common.back')}
+                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                        <div style={{
+                            width: 48, height: 48, borderRadius: 'var(--radius-lg)',
+                            background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', boxShadow: 'var(--shadow-glow)', flexShrink: 0,
+                        }}>
+                            <ShoppingCart size={24} style={{ color: 'white' }} />
+                        </div>
+                        <div>
+                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
+                                {t('poCreate.title')}
+                            </h1>
+                            <p className="page-subtitle" style={{ fontSize: 'var(--font-size-base)' }}>
+                                {t('poCreate.subtitle')}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={async () => {
+                        setClearing(true);
+                        try {
+                            for (const id of createdStockItemIds) {
+                                try { await stockItemService.delete(id); } catch { /* already deleted */ }
+                            }
+                            for (const id of createdConsumableIds) {
+                                try { await consumableService.delete(id); } catch { /* already deleted */ }
+                            }
+                        } finally {
                             clearDraft();
                             setForm({ supplier_id: '', purchase_order_code: '', is_signed_by_finance: false });
                             setStockLines([]);
                             setConsumableLines([]);
-                        }}
-                        disabled={submitting}
-                    >
-                        {t('poCreate.clearDraft')}
-                    </button>
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')} disabled={submitting}>
-                        {t('common.back')}
-                    </button>
-                </div>
+                            setCreatedStockItemIds([]);
+                            setCreatedConsumableIds([]);
+                            setClearing(false);
+                        }
+                    }}
+                    disabled={submitting || clearing}
+                    style={{ gap: 'var(--space-2)' }}
+                >
+                    {clearing ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <RotateCcw size={16} />}
+                    {clearing ? t('poCreate.clearingDraft') : t('poCreate.clearDraft')}
+                </button>
             </div>
 
             {error && (
-                <div className="alert alert-error" style={{ marginBottom: 'var(--space-4)' }}>
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                    background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)',
+                    borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                    marginBottom: 'var(--space-6)', color: 'var(--color-error)', fontSize: 'var(--font-size-sm)',
+                }}>
+                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
                     {error}
                 </div>
             )}
-
             {success && (
-                <div className="alert alert-success" style={{ marginBottom: 'var(--space-4)' }}>
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                    background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)',
+                    borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                    marginBottom: 'var(--space-6)', color: 'var(--color-success)', fontSize: 'var(--font-size-sm)',
+                }}>
+                    <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
                     {success}
                 </div>
             )}
 
-            <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-                <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>{t('poCreate.header')}</h2>
+            <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
+                <div className="card-header" style={{ padding: 'var(--space-4) var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <FileCheck size={18} style={{ color: 'var(--color-accent-secondary)' }} />
+                        <h2 className="card-title" style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('poCreate.header')}</h2>
+                    </div>
                 </div>
-                <div className="card-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
-                    <div className="form-group">
-                        <label className="form-label">{t('poCreate.supplier')}</label>
-                        <select
-                            className="form-input"
-                            value={form.supplier_id}
-                            onChange={(e) => updateForm({ supplier_id: e.target.value })}
-                            disabled={submitting || suppliersLoading}
-                        >
-                            <option value="">{suppliersLoading ? t('common.loading') : t('poCreate.selectSupplier')}</option>
-                            {suppliers.map((s) => (
-                                <option key={s.supplier_id} value={s.supplier_id}>
-                                    {s.supplier_name} (#{s.supplier_id})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                <div className="card-body" style={{ padding: 'var(--space-6)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 'var(--space-6)', alignItems: 'start' }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                <Building2 size={14} style={{ color: 'var(--color-text-muted)' }} />
+                                {t('poCreate.supplier')}
+                            </label>
+                            <select
+                                className="form-input"
+                                value={form.supplier_id}
+                                onChange={(e) => updateForm({ supplier_id: e.target.value })}
+                                disabled={submitting || suppliersLoading}
+                                style={{ height: 44 }}
+                            >
+                                <option value="">{suppliersLoading ? t('common.loading') : t('poCreate.selectSupplier')}</option>
+                                {suppliers.map((s) => (
+                                    <option key={s.supplier_id} value={s.supplier_id}>
+                                        {s.supplier_name} (#{s.supplier_id})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                    <div className="form-group">
-                        <label className="form-label">{t('poCreate.purchaseOrderCode')}</label>
-                        <input
-                            className="form-input"
-                            value={form.purchase_order_code}
-                            onChange={(e) => updateForm({ purchase_order_code: e.target.value })}
-                            placeholder={t('poCreate.codePlaceholder')}
-                        />
-                    </div>
-
-                    <div className="form-group" style={{ display: 'flex', alignItems: 'end' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                        <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                <Hash size={14} style={{ color: 'var(--color-text-muted)' }} />
+                                {t('poCreate.purchaseOrderCode')}
+                            </label>
                             <input
-                                type="checkbox"
-                                checked={!!form.is_signed_by_finance}
-                                onChange={(e) => updateForm({ is_signed_by_finance: e.target.checked })}
+                                className="form-input"
+                                value={form.purchase_order_code}
+                                onChange={(e) => updateForm({ purchase_order_code: e.target.value })}
+                                placeholder={t('poCreate.codePlaceholder')}
+                                style={{ height: 44 }}
                             />
-                            {t('poCreate.signedByFinance')}
-                        </label>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', paddingTop: 'var(--space-7)' }}>
+                            <button
+                                type="button"
+                                onClick={() => updateForm({ is_signed_by_finance: !form.is_signed_by_finance })}
+                                disabled={submitting}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                                    background: 'transparent', border: 'none', cursor: 'pointer',
+                                    padding: 'var(--space-2) 0', color: form.is_signed_by_finance ? 'var(--color-success)' : 'var(--color-text-secondary)',
+                                    transition: 'color var(--transition-fast)',
+                                }}
+                            >
+                                <div style={{
+                                    width: 40, height: 22, borderRadius: 11, position: 'relative',
+                                    background: form.is_signed_by_finance ? 'var(--color-success)' : 'var(--color-bg-secondary)',
+                                    border: form.is_signed_by_finance ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid var(--color-border)',
+                                    transition: 'all var(--transition-fast)', flexShrink: 0,
+                                }}>
+                                    <div style={{
+                                        width: 16, height: 16, borderRadius: '50%', background: 'white',
+                                        position: 'absolute', top: 2,
+                                        left: form.is_signed_by_finance ? 20 : 2,
+                                        transition: 'left var(--transition-fast)',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                                    }} />
+                                </div>
+                                <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                    {t('poCreate.signedByFinance')}
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+                {/* Stock Item Lines */}
                 <div className="card">
-                    <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 className="card-title" style={{ margin: 0 }}>{t('poCreate.stockModelLines')}</h2>
-                        <button type="button" className="btn btn-secondary" onClick={addStockLine} disabled={submitting}>
-                            {t('poCreate.addLine')}
-                        </button>
+                    <div className="card-header" style={{ padding: 'var(--space-4) var(--space-6)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <div style={{
+                                    width: 32, height: 32, borderRadius: 'var(--radius-md)',
+                                    background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.25)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                    <Package size={16} style={{ color: 'var(--color-accent-secondary)' }} />
+                                </div>
+                                <div>
+                                    <h2 className="card-title" style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('poCreate.stockModelLines')}</h2>
+                                    {stockLines.length > 0 && (
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                            {stockLines.length === 1 ? t('poCreate.oneItem') : t('poCreate.countItems', { count: stockLines.length })}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={addStockLine}
+                                disabled={submitting}
+                                style={{ gap: 'var(--space-2)', fontSize: 'var(--font-size-sm)' }}
+                            >
+                                <Plus size={16} />
+                                {t('poCreate.addLine')}
+                            </button>
+                        </div>
                     </div>
-                    <div className="card-body">
+                    <div className="card-body" style={{ padding: stockLines.length === 0 ? 'var(--space-10) var(--space-6)' : 'var(--space-4) var(--space-6)' }}>
                         {stockLines.length === 0 ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>{t('poCreate.noLines')}</div>
+                            <div style={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)',
+                                color: 'var(--color-text-muted)', textAlign: 'center',
+                            }}>
+                                <div style={{
+                                    width: 56, height: 56, borderRadius: 'var(--radius-xl)',
+                                    background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                    <Package size={24} style={{ opacity: 0.5 }} />
+                                </div>
+                                <p style={{ fontSize: 'var(--font-size-sm)', margin: 0 }}>{t('poCreate.noLines')}</p>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={addStockLine}
+                                    disabled={submitting}
+                                    style={{ gap: 'var(--space-2)', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-2)' }}
+                                >
+                                    <Plus size={14} />
+                                    {t('poCreate.addLine')}
+                                </button>
+                            </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                                 {stockLines.map((l, idx) => (
-                                    <div key={`stock-${idx}`} className="card" style={{ background: 'var(--color-bg-primary)' }}>
-                                        <div
-                                            className="card-body"
-                                            style={{
-                                                display: 'grid',
-                                                gridTemplateColumns: '1.2fr 1.4fr 0.7fr 0.8fr auto auto',
-                                                gap: 'var(--space-3)',
-                                                alignItems: 'end',
-                                            }}
-                                        >
-                                            <div className="form-group">
+                                    <div
+                                        key={`stock-${idx}`}
+                                        style={{
+                                            display: 'flex', gap: 'var(--space-4)', alignItems: 'stretch',
+                                            background: l.instances_added ? 'rgba(16, 185, 129, 0.03)' : 'var(--color-bg-secondary)',
+                                            border: l.instances_added ? '1px solid rgba(16, 185, 129, 0.15)' : '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                                            transition: 'all var(--transition-fast)',
+                                            opacity: l.instances_added ? 0.85 : 1,
+                                        }}
+                                    >
+                                        {/* Line Number Badge */}
+                                        <div style={{
+                                            width: 28, height: 28, borderRadius: 'var(--radius-full)',
+                                            background: l.instances_added ? 'rgba(16, 185, 129, 0.12)' : 'rgba(99, 102, 241, 0.12)',
+                                            border: l.instances_added ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(99, 102, 241, 0.25)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 'var(--font-size-xs)', fontWeight: 700, flexShrink: 0, alignSelf: 'flex-start',
+                                            color: l.instances_added ? 'var(--color-success)' : 'var(--color-accent-secondary)',
+                                            marginTop: 'var(--space-1)',
+                                        }}>
+                                            {idx + 1}
+                                        </div>
+
+                                        {/* Line Fields */}
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: '1.2fr 1.4fr 0.7fr 0.8fr',
+                                            gap: 'var(--space-4)', alignItems: 'end', flex: 1,
+                                        }}>
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label">{t('poCreate.type')}</label>
                                                 <select
                                                     className="form-input"
@@ -585,13 +780,13 @@ const PurchaseOrderCreatePage = () => {
                                                         })
                                                         .map((t) => (
                                                             <option key={t.stock_item_type_id} value={t.stock_item_type_id}>
-                                                                {t.stock_item_type_label}
+                                                                {getLocalizedLabel(t.stock_item_type_label_ar, t.stock_item_type_label_en, t.stock_item_type_label)}
                                                             </option>
                                                         ))}
                                                 </select>
                                             </div>
 
-                                            <div className="form-group">
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label">{t('poCreate.model')}</label>
                                                 <select
                                                     className="form-input"
@@ -616,42 +811,66 @@ const PurchaseOrderCreatePage = () => {
                                                         })
                                                         .map((m) => (
                                                             <option key={m.stock_item_model_id} value={m.stock_item_model_id}>
-                                                                {m.model_name}
+                                                                {getLocalizedLabel(m.model_name_ar, m.model_name_en, m.model_name)}
                                                             </option>
                                                         ))}
                                                 </select>
                                             </div>
 
-                                            <div className="form-group">
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label">{t('poCreate.qtyOrdered')}</label>
                                                 <input className="form-input" value={l.quantity_ordered} onChange={(e) => updateStockLine(idx, { quantity_ordered: e.target.value })} disabled={l.instances_added} />
                                             </div>
-                                            <div className="form-group">
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label">{t('poCreate.unitPrice')}</label>
                                                 <input className="form-input" value={l.unit_price} onChange={(e) => updateStockLine(idx, { unit_price: e.target.value })} disabled={l.instances_added} />
                                             </div>
+                                        </div>
 
-                                            <div className="form-group" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'end', margin: 0 }}>
-                                                {!l.instances_added && (
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        onClick={() => openStockInstances(l.stock_item_type_id, l.stock_item_model_id, l.quantity_ordered, idx)}
-                                                        disabled={submitting || !l.stock_item_type_id || !l.stock_item_model_id}
-                                                        title={!l.stock_item_type_id || !l.stock_item_model_id ? t('poCreate.selectTypeModelFirst') : undefined}
-                                                    >
-                                                        {t('poCreate.addInstances')}
-                                                    </button>
-                                                )}
-                                                {l.instances_added && (
-                                                    <div style={{ color: 'var(--color-success)', fontWeight: 600, padding: 'var(--space-2) 0' }}>{t('poCreate.instancesAdded')}</div>
-                                                )}
-                                            </div>
-                                            <div className="form-group" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'end', margin: 0 }}>
-                                                <button type="button" className="btn btn-secondary" onClick={() => removeStockLine(idx)} disabled={submitting || l.instances_added}>
-                                                    {t('common.remove')}
+                                        {/* Line Actions */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', justifyContent: 'center', flexShrink: 0 }}>
+                                            {!l.instances_added && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary"
+                                                    onClick={() => openStockInstances(l.stock_item_type_id, l.stock_item_model_id, l.quantity_ordered, idx)}
+                                                    disabled={submitting || !l.stock_item_type_id || !l.stock_item_model_id}
+                                                    title={!l.stock_item_type_id || !l.stock_item_model_id ? t('poCreate.selectTypeModelFirst') : undefined}
+                                                    style={{ gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', padding: 'var(--space-2) var(--space-3)' }}
+                                                >
+                                                    <ChevronRight size={14} />
+                                                    {t('poCreate.addInstances')}
                                                 </button>
-                                            </div>
+                                            )}
+                                            {l.instances_added && (
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                    color: 'var(--color-success)', fontWeight: 600,
+                                                    fontSize: 'var(--font-size-xs)', padding: 'var(--space-2) 0',
+                                                }}>
+                                                    <CheckCircle2 size={14} />
+                                                    {t('poCreate.instancesAdded')}
+                                                </div>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => removeStockLine(idx)}
+                                                disabled={submitting || l.instances_added}
+                                                style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                    padding: 'var(--space-2) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: 500,
+                                                    borderRadius: 'var(--radius-md)', cursor: (submitting || l.instances_added) ? 'not-allowed' : 'pointer',
+                                                    background: 'transparent',
+                                                    border: (submitting || l.instances_added) ? '1px solid transparent' : '1px solid rgba(239, 68, 68, 0.2)',
+                                                    color: (submitting || l.instances_added) ? 'var(--color-text-muted)' : 'var(--color-error)',
+                                                    transition: 'all var(--transition-fast)',
+                                                    opacity: (submitting || l.instances_added) ? 0.4 : 1,
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                            >
+                                                <Trash2 size={14} />
+                                                {t('common.remove')}
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -660,30 +879,98 @@ const PurchaseOrderCreatePage = () => {
                     </div>
                 </div>
 
+                {/* Consumable Lines */}
                 <div className="card">
-                    <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 className="card-title" style={{ margin: 0 }}>{t('poCreate.consumableModelLines')}</h2>
-                        <button type="button" className="btn btn-secondary" onClick={addConsumableLine} disabled={submitting}>
-                            {t('poCreate.addLine')}
-                        </button>
+                    <div className="card-header" style={{ padding: 'var(--space-4) var(--space-6)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <div style={{
+                                    width: 32, height: 32, borderRadius: 'var(--radius-md)',
+                                    background: 'rgba(139, 92, 246, 0.12)', border: '1px solid rgba(139, 92, 246, 0.25)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                    <Wrench size={16} style={{ color: '#a78bfa' }} />
+                                </div>
+                                <div>
+                                    <h2 className="card-title" style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('poCreate.consumableModelLines')}</h2>
+                                    {consumableLines.length > 0 && (
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                            {consumableLines.length === 1 ? t('poCreate.oneItem') : t('poCreate.countItems', { count: consumableLines.length })}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={addConsumableLine}
+                                disabled={submitting}
+                                style={{ gap: 'var(--space-2)', fontSize: 'var(--font-size-sm)' }}
+                            >
+                                <Plus size={16} />
+                                {t('poCreate.addLine')}
+                            </button>
+                        </div>
                     </div>
-                    <div className="card-body">
+                    <div className="card-body" style={{ padding: consumableLines.length === 0 ? 'var(--space-10) var(--space-6)' : 'var(--space-4) var(--space-6)' }}>
                         {consumableLines.length === 0 ? (
-                            <div style={{ color: 'var(--color-text-secondary)' }}>{t('poCreate.noLines')}</div>
+                            <div style={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)',
+                                color: 'var(--color-text-muted)', textAlign: 'center',
+                            }}>
+                                <div style={{
+                                    width: 56, height: 56, borderRadius: 'var(--radius-xl)',
+                                    background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                    <Wrench size={24} style={{ opacity: 0.5 }} />
+                                </div>
+                                <p style={{ fontSize: 'var(--font-size-sm)', margin: 0 }}>{t('poCreate.noLines')}</p>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={addConsumableLine}
+                                    disabled={submitting}
+                                    style={{ gap: 'var(--space-2)', fontSize: 'var(--font-size-sm)', marginTop: 'var(--space-2)' }}
+                                >
+                                    <Plus size={14} />
+                                    {t('poCreate.addLine')}
+                                </button>
+                            </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                                 {consumableLines.map((l, idx) => (
-                                    <div key={`cons-${idx}`} className="card" style={{ background: 'var(--color-bg-primary)' }}>
-                                        <div
-                                            className="card-body"
-                                            style={{
-                                                display: 'grid',
-                                                gridTemplateColumns: '1.2fr 1.4fr 0.7fr 0.8fr auto auto',
-                                                gap: 'var(--space-3)',
-                                                alignItems: 'end',
-                                            }}
-                                        >
-                                            <div className="form-group">
+                                    <div
+                                        key={`cons-${idx}`}
+                                        style={{
+                                            display: 'flex', gap: 'var(--space-4)', alignItems: 'stretch',
+                                            background: l.instances_added ? 'rgba(16, 185, 129, 0.03)' : 'var(--color-bg-secondary)',
+                                            border: l.instances_added ? '1px solid rgba(16, 185, 129, 0.15)' : '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                                            transition: 'all var(--transition-fast)',
+                                            opacity: l.instances_added ? 0.85 : 1,
+                                        }}
+                                    >
+                                        {/* Line Number Badge */}
+                                        <div style={{
+                                            width: 28, height: 28, borderRadius: 'var(--radius-full)',
+                                            background: l.instances_added ? 'rgba(16, 185, 129, 0.12)' : 'rgba(139, 92, 246, 0.12)',
+                                            border: l.instances_added ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(139, 92, 246, 0.25)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 'var(--font-size-xs)', fontWeight: 700, flexShrink: 0, alignSelf: 'flex-start',
+                                            color: l.instances_added ? 'var(--color-success)' : '#a78bfa',
+                                            marginTop: 'var(--space-1)',
+                                        }}>
+                                            {idx + 1}
+                                        </div>
+
+                                        {/* Line Fields */}
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: '1.2fr 1.4fr 0.7fr 0.8fr',
+                                            gap: 'var(--space-4)', alignItems: 'end', flex: 1,
+                                        }}>
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label">{t('poCreate.type')}</label>
                                                 <select
                                                     className="form-input"
@@ -704,13 +991,13 @@ const PurchaseOrderCreatePage = () => {
                                                         })
                                                         .map((t) => (
                                                             <option key={t.consumable_type_id} value={t.consumable_type_id}>
-                                                                {t.consumable_type_label}
+                                                                {getLocalizedLabel(t.consumable_type_label_ar, t.consumable_type_label_en, t.consumable_type_label)}
                                                             </option>
                                                         ))}
                                                 </select>
                                             </div>
 
-                                            <div className="form-group">
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label">{t('poCreate.model')}</label>
                                                 <select
                                                     className="form-input"
@@ -735,42 +1022,66 @@ const PurchaseOrderCreatePage = () => {
                                                         })
                                                         .map((m) => (
                                                             <option key={m.consumable_model_id} value={m.consumable_model_id}>
-                                                                {m.model_name}
+                                                                {getLocalizedLabel(m.model_name_ar, m.model_name_en, m.model_name)}
                                                             </option>
                                                         ))}
                                                 </select>
                                             </div>
 
-                                            <div className="form-group">
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label">{t('poCreate.qtyOrdered')}</label>
                                                 <input className="form-input" value={l.quantity_ordered} onChange={(e) => updateConsumableLine(idx, { quantity_ordered: e.target.value })} disabled={l.instances_added} />
                                             </div>
-                                            <div className="form-group">
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label">{t('poCreate.unitPrice')}</label>
                                                 <input className="form-input" value={l.unit_price} onChange={(e) => updateConsumableLine(idx, { unit_price: e.target.value })} disabled={l.instances_added} />
                                             </div>
+                                        </div>
 
-                                            <div className="form-group" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'end', margin: 0 }}>
-                                                {!l.instances_added && (
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-secondary"
-                                                        onClick={() => openConsumableInstances(l.consumable_type_id, l.consumable_model_id, l.quantity_ordered, idx)}
-                                                        disabled={submitting || !l.consumable_type_id || !l.consumable_model_id}
-                                                        title={!l.consumable_type_id || !l.consumable_model_id ? t('poCreate.selectTypeModelFirst') : undefined}
-                                                    >
-                                                        {t('poCreate.addInstances')}
-                                                    </button>
-                                                )}
-                                                {l.instances_added && (
-                                                    <div style={{ color: 'var(--color-success)', fontWeight: 600, padding: 'var(--space-2) 0' }}>{t('poCreate.instancesAdded')}</div>
-                                                )}
-                                            </div>
-                                            <div className="form-group" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'end', margin: 0 }}>
-                                                <button type="button" className="btn btn-secondary" onClick={() => removeConsumableLine(idx)} disabled={submitting || l.instances_added}>
-                                                    {t('common.remove')}
+                                        {/* Line Actions */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', justifyContent: 'center', flexShrink: 0 }}>
+                                            {!l.instances_added && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary"
+                                                    onClick={() => openConsumableInstances(l.consumable_type_id, l.consumable_model_id, l.quantity_ordered, idx)}
+                                                    disabled={submitting || !l.consumable_type_id || !l.consumable_model_id}
+                                                    title={!l.consumable_type_id || !l.consumable_model_id ? t('poCreate.selectTypeModelFirst') : undefined}
+                                                    style={{ gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', padding: 'var(--space-2) var(--space-3)' }}
+                                                >
+                                                    <ChevronRight size={14} />
+                                                    {t('poCreate.addInstances')}
                                                 </button>
-                                            </div>
+                                            )}
+                                            {l.instances_added && (
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                    color: 'var(--color-success)', fontWeight: 600,
+                                                    fontSize: 'var(--font-size-xs)', padding: 'var(--space-2) 0',
+                                                }}>
+                                                    <CheckCircle2 size={14} />
+                                                    {t('poCreate.instancesAdded')}
+                                                </div>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => removeConsumableLine(idx)}
+                                                disabled={submitting || l.instances_added}
+                                                style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                    padding: 'var(--space-2) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: 500,
+                                                    borderRadius: 'var(--radius-md)', cursor: (submitting || l.instances_added) ? 'not-allowed' : 'pointer',
+                                                    background: 'transparent',
+                                                    border: (submitting || l.instances_added) ? '1px solid transparent' : '1px solid rgba(239, 68, 68, 0.2)',
+                                                    color: (submitting || l.instances_added) ? 'var(--color-text-muted)' : 'var(--color-error)',
+                                                    transition: 'all var(--transition-fast)',
+                                                    opacity: (submitting || l.instances_added) ? 0.4 : 1,
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                            >
+                                                <Trash2 size={14} />
+                                                {t('common.remove')}
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
@@ -780,8 +1091,33 @@ const PurchaseOrderCreatePage = () => {
                 </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-5)' }}>
-                <button type="button" className="btn btn-primary" onClick={submit} disabled={submitting}>
+            {/* Submit Bar */}
+            <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                marginTop: 'var(--space-8)', padding: 'var(--space-5) var(--space-6)',
+                background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-xl)', backdropFilter: 'blur(10px)',
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                        <Box size={16} />
+                        <span>{totalLines === 1 ? t('poCreate.oneLine') : t('poCreate.countLines', { count: totalLines })}</span>
+                    </div>
+                    {committedLines > 0 && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-success)', fontSize: 'var(--font-size-sm)' }}>
+                            <CheckCircle2 size={16} />
+                            <span>{committedLines === 1 ? t('poCreate.committed_one') : t('poCreate.committed_other', { count: committedLines })}</span>
+                        </div>
+                    )}
+                </div>
+                <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={submit}
+                    disabled={submitting}
+                    style={{ width: 'auto', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-8)' }}
+                >
+                    {submitting ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <ShoppingCart size={18} />}
                     {submitting ? t('poCreate.creating') : t('poCreate.createOrder')}
                 </button>
             </div>

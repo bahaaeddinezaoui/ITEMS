@@ -437,7 +437,6 @@ const MaintenanceSteps = ({
         if (typeof onTriggerReturnModalAfterEndHandled === 'function') {
             onTriggerReturnModalAfterEndHandled();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [triggerReturnModalAfterEnd]);
 
     const openAttributeEditor = async (step) => {

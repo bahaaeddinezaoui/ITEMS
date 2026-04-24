@@ -39,6 +39,7 @@
     "maintenanceStats": "Maintenance Stats",
     "stockConsumableDestructionCertificates": "Destruction Certificates (Stock & Consumable)",
     "assetMovementsApprovals": "Asset Movements Approvals",
+    "administration": "Administration",
     "settings": "Settings",
     "logout": "Logout",
     "login": "Login",
@@ -47,9 +48,11 @@
   },
   "navSections": {
     "my": "My",
+    "operations": "Operations",
     "reports": "Reports",
     "inventory": "Inventory",
-    "maintenance": "Maintenance"
+    "maintenance": "Maintenance",
+    "procurement": "Procurement"
   },
   "common": {
     "search": "Search",
@@ -87,6 +90,7 @@
     "true": "True",
     "ok": "OK",
     "id": "ID",
+    "overview": "Overview",
     "creating": "Creating...",
     "notAllowed": "Not allowed",
     "error": "Error",
@@ -1183,6 +1187,11 @@
     "title": "Incident Reports",
     "subtitle": "Consult incident reports, collect owner notes, and sign with role-specific notes",
     "newReport": "New Incident Report",
+    "overview": "Overview",
+    "overviewSubtitle": "Incident reports summary and statistics",
+    "totalReports": "Total reports",
+    "pendingSignature": "Pending signature",
+    "fullySigned": "Fully signed",
     "createReport": "Create Incident Report",
     "searchBySerial": "Search asset by serial number",
     "searchPlaceholder": "Type full or partial serial number",
@@ -1215,6 +1224,12 @@
     "incident": "incident",
     "asset": "asset",
     "assetFallback": "Asset #{{id}}",
+    "assetType": "Type",
+    "assetBrand": "Brand",
+    "assetModel": "Model",
+    "inventoryNumber": "Inv. #",
+    "serviceTag": "Service Tag",
+    "assetStatus": "Status",
     "serial": "serial",
     "signed": "Signed",
     "signOwner": "Owner",
@@ -1251,7 +1266,14 @@
     "role.itBureauChief": "IT Bureau Chief",
     "role.exploitationChief": "Exploitation Chief",
     "role.protectionSecurityBureauChief": "Protection & Security Bureau Chief",
-    "role.schoolHeadquarter": "School Headquarter"
+    "role.schoolHeadquarter": "School Headquarter",
+    "status": "Status",
+    "selectItems": "Select items individually",
+    "digitalCopyPdf": "Digital Copy (PDF)",
+    "statusSubmitted": "Submitted",
+    "statusUnderReview": "Under Review",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected"
   },
   "companyAssetRequests": {
     "title": "Company Asset Requests",
@@ -1926,7 +1948,7 @@
     "validateError": "Failed to validate certificate",
     "consultPdfError": "Failed to consult PDF",
     "uploadPdfError": "Failed to upload PDF",
-    "newCertificate": "+ New Destruction Certificate",
+    "newCertificate": "New Destruction Certificate",
     "pdfNotFound": "PDF not found",
     "pdfNotFoundDesc": "The PDF file for this destruction certificate does not exist. Do you want to upload it now?",
     "uploadPdf": "Upload PDF",
@@ -1942,7 +1964,16 @@
     "digitalCopy": "Digital Copy",
     "noCertificatesFound": "No destruction certificates found.",
     "validate": "Validate",
-    "consultPdf": "Consult PDF"
+    "consultPdf": "Consult PDF",
+    "totalCertificates": "Total Certificates",
+    "pendingValidation": "Pending",
+    "withDigitalCopy": "With Digital Copy",
+    "pending": "Pending",
+    "noCertificates": "No destruction certificates found",
+    "stockItemSelected": "stock item selected",
+    "stockItemsSelected": "stock items selected",
+    "consumableSelected": "consumable selected",
+    "consumablesSelected": "consumables selected"
   },
   "positionRoleMappings": {
     "title": "Position-Role Links",
@@ -2022,7 +2053,11 @@
     "warrantyMonths": "Warranty (months)",
     "nameInAdminCert": "Name in administrative certificate",
     "createConsumable": "Create consumable",
-    "createCountConsumables": "Create {{count}} consumables"
+    "createCountConsumables": "Create {{count}} consumables",
+    "oneItemToCreate": "1 item to create",
+    "countItemsToCreate": "{{count}} items to create",
+    "oneItem": "1 item",
+    "countItems": "{{count}} items"
   },
   "stockItemInstanceCreate": {
     "title": "New Stock Item",
@@ -2050,7 +2085,11 @@
     "warrantyMonths": "Warranty (months)",
     "nameInAdminCert": "Name in administrative certificate",
     "createStockItem": "Create stock item",
-    "createCountStockItems": "Create {{count}} stock items"
+    "createCountStockItems": "Create {{count}} stock items",
+    "oneItemToCreate": "1 item to create",
+    "countItemsToCreate": "{{count}} items to create",
+    "oneItem": "1 item",
+    "countItems": "{{count}} items"
   },
   "defaultCompositionSelect": {
     "defaultComposition": "Default composition",
@@ -2432,7 +2471,9 @@
     "action": "Action",
     "selectLocation": "Select location",
     "moving": "Moving...",
-    "move": "Move"
+    "move": "Move",
+    "unassigned": "Unassigned",
+    "noItemsToMove": "No items to move"
   },
   "certMoveItems": {
     "title": "Move Items (Administrative Certificate)",
@@ -2454,6 +2495,7 @@
     "title": "Create Purchase Order",
     "subtitle": "Create a new purchase order with stock item/consumable model lines.",
     "clearDraft": "Clear draft",
+    "clearingDraft": "Clearing draft...",
     "header": "Header",
     "supplier": "Supplier",
     "selectSupplier": "Select supplier",
@@ -2486,7 +2528,13 @@
     "duplicateConsumableLineShort": "Duplicate consumable line (same Type + Model).",
     "createdWithId": "Purchase order #{{id}} created",
     "created": "Purchase order created",
-    "createError": "Failed to create purchase order"
+    "createError": "Failed to create purchase order",
+    "oneItem": "1 item",
+    "countItems": "{{count}} items",
+    "oneLine": "1 line",
+    "countLines": "{{count}} lines",
+    "committed_one": "1 committed",
+    "committed_other": "{{count}} committed"
   },
   "poOrders": {
     "title": "Purchase Orders",
@@ -2564,7 +2612,13 @@
     "chooseFile": "Choose a file or drag here",
     "onlyPdfSupported": "Only PDF files are supported",
     "createAcceptanceReport": "Create Acceptance Report",
-    "noAcceptanceReportYet": "No acceptance report has been created for this order yet."
+    "noAcceptanceReportYet": "No acceptance report has been created for this order yet.",
+    "statTotal": "Total",
+    "statPending": "Pending",
+    "statPartial": "Partial",
+    "statReceived": "Received",
+    "financeSigned": "Finance approved",
+    "viewDetails": "View details"
   },
   "stockItems": {
     "title": "Stock Items Explorer",
@@ -2905,6 +2959,9 @@
     "consumableTypePrompt": "Consumable type",
     "consumableModelPrompt": "Consumable model",
     "noPerson": "Unassigned"
+  },
+  "includedItemMovementsApproval": {
+    "title": "Included Item Movements Approval"
   },
   "translations": {
     "translate": "Translate",

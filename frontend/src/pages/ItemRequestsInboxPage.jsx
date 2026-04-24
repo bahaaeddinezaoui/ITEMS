@@ -84,7 +84,6 @@ const ItemRequestsInboxPage = () => {
     useEffect(() => {
         if (!isStockConsumableResponsible) return;
         fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isStockConsumableResponsible]);
 
     const updateForm = (id, patch) => {

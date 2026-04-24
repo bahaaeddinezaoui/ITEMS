@@ -1052,6 +1052,8 @@ class AssetSerializer(serializers.ModelSerializer):
 
     asset_name_ar = serializers.SerializerMethodField()
     asset_name_en = serializers.SerializerMethodField()
+    asset_status_ar = serializers.SerializerMethodField()
+    asset_status_en = serializers.SerializerMethodField()
     translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
@@ -1062,7 +1064,7 @@ class AssetSerializer(serializers.ModelSerializer):
             'failed_external_maintenance_id',
             'included_stock_items', 'included_consumables',
             'stock_item_composition', 'consumable_composition',
-            'asset_name_ar', 'asset_name_en', 'translations'
+            'asset_name_ar', 'asset_name_en', 'asset_status_ar', 'asset_status_en', 'translations'
         ]
         read_only_fields = ['asset_id']
 
@@ -1071,32 +1073,64 @@ class AssetSerializer(serializers.ModelSerializer):
         if items is None:
             from .models import AssetIsComposedOfStockItemHistory
             items = AssetIsComposedOfStockItemHistory.objects.filter(asset=obj, end_datetime__isnull=True).select_related('stock_item')
-        return [
-            {
-                'stock_item_id': item.stock_item.stock_item_id,
-                'stock_item_name': item.stock_item.stock_item_name,
-                'stock_item_status': item.stock_item.stock_item_status
-            } for item in items
-        ]
+        result = []
+        for item in items:
+            si = item.stock_item
+            si_status_ar = None
+            si_status_en = None
+            try:
+                t = StockItemTranslation.objects.get(stock_item=si, language_code='ar')
+                si_status_ar = t.stock_item_status
+            except Exception:
+                pass
+            try:
+                t = StockItemTranslation.objects.get(stock_item=si, language_code='en')
+                si_status_en = t.stock_item_status
+            except Exception:
+                pass
+            result.append({
+                'stock_item_id': si.stock_item_id,
+                'stock_item_name': si.stock_item_name,
+                'stock_item_status': si.stock_item_status,
+                'stock_item_status_ar': si_status_ar,
+                'stock_item_status_en': si_status_en,
+            })
+        return result
 
     def get_consumable_composition(self, obj):
         items = getattr(obj, '_current_consumables', None)
         if items is None:
             from .models import AssetIsComposedOfConsumableHistory
             items = AssetIsComposedOfConsumableHistory.objects.filter(asset=obj, end_datetime__isnull=True).select_related('consumable')
-        return [
-            {
-                'consumable_id': item.consumable.consumable_id,
-                'consumable_name': item.consumable.consumable_name,
-                'consumable_status': item.consumable.consumable_status
-            } for item in items
-        ]
+        result = []
+        for item in items:
+            c = item.consumable
+            c_status_ar = None
+            c_status_en = None
+            try:
+                t = ConsumableTranslation.objects.get(consumable=c, language_code='ar')
+                c_status_ar = t.consumable_status
+            except Exception:
+                pass
+            try:
+                t = ConsumableTranslation.objects.get(consumable=c, language_code='en')
+                c_status_en = t.consumable_status
+            except Exception:
+                pass
+            result.append({
+                'consumable_id': c.consumable_id,
+                'consumable_name': c.consumable_name,
+                'consumable_status': c.consumable_status,
+                'consumable_status_ar': c_status_ar,
+                'consumable_status_en': c_status_en,
+            })
+        return result
 
     def _get_translated_field(self, obj, lang_code, field_name):
         try:
             translation = AssetTranslation.objects.get(asset=obj, language_code=lang_code)
             return getattr(translation, field_name, None)
-        except AssetTranslation.DoesNotExist:
+        except Exception:
             return None
 
     def get_asset_name_ar(self, obj):
@@ -1105,6 +1139,12 @@ class AssetSerializer(serializers.ModelSerializer):
     def get_asset_name_en(self, obj):
         return self._get_translated_field(obj, 'en', 'asset_name')
 
+    def get_asset_status_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'asset_status')
+
+    def get_asset_status_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'asset_status')
+
     def create(self, validated_data):
         # Remove non-model fields before creating the Asset
         included_stock_items = validated_data.pop('included_stock_items', [])
@@ -1112,19 +1152,42 @@ class AssetSerializer(serializers.ModelSerializer):
         translations_data = validated_data.pop('translations', None)
         instance = Asset.objects.create(**validated_data)
         if translations_data:
-            from api.utils.i18n import save_translations
-            # Also save English version in translation table
+            from api.utils.i18n import save_translations, translate_status
+            # Ensure English version has name and status
             en_data = translations_data.get('en', {})
             if not en_data and instance.asset_name:
                 en_data = {'asset_name': instance.asset_name}
                 translations_data['en'] = en_data
             elif instance.asset_name and 'asset_name' not in en_data:
                 en_data['asset_name'] = instance.asset_name
+            if instance.asset_status and 'asset_status' not in en_data:
+                en_data['asset_status'] = translate_status(instance.asset_status, 'en')
+                translations_data['en'] = en_data
+            # Ensure Arabic version also gets the status
+            ar_data = translations_data.get('ar', {})
+            if instance.asset_status and 'asset_status' not in ar_data:
+                ar_data['asset_status'] = translate_status(instance.asset_status, 'ar')
+                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.asset_name:
-            # No translations provided, but save English name in translation table
-            from api.utils.i18n import save_translations
-            save_translations(instance, {'en': {'asset_name': instance.asset_name}})
+        elif instance.asset_name or instance.asset_status:
+            # No translations provided, but save name and status in both en and ar translation rows
+            from api.utils.i18n import save_translations, translate_status
+            trans_data = {}
+            if instance.asset_name or instance.asset_status:
+                en_entry = {}
+                if instance.asset_name:
+                    en_entry['asset_name'] = instance.asset_name
+                if instance.asset_status:
+                    en_entry['asset_status'] = translate_status(instance.asset_status, 'en')
+                trans_data['en'] = en_entry
+            if instance.asset_name or instance.asset_status:
+                ar_entry = {}
+                if instance.asset_name:
+                    ar_entry['asset_name'] = instance.asset_name
+                if instance.asset_status:
+                    ar_entry['asset_status'] = translate_status(instance.asset_status, 'ar')
+                trans_data['ar'] = ar_entry
+            save_translations(instance, trans_data)
         return instance
 
     def update(self, instance, validated_data):
@@ -1133,16 +1196,33 @@ class AssetSerializer(serializers.ModelSerializer):
         included_consumables = validated_data.pop('included_consumables', None)
         instance = super().update(instance, validated_data)
         if translations_data:
-            from api.utils.i18n import save_translations
+            from api.utils.i18n import save_translations, translate_status
             # Ensure English version is also saved
             en_data = translations_data.get('en', {})
             if instance.asset_name and 'asset_name' not in en_data:
                 en_data['asset_name'] = instance.asset_name
+            if instance.asset_status and 'asset_status' not in en_data:
+                en_data['asset_status'] = translate_status(instance.asset_status, 'en')
                 translations_data['en'] = en_data
+            # Ensure Arabic version also gets the status
+            ar_data = translations_data.get('ar', {})
+            if instance.asset_status and 'asset_status' not in ar_data:
+                ar_data['asset_status'] = translate_status(instance.asset_status, 'ar')
+                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.asset_name:
-            from api.utils.i18n import save_translations
-            save_translations(instance, {'en': {'asset_name': instance.asset_name}})
+        elif instance.asset_name or instance.asset_status:
+            from api.utils.i18n import save_translations, translate_status
+            en_entry = {}
+            if instance.asset_name:
+                en_entry['asset_name'] = instance.asset_name
+            if instance.asset_status:
+                en_entry['asset_status'] = translate_status(instance.asset_status, 'en')
+            ar_entry = {}
+            if instance.asset_name:
+                ar_entry['asset_name'] = instance.asset_name
+            if instance.asset_status:
+                ar_entry['asset_status'] = translate_status(instance.asset_status, 'ar')
+            save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
 
@@ -1610,18 +1690,20 @@ class StockItemSerializer(serializers.ModelSerializer):
     """Serializer for StockItem model"""
     stock_item_name_ar = serializers.SerializerMethodField()
     stock_item_name_en = serializers.SerializerMethodField()
+    stock_item_status_ar = serializers.SerializerMethodField()
+    stock_item_status_en = serializers.SerializerMethodField()
     translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = StockItem
-        fields = ['stock_item_id', 'stock_item_model', 'stock_item_inventory_number', 'stock_item_name', 'stock_item_status', 'stock_item_consumable_destruction_certificate_id', 'stock_item_name_ar', 'stock_item_name_en', 'translations']
+        fields = ['stock_item_id', 'stock_item_model', 'stock_item_inventory_number', 'stock_item_name', 'stock_item_status', 'stock_item_consumable_destruction_certificate_id', 'stock_item_name_in_administrative_certificate', 'stock_item_name_ar', 'stock_item_name_en', 'stock_item_status_ar', 'stock_item_status_en', 'translations']
         read_only_fields = ['stock_item_id']
 
     def _get_translated_field(self, obj, lang_code, field_name):
         try:
             translation = StockItemTranslation.objects.get(stock_item=obj, language_code=lang_code)
             return getattr(translation, field_name, None)
-        except StockItemTranslation.DoesNotExist:
+        except Exception:
             return None
 
     def get_stock_item_name_ar(self, obj):
@@ -1630,37 +1712,99 @@ class StockItemSerializer(serializers.ModelSerializer):
     def get_stock_item_name_en(self, obj):
         return self._get_translated_field(obj, 'en', 'stock_item_name')
 
+    def get_stock_item_status_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'stock_item_status')
+
+    def get_stock_item_status_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'stock_item_status')
+
     def create(self, validated_data):
         translations_data = validated_data.pop('translations', None)
         instance = StockItem.objects.create(**validated_data)
         if translations_data:
-            from api.utils.i18n import save_translations
-            # Also save English version in translation table
+            from api.utils.i18n import save_translations, translate_status
+            # Ensure English version has name and status
             en_data = translations_data.get('en', {})
             if not en_data and instance.stock_item_name:
                 en_data = {'stock_item_name': instance.stock_item_name}
                 translations_data['en'] = en_data
             elif instance.stock_item_name and 'stock_item_name' not in en_data:
                 en_data['stock_item_name'] = instance.stock_item_name
+            if instance.stock_item_status and 'stock_item_status' not in en_data:
+                en_data['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
+                translations_data['en'] = en_data
+            if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in en_data:
+                en_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+                translations_data['en'] = en_data
+            # Ensure Arabic version also gets the status
+            ar_data = translations_data.get('ar', {})
+            if instance.stock_item_status and 'stock_item_status' not in ar_data:
+                ar_data['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
+                translations_data['ar'] = ar_data
+            if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in ar_data:
+                ar_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.stock_item_name:
-            from api.utils.i18n import save_translations
-            save_translations(instance, {'en': {'stock_item_name': instance.stock_item_name}})
+        elif instance.stock_item_name or instance.stock_item_status or instance.stock_item_name_in_administrative_certificate:
+            # No translations provided, but save name and status in both en and ar translation rows
+            from api.utils.i18n import save_translations, translate_status
+            en_entry = {}
+            if instance.stock_item_name:
+                en_entry['stock_item_name'] = instance.stock_item_name
+            if instance.stock_item_status:
+                en_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
+            if instance.stock_item_name_in_administrative_certificate:
+                en_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+            ar_entry = {}
+            if instance.stock_item_name:
+                ar_entry['stock_item_name'] = instance.stock_item_name
+            if instance.stock_item_status:
+                ar_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
+            if instance.stock_item_name_in_administrative_certificate:
+                ar_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+            save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
     def update(self, instance, validated_data):
         translations_data = validated_data.pop('translations', None)
         instance = super().update(instance, validated_data)
         if translations_data:
-            from api.utils.i18n import save_translations
+            from api.utils.i18n import save_translations, translate_status
             en_data = translations_data.get('en', {})
             if instance.stock_item_name and 'stock_item_name' not in en_data:
                 en_data['stock_item_name'] = instance.stock_item_name
+            if instance.stock_item_status and 'stock_item_status' not in en_data:
+                en_data['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
                 translations_data['en'] = en_data
+            if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in en_data:
+                en_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+                translations_data['en'] = en_data
+            # Ensure Arabic version also gets the status
+            ar_data = translations_data.get('ar', {})
+            if instance.stock_item_status and 'stock_item_status' not in ar_data:
+                ar_data['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
+                translations_data['ar'] = ar_data
+            if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in ar_data:
+                ar_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.stock_item_name:
-            from api.utils.i18n import save_translations
-            save_translations(instance, {'en': {'stock_item_name': instance.stock_item_name}})
+        elif instance.stock_item_name or instance.stock_item_status or instance.stock_item_name_in_administrative_certificate:
+            from api.utils.i18n import save_translations, translate_status
+            en_entry = {}
+            if instance.stock_item_name:
+                en_entry['stock_item_name'] = instance.stock_item_name
+            if instance.stock_item_status:
+                en_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
+            if instance.stock_item_name_in_administrative_certificate:
+                en_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+            ar_entry = {}
+            if instance.stock_item_name:
+                ar_entry['stock_item_name'] = instance.stock_item_name
+            if instance.stock_item_status:
+                ar_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
+            if instance.stock_item_name_in_administrative_certificate:
+                ar_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+            save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
 
@@ -1687,18 +1831,20 @@ class ConsumableSerializer(serializers.ModelSerializer):
     """Serializer for Consumable model"""
     consumable_name_ar = serializers.SerializerMethodField()
     consumable_name_en = serializers.SerializerMethodField()
+    consumable_status_ar = serializers.SerializerMethodField()
+    consumable_status_en = serializers.SerializerMethodField()
     translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = Consumable
-        fields = ['consumable_id', 'consumable_model', 'consumable_serial_number', 'consumable_inventory_number', 'consumable_name', 'consumable_status', 'stock_item_consumable_destruction_certificate_id', 'consumable_name_ar', 'consumable_name_en', 'translations']
+        fields = ['consumable_id', 'consumable_model', 'consumable_serial_number', 'consumable_inventory_number', 'consumable_name', 'consumable_status', 'stock_item_consumable_destruction_certificate_id', 'consumable_name_in_administrative_certificate', 'consumable_name_ar', 'consumable_name_en', 'consumable_status_ar', 'consumable_status_en', 'translations']
         read_only_fields = ['consumable_id']
 
     def _get_translated_field(self, obj, lang_code, field_name):
         try:
             translation = ConsumableTranslation.objects.get(consumable=obj, language_code=lang_code)
             return getattr(translation, field_name, None)
-        except ConsumableTranslation.DoesNotExist:
+        except Exception:
             return None
 
     def get_consumable_name_ar(self, obj):
@@ -1707,37 +1853,99 @@ class ConsumableSerializer(serializers.ModelSerializer):
     def get_consumable_name_en(self, obj):
         return self._get_translated_field(obj, 'en', 'consumable_name')
 
+    def get_consumable_status_ar(self, obj):
+        return self._get_translated_field(obj, 'ar', 'consumable_status')
+
+    def get_consumable_status_en(self, obj):
+        return self._get_translated_field(obj, 'en', 'consumable_status')
+
     def create(self, validated_data):
         translations_data = validated_data.pop('translations', None)
         instance = Consumable.objects.create(**validated_data)
         if translations_data:
-            from api.utils.i18n import save_translations
-            # Also save English version in translation table
+            from api.utils.i18n import save_translations, translate_status
+            # Ensure English version has name and status
             en_data = translations_data.get('en', {})
             if not en_data and instance.consumable_name:
                 en_data = {'consumable_name': instance.consumable_name}
                 translations_data['en'] = en_data
             elif instance.consumable_name and 'consumable_name' not in en_data:
                 en_data['consumable_name'] = instance.consumable_name
+            if instance.consumable_status and 'consumable_status' not in en_data:
+                en_data['consumable_status'] = translate_status(instance.consumable_status, 'en')
+                translations_data['en'] = en_data
+            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in en_data:
+                en_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+                translations_data['en'] = en_data
+            # Ensure Arabic version also gets the status
+            ar_data = translations_data.get('ar', {})
+            if instance.consumable_status and 'consumable_status' not in ar_data:
+                ar_data['consumable_status'] = translate_status(instance.consumable_status, 'ar')
+                translations_data['ar'] = ar_data
+            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in ar_data:
+                ar_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.consumable_name:
-            from api.utils.i18n import save_translations
-            save_translations(instance, {'en': {'consumable_name': instance.consumable_name}})
+        elif instance.consumable_name or instance.consumable_status or instance.consumable_name_in_administrative_certificate:
+            # No translations provided, but save name and status in both en and ar translation rows
+            from api.utils.i18n import save_translations, translate_status
+            en_entry = {}
+            if instance.consumable_name:
+                en_entry['consumable_name'] = instance.consumable_name
+            if instance.consumable_status:
+                en_entry['consumable_status'] = translate_status(instance.consumable_status, 'en')
+            if instance.consumable_name_in_administrative_certificate:
+                en_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+            ar_entry = {}
+            if instance.consumable_name:
+                ar_entry['consumable_name'] = instance.consumable_name
+            if instance.consumable_status:
+                ar_entry['consumable_status'] = translate_status(instance.consumable_status, 'ar')
+            if instance.consumable_name_in_administrative_certificate:
+                ar_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+            save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
     def update(self, instance, validated_data):
         translations_data = validated_data.pop('translations', None)
         instance = super().update(instance, validated_data)
         if translations_data:
-            from api.utils.i18n import save_translations
+            from api.utils.i18n import save_translations, translate_status
             en_data = translations_data.get('en', {})
             if instance.consumable_name and 'consumable_name' not in en_data:
                 en_data['consumable_name'] = instance.consumable_name
+            if instance.consumable_status and 'consumable_status' not in en_data:
+                en_data['consumable_status'] = translate_status(instance.consumable_status, 'en')
                 translations_data['en'] = en_data
+            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in en_data:
+                en_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+                translations_data['en'] = en_data
+            # Ensure Arabic version also gets the status
+            ar_data = translations_data.get('ar', {})
+            if instance.consumable_status and 'consumable_status' not in ar_data:
+                ar_data['consumable_status'] = translate_status(instance.consumable_status, 'ar')
+                translations_data['ar'] = ar_data
+            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in ar_data:
+                ar_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.consumable_name:
-            from api.utils.i18n import save_translations
-            save_translations(instance, {'en': {'consumable_name': instance.consumable_name}})
+        elif instance.consumable_name or instance.consumable_status or instance.consumable_name_in_administrative_certificate:
+            from api.utils.i18n import save_translations, translate_status
+            en_entry = {}
+            if instance.consumable_name:
+                en_entry['consumable_name'] = instance.consumable_name
+            if instance.consumable_status:
+                en_entry['consumable_status'] = translate_status(instance.consumable_status, 'en')
+            if instance.consumable_name_in_administrative_certificate:
+                en_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+            ar_entry = {}
+            if instance.consumable_name:
+                ar_entry['consumable_name'] = instance.consumable_name
+            if instance.consumable_status:
+                ar_entry['consumable_status'] = translate_status(instance.consumable_status, 'ar')
+            if instance.consumable_name_in_administrative_certificate:
+                ar_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+            save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
 
@@ -2412,10 +2620,20 @@ class UserSessionSerializer(serializers.ModelSerializer):
 class AssetIncidentReportSerializer(serializers.ModelSerializer):
     asset_serial_number = serializers.CharField(source='asset.asset_serial_number', read_only=True)
     asset_name = serializers.CharField(source='asset.asset_name', read_only=True)
+    asset_type_label = serializers.CharField(source='asset.asset_model.asset_type.asset_type_label', read_only=True, default=None)
+    asset_brand_name = serializers.CharField(source='asset.asset_model.asset_brand.brand_name', read_only=True, default=None)
+    asset_model_name = serializers.CharField(source='asset.asset_model.model_name', read_only=True, default=None)
+    asset_inventory_number = serializers.CharField(source='asset.asset_inventory_number', read_only=True, default=None)
+    asset_service_tag = serializers.CharField(source='asset.asset_service_tag', read_only=True, default=None)
+    asset_status = serializers.CharField(source='asset.asset_status', read_only=True, default=None)
     owner_person_name = serializers.SerializerMethodField()
     school_headquarter_person_name = serializers.SerializerMethodField()
     stock_item_ids = serializers.SerializerMethodField()
     consumable_ids = serializers.SerializerMethodField()
+    reason_ar = serializers.SerializerMethodField()
+    reason_en = serializers.SerializerMethodField()
+    status_ar = serializers.SerializerMethodField()
+    status_en = serializers.SerializerMethodField()
 
     class Meta:
         model = AssetIncidentReport
@@ -2424,6 +2642,12 @@ class AssetIncidentReportSerializer(serializers.ModelSerializer):
             'asset',
             'asset_serial_number',
             'asset_name',
+            'asset_type_label',
+            'asset_brand_name',
+            'asset_model_name',
+            'asset_inventory_number',
+            'asset_service_tag',
+            'asset_status',
             'owner_person',
             'owner_person_name',
             'school_headquarter_person',
@@ -2445,6 +2669,10 @@ class AssetIncidentReportSerializer(serializers.ModelSerializer):
             'maintenance',
             'stock_item_ids',
             'consumable_ids',
+            'reason_ar',
+            'reason_en',
+            'status_ar',
+            'status_en',
         ]
         read_only_fields = ['asset_incident_report_id']
         extra_kwargs = {
@@ -2452,6 +2680,28 @@ class AssetIncidentReportSerializer(serializers.ModelSerializer):
             'school_headquarter_person': {'required': False, 'allow_null': True},
             'maintenance': {'required': False, 'allow_null': True},
         }
+
+    def _get_translation(self, obj, field_name, lang_code):
+        try:
+            from api.translations import AssetIncidentReportTranslation
+            translation = AssetIncidentReportTranslation.objects.get(
+                asset_incident_report=obj, language_code=lang_code
+            )
+            return getattr(translation, field_name, None)
+        except AssetIncidentReportTranslation.DoesNotExist:
+            return None
+
+    def get_reason_ar(self, obj):
+        return self._get_translation(obj, 'reason', 'ar')
+
+    def get_reason_en(self, obj):
+        return self._get_translation(obj, 'reason', 'en')
+
+    def get_status_ar(self, obj):
+        return self._get_translation(obj, 'status', 'ar')
+
+    def get_status_en(self, obj):
+        return self._get_translation(obj, 'status', 'en')
 
     def get_owner_person_name(self, obj):
         person = getattr(obj, 'owner_person', None)

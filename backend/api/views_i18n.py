@@ -55,6 +55,7 @@ from api.translations import (
     CompanyAssetRequestTranslation,
     ExternalMaintenanceDocumentTranslation,
     MaintenanceStepItemRequestTranslation,
+    AssetIncidentReportTranslation,
 )
 
 
@@ -335,6 +336,11 @@ class ExternalMaintenanceDocumentTranslationViewSet(BaseTranslationViewSet):
 class MaintenanceStepItemRequestTranslationViewSet(BaseTranslationViewSet):
     """ViewSet for MaintenanceStepItemRequest translations."""
     queryset = MaintenanceStepItemRequestTranslation.objects.all()
+
+
+class AssetIncidentReportTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for AssetIncidentReport translations."""
+    queryset = AssetIncidentReportTranslation.objects.all()
 
 
 # ============================================================================

@@ -117,11 +117,7 @@ function App() {
                     {/* Landing */}
                     <Route
                         path="/"
-                        element={
-                            <PublicRoute>
-                                <LandingPage />
-                            </PublicRoute>
-                        }
+                        element={<LandingPage />}
                     />
 
                     {/* Public Routes */}

@@ -125,66 +125,55 @@ const MaintenanceStatsPage = () => {
                             {t('maintenanceStats.staffEfficiencyRanking')}
                         </h2>
                     </div>
-                    <div className="card-body">
-                        <div className="table-container">
-                            <table className="data-table leaderboard-table">
-                                <thead>
-                                    <tr>
-                                        <th>{t('maintenanceStats.technician')}</th>
-                                        <th>{t('maintenanceStats.volume')}</th>
-                                        <th>{t('maintenanceStats.successRate')}</th>
-                                        <th>{t('maintenanceStats.avgTime')}</th>
-                                        <th>{t('maintenanceStats.availability')}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {stats.map((tech) => (
-                                        <tr key={tech.performed_by_person_id}>
-                                            <td>
-                                                <div className="tech-info">
-                                                    <div className="tech-avatar">
-                                                        {tech.performed_by_person__first_name[0]}{tech.performed_by_person__last_name[0]}
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-bold text-primary">
-                                                            {tech.performed_by_person__first_name} {tech.performed_by_person__last_name}
-                                                        </div>
-                                                        <div className="metric-subtext">ID: #{tech.performed_by_person_id}</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td style={{ fontWeight: 700 }}>{tech.total_maintenances}</td>
-                                            <td>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: '160px' }}>
-                                                    <div className="progress-container">
-                                                        <div 
-                                                            className={`progress-bar ${
-                                                                tech.success_rate >= 90 ? 'progress-emerald' : tech.success_rate >= 75 ? 'progress-primary' : 'progress-amber'
-                                                            }`}
-                                                            style={{ width: `${tech.success_rate}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700 }}>{tech.success_rate}%</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                    <Clock size={14} color="var(--color-text-muted)" />
-                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 500 }}>{tech.avg_duration_hours}h</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                {tech.pending_maintenances > 0 ? (
-                                                    <span className="badge badge-warning">{tech.pending_maintenances} {t('maintenanceStats.active')}</span>
-                                                ) : (
-                                                    <span className="badge badge-success">{t('maintenanceStats.idle')}</span>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {stats.length > 0 ? stats.map((tech, index) => (
+                            <div key={tech.performed_by_person_id} className="leaderboard-card">
+                                <div className="leaderboard-rank">
+                                    <span className={`rank-badge ${index < 3 ? `rank-${index + 1}` : ''}`}>
+                                        {index + 1}
+                                    </span>
+                                </div>
+                                <div className="tech-avatar">
+                                    {tech.performed_by_person__first_name[0]}{tech.performed_by_person__last_name[0]}
+                                </div>
+                                <div className="leaderboard-info">
+                                    <div className="leaderboard-name">
+                                        {tech.performed_by_person__first_name} {tech.performed_by_person__last_name}
+                                    </div>
+                                    <div className="leaderboard-meta">
+                                        <span className="leaderboard-volume">{tech.total_maintenances} {t('maintenanceStats.volume')}</span>
+                                        <span className="leaderboard-separator">•</span>
+                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                            <Clock size={12} color="var(--color-text-muted)" />
+                                            {tech.avg_duration_hours}h
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="leaderboard-stats">
+                                    <div className="leaderboard-success">
+                                        <div className="progress-container" style={{ height: '6px', minWidth: '80px' }}>
+                                            <div 
+                                                className={`progress-bar ${
+                                                    tech.success_rate >= 90 ? 'progress-emerald' : tech.success_rate >= 75 ? 'progress-primary' : 'progress-amber'
+                                                }`}
+                                                style={{ width: `${tech.success_rate}%` }}
+                                            ></div>
+                                        </div>
+                                        <span className="leaderboard-success-value">{tech.success_rate}%</span>
+                                    </div>
+                                    {tech.pending_maintenances > 0 ? (
+                                        <span className="badge badge-warning" style={{ fontSize: '10px', padding: '2px 8px' }}>{tech.pending_maintenances} {t('maintenanceStats.active')}</span>
+                                    ) : (
+                                        <span className="badge badge-success" style={{ fontSize: '10px', padding: '2px 8px' }}>{t('maintenanceStats.idle')}</span>
+                                    )}
+                                </div>
+                            </div>
+                        )) : (
+                            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)' }}>
+                                <Activity size={48} style={{ opacity: 0.1, marginBottom: '12px' }} />
+                                <p>{t('maintenanceStats.noData')}</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

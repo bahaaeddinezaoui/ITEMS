@@ -1003,7 +1003,8 @@ const LocationsPage = () => {
                         alignItems: 'center',
                         gap: 'var(--space-2)',
                         padding: 'var(--space-3) var(--space-5)',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
+                        width: 'auto'
                     }}
                 >
                     {showForm ? <X size={18} /> : <Plus size={18} />}
@@ -1130,7 +1131,7 @@ const LocationsPage = () => {
                                     type="submit"
                                     disabled={saving}
                                     className="btn btn-primary"
-                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                    style={{ padding: 'var(--space-3) var(--space-6)', width: 'auto' }}
                                 >
                                     {saving ? (
                                         <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>

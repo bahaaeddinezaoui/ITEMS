@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const LoginPage = () => {
     const { t } = useTranslation();
@@ -135,6 +136,11 @@ const LoginPage = () => {
 
     return (
         <div className="login-page">
+            {/* Language Switcher */}
+            <div className="login-lang-switcher">
+                <LanguageSwitcher />
+            </div>
+
             {/* Left Side - Login Form */}
             <div className="login-left">
                 <div className="login-container">

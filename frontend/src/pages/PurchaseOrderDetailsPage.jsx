@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +16,35 @@ const PurchaseOrderDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [order, setOrder] = useState(null);
+
+    const summary = useMemo(() => {
+        if (!order) return null;
+
+        const stockLines = Array.isArray(order.stock_item_models) ? order.stock_item_models : [];
+        const consumableLines = Array.isArray(order.consumable_models) ? order.consumable_models : [];
+        const allLines = [...stockLines, ...consumableLines];
+
+        let totalOrdered = 0;
+        let totalReceived = 0;
+        let remainingLineCount = 0;
+        for (const l of allLines) {
+            const ordered = Number(l?.quantity_ordered ?? 0);
+            const received = Number(l?.quantity_received ?? 0);
+            totalOrdered += Number.isFinite(ordered) ? ordered : 0;
+            totalReceived += Number.isFinite(received) ? received : 0;
+            if (ordered > received) remainingLineCount += 1;
+        }
+
+        return {
+            stockLines,
+            consumableLines,
+            totalLines: allLines.length,
+            totalOrdered,
+            totalReceived,
+            remainingLineCount,
+            hasRemaining: remainingLineCount > 0,
+        };
+    }, [order]);
 
     const load = async () => {
         setLoading(true);
@@ -33,7 +63,6 @@ const PurchaseOrderDetailsPage = () => {
     useEffect(() => {
         if (!isStockConsumableResponsible) return;
         load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isStockConsumableResponsible, orderId]);
 
     if (!isStockConsumableResponsible) {
@@ -42,105 +71,177 @@ const PurchaseOrderDetailsPage = () => {
 
     return (
         <div className="page-container">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
-                <div>
-                    <h1 className="page-title">{t('purchaseOrderDetails.title')}</h1>
+            <div className="dashboard-hero" style={{ marginBottom: 0 }}>
+                <div className="dashboard-hero-main">
+                    <h1 className="page-title" style={{ marginBottom: 'var(--space-2)' }}>{t('purchaseOrderDetails.title')}</h1>
                     <p className="page-subtitle">{t('purchaseOrderDetails.subtitle')}</p>
+                    {!!order && (
+                        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', marginTop: 'var(--space-4)' }}>
+                            <span className="badge badge-info">{t('purchaseOrderDetails.order')} #{order.purchase_order_id}</span>
+                            {!!order.purchase_order_code && <span className="badge badge-info">{order.purchase_order_code}</span>}
+                            <span className={`badge ${order.is_signed_by_finance ? 'badge-success' : 'badge-warning'}`}>
+                                {t('purchaseOrderDetails.signedByFinance')}: {order.is_signed_by_finance ? t('common.yes') : t('common.no')}
+                            </span>
+                            {!!summary && (
+                                <span className={`badge ${summary.hasRemaining ? 'badge-warning' : 'badge-success'}`}>
+                                    {t('purchaseOrderDetails.received')}: {summary.totalReceived}/{summary.totalOrdered}
+                                </span>
+                            )}
+                        </div>
+                    )}
                 </div>
-                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <div className="org-actions">
                     <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
+                        <ArrowLeft size={18} />
                         {t('common.back')}
                     </button>
                     <button type="button" className="btn btn-secondary" onClick={load} disabled={loading}>
+                        <RefreshCw size={18} />
                         {t('common.refresh')}
                     </button>
+                    {!!order && !!summary?.hasRemaining && (
+                        <button type="button" className="btn btn-primary" onClick={() => navigate(`/dashboard/purchase-orders/${order.purchase_order_id}/receive`)}>
+                            {t('purchaseOrderDetails.receiveItems')}
+                        </button>
+                    )}
+                    {!!order && (
+                        <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${order.purchase_order_id}/backorder-reports`)}>
+                            {t('purchaseOrderDetails.backorderReports')}
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {error && (
-                <div className="alert alert-error" style={{ marginBottom: 'var(--space-4)' }}>
-                    {error}
-                </div>
-            )}
+            {error && <div className="error-message">{error}</div>}
 
             {loading ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>
+                    <span className="loading-spinner" aria-hidden="true" />
+                    <span>{t('common.loading')}</span>
+                </div>
             ) : !order ? (
                 <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.notFound')}</div>
             ) : (
                 <>
-                    {(() => {
-                        const hasRemaining = [...(order.stock_item_models || []), ...(order.consumable_models || [])].some((l) => {
-                            const ordered = Number(l.quantity_ordered ?? 0);
-                            const received = Number(l.quantity_received ?? 0);
-                            return ordered > received;
-                        });
-
-                        return (
-                    <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-                        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderDetails.header')}</h2>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                                {hasRemaining && (
-                                    <button type="button" className="btn btn-primary" onClick={() => navigate(`/dashboard/purchase-orders/${order.purchase_order_id}/receive`)}>
-                                        {t('purchaseOrderDetails.receiveItems')}
-                                    </button>
-                                )}
-                                <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${order.purchase_order_id}/backorder-reports`)}>
-                                    {t('purchaseOrderDetails.backorderReports')}
-                                </button>
+                    {!!summary && (
+                        <div className="stat-grid">
+                            <div className="stat-card">
+                                <div className="stat-value">{summary.totalLines}</div>
+                                <div className="stat-label">{t('purchaseOrderDetails.header')}</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-value">{summary.totalOrdered}</div>
+                                <div className="stat-label">{t('purchaseOrderDetails.ordered')}</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-value">{summary.totalReceived}</div>
+                                <div className="stat-label">{t('purchaseOrderDetails.received')}</div>
+                            </div>
+                            <div className="stat-card">
+                                <div className="stat-value">{summary.remainingLineCount}</div>
+                                <div className="stat-label">{t('purchaseOrderDetails.backorderReports')}</div>
                             </div>
                         </div>
-                        <div className="card-body" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-4)' }}>
-                            <div>
-                                <div style={{ fontWeight: 600 }}>{t('purchaseOrderDetails.order')} #{order.purchase_order_id}</div>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{order.purchase_order_code || ''}</div>
+                    )}
+
+                    <div className="card">
+                        <div className="card-body" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 'var(--space-6)' }}>
+                            <div style={{ minWidth: 0 }}>
+                                <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, letterSpacing: '-0.01em' }}>#{order.purchase_order_id}{order.purchase_order_code ? ` · ${order.purchase_order_code}` : ''}</div>
+                                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 2 }}>
+                                    {order.supplier_name || (order.supplier_id ? `${t('purchaseOrderDetails.supplier')} #${order.supplier_id}` : '—')}
+                                </div>
                             </div>
-                            <div>
-                                <div style={{ fontWeight: 600 }}>{t('purchaseOrderDetails.supplier')}</div>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{order.supplier_name ? order.supplier_name : (order.supplier_id ? `${t('purchaseOrderDetails.supplier')} #${order.supplier_id}` : '')}</div>
-                            </div>
-                            <div>
-                                <div style={{ fontWeight: 600 }}>{t('purchaseOrderDetails.signedByFinance')}</div>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{order.is_signed_by_finance ? t('common.yes') : t('common.no')}</div>
-                            </div>
+                            <span className={`badge ${order.is_signed_by_finance ? 'badge-success' : 'badge-warning'}`}>
+                                {order.is_signed_by_finance ? t('common.yes') : t('common.no')} · {t('purchaseOrderDetails.signedByFinance')}
+                            </span>
+                            {!!summary && (
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                    {summary.totalReceived}/{summary.totalOrdered}
+                                    <span style={{
+                                        display: 'inline-block',
+                                        width: 60,
+                                        height: 6,
+                                        borderRadius: 'var(--radius-full)',
+                                        background: 'var(--color-border)',
+                                        overflow: 'hidden',
+                                    }}>
+                                        <span style={{
+                                            display: 'block',
+                                            width: `${summary.totalOrdered > 0 ? Math.min(100, Math.round((summary.totalReceived / summary.totalOrdered) * 100)) : 0}%`,
+                                            height: '100%',
+                                            borderRadius: 'var(--radius-full)',
+                                            background: summary.hasRemaining ? 'var(--color-warning)' : 'var(--color-success)',
+                                            transition: 'width var(--transition-base)',
+                                        }} />
+                                    </span>
+                                </span>
+                            )}
                         </div>
                     </div>
-                        );
-                    })()}
 
-                    <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
+                    <div className="card">
                         <div className="card-header">
                             <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderDetails.stockItemModelLines')}</h2>
+                            {(summary?.stockLines || []).length > 0 && (
+                                <span className="badge badge-info">{summary.stockLines.length}</span>
+                            )}
                         </div>
-                        <div className="card-body">
-                            {(order.stock_item_models || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
+                        <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                            {(summary?.stockLines || []).length === 0 ? (
+                                <div style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-4)', textAlign: 'center' }}>{t('common.none')}</div>
                             ) : (
-                                <div style={{ overflowX: 'auto' }}>
-                                    <table className="table" style={{ width: '100%' }}>
-                                        <thead>
-                                            <tr>
-                                                <th>{t('common.id')}</th>
-                                                <th>{t('purchaseOrderDetails.model')}</th>
-                                                <th>{t('purchaseOrderDetails.ordered')}</th>
-                                                <th>{t('purchaseOrderDetails.received')}</th>
-                                                <th>{t('purchaseOrderDetails.unitPrice')}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {order.stock_item_models.map((r) => (
-                                                <tr key={`s-${r.stock_item_model_id}`}>
-                                                    <td>{r.stock_item_model_id}</td>
-                                                    <td>{r.model_name || ''}</td>
-                                                    <td>{r.quantity_ordered ?? ''}</td>
-                                                    <td>{r.quantity_received ?? ''}</td>
-                                                    <td>{r.unit_price ?? ''}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                (summary?.stockLines || []).map((r) => {
+                                    const ordered = Number(r?.quantity_ordered ?? 0);
+                                    const received = Number(r?.quantity_received ?? 0);
+                                    const pct = ordered > 0 ? Math.min(100, Math.round((received / ordered) * 100)) : 0;
+                                    const done = received >= ordered;
+                                    return (
+                                        <div key={`s-${r.stock_item_model_id}`} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 'var(--space-4)',
+                                            padding: 'var(--space-4) var(--space-5)',
+                                            borderRadius: 'var(--radius-lg)',
+                                            border: '1px solid var(--color-border)',
+                                            background: 'var(--color-bg-card)',
+                                            borderLeft: `3px solid ${done ? 'var(--color-success)' : 'var(--color-warning)'}`,
+                                            transition: 'background var(--transition-fast), border-color var(--transition-fast)',
+                                        }}>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontWeight: 600, marginBottom: 2 }}>{r.brand_name ? `${r.brand_name} ` : ''}{r.model_name || `#${r.stock_item_model_id}`}{r.type_label ? ` (${r.type_label})` : ''}</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: done ? 'var(--color-success)' : 'var(--color-warning)', fontVariantNumeric: 'tabular-nums' }}>
+                                                        {received}/{ordered}
+                                                    </span>
+                                                    <span style={{
+                                                        display: 'inline-block',
+                                                        flex: 1,
+                                                        maxWidth: 120,
+                                                        height: 5,
+                                                        borderRadius: 'var(--radius-full)',
+                                                        background: 'var(--color-border)',
+                                                        overflow: 'hidden',
+                                                    }}>
+                                                        <span style={{
+                                                            display: 'block',
+                                                            width: `${pct}%`,
+                                                            height: '100%',
+                                                            borderRadius: 'var(--radius-full)',
+                                                            background: done ? 'var(--color-success)' : 'var(--color-warning)',
+                                                            transition: 'width var(--transition-base)',
+                                                        }} />
+                                                    </span>
+                                                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{pct}%</span>
+                                                </div>
+                                            </div>
+                                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.unit_price ?? '—'}</div>
+                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{t('purchaseOrderDetails.unitPrice')}</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
                             )}
                         </div>
                     </div>
@@ -148,35 +249,65 @@ const PurchaseOrderDetailsPage = () => {
                     <div className="card">
                         <div className="card-header">
                             <h2 className="card-title" style={{ margin: 0 }}>{t('purchaseOrderDetails.consumableModelLines')}</h2>
+                            {(summary?.consumableLines || []).length > 0 && (
+                                <span className="badge badge-info">{summary.consumableLines.length}</span>
+                            )}
                         </div>
-                        <div className="card-body">
-                            {(order.consumable_models || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.none')}</div>
+                        <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                            {(summary?.consumableLines || []).length === 0 ? (
+                                <div style={{ color: 'var(--color-text-secondary)', padding: 'var(--space-4)', textAlign: 'center' }}>{t('common.none')}</div>
                             ) : (
-                                <div style={{ overflowX: 'auto' }}>
-                                    <table className="table" style={{ width: '100%' }}>
-                                        <thead>
-                                            <tr>
-                                                <th>{t('common.id')}</th>
-                                                <th>{t('purchaseOrderDetails.model')}</th>
-                                                <th>{t('purchaseOrderDetails.ordered')}</th>
-                                                <th>{t('purchaseOrderDetails.received')}</th>
-                                                <th>{t('purchaseOrderDetails.unitPrice')}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {order.consumable_models.map((r) => (
-                                                <tr key={`c-${r.consumable_model_id}`}>
-                                                    <td>{r.consumable_model_id}</td>
-                                                    <td>{r.model_name || ''}</td>
-                                                    <td>{r.quantity_ordered ?? ''}</td>
-                                                    <td>{r.quantity_received ?? ''}</td>
-                                                    <td>{r.unit_price ?? ''}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                (summary?.consumableLines || []).map((r) => {
+                                    const ordered = Number(r?.quantity_ordered ?? 0);
+                                    const received = Number(r?.quantity_received ?? 0);
+                                    const pct = ordered > 0 ? Math.min(100, Math.round((received / ordered) * 100)) : 0;
+                                    const done = received >= ordered;
+                                    return (
+                                        <div key={`c-${r.consumable_model_id}`} style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 'var(--space-4)',
+                                            padding: 'var(--space-4) var(--space-5)',
+                                            borderRadius: 'var(--radius-lg)',
+                                            border: '1px solid var(--color-border)',
+                                            background: 'var(--color-bg-card)',
+                                            borderLeft: `3px solid ${done ? 'var(--color-success)' : 'var(--color-warning)'}`,
+                                            transition: 'background var(--transition-fast), border-color var(--transition-fast)',
+                                        }}>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontWeight: 600, marginBottom: 2 }}>{r.brand_name ? `${r.brand_name} ` : ''}{r.model_name || `#${r.consumable_model_id}`}{r.type_label ? ` (${r.type_label})` : ''}</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: done ? 'var(--color-success)' : 'var(--color-warning)', fontVariantNumeric: 'tabular-nums' }}>
+                                                        {received}/{ordered}
+                                                    </span>
+                                                    <span style={{
+                                                        display: 'inline-block',
+                                                        flex: 1,
+                                                        maxWidth: 120,
+                                                        height: 5,
+                                                        borderRadius: 'var(--radius-full)',
+                                                        background: 'var(--color-border)',
+                                                        overflow: 'hidden',
+                                                    }}>
+                                                        <span style={{
+                                                            display: 'block',
+                                                            width: `${pct}%`,
+                                                            height: '100%',
+                                                            borderRadius: 'var(--radius-full)',
+                                                            background: done ? 'var(--color-success)' : 'var(--color-warning)',
+                                                            transition: 'width var(--transition-base)',
+                                                        }} />
+                                                    </span>
+                                                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{pct}%</span>
+                                                </div>
+                                            </div>
+                                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                                <div style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{r.unit_price ?? '—'}</div>
+                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{t('purchaseOrderDetails.unitPrice')}</div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
                             )}
                         </div>
                     </div>

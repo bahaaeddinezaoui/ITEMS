@@ -80,7 +80,6 @@ const AssetDestructionCertificatesPage = () => {
     useEffect(() => {
         if (!canView) return;
         fetchAll();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canView]);
 
     const toggleIdInList = (list, id) => {
@@ -141,8 +140,9 @@ const AssetDestructionCertificatesPage = () => {
         try {
             const existsResp = await assetDestructionCertificateService.digitalCopyExists(id);
             if (existsResp?.exists) {
-                const blob = await assetDestructionCertificateService.getDigitalCopyBlob(id);
-                const url = window.URL.createObjectURL(blob);
+                const rawBlob = await assetDestructionCertificateService.getDigitalCopyBlob(id);
+                const pdfBlob = new Blob([rawBlob], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(pdfBlob);
                 window.open(url, '_blank', 'noopener,noreferrer');
                 setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
                 return;
@@ -183,8 +183,9 @@ const AssetDestructionCertificatesPage = () => {
             formData.append('digital_copy', file);
             await assetDestructionCertificateService.uploadDigitalCopy(id, formData);
             await fetchAll();
-            const blob = await assetDestructionCertificateService.getDigitalCopyBlob(id);
-            const url = window.URL.createObjectURL(blob);
+            const rawBlob = await assetDestructionCertificateService.getDigitalCopyBlob(id);
+            const pdfBlob = new Blob([rawBlob], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(pdfBlob);
             window.open(url, '_blank', 'noopener,noreferrer');
             setTimeout(() => window.URL.revokeObjectURL(url), 60_000);
         } catch (err) {
@@ -255,7 +256,7 @@ const AssetDestructionCertificatesPage = () => {
                         <button
                             className={`btn btn-${showCreateForm ? 'secondary' : 'primary'}`}
                             onClick={() => setShowCreateForm((v) => !v)}
-                            style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
+                            style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)', width: 'auto' }}
                         >
                             {showCreateForm ? <X size={18} /> : <Plus size={18} />}
                             {showCreateForm ? t('common.cancel') : t('assetDestructionCertificates.newCertificate')}

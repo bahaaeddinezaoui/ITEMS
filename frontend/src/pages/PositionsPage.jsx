@@ -328,7 +328,7 @@ const PositionsPage = () => {
                 <button
                     onClick={handleOpenModal}
                     className="btn btn-primary"
-                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', whiteSpace: 'nowrap' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', whiteSpace: 'nowrap', width: 'auto' }}
                 >
                     <Plus size={18} />
                     <span>{t('positions.addPosition')}</span>

@@ -39,6 +39,7 @@
     "maintenanceStats": "إحصائيات الصيانة",
     "stockConsumableDestructionCertificates": "شهادات الإتلاف (المخزون والمواد الاستهلاكية)",
     "assetMovementsApprovals": "اعتمادات نقل الأصول",
+    "administration": "الإدارة",
     "settings": "الإعدادات",
     "logout": "تسجيل الخروج",
     "login": "تسجيل الدخول",
@@ -47,9 +48,11 @@
   },
   "navSections": {
     "my": "خاصتي",
+    "operations": "العمليات",
     "reports": "التقارير",
     "inventory": "المخزون",
-    "maintenance": "الصيانة"
+    "maintenance": "الصيانة",
+    "procurement": "المشتريات"
   },
   "common": {
     "search": "بحث",
@@ -87,6 +90,7 @@
     "true": "صحيح",
     "ok": "موافق",
     "id": "المعرف",
+    "overview": "نظرة عامة",
     "creating": "جاري الإنشاء...",
     "notAllowed": "غير مسموح",
     "error": "خطأ",
@@ -1029,7 +1033,7 @@
     "assetTrackingDesc": "تتبع جميع معداتك في الوقت الفعلي باستخدام أدوات إدارة الأصول الشاملة.",
     "maintenanceSchedulingTitle": "جدولة الصيانة",
     "maintenanceSchedulingDesc": "جدولة وتتبع أنشطة الصيانة للحفاظ على معداتك في حالة مثالية.",
-    "teamCollaborationTitle": "التعاون الفريق",
+    "teamCollaborationTitle": "تعاون الفريق",
     "teamCollaborationDesc": "تعيين المهام ومشاركة التحديثات والتعاون بسلاسة مع أعضاء فريقك.",
     "realTimeUpdatesTitle": "تحديثات فورية",
     "realTimeUpdatesDesc": "احصل على إشعارات وتحديثات فورية حول حالة المعدات وتقدم الصيانة.",
@@ -1183,9 +1187,14 @@
     "title": "تقارير الحوادث",
     "subtitle": "استعلام تقارير الحوادث وجمع ملاحظات المالك والتوقيع مع ملاحظات خاصة بالدور",
     "newReport": "تقرير حادث جديد",
+    "overview": "نظرة عامة",
+    "overviewSubtitle": "ملخص وإحصائيات تقارير الحوادث",
+    "totalReports": "إجمالي التقارير",
+    "pendingSignature": "توقيع معلق",
+    "fullySigned": "موقعة بالكامل",
     "createReport": "إنشاء تقرير حادث",
     "searchBySerial": "البحث عن الأصل بالرقم التسلسلي",
-    "searchPlaceholder": "اكتب الرقم التسلسلي كاملاً أو جزءاً منه",
+    "searchPlaceholder": "اكتب الرقم التسلسلي كاملاً أو جزئياً",
     "stolen": "مسروق",
     "lost": "مفقود",
     "irrecoverablyDamaged": "تالف بشكل لا يمكن إصلاحه",
@@ -1215,6 +1224,12 @@
     "incident": "حادث",
     "asset": "أصل",
     "assetFallback": "أصل #{{id}}",
+    "assetType": "النوع",
+    "assetBrand": "العلامة التجارية",
+    "assetModel": "الموديل",
+    "inventoryNumber": "رقم الجرد",
+    "serviceTag": "علامة الخدمة",
+    "assetStatus": "الحالة",
     "serial": "تسلسلي",
     "signed": "موقع",
     "signOwner": "المالك",
@@ -1251,7 +1266,14 @@
     "role.itBureauChief": "رئيس مكتب تكنولوجيا المعلومات",
     "role.exploitationChief": "رئيس الاستغلال",
     "role.protectionSecurityBureauChief": "رئيس مكتب الحماية والأمن",
-    "role.schoolHeadquarter": "المقر الرئيسي للمدرسة"
+    "role.schoolHeadquarter": "المقر الرئيسي للمدرسة",
+    "status": "الحالة",
+    "selectItems": "اختيار العناصر بشكل فردي",
+    "digitalCopyPdf": "نسخة رقمية (PDF)",
+    "statusSubmitted": "مقدم",
+    "statusUnderReview": "قيد المراجعة",
+    "statusApproved": "تمت الموافقة",
+    "statusRejected": "مرفوض"
   },
   "companyAssetRequests": {
     "title": "طلبات أصول الشركة",
@@ -1926,7 +1948,7 @@
     "validateError": "فشل في التحقق من الشهادة",
     "consultPdfError": "فشل في استشارة PDF",
     "uploadPdfError": "فشل في رفع PDF",
-    "newCertificate": "+ شهادة إتلاف جديدة",
+    "newCertificate": "شهادة إتلاف جديدة",
     "pdfNotFound": "PDF غير موجود",
     "pdfNotFoundDesc": "ملف PDF لشهادة الإتلاف هذه غير موجود. هل تريد رفعه الآن؟",
     "uploadPdf": "رفع PDF",
@@ -1942,7 +1964,16 @@
     "digitalCopy": "نسخة رقمية",
     "noCertificatesFound": "لم يتم العثور على شهادات إتلاف.",
     "validate": "تحقق",
-    "consultPdf": "استشارة PDF"
+    "consultPdf": "استشارة PDF",
+    "totalCertificates": "إجمالي الشهادات",
+    "pendingValidation": "قيد الانتظار",
+    "withDigitalCopy": "بنسخة رقمية",
+    "pending": "قيد الانتظار",
+    "noCertificates": "لم يتم العثور على شهادات إتلاف",
+    "stockItemSelected": "مادة مخزونة محددة",
+    "stockItemsSelected": "مواد مخزونة محددة",
+    "consumableSelected": "مادة استهلاكية محددة",
+    "consumablesSelected": "مواد استهلاكية محددة"
   },
   "positionRoleMappings": {
     "title": "روابط المنصب-الدور",
@@ -2022,7 +2053,11 @@
     "warrantyMonths": "الضمان (أشهر)",
     "nameInAdminCert": "الاسم في الشهادة الإدارية",
     "createConsumable": "إنشاء مادة استهلاكية",
-    "createCountConsumables": "إنشاء {{count}} مواد استهلاكية"
+    "createCountConsumables": "إنشاء {{count}} مواد استهلاكية",
+    "oneItemToCreate": "عنصر واحد للإنشاء",
+    "countItemsToCreate": "{{count}} عناصر للإنشاء",
+    "oneItem": "عنصر واحد",
+    "countItems": "{{count}} عناصر"
   },
   "stockItemInstanceCreate": {
     "title": "مادة مخزونة جديدة",
@@ -2050,7 +2085,11 @@
     "warrantyMonths": "الضمان (أشهر)",
     "nameInAdminCert": "الاسم في الشهادة الإدارية",
     "createStockItem": "إنشاء مادة مخزونة",
-    "createCountStockItems": "إنشاء {{count}} مواد مخزونة"
+    "createCountStockItems": "إنشاء {{count}} مواد مخزونة",
+    "oneItemToCreate": "عنصر واحد للإنشاء",
+    "countItemsToCreate": "{{count}} عناصر للإنشاء",
+    "oneItem": "عنصر واحد",
+    "countItems": "{{count}} عناصر"
   },
   "defaultCompositionSelect": {
     "defaultComposition": "التكوين الافتراضي",
@@ -2432,7 +2471,9 @@
     "action": "إجراء",
     "selectLocation": "اختر الموقع",
     "moving": "جاري النقل...",
-    "move": "نقل"
+    "move": "نقل",
+    "unassigned": "غير معيّن",
+    "noItemsToMove": "لا توجد عناصر للنقل"
   },
   "certMoveItems": {
     "title": "نقل العناصر (الشهادة الإدارية)",
@@ -2454,6 +2495,7 @@
     "title": "إنشاء أمر شراء",
     "subtitle": "إنشاء أمر شراء جديد مع بنود موديلات المواد المخزونة/الاستهلاكية.",
     "clearDraft": "مسح المسودة",
+    "clearingDraft": "جاري مسح المسودة...",
     "header": "الرأسية",
     "supplier": "المورد",
     "selectSupplier": "اختر المورد",
@@ -2486,7 +2528,13 @@
     "duplicateConsumableLineShort": "بند مادة استهلاكية مكرر (نفس النوع + الموديل).",
     "createdWithId": "تم إنشاء أمر الشراء #{{id}}",
     "created": "تم إنشاء أمر الشراء",
-    "createError": "فشل في إنشاء أمر الشراء"
+    "createError": "فشل في إنشاء أمر الشراء",
+    "oneItem": "عنصر واحد",
+    "countItems": "{{count}} عناصر",
+    "oneLine": "بند واحد",
+    "countLines": "{{count}} بنود",
+    "committed_one": "واحد ملتزم",
+    "committed_other": "{{count}} ملتزم"
   },
   "poOrders": {
     "title": "أوامر الشراء",
@@ -2564,7 +2612,13 @@
     "chooseFile": "اختر ملفاً أو اسحب هنا",
     "onlyPdfSupported": "يتم دعم ملفات PDF فقط",
     "createAcceptanceReport": "إنشاء تقرير الاستلام",
-    "noAcceptanceReportYet": "لم يتم إنشاء تقرير استلام لهذا الأمر بعد."
+    "noAcceptanceReportYet": "لم يتم إنشاء تقرير استلام لهذا الأمر بعد.",
+    "statTotal": "الإجمالي",
+    "statPending": "معلق",
+    "statPartial": "جزئي",
+    "statReceived": "مستلم",
+    "financeSigned": "موافقة المالية",
+    "viewDetails": "عرض التفاصيل"
   },
   "stockItems": {
     "title": "مستكشف المواد المخزونة",
@@ -2905,6 +2959,9 @@
     "consumableTypePrompt": "نوع المادة الاستهلاكية",
     "consumableModelPrompt": "طراز المادة الاستهلاكية",
     "noPerson": "غير معيّن"
+  },
+  "includedItemMovementsApproval": {
+    "title": "اعتماد تنقلات العناصر المضمنة"
   },
   "translations": {
     "translate": "ترجم",

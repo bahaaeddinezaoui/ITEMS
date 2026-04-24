@@ -3889,7 +3889,8 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
 
-                    StockItem.objects.filter(stock_item_id=target_id_int).update(stock_item_status="failed")
+                    from api.utils.i18n import bulk_sync_status_translations
+                    bulk_sync_status_translations(StockItem, {'stock_item_id': target_id_int}, 'failed')
 
                 elif target_type == "consumable":
                     is_composed = AssetIsComposedOfConsumableHistory.objects.filter(
@@ -3903,14 +3904,16 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
 
-                    Consumable.objects.filter(consumable_id=target_id_int).update(consumable_status="failed")
+                    from api.utils.i18n import bulk_sync_status_translations
+                    bulk_sync_status_translations(Consumable, {'consumable_id': target_id_int}, 'failed')
 
                 payload = ExternalMaintenanceSerializer(em).data
                 payload["updated"] = {"target_type": target_type, "target_id": target_id_int, "status": "failed"}
                 return Response(payload, status=status.HTTP_200_OK)
 
             now = timezone.now()
-            Asset.objects.filter(asset_id=asset_id).update(asset_status="failed")
+            from api.utils.i18n import bulk_sync_status_translations
+            bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'failed')
 
             # Record which external maintenance caused the asset to become failed.
             # This is later used when creating asset destruction certificates.
@@ -3937,9 +3940,11 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                 )
 
                 if stock_item_ids:
-                    StockItem.objects.filter(stock_item_id__in=stock_item_ids).update(stock_item_status="failed")
+                    from api.utils.i18n import bulk_sync_status_translations
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'failed')
                 if consumable_ids:
-                    Consumable.objects.filter(consumable_id__in=consumable_ids).update(consumable_status="failed")
+                    from api.utils.i18n import bulk_sync_status_translations as _bsct_c
+                    _bsct_c(Consumable, {'consumable_id__in': consumable_ids}, 'failed')
 
                 updated["stock_item_ids"] = stock_item_ids
                 updated["consumable_ids"] = consumable_ids
@@ -4039,6 +4044,147 @@ class MyItemsView(APIView):
                     "history": ConsumableIsAssignedToPersonSerializer(consumable_history, many=True).data,
                 },
             }
+        )
+
+
+class DashboardKpiView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_account = SuperuserWriteMixin()._get_user_account(request)
+        if not user_account or not getattr(user_account, "person", None):
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = user_account.person
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        # My items (always relevant when user has a linked person)
+        my_assets_count = AssetIsAssignedToPerson.objects.filter(person=person, is_active=True).count()
+        my_stock_items_count = StockItemIsAssignedToPerson.objects.filter(person=person, is_active=True).count()
+        my_consumables_count = ConsumableIsAssignedToPerson.objects.filter(person=person, is_active=True).count()
+
+        # Maintenances: mirror MaintenanceViewSet visibility rules at a high-level.
+        maint_qs = Maintenance.objects.all()
+        if user_account.is_superuser() or ("maintenance_chief" in role_codes) or ("it_bureau_chief" in role_codes):
+            visible_maint_qs = maint_qs
+        elif "asset_responsible" in role_codes:
+            pending_moves = AssetMovement.objects.filter(Q(status="pending") | Q(status__isnull=True)).filter(
+                movement_reason="maintenance_create"
+            )
+            maintenance_ids = list(
+                pending_moves.exclude(maintenance_id__isnull=True).values_list("maintenance_id", flat=True)
+            )
+            asset_ids = list(
+                pending_moves.filter(maintenance_id__isnull=True).values_list("asset_id", flat=True)
+            )
+            if maintenance_ids:
+                visible_maint_qs = maint_qs.filter(maintenance_id__in=maintenance_ids)
+            elif asset_ids:
+                visible_maint_qs = maint_qs.filter(asset_id__in=asset_ids, start_datetime__isnull=True, end_datetime__isnull=True)
+            else:
+                visible_maint_qs = Maintenance.objects.none()
+        elif ("it_maintenance_technician" in role_codes) or ("network_maintenance_technician" in role_codes):
+            visible_maint_qs = maint_qs.filter(Q(performed_by_person=person) | Q(steps__person=person)).distinct()
+        else:
+            visible_maint_qs = Maintenance.objects.none()
+
+        open_maintenances_count = visible_maint_qs.filter(end_datetime__isnull=True).count()
+        awaiting_approval_count = 0
+        if user_account.is_superuser() or ("maintenance_chief" in role_codes) or ("it_bureau_chief" in role_codes):
+            awaiting_approval_count = visible_maint_qs.filter(
+                Q(is_approved_by_maintenance_chief__isnull=True) | Q(is_approved_by_maintenance_chief=False)
+            ).count()
+
+        # Maintenance step item requests inbox
+        pending_item_requests_count = None
+        if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes) or ("exploitation_chief" in role_codes):
+            pending_item_requests_count = MaintenanceStepItemRequest.objects.filter(status="pending").count()
+
+        # Purchase orders: count orders with remaining lines to be received
+        purchase_orders_remaining_count = None
+        can_view_purchase_orders = user_account.is_superuser() or (
+            role_codes
+            & {
+                "stock_consumable_responsible",
+                "exploitation_chief",
+                "director_admin_support",
+                "protection_and_security_bureau_chief",
+                "school_headquarter",
+                "it_bureau_chief",
+            }
+        )
+        if can_view_purchase_orders:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT COUNT(*)
+                    FROM public.purchase_order po
+                    WHERE (
+                        EXISTS (
+                            SELECT 1
+                            FROM public.stock_item_model_is_found_in_purchase_order l
+                            WHERE l.purchase_order_id = po.purchase_order_id
+                              AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        )
+                        OR EXISTS (
+                            SELECT 1
+                            FROM public.consumable_model_is_found_in_purchase_order l
+                            WHERE l.purchase_order_id = po.purchase_order_id
+                              AND COALESCE(l.quantity_ordered, 0) > COALESCE(l.quantity_received, 0)
+                        )
+                    )
+                    """
+                )
+                row = cursor.fetchone()
+                purchase_orders_remaining_count = int(row[0] or 0) if row else 0
+
+        # Incident reports awaiting signature for the current user/role
+        pending_incident_signatures_count = 0
+        try:
+            incident_qs = AssetIncidentReport.objects.all()
+
+            owner_pending = incident_qs.filter(owner_person=person, is_signed_by_owner=False).count()
+            pending_incident_signatures_count += owner_pending
+
+            if user_account.is_superuser() or ("it_bureau_chief" in role_codes):
+                pending_incident_signatures_count += incident_qs.filter(is_signed_by_it_bureau_chief=False).count()
+            if user_account.is_superuser() or ("exploitation_chief" in role_codes):
+                pending_incident_signatures_count += incident_qs.filter(is_signed_by_exploitation_chief=False).count()
+            if user_account.is_superuser() or ("protection_and_security_bureau_chief" in role_codes):
+                pending_incident_signatures_count += incident_qs.filter(
+                    is_signed_by_protection_and_security_bureau_chief=False
+                ).count()
+            if user_account.is_superuser() or ("school_headquarter" in role_codes):
+                # Prefer requests directed to the logged-in school headquarter person.
+                pending_incident_signatures_count += incident_qs.filter(
+                    Q(school_headquarter_person=person) | Q(school_headquarter_person__isnull=True),
+                    is_signed_by_school_headquarter=False,
+                ).count()
+        except Exception:
+            pending_incident_signatures_count = 0
+
+        return Response(
+            {
+                "my_items": {
+                    "assets": my_assets_count,
+                    "stock_items": my_stock_items_count,
+                    "consumables": my_consumables_count,
+                },
+                "maintenances": {
+                    "open": open_maintenances_count,
+                    "awaiting_approval": awaiting_approval_count,
+                },
+                "procurement": {
+                    "pending_item_requests": pending_item_requests_count,
+                    "purchase_orders_with_remaining": purchase_orders_remaining_count,
+                },
+                "incidents": {
+                    "pending_signatures": pending_incident_signatures_count,
+                },
+            },
+            status=status.HTTP_200_OK,
         )
 
 
@@ -5262,10 +5408,11 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             ).values_list("consumable_id", flat=True)
         )
 
+        from api.utils.i18n import bulk_sync_status_translations
         if stock_item_ids:
-            StockItem.objects.filter(stock_item_id__in=stock_item_ids).update(stock_item_status=target_status)
+            bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, target_status)
         if consumable_ids:
-            Consumable.objects.filter(consumable_id__in=consumable_ids).update(consumable_status=target_status)
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, target_status)
 
     def update(self, request, *args, **kwargs):
         asset_status = request.data.get("asset_status")
@@ -5288,18 +5435,39 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if response.status_code < 400:
             asset = self.get_object()
             # Handle translations from request data
+            from api.utils.i18n import save_translations, translate_status
             translations_data = request.data.get('translations')
             if translations_data and isinstance(translations_data, dict):
-                from api.utils.i18n import save_translations
                 en_data = translations_data.get('en', {})
                 if asset.asset_name and 'asset_name' not in en_data:
                     en_data['asset_name'] = asset.asset_name
                     translations_data['en'] = en_data
+                if asset.asset_status and 'asset_status' not in en_data:
+                    en_data['asset_status'] = translate_status(asset.asset_status, 'en')
+                    translations_data['en'] = en_data
+                ar_data = translations_data.get('ar', {})
+                if asset.asset_name and 'asset_name' not in ar_data:
+                    ar_data['asset_name'] = asset.asset_name
+                    translations_data['ar'] = ar_data
+                if asset.asset_status and 'asset_status' not in ar_data:
+                    ar_data['asset_status'] = translate_status(asset.asset_status, 'ar')
+                    translations_data['ar'] = ar_data
                 save_translations(asset, translations_data)
-            elif asset.asset_name:
-                from api.utils.i18n import save_translations
-                save_translations(asset, {'en': {'asset_name': asset.asset_name}})
+            elif asset.asset_name or asset.asset_status:
+                en_entry = {}
+                if asset.asset_name:
+                    en_entry['asset_name'] = asset.asset_name
+                if asset.asset_status:
+                    en_entry['asset_status'] = translate_status(asset.asset_status, 'en')
+                ar_entry = {}
+                if asset.asset_name:
+                    ar_entry['asset_name'] = asset.asset_name
+                if asset.asset_status:
+                    ar_entry['asset_status'] = translate_status(asset.asset_status, 'ar')
+                save_translations(asset, {'en': en_entry, 'ar': ar_entry})
             if "asset_status" in request.data:
+                from api.utils.i18n import sync_status_translations
+                sync_status_translations(asset, asset.asset_status)
                 self._sync_composed_items_status_with_asset(asset)
         return response
 
@@ -5324,18 +5492,39 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if response.status_code < 400:
             asset = self.get_object()
             # Handle translations from request data
+            from api.utils.i18n import save_translations, translate_status
             translations_data = request.data.get('translations')
             if translations_data and isinstance(translations_data, dict):
-                from api.utils.i18n import save_translations
                 en_data = translations_data.get('en', {})
                 if asset.asset_name and 'asset_name' not in en_data:
                     en_data['asset_name'] = asset.asset_name
                     translations_data['en'] = en_data
+                if asset.asset_status and 'asset_status' not in en_data:
+                    en_data['asset_status'] = translate_status(asset.asset_status, 'en')
+                    translations_data['en'] = en_data
+                ar_data = translations_data.get('ar', {})
+                if asset.asset_name and 'asset_name' not in ar_data:
+                    ar_data['asset_name'] = asset.asset_name
+                    translations_data['ar'] = ar_data
+                if asset.asset_status and 'asset_status' not in ar_data:
+                    ar_data['asset_status'] = translate_status(asset.asset_status, 'ar')
+                    translations_data['ar'] = ar_data
                 save_translations(asset, translations_data)
-            elif asset.asset_name:
-                from api.utils.i18n import save_translations
-                save_translations(asset, {'en': {'asset_name': asset.asset_name}})
+            elif asset.asset_name or asset.asset_status:
+                en_entry = {}
+                if asset.asset_name:
+                    en_entry['asset_name'] = asset.asset_name
+                if asset.asset_status:
+                    en_entry['asset_status'] = translate_status(asset.asset_status, 'en')
+                ar_entry = {}
+                if asset.asset_name:
+                    ar_entry['asset_name'] = asset.asset_name
+                if asset.asset_status:
+                    ar_entry['asset_status'] = translate_status(asset.asset_status, 'ar')
+                save_translations(asset, {'en': en_entry, 'ar': ar_entry})
             if "asset_status" in request.data:
+                from api.utils.i18n import sync_status_translations
+                sync_status_translations(asset, asset.asset_status)
                 self._sync_composed_items_status_with_asset(asset)
         return response
 
@@ -5375,7 +5564,8 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         now = timezone.now()
         
         # 1. Update asset status
-        Asset.objects.filter(asset_id=asset.asset_id).update(asset_status="suggested_for_destruction")
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(Asset, {'asset_id': asset.asset_id}, 'suggested_for_destruction')
         
         # 2. Handle Stock Items
         from .models import AssetIsComposedOfStockItemHistory, StockItem, StockItemMovement
@@ -5385,7 +5575,8 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             si = mapping.stock_item
             if si.stock_item_id in stock_item_ids:
                 # Suggest for destruction
-                StockItem.objects.filter(stock_item_id=si.stock_item_id).update(stock_item_status="suggested_for_destruction")
+                from api.utils.i18n import bulk_sync_status_translations as _bsct_si
+                _bsct_si(StockItem, {'stock_item_id': si.stock_item_id}, 'suggested_for_destruction')
             else:
                 # Move to storage (creates pending movement)
                 if storage_location_id:
@@ -5420,7 +5611,8 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             c = mapping.consumable
             if c.consumable_id in consumable_ids:
                 # Suggest for destruction
-                Consumable.objects.filter(consumable_id=c.consumable_id).update(consumable_status="suggested_for_destruction")
+                from api.utils.i18n import bulk_sync_status_translations as _bsct_co
+                _bsct_co(Consumable, {'consumable_id': c.consumable_id}, 'suggested_for_destruction')
             else:
                 # Move to storage (creates pending movement)
                 if storage_location_id:
@@ -5481,17 +5673,36 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         # Create the asset with only model fields
         asset = Asset.objects.create(asset_id=next_asset_id, **asset_data)
         
-        # Save translations (English name in both main table and translation table, Arabic only in translation table)
+        # Save translations (both en and ar rows with name and status)
+        from api.utils.i18n import save_translations, translate_status
         if translations_data:
-            from api.utils.i18n import save_translations
             en_data = translations_data.get('en', {})
             if asset.asset_name and 'asset_name' not in en_data:
                 en_data['asset_name'] = asset.asset_name
                 translations_data['en'] = en_data
+            if asset.asset_status and 'asset_status' not in en_data:
+                en_data['asset_status'] = translate_status(asset.asset_status, 'en')
+                translations_data['en'] = en_data
+            ar_data = translations_data.get('ar', {})
+            if asset.asset_name and 'asset_name' not in ar_data:
+                ar_data['asset_name'] = asset.asset_name
+                translations_data['ar'] = ar_data
+            if asset.asset_status and 'asset_status' not in ar_data:
+                ar_data['asset_status'] = translate_status(asset.asset_status, 'ar')
+                translations_data['ar'] = ar_data
             save_translations(asset, translations_data)
-        elif asset.asset_name:
-            from api.utils.i18n import save_translations
-            save_translations(asset, {'en': {'asset_name': asset.asset_name}})
+        elif asset.asset_name or asset.asset_status:
+            en_entry = {}
+            if asset.asset_name:
+                en_entry['asset_name'] = asset.asset_name
+            if asset.asset_status:
+                en_entry['asset_status'] = translate_status(asset.asset_status, 'en')
+            ar_entry = {}
+            if asset.asset_name:
+                ar_entry['asset_name'] = asset.asset_name
+            if asset.asset_status:
+                ar_entry['asset_status'] = translate_status(asset.asset_status, 'ar')
+            save_translations(asset, {'en': en_entry, 'ar': ar_entry})
         
         # If asset has an attribution_order, create default composition
         attribution_order_obj = serializer.validated_data.get('attribution_order')
@@ -6194,17 +6405,49 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if response.status_code < 400:
             instance = self.get_object()
             # Handle translations from request data
+            from api.utils.i18n import save_translations, translate_status
             translations_data = request.data.get('translations')
             if translations_data and isinstance(translations_data, dict):
-                from api.utils.i18n import save_translations
                 en_data = translations_data.get('en', {})
                 if instance.stock_item_name and 'stock_item_name' not in en_data:
                     en_data['stock_item_name'] = instance.stock_item_name
                     translations_data['en'] = en_data
+                if instance.stock_item_status and 'stock_item_status' not in en_data:
+                    en_data['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
+                    translations_data['en'] = en_data
+                if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in en_data:
+                    en_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+                    translations_data['en'] = en_data
+                ar_data = translations_data.get('ar', {})
+                if instance.stock_item_name and 'stock_item_name' not in ar_data:
+                    ar_data['stock_item_name'] = instance.stock_item_name
+                    translations_data['ar'] = ar_data
+                if instance.stock_item_status and 'stock_item_status' not in ar_data:
+                    ar_data['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
+                    translations_data['ar'] = ar_data
+                if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in ar_data:
+                    ar_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+                    translations_data['ar'] = ar_data
                 save_translations(instance, translations_data)
-            elif instance.stock_item_name:
-                from api.utils.i18n import save_translations
-                save_translations(instance, {'en': {'stock_item_name': instance.stock_item_name}})
+            elif instance.stock_item_name or instance.stock_item_status or instance.stock_item_name_in_administrative_certificate:
+                en_entry = {}
+                if instance.stock_item_name:
+                    en_entry['stock_item_name'] = instance.stock_item_name
+                if instance.stock_item_status:
+                    en_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
+                if instance.stock_item_name_in_administrative_certificate:
+                    en_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+                ar_entry = {}
+                if instance.stock_item_name:
+                    ar_entry['stock_item_name'] = instance.stock_item_name
+                if instance.stock_item_status:
+                    ar_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
+                if instance.stock_item_name_in_administrative_certificate:
+                    ar_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
+                save_translations(instance, {'en': en_entry, 'ar': ar_entry})
+            if "stock_item_status" in request.data:
+                from api.utils.i18n import sync_status_translations
+                sync_status_translations(instance, instance.stock_item_status)
         return response
 
     @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
@@ -6241,7 +6484,8 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        StockItem.objects.filter(stock_item_id=item.stock_item_id).update(stock_item_status="suggested_for_destruction")
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(StockItem, {'stock_item_id': item.stock_item_id}, 'suggested_for_destruction')
         item.refresh_from_db()
         return Response(self.get_serializer(item).data, status=status.HTTP_200_OK)
 
@@ -6277,17 +6521,46 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_item = StockItem.objects.order_by("-stock_item_id").first()
         next_id = (last_item.stock_item_id + 1) if last_item else 1
         item = StockItem.objects.create(stock_item_id=next_id, **serializer.validated_data)
-        # Save translations (English name in both main table and translation table, Arabic only in translation table)
+        # Save translations (both en and ar rows with name and status)
+        from api.utils.i18n import save_translations, translate_status
         if translations_data:
-            from api.utils.i18n import save_translations
             en_data = translations_data.get('en', {})
             if item.stock_item_name and 'stock_item_name' not in en_data:
                 en_data['stock_item_name'] = item.stock_item_name
                 translations_data['en'] = en_data
+            if item.stock_item_status and 'stock_item_status' not in en_data:
+                en_data['stock_item_status'] = translate_status(item.stock_item_status, 'en')
+                translations_data['en'] = en_data
+            if item.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in en_data:
+                en_data['stock_item_name_in_administrative_certificate'] = item.stock_item_name_in_administrative_certificate
+                translations_data['en'] = en_data
+            ar_data = translations_data.get('ar', {})
+            if item.stock_item_name and 'stock_item_name' not in ar_data:
+                ar_data['stock_item_name'] = item.stock_item_name
+                translations_data['ar'] = ar_data
+            if item.stock_item_status and 'stock_item_status' not in ar_data:
+                ar_data['stock_item_status'] = translate_status(item.stock_item_status, 'ar')
+                translations_data['ar'] = ar_data
+            if item.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in ar_data:
+                ar_data['stock_item_name_in_administrative_certificate'] = item.stock_item_name_in_administrative_certificate
+                translations_data['ar'] = ar_data
             save_translations(item, translations_data)
-        elif item.stock_item_name:
-            from api.utils.i18n import save_translations
-            save_translations(item, {'en': {'stock_item_name': item.stock_item_name}})
+        elif item.stock_item_name or item.stock_item_status or item.stock_item_name_in_administrative_certificate:
+            en_entry = {}
+            if item.stock_item_name:
+                en_entry['stock_item_name'] = item.stock_item_name
+            if item.stock_item_status:
+                en_entry['stock_item_status'] = translate_status(item.stock_item_status, 'en')
+            if item.stock_item_name_in_administrative_certificate:
+                en_entry['stock_item_name_in_administrative_certificate'] = item.stock_item_name_in_administrative_certificate
+            ar_entry = {}
+            if item.stock_item_name:
+                ar_entry['stock_item_name'] = item.stock_item_name
+            if item.stock_item_status:
+                ar_entry['stock_item_status'] = translate_status(item.stock_item_status, 'ar')
+            if item.stock_item_name_in_administrative_certificate:
+                ar_entry['stock_item_name_in_administrative_certificate'] = item.stock_item_name_in_administrative_certificate
+            save_translations(item, {'en': en_entry, 'ar': ar_entry})
         _sync_stock_item_attribute_values(item)
         return Response(StockItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
@@ -6488,12 +6761,20 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         stock_item = self.get_object()
         last_move = (
             StockItemMovement.objects.filter(stock_item_id=stock_item.stock_item_id)
+            .select_related("destination_location", "destination_location__location_type")
             .order_by("-stock_item_movement_id")
             .first()
         )
         if not last_move or not last_move.destination_location_id:
-            return Response({"location_id": None}, status=status.HTTP_200_OK)
-        return Response({"location_id": last_move.destination_location_id}, status=status.HTTP_200_OK)
+            return Response({"location_id": None, "location": None}, status=status.HTTP_200_OK)
+        loc = last_move.destination_location
+        return Response(
+            {
+                "location_id": loc.location_id,
+                "location": LocationSerializer(loc).data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["post"], url_path="move")
     def move(self, request, pk=None):
@@ -7027,16 +7308,48 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         _sync_consumable_attribute_values(instance)
         # Handle translations from request data
         translations_data = request.data.get('translations')
+        from api.utils.i18n import save_translations, translate_status
         if translations_data and isinstance(translations_data, dict):
-            from api.utils.i18n import save_translations
             en_data = translations_data.get('en', {})
             if instance.consumable_name and 'consumable_name' not in en_data:
                 en_data['consumable_name'] = instance.consumable_name
                 translations_data['en'] = en_data
+            if instance.consumable_status and 'consumable_status' not in en_data:
+                en_data['consumable_status'] = translate_status(instance.consumable_status, 'en')
+                translations_data['en'] = en_data
+            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in en_data:
+                en_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+                translations_data['en'] = en_data
+            ar_data = translations_data.get('ar', {})
+            if instance.consumable_name and 'consumable_name' not in ar_data:
+                ar_data['consumable_name'] = instance.consumable_name
+                translations_data['ar'] = ar_data
+            if instance.consumable_status and 'consumable_status' not in ar_data:
+                ar_data['consumable_status'] = translate_status(instance.consumable_status, 'ar')
+                translations_data['ar'] = ar_data
+            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in ar_data:
+                ar_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.consumable_name:
-            from api.utils.i18n import save_translations
-            save_translations(instance, {'en': {'consumable_name': instance.consumable_name}})
+        elif instance.consumable_name or instance.consumable_status or instance.consumable_name_in_administrative_certificate:
+            en_entry = {}
+            if instance.consumable_name:
+                en_entry['consumable_name'] = instance.consumable_name
+            if instance.consumable_status:
+                en_entry['consumable_status'] = translate_status(instance.consumable_status, 'en')
+            if instance.consumable_name_in_administrative_certificate:
+                en_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+            ar_entry = {}
+            if instance.consumable_name:
+                ar_entry['consumable_name'] = instance.consumable_name
+            if instance.consumable_status:
+                ar_entry['consumable_status'] = translate_status(instance.consumable_status, 'ar')
+            if instance.consumable_name_in_administrative_certificate:
+                ar_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
+            save_translations(instance, {'en': en_entry, 'ar': ar_entry})
+        if "consumable_status" in request.data:
+            from api.utils.i18n import sync_status_translations
+            sync_status_translations(instance, instance.consumable_status)
         return response
 
     @action(detail=True, methods=["post"], url_path="suggest-for-destruction")
@@ -7073,7 +7386,8 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        Consumable.objects.filter(consumable_id=item.consumable_id).update(consumable_status="suggested_for_destruction")
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(Consumable, {'consumable_id': item.consumable_id}, 'suggested_for_destruction')
         item.refresh_from_db()
         return Response(self.get_serializer(item).data, status=status.HTTP_200_OK)
 
@@ -7109,17 +7423,36 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_item = Consumable.objects.order_by("-consumable_id").first()
         next_id = (last_item.consumable_id + 1) if last_item else 1
         item = Consumable.objects.create(consumable_id=next_id, **serializer.validated_data)
-        # Save translations (English name in both main table and translation table, Arabic only in translation table)
+        # Save translations (both en and ar rows with name and status)
+        from api.utils.i18n import save_translations, translate_status
         if translations_data:
-            from api.utils.i18n import save_translations
             en_data = translations_data.get('en', {})
             if item.consumable_name and 'consumable_name' not in en_data:
                 en_data['consumable_name'] = item.consumable_name
                 translations_data['en'] = en_data
+            if item.consumable_status and 'consumable_status' not in en_data:
+                en_data['consumable_status'] = translate_status(item.consumable_status, 'en')
+                translations_data['en'] = en_data
+            ar_data = translations_data.get('ar', {})
+            if item.consumable_name and 'consumable_name' not in ar_data:
+                ar_data['consumable_name'] = item.consumable_name
+                translations_data['ar'] = ar_data
+            if item.consumable_status and 'consumable_status' not in ar_data:
+                ar_data['consumable_status'] = translate_status(item.consumable_status, 'ar')
+                translations_data['ar'] = ar_data
             save_translations(item, translations_data)
-        elif item.consumable_name:
-            from api.utils.i18n import save_translations
-            save_translations(item, {'en': {'consumable_name': item.consumable_name}})
+        elif item.consumable_name or item.consumable_status:
+            en_entry = {}
+            if item.consumable_name:
+                en_entry['consumable_name'] = item.consumable_name
+            if item.consumable_status:
+                en_entry['consumable_status'] = translate_status(item.consumable_status, 'en')
+            ar_entry = {}
+            if item.consumable_name:
+                ar_entry['consumable_name'] = item.consumable_name
+            if item.consumable_status:
+                ar_entry['consumable_status'] = translate_status(item.consumable_status, 'ar')
+            save_translations(item, {'en': en_entry, 'ar': ar_entry})
         _sync_consumable_attribute_values(item)
         return Response(ConsumableSerializer(item).data, status=status.HTTP_201_CREATED)
 
@@ -7324,12 +7657,20 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         consumable = self.get_object()
         last_move = (
             ConsumableMovement.objects.filter(consumable_id=consumable.consumable_id)
+            .select_related("destination_location", "destination_location__location_type")
             .order_by("-consumable_movement_id")
             .first()
         )
         if not last_move or not last_move.destination_location_id:
-            return Response({"location_id": None}, status=status.HTTP_200_OK)
-        return Response({"location_id": last_move.destination_location_id}, status=status.HTTP_200_OK)
+            return Response({"location_id": None, "location": None}, status=status.HTTP_200_OK)
+        loc = last_move.destination_location
+        return Response(
+            {
+                "location_id": loc.location_id,
+                "location": LocationSerializer(loc).data,
+            },
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["post"], url_path="move")
     def move(self, request, pk=None):
@@ -7548,8 +7889,9 @@ class StockItemConsumableDestructionCertificateViewSet(viewsets.ModelViewSet):
             StockItemConsumableDestructionCertificate.objects.filter(destruction_certificate_id=cert.destruction_certificate_id).update(
                 destruction_datetime=now,
             )
-            StockItem.objects.filter(stock_item_consumable_destruction_certificate_id=cert.destruction_certificate_id).update(stock_item_status="destroyed")
-            Consumable.objects.filter(stock_item_consumable_destruction_certificate_id=cert.destruction_certificate_id).update(consumable_status="destroyed")
+            from api.utils.i18n import bulk_sync_status_translations
+            bulk_sync_status_translations(StockItem, {'stock_item_consumable_destruction_certificate_id': cert.destruction_certificate_id}, 'destroyed')
+            bulk_sync_status_translations(Consumable, {'stock_item_consumable_destruction_certificate_id': cert.destruction_certificate_id}, 'destroyed')
 
         cert.refresh_from_db()
         return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
@@ -7728,7 +8070,8 @@ class AssetDestructionCertificateViewSet(viewsets.ModelViewSet):
             AssetDestructionCertificate.objects.filter(asset_destruction_certificate_id=cert.asset_destruction_certificate_id).update(
                 destruction_datetime=now,
             )
-            Asset.objects.filter(destruction_certificate_id=cert.asset_destruction_certificate_id).update(asset_status="destroyed")
+            from api.utils.i18n import bulk_sync_status_translations
+            bulk_sync_status_translations(Asset, {'destruction_certificate_id': cert.asset_destruction_certificate_id}, 'destroyed')
 
         cert.refresh_from_db()
         return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
@@ -9118,18 +9461,11 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 qty_int = 0
             if qty_int <= 0:
                 continue
-            qs = (
+            qs = list(
                 StockItem.objects.filter(stock_item_model_id=model_id)
-                .order_by("-stock_item_id")
-                .values(
-                    "stock_item_id",
-                    "stock_item_model_id",
-                    "stock_item_name",
-                    "stock_item_inventory_number",
-                    "stock_item_status",
-                )[:qty_int]
+                .order_by("-stock_item_id")[:qty_int]
             )
-            stock_items.extend(list(qs))
+            stock_items.extend([StockItemSerializer(s).data for s in qs])
 
         consumables = []
         for model_id, qty in cons_lines:
@@ -9139,18 +9475,11 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 qty_int = 0
             if qty_int <= 0:
                 continue
-            qs = (
+            qs = list(
                 Consumable.objects.filter(consumable_model_id=model_id)
-                .order_by("-consumable_id")
-                .values(
-                    "consumable_id",
-                    "consumable_model_id",
-                    "consumable_name",
-                    "consumable_inventory_number",
-                    "consumable_status",
-                )[:qty_int]
+                .order_by("-consumable_id")[:qty_int]
             )
-            consumables.extend(list(qs))
+            consumables.extend([ConsumableSerializer(c).data for c in qs])
 
         return Response(
             {
@@ -10268,11 +10597,15 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 """
                 SELECT l.stock_item_model_id,
                        m.model_name,
+                       b.brand_name,
+                       t.stock_item_type_label,
                        l.quantity_ordered,
                        l.quantity_received,
                        l.unit_price
                 FROM public.stock_item_model_is_found_in_purchase_order l
                 LEFT JOIN public.stock_item_model m ON m.stock_item_model_id = l.stock_item_model_id
+                LEFT JOIN public.stock_item_brand b ON b.stock_item_brand_id = m.stock_item_brand_id
+                LEFT JOIN public.stock_item_type t ON t.stock_item_type_id = m.stock_item_type_id
                 WHERE l.purchase_order_id = %s
                 ORDER BY l.stock_item_model_id
                 """,
@@ -10284,11 +10617,15 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 """
                 SELECT l.consumable_model_id,
                        m.model_name,
+                       b.brand_name,
+                       t.consumable_type_label,
                        l.quantity_ordered,
                        l.quantity_received,
                        l.unit_price
                 FROM public.consumable_model_is_found_in_purchase_order l
                 LEFT JOIN public.consumable_model m ON m.consumable_model_id = l.consumable_model_id
+                LEFT JOIN public.consumable_brand b ON b.consumable_brand_id = m.consumable_brand_id
+                LEFT JOIN public.consumable_type t ON t.consumable_type_id = m.consumable_type_id
                 WHERE l.purchase_order_id = %s
                 ORDER BY l.consumable_model_id
                 """,
@@ -10307,9 +10644,11 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                     {
                         "stock_item_model_id": r[0],
                         "model_name": r[1],
-                        "quantity_ordered": r[2],
-                        "quantity_received": r[3],
-                        "unit_price": r[4],
+                        "brand_name": r[2],
+                        "type_label": r[3],
+                        "quantity_ordered": r[4],
+                        "quantity_received": r[5],
+                        "unit_price": r[6],
                     }
                     for r in stock_rows
                 ],
@@ -10317,9 +10656,11 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                     {
                         "consumable_model_id": r[0],
                         "model_name": r[1],
-                        "quantity_ordered": r[2],
-                        "quantity_received": r[3],
-                        "unit_price": r[4],
+                        "brand_name": r[2],
+                        "type_label": r[3],
+                        "quantity_ordered": r[4],
+                        "quantity_received": r[5],
+                        "unit_price": r[6],
                     }
                     for r in consumable_rows
                 ],
@@ -11035,10 +11376,11 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
         if all(signatures):
             with transaction.atomic():
                 # Update Assets
-                Asset.objects.filter(
-                    attribution_order_id=cert.attribution_order_id,
-                    asset_status='not_delivered_to_company'
-                ).update(asset_status='in_stock')
+                from api.utils.i18n import bulk_sync_status_translations
+                bulk_sync_status_translations(Asset, {
+                    'attribution_order_id': cert.attribution_order_id,
+                    'asset_status': 'not_delivered_to_company',
+                }, 'in_stock')
                 
                 # Update StockItems
                 stock_item_ids = list(
@@ -11047,10 +11389,10 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
                     ).values_list('stock_item_id', flat=True)
                 )
                 if stock_item_ids:
-                    StockItem.objects.filter(
-                        stock_item_id__in=stock_item_ids,
-                        stock_item_status='not_delivered_to_company',
-                    ).update(stock_item_status='in_stock')
+                    bulk_sync_status_translations(StockItem, {
+                        'stock_item_id__in': stock_item_ids,
+                        'stock_item_status': 'not_delivered_to_company',
+                    }, 'in_stock')
 
                 # Update Consumables
                 consumable_ids = list(
@@ -11059,10 +11401,10 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
                     ).values_list('consumable_id', flat=True)
                 )
                 if consumable_ids:
-                    Consumable.objects.filter(
-                        consumable_id__in=consumable_ids,
-                        consumable_status='not_delivered_to_company',
-                    ).update(consumable_status='in_stock')
+                    bulk_sync_status_translations(Consumable, {
+                        'consumable_id__in': consumable_ids,
+                        'consumable_status': 'not_delivered_to_company',
+                    }, 'in_stock')
 
     def create(self, request, *args, **kwargs):
         user_account = getattr(request, "user", None)
@@ -11197,6 +11539,9 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
 
     queryset = AssetIncidentReport.objects.select_related(
         "asset",
+        "asset__asset_model",
+        "asset__asset_model__asset_brand",
+        "asset__asset_model__asset_type",
         "owner_person",
         "school_headquarter_person",
     ).prefetch_related(
@@ -11432,7 +11777,15 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
         report_status = self._normalize_text_value(getattr(report, "status", None))
         if report_status != "submitted":
             return
+        from api.utils.i18n import bulk_sync_status_translations
         Asset.objects.filter(asset_id=report.asset_id).update(asset_status=reason_status)
+        # Sync asset status translations
+        try:
+            asset = Asset.objects.get(asset_id=report.asset_id)
+            from api.utils.i18n import sync_status_translations
+            sync_status_translations(asset, reason_status)
+        except Asset.DoesNotExist:
+            pass
         stock_item_status_overrides = stock_item_status_overrides or {}
         consumable_status_overrides = consumable_status_overrides or {}
 
@@ -11448,11 +11801,11 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
                     if item_id in remaining_ids:
                         remaining_ids.remove(item_id)
                 for item_status, item_ids in by_status.items():
-                    StockItem.objects.filter(stock_item_id__in=item_ids).update(stock_item_status=item_status)
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': item_ids}, item_status)
                 if remaining_ids:
-                    StockItem.objects.filter(stock_item_id__in=list(remaining_ids)).update(stock_item_status=reason_status)
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': list(remaining_ids)}, reason_status)
             else:
-                StockItem.objects.filter(stock_item_id__in=stock_item_ids).update(stock_item_status=reason_status)
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, reason_status)
 
         if consumable_ids:
             consumable_ids = list(dict.fromkeys(consumable_ids))
@@ -11466,11 +11819,11 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
                     if item_id in remaining_ids:
                         remaining_ids.remove(item_id)
                 for item_status, item_ids in by_status.items():
-                    Consumable.objects.filter(consumable_id__in=item_ids).update(consumable_status=item_status)
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': item_ids}, item_status)
                 if remaining_ids:
-                    Consumable.objects.filter(consumable_id__in=list(remaining_ids)).update(consumable_status=reason_status)
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': list(remaining_ids)}, reason_status)
             else:
-                Consumable.objects.filter(consumable_id__in=consumable_ids).update(consumable_status=reason_status)
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, reason_status)
 
     def create(self, request, *args, **kwargs):
         user_account = SuperuserWriteMixin()._get_user_account(request)

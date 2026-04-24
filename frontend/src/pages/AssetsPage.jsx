@@ -19,7 +19,7 @@ import {
 } from '../services/api';
 
 const AssetsPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -128,13 +128,17 @@ const AssetsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
 
-    const formatStatusLabel = (value) => {
-        const raw = (value || '').toString().trim();
-        if (!raw) return '';
-        return raw
-            .split('_')
-            .map((p) => (p ? p.charAt(0).toUpperCase() + p.slice(1) : p))
-            .join(' ');
+    const formatStatusLabel = (value, asset) => {
+        if (!value) return '';
+        const lang = i18n.language;
+        const statusAr = asset?.asset_status_ar;
+        const statusEn = asset?.asset_status_en;
+        if (lang === 'ar') {
+            if (statusAr && statusEn && statusAr !== statusEn) return `${statusAr} (${statusEn})`;
+            return statusAr || statusEn || value.split('_').map((p) => (p ? p.charAt(0).toUpperCase() + p.slice(1) : p)).join(' ');
+        }
+        if (statusEn && statusAr && statusEn !== statusAr) return `${statusEn} (${statusAr})`;
+        return statusEn || statusAr || value.split('_').map((p) => (p ? p.charAt(0).toUpperCase() + p.slice(1) : p)).join(' ');
     };
 
     useEffect(() => {
@@ -902,16 +906,21 @@ const AssetsPage = () => {
                         setEditingAsset(null);
                         setFormTranslations({});
                         setAssetFormData({
+                            asset_name: '',
                             asset_serial_number: '',
                             asset_inventory_number: '',
                             asset_service_tag: '',
-                            asset_name: '',
                             asset_status: 'not_delivered_to_company',
-                            attribution_order_id: 0,
-                            destruction_certificate_id: 0
+                            asset_name_in_administrative_certificate: '',
+                            asset_warranty_expiry_in_months: '',
+                            asset_purchase_date: '',
+                            asset_purchase_price: '',
+                            administrative_certificate_id: '',
+                            destruction_certificate_id: 0,
+                            maintenance_step_id: null
                         });
                         setShowAssetForm(true);
-                    }} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                    }} style={{ padding: 'var(--space-3) var(--space-6)', width: 'auto' }}>
                         <Plus size={18} />
                         <span>{t('assets.addAsset')}</span>
                     </button>
@@ -1079,7 +1088,7 @@ const AssetsPage = () => {
                                                         color: asset.asset_status === 'in_stock' ? 'var(--color-success)' :
                                                                asset.asset_status === 'not_delivered_to_company' ? 'var(--color-warning)' : 'var(--color-text-secondary)'
                                                     }}>
-                                                        {formatStatusLabel(asset.asset_status)}
+                                                        {formatStatusLabel(asset.asset_status, asset)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1143,7 +1152,7 @@ const AssetsPage = () => {
                                 <button className="modal-close" onClick={() => setShowAssignForm(false)}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
-                                <form onSubmit={submitAssign}>
+                                <form onSubmit={handleAssignSubmit}>
                                     <div className="form-group">
                                         <label className="form-label">{t('assets.person')}</label>
                                         <select name="person" value={assignFormData.person} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
@@ -1189,7 +1198,7 @@ const AssetsPage = () => {
                                         {selectedAsset.asset_name || t('assets.assetWithId', { id: selectedAsset.asset_id })}
                                     </h3>
                                     <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                        {t('assets.inventory')}: {selectedAsset.asset_inventory_number || '—'} • {t('assets.status')}: {formatStatusLabel(selectedAsset.asset_status)}
+                                        {t('assets.inventory')}: {selectedAsset.asset_inventory_number || '—'} • {t('assets.status')}: {formatStatusLabel(selectedAsset.asset_status, selectedAsset)}
                                     </span>
                                 </div>
                                 <button className="modal-close" onClick={closeAssetDetailsModal}><X size={18} /></button>
@@ -1325,7 +1334,7 @@ const AssetsPage = () => {
                             <div className="modal-body">
                                 <p>{t('assets.dischargeConfirm')}</p>
                                 <div className="form-actions">
-                                    <button onClick={() => submitDischarge(dischargingAssignment.assignment_id)} disabled={saving} className="btn btn-primary">{t('assets.discharge')}</button>
+                                    <button onClick={() => handleDischarge(dischargingAssignment.assignment_id)} disabled={saving} className="btn btn-primary">{t('assets.discharge')}</button>
                                     <button onClick={() => setDischargingAssignment(null)} className="btn btn-secondary">{t('common.cancel')}</button>
                                 </div>
                             </div>
@@ -1998,7 +2007,7 @@ const AssetsPage = () => {
                                                             color: asset.asset_status === 'in_stock' ? 'var(--color-success)' : 
                                                                    asset.asset_status === 'not_delivered_to_company' ? 'var(--color-warning)' : 'var(--color-text-secondary)'
                                                         }}>
-                                                            {formatStatusLabel(asset.asset_status)}
+                                                            {formatStatusLabel(asset.asset_status, asset)}
                                                         </span>
                                                     </td>
                                                     <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>

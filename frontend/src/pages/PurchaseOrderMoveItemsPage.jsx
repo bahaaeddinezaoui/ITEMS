@@ -3,12 +3,127 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { purchaseOrderService, locationService, stockItemService, consumableService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { ArrowLeft, RefreshCw, Package, Droplets, MapPin, ArrowRightLeft, Loader2, AlertCircle, CheckCircle2, Send } from 'lucide-react';
+
+const getBilingualItemName = (item, kind, lang) => {
+    const name = kind === 'stock_item' ? item.stock_item_name : item.consumable_name;
+    const nameAr = kind === 'stock_item' ? item.stock_item_name_ar : item.consumable_name_ar;
+    const nameEn = kind === 'stock_item' ? item.stock_item_name_en : item.consumable_name_en;
+    if (lang === 'ar') {
+        if (nameAr && nameEn && nameAr !== nameEn) return `${nameAr} (${nameEn})`;
+        return nameAr || nameEn || name || '';
+    }
+    if (nameEn && nameAr && nameEn !== nameAr) return `${nameEn} (${nameAr})`;
+    return nameEn || nameAr || name || '';
+};
+
+const getBilingualStatus = (item, kind, lang) => {
+    const statusAr = kind === 'stock_item' ? item.stock_item_status_ar : (kind === 'consumable' ? item.consumable_status_ar : item.asset_status_ar);
+    const statusEn = kind === 'stock_item' ? item.stock_item_status_en : (kind === 'consumable' ? item.consumable_status_en : item.asset_status_en);
+    const rawStatus = kind === 'stock_item' ? item.stock_item_status : (kind === 'consumable' ? item.consumable_status : item.asset_status);
+    if (lang === 'ar') {
+        if (statusAr && statusEn && statusAr !== statusEn) return `${statusAr} (${statusEn})`;
+        return statusAr || statusEn || rawStatus || '';
+    }
+    if (statusEn && statusAr && statusEn !== statusAr) return `${statusEn} (${statusAr})`;
+    return statusEn || statusAr || rawStatus || '';
+};
+
+const getBilingualLocationName = (loc, lang) => {
+    if (!loc) return '';
+    const name = loc.location_name;
+    const nameAr = loc.location_name_ar;
+    const nameEn = loc.location_name_en;
+    if (lang === 'ar') {
+        if (nameAr && nameEn && nameAr !== nameEn) return `${nameAr} (${nameEn})`;
+        return nameAr || nameEn || name || '';
+    }
+    if (nameEn && nameAr && nameEn !== nameAr) return `${nameEn} (${nameAr})`;
+    return nameEn || nameAr || name || '';
+};
+
+const getLocationName = (locations, locId, lang) => {
+    if (!locId) return null;
+    const found = (locations || []).find((l) => l.location_id === Number(locId));
+    return found ? getBilingualLocationName(found, lang) : `#${locId}`;
+};
+
+const StatusBadge = ({ status, displayStatus }) => {
+    if (!status && !displayStatus) return null;
+    const s = (status || '').toLowerCase();
+    let cls = 'badge badge-info';
+    if (s.includes('operational') || s.includes('active') || s.includes('good') || s.includes('functional') || s.includes('available') || s.includes('in_stock')) cls = 'badge badge-success';
+    else if (s.includes('out_of_service') || s.includes('damaged') || s.includes('broken') || s.includes('lost') || s.includes('destroyed')) cls = 'badge badge-error';
+    else if (s.includes('maintenance') || s.includes('repair') || s.includes('pending') || s.includes('waiting') || s.includes('not_delivered')) cls = 'badge badge-warning';
+    return <span className={cls}>{displayStatus || status}</span>;
+};
+
+const ItemCard = ({ item, kind, locations, allLocationOptions, destination, onSetDestination, onMove, submitting, disabled, t, lang }) => {
+    const id = kind === 'stock_item' ? item.stock_item_id : item.consumable_id;
+    const displayName = getBilingualItemName(item, kind, lang) || `#${id}`;
+    const status = kind === 'stock_item' ? item.stock_item_status : item.consumable_status;
+    const displayStatus = getBilingualStatus(item, kind, lang);
+    const key = `${kind}:${id}`;
+    const isSubmitting = submitting === key;
+    const Icon = kind === 'stock_item' ? Package : Droplets;
+    const currentLocName = item.current_location
+        ? getBilingualLocationName(item.current_location, lang)
+        : getLocationName(locations, item.current_location_id, lang);
+
+    return (
+        <div className="move-item-card">
+            <div className="move-item-card-head">
+                <div className="move-item-card-icon">
+                    <Icon size={18} />
+                </div>
+                <div className="move-item-card-info">
+                    <div className="move-item-card-name">{displayName}</div>
+                    <div className="move-item-card-meta">
+                        <span className="move-item-card-id">#{id}</span>
+                        <StatusBadge status={status} displayStatus={displayStatus} />
+                    </div>
+                </div>
+            </div>
+            <div className="move-item-card-body">
+                <div className="move-item-card-location">
+                    <MapPin size={14} />
+                    <span className="move-item-card-location-label">{currentLocName || t('poMoveItems.unassigned')}</span>
+                </div>
+                <div className="move-item-card-destination">
+                    <ArrowRightLeft size={14} className="move-item-card-dest-icon" />
+                    <select
+                        className="form-input move-item-card-select"
+                        value={destination || ''}
+                        onChange={(e) => onSetDestination(key, e.target.value)}
+                    >
+                        <option value="">{t('poMoveItems.selectLocation')}</option>
+                        {allLocationOptions.map((l) => (
+                            <option key={l.id} value={l.id}>
+                                {l.displayName || `#${l.id}`}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            </div>
+            <button
+                type="button"
+                className="btn btn-primary move-item-card-btn"
+                disabled={disabled || isSubmitting || !destination}
+                onClick={() => onMove({ kind, id })}
+            >
+                {isSubmitting ? <Loader2 size={16} className="spin-icon" /> : <Send size={16} />}
+                <span>{isSubmitting ? t('poMoveItems.moving') : t('poMoveItems.move')}</span>
+            </button>
+        </div>
+    );
+};
 
 const PurchaseOrderMoveItemsPage = () => {
     const { user, isSuperuser } = useAuth();
     const navigate = useNavigate();
     const { orderId } = useParams();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const lang = i18n.language;
     const isStockConsumableResponsible = isSuperuser || user?.roles?.some((role) => role.role_code === 'stock_consumable_responsible' || role.role_code === 'exploitation_chief');
 
     const [loading, setLoading] = useState(true);
@@ -83,7 +198,6 @@ const PurchaseOrderMoveItemsPage = () => {
     useEffect(() => {
         if (!isStockConsumableResponsible) return;
         loadAll();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isStockConsumableResponsible, orderId]);
 
     const isFullySigned = useMemo(() => {
@@ -99,8 +213,8 @@ const PurchaseOrderMoveItemsPage = () => {
     }, [acceptanceReport]);
 
     const allLocationOptions = useMemo(() => {
-        return (locations || []).map((l) => ({ id: l.location_id, name: l.location_name }));
-    }, [locations]);
+        return (locations || []).map((l) => ({ id: l.location_id, name: l.location_name, displayName: getBilingualLocationName(l, lang) }));
+    }, [locations, lang]);
 
     const setDestination = (key, value) => {
         setDestinationsByKey((prev) => ({ ...prev, [key]: value }));
@@ -116,11 +230,17 @@ const PurchaseOrderMoveItemsPage = () => {
                 Promise.all(consIds.map((id) => consumableService.getCurrentLocation(id).then((d) => [id, d]).catch(() => [id, null]))),
             ]);
 
-            const stockLocMap = new Map(stockLocs.map(([id, d]) => [id, d?.location_id ?? null]));
-            const consLocMap = new Map(consLocs.map(([id, d]) => [id, d?.location_id ?? null]));
+            const stockLocMap = new Map(stockLocs.map(([id, d]) => [id, { location_id: d?.location_id ?? null, location: d?.location ?? null }]));
+            const consLocMap = new Map(consLocs.map(([id, d]) => [id, { location_id: d?.location_id ?? null, location: d?.location ?? null }]));
 
-            setStockItems((prev) => prev.map((s) => ({ ...s, current_location_id: stockLocMap.get(Number(s.stock_item_id)) ?? s.current_location_id ?? null })));
-            setConsumables((prev) => prev.map((c) => ({ ...c, current_location_id: consLocMap.get(Number(c.consumable_id)) ?? c.current_location_id ?? null })));
+            setStockItems((prev) => prev.map((s) => {
+                const locData = stockLocMap.get(Number(s.stock_item_id));
+                return { ...s, current_location_id: locData?.location_id ?? s.current_location_id ?? null, current_location: locData?.location ?? s.current_location ?? null };
+            }));
+            setConsumables((prev) => prev.map((c) => {
+                const locData = consLocMap.get(Number(c.consumable_id));
+                return { ...c, current_location_id: locData?.location_id ?? c.current_location_id ?? null, current_location: locData?.location ?? c.current_location ?? null };
+            }));
         } catch {
             // ignore
         }
@@ -130,7 +250,6 @@ const PurchaseOrderMoveItemsPage = () => {
         if (!isStockConsumableResponsible) return;
         if (loading) return;
         enrichCurrentLocations();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loading, isStockConsumableResponsible]);
 
     const bulkItems = useMemo(() => {
@@ -196,7 +315,6 @@ const PurchaseOrderMoveItemsPage = () => {
         }
 
         navigate('/dashboard/purchase-orders');
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [success, bulkSubmitting, bulkErrors.length, orderId]);
 
     const doMove = async ({ kind, id }) => {
@@ -226,215 +344,221 @@ const PurchaseOrderMoveItemsPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    if (!loading && !isFullySigned) {
+    if (!loading && error) {
         return (
             <div className="page-container">
-                <div className="card">
-                    <div className="card-body">
-                        <div className="alert alert-error">
-                            {t('poMoveItems.signatoriesRequired')}
-                        </div>
-                        <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                            {t('poMoveItems.backToPurchaseOrders')}
-                        </button>
-                    </div>
+                <div className="move-items-blocked">
+                    <AlertCircle size={40} />
+                    <div className="move-items-blocked-text">{error}</div>
+                    <button type="button" className="btn btn-secondary" onClick={loadAll}>
+                        <RefreshCw size={16} />
+                        <span>{t('common.refresh')}</span>
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
+                        <ArrowLeft size={16} />
+                        <span>{t('poMoveItems.backToPurchaseOrders')}</span>
+                    </button>
                 </div>
             </div>
         );
     }
 
-    return (
-        <div className="page-container">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <h1 className="page-title">{t('poMoveItems.title')}</h1>
-                    <p className="page-subtitle">{t('purchaseOrderDetails.order')} #{orderId}{order?.purchase_order_code ? ` | ${order.purchase_order_code}` : ''}</p>
-                </div>
-                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+    if (!loading && !error && !isFullySigned) {
+        return (
+            <div className="page-container">
+                <div className="move-items-blocked">
+                    <AlertCircle size={40} />
+                    <div className="move-items-blocked-text">{t('poMoveItems.signatoriesRequired')}</div>
                     <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        {t('common.back')}
+                        <ArrowLeft size={16} />
+                        <span>{t('poMoveItems.backToPurchaseOrders')}</span>
                     </button>
-                    <button type="button" className="btn btn-secondary" onClick={loadAll}>
-                        {t('common.refresh')}
+                </div>
+            </div>
+        );
+    }
+
+    const stockCount = (stockItems || []).length;
+    const consCount = (consumables || []).length;
+
+    return (
+        <div className="page-container move-items-page">
+            <div className="move-items-hero">
+                <div className="move-items-hero-main">
+                    <div className="move-items-hero-kicker">
+                        <ArrowRightLeft size={14} />
+                        <span>{t('poMoveItems.title')}</span>
+                    </div>
+                    <h1 className="move-items-hero-title">
+                        {t('purchaseOrderDetails.order')} #{orderId}
+                        {order?.purchase_order_code ? <span className="move-items-hero-code"> | {order.purchase_order_code}</span> : ''}
+                    </h1>
+                    <div className="move-items-hero-stats">
+                        <div className="move-items-hero-stat">
+                            <Package size={16} />
+                            <span className="move-items-hero-stat-val">{stockCount}</span>
+                            <span className="move-items-hero-stat-lbl">{t('poMoveItems.stockItems')}</span>
+                        </div>
+                        <div className="move-items-hero-stat">
+                            <Droplets size={16} />
+                            <span className="move-items-hero-stat-val">{consCount}</span>
+                            <span className="move-items-hero-stat-lbl">{t('poMoveItems.consumables')}</span>
+                        </div>
+                        <div className="move-items-hero-stat move-items-hero-stat-total">
+                            <ArrowRightLeft size={16} />
+                            <span className="move-items-hero-stat-val">{bulkItems.length}</span>
+                            <span className="move-items-hero-stat-lbl">{t('poMoveItems.totalItems')}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="move-items-hero-actions">
+                    <button type="button" className="dashboard-quick-btn" onClick={() => navigate('/dashboard/purchase-orders')}>
+                        <ArrowLeft size={16} />
+                        <span>{t('common.back')}</span>
+                    </button>
+                    <button type="button" className="dashboard-quick-btn" onClick={loadAll}>
+                        <RefreshCw size={16} />
+                        <span>{t('common.refresh')}</span>
                     </button>
                 </div>
             </div>
 
-            {error && <div className="alert alert-error">{error}</div>}
-            {success && <div className="alert alert-success">{success}</div>}
+            {error && (
+                <div className="move-items-alert move-items-alert-error">
+                    <AlertCircle size={18} />
+                    <span>{error}</span>
+                </div>
+            )}
+            {success && (
+                <div className="move-items-alert move-items-alert-success">
+                    <CheckCircle2 size={18} />
+                    <span>{success}</span>
+                </div>
+            )}
 
             {loading ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
+                <div className="loading-state">
+                    <Loader2 size={24} className="spin-icon" />
+                    <span>{t('common.loading')}</span>
+                </div>
             ) : (
                 <>
-                    <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-                        <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.bulkMove')}</h2>
+                    <div className="move-items-bulk-bar">
+                        <div className="move-items-bulk-left">
+                            <ArrowRightLeft size={18} />
+                            <span className="move-items-bulk-label">{t('poMoveItems.bulkMove')}</span>
                         </div>
-                        <div className="card-body">
-                            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
-                                <select
-                                    className="form-input"
-                                    value={bulkDestinationId}
-                                    onChange={(e) => setBulkDestinationId(e.target.value)}
-                                    style={{ minWidth: 280 }}
-                                >
-                                    <option value="">{t('poMoveItems.selectDestination')}</option>
-                                    {allLocationOptions.map((l) => (
-                                        <option key={l.id} value={l.id}>
-                                            {l.name || `#${l.id}`}
-                                        </option>
+                        <div className="move-items-bulk-right">
+                            <select
+                                className="form-input move-items-bulk-select"
+                                value={bulkDestinationId}
+                                onChange={(e) => setBulkDestinationId(e.target.value)}
+                            >
+                                <option value="">{t('poMoveItems.selectDestination')}</option>
+                                {allLocationOptions.map((l) => (
+                                    <option key={l.id} value={l.id}>
+                                        {l.displayName || `#${l.id}`}
+                                    </option>
+                                ))}
+                            </select>
+                            <button
+                                type="button"
+                                className="btn btn-primary move-items-bulk-btn"
+                                disabled={!isFullySigned || bulkSubmitting || !bulkDestinationId || bulkItems.length === 0}
+                                onClick={handleBulkMove}
+                            >
+                                {bulkSubmitting ? <Loader2 size={16} className="spin-icon" /> : <Send size={16} />}
+                                <span>{bulkSubmitting ? t('poMoveItems.movingProgress', { done: bulkProgress.done, total: bulkProgress.total }) : t('poMoveItems.moveAllItems')}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {bulkErrors.length > 0 && (
+                        <div className="move-items-alert move-items-alert-error">
+                            <AlertCircle size={18} />
+                            <div>
+                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('poMoveItems.someItemsFailed')}</div>
+                                <div style={{ maxHeight: 180, overflowY: 'auto' }}>
+                                    {bulkErrors.map((m, idx) => (
+                                        <div key={idx} style={{ fontSize: 'var(--font-size-sm)' }}>{m}</div>
                                     ))}
-                                </select>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    disabled={!isFullySigned || bulkSubmitting || !bulkDestinationId || bulkItems.length === 0}
-                                    onClick={handleBulkMove}
-                                >
-                                    {bulkSubmitting ? t('poMoveItems.movingProgress', { done: bulkProgress.done, total: bulkProgress.total }) : t('poMoveItems.moveAllItems')}
-                                </button>
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('poMoveItems.totalItems')}: {bulkItems.length}</div>
+                                </div>
                             </div>
+                        </div>
+                    )}
 
-                            {bulkErrors.length > 0 && (
-                                <div className="alert alert-error" style={{ marginTop: 'var(--space-4)' }}>
-                                    <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)' }}>{t('poMoveItems.someItemsFailed')}</div>
-                                    <div style={{ maxHeight: 220, overflowY: 'auto' }}>
-                                        {bulkErrors.map((m, idx) => (
-                                            <div key={idx}>{m}</div>
-                                        ))}
-                                    </div>
+                    {stockCount > 0 && (
+                        <section className="move-items-section">
+                            <div className="move-items-section-head">
+                                <div className="move-items-section-title">
+                                    <Package size={18} />
+                                    <span>{t('poMoveItems.stockItems')}</span>
+                                    <span className="move-items-section-count">{stockCount}</span>
                                 </div>
-                            )}
-                        </div>
-                    </div>
+                            </div>
+                            <div className="move-items-grid">
+                                {stockItems.map((s) => {
+                                    const key = `stock_item:${s.stock_item_id}`;
+                                    return (
+                                        <ItemCard
+                                            key={key}
+                                            item={s}
+                                            kind="stock_item"
+                                            locations={locations}
+                                            allLocationOptions={allLocationOptions}
+                                            destination={destinationsByKey[key]}
+                                            onSetDestination={setDestination}
+                                            onMove={doMove}
+                                            submitting={submittingKey}
+                                            disabled={!isFullySigned}
+                                            t={t}
+                                            lang={lang}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
 
-                    <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-                        <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.stockItems')}</h2>
-                        </div>
-                        <div className="card-body">
-                            {(stockItems || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('poMoveItems.noStockItemsAdded')}</div>
-                            ) : (
-                                <div style={{ overflowX: 'auto' }}>
-                                    <table className="table" style={{ width: '100%' }}>
-                                        <thead>
-                                            <tr>
-                                                <th>{t('common.id')}</th>
-                                                <th>{t('poMoveItems.name')}</th>
-                                                <th>{t('common.status')}</th>
-                                                <th>{t('poMoveItems.currentLocation')}</th>
-                                                <th>{t('poMoveItems.destination')}</th>
-                                                <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {stockItems.map((s) => {
-                                                const key = `stock_item:${s.stock_item_id}`;
-                                                return (
-                                                    <tr key={key}>
-                                                        <td>#{s.stock_item_id}</td>
-                                                        <td>{s.stock_item_name || '-'}</td>
-                                                        <td>{s.stock_item_status || '-'}</td>
-                                                        <td>{s.current_location_id ? `#${s.current_location_id}` : '-'}</td>
-                                                        <td>
-                                                            <select
-                                                                className="form-input"
-                                                                value={destinationsByKey[key] || ''}
-                                                                onChange={(e) => setDestination(key, e.target.value)}
-                                                            >
-                                                                <option value="">{t('poMoveItems.selectLocation')}</option>
-                                                                {allLocationOptions.map((l) => (
-                                                                    <option key={l.id} value={l.id}>
-                                                                        {l.name || `#${l.id}`}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </td>
-                                                        <td style={{ textAlign: 'right' }}>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-primary"
-                                                                disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
-                                                                onClick={() => doMove({ kind: 'stock_item', id: s.stock_item_id })}
-                                                            >
-                                                                {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
+                    {consCount > 0 && (
+                        <section className="move-items-section">
+                            <div className="move-items-section-head">
+                                <div className="move-items-section-title">
+                                    <Droplets size={18} />
+                                    <span>{t('poMoveItems.consumables')}</span>
+                                    <span className="move-items-section-count">{consCount}</span>
                                 </div>
-                            )}
-                        </div>
-                    </div>
+                            </div>
+                            <div className="move-items-grid">
+                                {consumables.map((c) => {
+                                    const key = `consumable:${c.consumable_id}`;
+                                    return (
+                                        <ItemCard
+                                            key={key}
+                                            item={c}
+                                            kind="consumable"
+                                            locations={locations}
+                                            allLocationOptions={allLocationOptions}
+                                            destination={destinationsByKey[key]}
+                                            onSetDestination={setDestination}
+                                            onMove={doMove}
+                                            submitting={submittingKey}
+                                            disabled={!isFullySigned}
+                                            t={t}
+                                            lang={lang}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
 
-                    <div className="card">
-                        <div className="card-header">
-                            <h2 className="card-title" style={{ margin: 0 }}>{t('poMoveItems.consumables')}</h2>
+                    {stockCount === 0 && consCount === 0 && (
+                        <div className="empty-state">
+                            <Package className="empty-state-icon" size={48} />
+                            <div className="empty-state-title">{t('poMoveItems.noItemsToMove')}</div>
                         </div>
-                        <div className="card-body">
-                            {(consumables || []).length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('poMoveItems.noConsumablesAdded')}</div>
-                            ) : (
-                                <div style={{ overflowX: 'auto' }}>
-                                    <table className="table" style={{ width: '100%' }}>
-                                        <thead>
-                                            <tr>
-                                                <th>{t('common.id')}</th>
-                                                <th>{t('poMoveItems.name')}</th>
-                                                <th>{t('common.status')}</th>
-                                                <th>{t('poMoveItems.currentLocation')}</th>
-                                                <th>{t('poMoveItems.destination')}</th>
-                                                <th style={{ textAlign: 'right' }}>{t('poMoveItems.action')}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {consumables.map((c) => {
-                                                const key = `consumable:${c.consumable_id}`;
-                                                return (
-                                                    <tr key={key}>
-                                                        <td>#{c.consumable_id}</td>
-                                                        <td>{c.consumable_name || '-'}</td>
-                                                        <td>{c.consumable_status || '-'}</td>
-                                                        <td>{c.current_location_id ? `#${c.current_location_id}` : '-'}</td>
-                                                        <td>
-                                                            <select
-                                                                className="form-input"
-                                                                value={destinationsByKey[key] || ''}
-                                                                onChange={(e) => setDestination(key, e.target.value)}
-                                                            >
-                                                                <option value="">{t('poMoveItems.selectLocation')}</option>
-                                                                {allLocationOptions.map((l) => (
-                                                                    <option key={l.id} value={l.id}>
-                                                                        {l.name || `#${l.id}`}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </td>
-                                                        <td style={{ textAlign: 'right' }}>
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-primary"
-                                                                disabled={!isFullySigned || submittingKey === key || !destinationsByKey[key]}
-                                                                onClick={() => doMove({ kind: 'consumable', id: c.consumable_id })}
-                                                            >
-                                                                {submittingKey === key ? t('poMoveItems.moving') : t('poMoveItems.move')}
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    )}
                 </>
             )}
         </div>

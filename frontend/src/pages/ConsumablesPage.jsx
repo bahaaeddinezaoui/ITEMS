@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors } from 'lucide-react';
+import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Wrench, Hash } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
 import {
     authService,
@@ -19,7 +19,7 @@ import {
 } from '../services/api';
 
 const ConsumablesPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -135,7 +135,6 @@ const ConsumablesPage = () => {
         consumable_name: '',
         consumable_inventory_number: '',
         consumable_status: 'in_stock',
-        consumable_warranty_expiry_in_months: '',
         consumable_name_in_administrative_certificate: '',
         destruction_certificate_id: '',
         maintenance_step_id: null
@@ -171,7 +170,6 @@ const ConsumablesPage = () => {
             consumable_name: '',
             consumable_inventory_number: '',
             consumable_status: 'in_stock',
-            consumable_warranty_expiry_in_months: '',
             consumable_name_in_administrative_certificate: '',
             destruction_certificate_id: 0,
             maintenance_step_id: null
@@ -182,7 +180,6 @@ const ConsumablesPage = () => {
         sp.delete('create');
         const qs = sp.toString();
         navigate(qs ? `${location.pathname}?${qs}` : location.pathname, { replace: true });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isInstancesMode, createParam, selectedConsumableModel, showConsumableForm]);
 
     useEffect(() => {
@@ -691,7 +688,6 @@ const ConsumablesPage = () => {
                 consumable_name: '',
                 consumable_inventory_number: '',
                 consumable_status: 'in_stock',
-                consumable_warranty_expiry_in_months: '',
                 consumable_name_in_administrative_certificate: '',
                 destruction_certificate_id: '',
                 maintenance_step_id: null
@@ -716,7 +712,6 @@ const ConsumablesPage = () => {
             consumable_name: item.consumable_name || '',
             consumable_inventory_number: item.consumable_inventory_number || '',
             consumable_status: item.consumable_status || 'active',
-            consumable_warranty_expiry_in_months: item.consumable_warranty_expiry_in_months || '',
             consumable_name_in_administrative_certificate: item.consumable_name_in_administrative_certificate || '',
             destruction_certificate_id: item.destruction_certificate_id ?? '',
             maintenance_step_id: item.maintenance_step_id || null
@@ -994,8 +989,17 @@ const ConsumablesPage = () => {
         return result;
     }, [consumables, searchTerm, statusFilter]);
 
-    const formatStatus = (value) => {
-        return String(value || '').split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ');
+    const formatStatus = (value, item) => {
+        if (!value) return '';
+        const lang = i18n.language;
+        const statusAr = item?.consumable_status_ar;
+        const statusEn = item?.consumable_status_en;
+        if (lang === 'ar') {
+            if (statusAr && statusEn && statusAr !== statusEn) return `${statusAr} (${statusEn})`;
+            return statusAr || statusEn || String(value).split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ');
+        }
+        if (statusEn && statusAr && statusEn !== statusAr) return `${statusEn} (${statusAr})`;
+        return statusEn || statusAr || String(value).split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ');
     };
 
     if (isInstancesMode) {
@@ -1030,13 +1034,12 @@ const ConsumablesPage = () => {
                             consumable_name: '',
                             consumable_inventory_number: '',
                             consumable_status: 'not_delivered_to_company',
-                            consumable_warranty_expiry_in_months: '',
                             consumable_name_in_administrative_certificate: '',
                             destruction_certificate_id: 0,
                             maintenance_step_id: null
                         });
                         setShowConsumableForm(true);
-                    }} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                    }} style={{ padding: 'var(--space-3) var(--space-6)', width: 'auto' }}>
                         <Plus size={18} />
                         <span>{t('consumables.addItem', 'Add Consumable')}</span>
                     </button>
@@ -1068,26 +1071,44 @@ const ConsumablesPage = () => {
                 {/* Add/Edit Consumable Modal */}
                 {showConsumableForm && (
                     <div className="modal-overlay" onClick={() => setShowConsumableForm(false)}>
-                        <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3 className="modal-title">{editingConsumable ? t('consumables.editItem', 'Edit Consumable') : t('consumables.newItem', 'New Consumable')}</h3>
+                        <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header" style={{ gap: 'var(--space-4)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                    <div style={{
+                                        width: 40, height: 40, borderRadius: 'var(--radius-lg)',
+                                        background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)', display: 'flex', alignItems: 'center',
+                                        justifyContent: 'center', boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)', flexShrink: 0,
+                                    }}>
+                                        <Wrench size={20} style={{ color: 'white' }} />
+                                    </div>
+                                    <div>
+                                        <h3 className="modal-title" style={{ margin: 0 }}>{editingConsumable ? t('consumables.editItem', 'Edit Consumable') : t('consumables.newItem', 'New Consumable')}</h3>
+                                        <p style={{ margin: 'var(--space-1) 0 0', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
+                                            {selectedConsumableModel?.model_name || ''}
+                                        </p>
+                                    </div>
+                                </div>
                                 <button className="modal-close" onClick={() => setShowConsumableForm(false)}><X size={18} /></button>
                             </div>
-                            <div className="modal-body">
-                                <form onSubmit={handleConsumableSubmit} className="form">
-                                    <div className="form-row">
+                            <form onSubmit={handleConsumableSubmit}>
+                                <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                                    <div className="form-group">
+                                        <TranslatableInput
+                                            label={t('consumables.namePlaceholder', 'Consumable name')}
+                                            baseFieldName="consumable_name"
+                                            value={consumableFormData.consumable_name}
+                                            onChange={(name, value) => handleConsumableInputChange({ target: { name, value } })}
+                                            translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.consumable_name]))}
+                                            onTranslationChange={handleFormTranslationChange}
+                                            placeholder={t('consumables.namePlaceholder', 'Consumable name')}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
                                         <div className="form-group">
-                                            <TranslatableInput
-                                                label={t('consumables.namePlaceholder', 'Consumable name')}
-                                                baseFieldName="consumable_name"
-                                                value={consumableFormData.consumable_name}
-                                                onChange={(name, value) => handleConsumableInputChange({ target: { name, value } })}
-                                                translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.consumable_name]))}
-                                                onTranslationChange={handleFormTranslationChange}
-                                                placeholder={t('consumables.namePlaceholder', 'Consumable name')}
-                                            />
-                                        </div>
-                                        <div className="form-group">
+                                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                <Tag size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                {t('common.status')}
+                                            </label>
                                             <select name="consumable_status" value={consumableFormData.consumable_status} onChange={handleConsumableInputChange} className="form-input" style={{ height: '44px' }}>
                                                 <option value="not_delivered_to_company">{t('consumables.statusNotDelivered', 'Not Delivered')}</option>
                                                 <option value="in_stock">{t('consumables.statusInStock', 'In Stock')}</option>
@@ -1101,25 +1122,22 @@ const ConsumablesPage = () => {
                                                 <option value="destroyed">{t('consumables.statusDestroyed', 'Destroyed')}</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div className="form-row">
                                         <div className="form-group">
+                                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                <Hash size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                {t('consumables.inventoryNumber', 'Inventory Number')}
+                                            </label>
                                             <input type="text" name="consumable_inventory_number" value={consumableFormData.consumable_inventory_number} onChange={handleConsumableInputChange} placeholder={t('consumables.inventoryNumber', 'Inventory Number')} className="form-input" style={{ height: '44px' }} />
                                         </div>
-                                        <div className="form-group">
-                                            <input type="number" name="consumable_warranty_expiry_in_months" value={consumableFormData.consumable_warranty_expiry_in_months} onChange={handleConsumableInputChange} placeholder={t('consumables.warrantyMonths', 'Warranty (Months)')} className="form-input" style={{ height: '44px' }} />
-                                        </div>
                                     </div>
-                                    <div className="form-actions">
-                                        <button type="submit" disabled={saving} className="btn btn-primary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
-                                            {editingConsumable ? t('common.update') : t('common.save')}
-                                        </button>
-                                        <button type="button" onClick={() => setShowConsumableForm(false)} className="btn btn-secondary" style={{ padding: 'var(--space-3) var(--space-6)' }}>
-                                            {t('common.cancel')}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" onClick={() => setShowConsumableForm(false)} className="btn btn-secondary">{t('common.cancel')}</button>
+                                    <button type="submit" disabled={saving} className="btn btn-primary">
+                                        {editingConsumable ? t('common.update') : t('common.save')}
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 )}
@@ -1210,7 +1228,7 @@ const ConsumablesPage = () => {
                                                         color: item.consumable_status === 'in_stock' ? 'var(--color-success)' :
                                                                item.consumable_status === 'not_delivered_to_company' ? 'var(--color-warning)' : 'var(--color-text-secondary)'
                                                     }}>
-                                                        {formatStatus(item.consumable_status)}
+                                                        {formatStatus(item.consumable_status, item)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1279,7 +1297,7 @@ const ConsumablesPage = () => {
                                         {selectedConsumable.consumable_name || t('consumables.itemWithId', { id: selectedConsumable.consumable_id })}
                                     </h3>
                                     <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                        {t('consumables.inventoryNo', 'Inventory No.')}: {selectedConsumable.consumable_inventory_number || '—'} • {t('consumables.status', 'Status')}: {formatStatus(selectedConsumable.consumable_status)}
+                                        {t('consumables.inventoryNo', 'Inventory No.')}: {selectedConsumable.consumable_inventory_number || '—'} • {t('consumables.status', 'Status')}: {formatStatus(selectedConsumable.consumable_status, selectedConsumable)}
                                     </span>
                                 </div>
                                 <button className="modal-close" onClick={closeConsumableDetailsModal}><X size={18} /></button>
@@ -1908,7 +1926,6 @@ const ConsumablesPage = () => {
                                             consumable_name: '',
                                             consumable_inventory_number: '',
                                             consumable_status: 'not_delivered_to_company',
-                                            consumable_warranty_expiry_in_months: '',
                                             consumable_name_in_administrative_certificate: '',
                                             destruction_certificate_id: 0,
                                             maintenance_step_id: null
@@ -2154,10 +2171,6 @@ const ConsumablesPage = () => {
                                                 <div>
                                                     <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Inventory Number</label>
                                                     <input type="text" name="consumable_inventory_number" value={consumableFormData.consumable_inventory_number} onChange={handleConsumableInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
-                                                </div>
-                                                <div>
-                                                    <label style={{ display: 'block', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>Warranty (Months)</label>
-                                                    <input type="number" name="consumable_warranty_expiry_in_months" value={consumableFormData.consumable_warranty_expiry_in_months} onChange={handleConsumableInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }} />
                                                 </div>
                                             </div>
                                             <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-2)' }}>

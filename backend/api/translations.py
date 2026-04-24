@@ -458,6 +458,7 @@ class AssetTranslation(models.Model):
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     asset_name = models.CharField(max_length=48, blank=True, null=True, db_column='asset_name')
     asset_name_in_the_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='asset_name_in_the_administrative_certificate')
+    asset_status = models.CharField(max_length=60, blank=True, null=True, db_column='asset_status')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     class Meta:
@@ -472,6 +473,7 @@ class ConsumableTranslation(models.Model):
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     consumable_name = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name')
     consumable_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name_in_administrative_certificate')
+    consumable_status = models.CharField(max_length=60, blank=True, null=True, db_column='consumable_status')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     class Meta:
@@ -486,6 +488,7 @@ class StockItemTranslation(models.Model):
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     stock_item_name = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name')
     stock_item_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name_in_administrative_certificate')
+    stock_item_status = models.CharField(max_length=60, blank=True, null=True, db_column='stock_item_status')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     class Meta:
@@ -587,3 +590,17 @@ class MaintenanceStepItemRequestTranslation(models.Model):
         managed = False
         db_table = 'maintenance_step_item_request_translation'
         unique_together = ['maintenance_step_item_request', 'language_code']
+
+
+class AssetIncidentReportTranslation(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id')
+    asset_incident_report = models.ForeignKey('AssetIncidentReport', on_delete=models.CASCADE, db_column='asset_incident_report_id')
+    language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
+    reason = models.CharField(max_length=32, blank=True, null=True, db_column='reason')
+    status = models.CharField(max_length=20, blank=True, null=True, db_column='status')
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    class Meta:
+        managed = False
+        db_table = 'asset_incident_report_translation'
+        unique_together = ['asset_incident_report', 'language_code']

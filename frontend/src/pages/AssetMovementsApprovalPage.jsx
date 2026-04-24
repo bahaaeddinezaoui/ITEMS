@@ -96,13 +96,11 @@ const AssetMovementsApprovalPage = () => {
     useEffect(() => {
         if (!isAssetResponsible) return;
         loadPending();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAssetResponsible, statusFilter]);
 
     useEffect(() => {
         if (!isAssetResponsible || !i18n.language) return;
         loadPending();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [i18n.language, statusFilter]);
 
     useEffect(() => {
@@ -129,7 +127,6 @@ const AssetMovementsApprovalPage = () => {
                 setSubmittingKey(null);
             }
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pendingMoves, isAssetResponsible]);
 
     const handleDecision = async ({ id, decision }) => {

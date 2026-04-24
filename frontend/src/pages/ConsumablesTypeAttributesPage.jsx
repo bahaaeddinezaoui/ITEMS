@@ -33,7 +33,6 @@ const ConsumablesTypeAttributesPage = () => {
             return;
         }
         fetchAll();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [typeId]);
 
     const fetchAll = async () => {

@@ -721,7 +721,7 @@ const OrganizationalStructurePage = () => {
                         setShowFormModal(!showFormModal);
                     }}
                     className="btn btn-primary"
-                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', whiteSpace: 'nowrap' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', whiteSpace: 'nowrap', width: 'auto' }}
                 >
                     {showFormModal ? <X size={18} /> : <Plus size={18} />}
                     <span>{showFormModal ? t('common.cancel') : t('organizationalStructure.newStructure')}</span>

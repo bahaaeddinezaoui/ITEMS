@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 const AttributionOrderAssetsPage = () => {
     const { orderId } = useParams();
     const navigate = useNavigate();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const [order, setOrder] = useState(null);
     const [assets, setAssets] = useState([]);
@@ -161,7 +161,17 @@ const AttributionOrderAssetsPage = () => {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
                                 <span className={getStatusBadgeClass(asset.asset_status)}>
-                                    {asset.asset_status}
+                                    {(() => {
+                                        const lang = i18n.language;
+                                        const sAr = asset.asset_status_ar;
+                                        const sEn = asset.asset_status_en;
+                                        if (lang === 'ar') {
+                                            if (sAr && sEn && sAr !== sEn) return `${sAr} (${sEn})`;
+                                            return sAr || sEn || asset.asset_status;
+                                        }
+                                        if (sEn && sAr && sEn !== sAr) return `${sEn} (${sAr})`;
+                                        return sEn || sAr || asset.asset_status;
+                                    })()}
                                 </span>
                                 <div style={{ color: 'var(--color-primary)', fontWeight: '600' }}>
                                     {t('attributionOrderAssets.accessories')} →

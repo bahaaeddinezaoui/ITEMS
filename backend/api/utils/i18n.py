@@ -189,6 +189,7 @@ TRANSLATION_MODEL_MAP = {
     'CompanyAssetRequest': 'api.translations.CompanyAssetRequestTranslation',
     'ExternalMaintenanceDocument': 'api.translations.ExternalMaintenanceDocumentTranslation',
     'MaintenanceStepItemRequest': 'api.translations.MaintenanceStepItemRequestTranslation',
+    'AssetIncidentReport': 'api.translations.AssetIncidentReportTranslation',
 }
 
 
@@ -246,7 +247,17 @@ def save_translations(entity, translations_data: dict, base_model_name: str = No
         lookup = {fk_field: entity, 'language_code': language_code}
         qs = translation_model.objects.filter(**lookup)
         if qs.exists():
-            qs.update(**non_empty_values)
+            try:
+                qs.update(**non_empty_values)
+            except Exception:
+                # Column may not exist yet if migration not applied; try without status fields
+                status_fields = {'asset_status', 'stock_item_status', 'consumable_status'}
+                safe_values = {k: v for k, v in non_empty_values.items() if k not in status_fields}
+                if safe_values:
+                    try:
+                        qs.update(**safe_values)
+                    except Exception:
+                        pass
             continue
 
         create_kwargs = {**lookup, **non_empty_values}
@@ -259,4 +270,226 @@ def save_translations(entity, translations_data: dict, base_model_name: str = No
             last = translation_model.objects.order_by('-id').first()
             create_kwargs['id'] = (last.id + 1) if last else 1
 
-        translation_model.objects.create(**create_kwargs)
+        try:
+            translation_model.objects.create(**create_kwargs)
+        except Exception:
+            # Column may not exist yet if migration not applied; try without status fields
+            status_fields = {'asset_status', 'stock_item_status', 'consumable_status'}
+            safe_kwargs = {k: v for k, v in create_kwargs.items() if k not in status_fields}
+            if safe_kwargs:
+                try:
+                    translation_model.objects.create(**safe_kwargs)
+                except Exception:
+                    pass
+
+
+def sync_status_translations(entity, status_value, base_model_name=None):
+    """
+    Sync the status field across all translation rows for an entity.
+
+    When the base entity's status changes, this updates the status column
+    in every language row of the translation table with the human-readable
+    translated label for that language.
+
+    Args:
+        entity: The base entity instance (Asset, StockItem, Consumable)
+        status_value: The new status value (e.g. 'in_stock')
+        base_model_name: Name of the base model. If None, inferred from entity.
+    """
+    if not base_model_name:
+        base_model_name = entity.__class__.__name__
+
+    # Determine the status field name on the translation model
+    status_field_map = {
+        'Asset': 'asset_status',
+        'StockItem': 'stock_item_status',
+        'Consumable': 'consumable_status',
+    }
+    status_field = status_field_map.get(base_model_name)
+    if not status_field:
+        return
+
+    translation_model = get_translation_model(base_model_name)
+    if not translation_model:
+        return
+
+    # Find the FK field name on the translation model
+    fk_field = None
+    for field in translation_model._meta.fields:
+        if field.is_relation and field.many_to_one:
+            fk_field = field.name
+            break
+
+    if not fk_field:
+        return
+
+    # Update each translation row with the translated status for its language
+    try:
+        for row in translation_model.objects.filter(**{fk_field: entity}):
+            translated = translate_status(status_value, row.language_code)
+            setattr(row, status_field, translated)
+            row.save(update_fields=[status_field])
+    except Exception:
+        pass
+
+
+def bulk_sync_status_translations(model_class, filter_kwargs, new_status):
+    """
+    Update the status field on the base model AND sync to translation tables in bulk.
+
+    This replaces direct ``Model.objects.filter(...).update(status=...)`` calls
+    so that the translation rows stay in sync.
+
+    Args:
+        model_class: The base model class (Asset, StockItem, Consumable)
+        filter_kwargs: Dict of kwargs to filter the base model queryset
+        new_status: The new status value (e.g. 'in_stock', 'failed')
+
+    Returns:
+        Number of rows updated in the base table (same as queryset.update() return value)
+    """
+    # Determine the status field name on the base model
+    base_model_name = model_class.__name__
+    status_field_map = {
+        'Asset': 'asset_status',
+        'StockItem': 'stock_item_status',
+        'Consumable': 'consumable_status',
+    }
+    base_status_field = status_field_map.get(base_model_name)
+    if not base_status_field:
+        # Not a model with a translatable status — cannot proceed
+        return 0
+
+    # Update the base table
+    count = model_class.objects.filter(**filter_kwargs).update(**{base_status_field: new_status})
+
+    if count == 0:
+        return count
+
+    # Now sync the translation table
+    translation_status_field = base_status_field  # same name on translation model
+    translation_model = get_translation_model(base_model_name)
+    if not translation_model:
+        return count
+
+    # Find FK field name on the translation model
+    fk_field = None
+    for field in translation_model._meta.fields:
+        if field.is_relation and field.many_to_one:
+            fk_field = field.name
+            break
+    if not fk_field:
+        return count
+
+    # Get the PKs of the updated entities
+    updated_pks = list(model_class.objects.filter(**filter_kwargs).values_list('pk', flat=True))
+
+    # Update translation rows for all affected entities with translated status per language
+    if updated_pks:
+        try:
+            for row in translation_model.objects.filter(
+                **{f'{fk_field}_id__in': updated_pks}
+            ):
+                translated = translate_status(new_status, row.language_code)
+                setattr(row, translation_status_field, translated)
+                row.save(update_fields=[translation_status_field])
+        except Exception:
+            pass
+
+    return count
+
+
+# Status translation mappings (snake_case -> human-readable EN / Arabic)
+STATUS_TRANSLATIONS = {
+    # Stock item & Consumable statuses
+    'not_delivered_to_company': {
+        'en': 'Not Delivered to Company',
+        'ar': 'لم يتم تسليمها للشركة',
+    },
+    'in_stock': {
+        'en': 'In Stock',
+        'ar': 'في المخزون',
+    },
+    'in_use': {
+        'en': 'In Use',
+        'ar': 'قيد الاستخدام',
+    },
+    'assigned': {
+        'en': 'Assigned',
+        'ar': 'معين',
+    },
+    'maintenance': {
+        'en': 'Maintenance',
+        'ar': 'قيد الصيانة',
+    },
+    'reserved': {
+        'en': 'Reserved',
+        'ar': 'محجوز',
+    },
+    'expired': {
+        'en': 'Expired',
+        'ar': 'منتهي الصلاحية',
+    },
+    'failed': {
+        'en': 'Failed',
+        'ar': 'معطل',
+    },
+    'lost': {
+        'en': 'Lost',
+        'ar': 'مفقود',
+    },
+    'stolen': {
+        'en': 'Stolen',
+        'ar': 'مسروق',
+    },
+    'irrecoverably_damaged': {
+        'en': 'Irrecoverably Damaged',
+        'ar': 'تالف بشكل لا يمكن إصلاحه',
+    },
+    'destroyed': {
+        'en': 'Destroyed',
+        'ar': 'متلف',
+    },
+    'suggested_for_destruction': {
+        'en': 'Suggested for Destruction',
+        'ar': 'مقترح للإتلاف',
+    },
+    # Asset-specific statuses
+    'under_maintenance': {
+        'en': 'Under Maintenance',
+        'ar': 'قيد الصيانة',
+    },
+    'retired': {
+        'en': 'Retired',
+        'ar': 'متقاعد',
+    },
+    # Additional statuses that may appear
+    'active': {
+        'en': 'Active',
+        'ar': 'نشط',
+    },
+    'included_with_asset': {
+        'en': 'Included with Asset',
+        'ar': 'مضمّن مع الأصل',
+    },
+}
+
+
+def translate_status(status_value, language_code):
+    """
+    Translate a snake_case status value to a human-readable label.
+
+    Args:
+        status_value: The raw status string (e.g. 'not_delivered_to_company')
+        language_code: 'en' or 'ar'
+
+    Returns:
+        Human-readable status label, or the original value if no mapping exists.
+    """
+    if not status_value:
+        return status_value
+    key = status_value.strip().lower()
+    mapping = STATUS_TRANSLATIONS.get(key)
+    if mapping:
+        return mapping.get(language_code, status_value)
+    return status_value

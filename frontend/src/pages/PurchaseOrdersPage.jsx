@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { 
     Plus, 
@@ -20,11 +20,28 @@ import {
     PenTool,
     ChevronRight,
     Search,
-    Filter
+    Filter,
+    Truck,
+    FileCheck,
+    AlertCircle,
+    Paperclip,
+    ArrowRight,
+    CircleDot,
+    Banknote,
+    MoreHorizontal,
+    Clock,
+    FileBadge
 } from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+
+const formatDateTime = (dt) => {
+    if (!dt) return '—';
+    const d = new Date(dt);
+    if (Number.isNaN(d.getTime())) return String(dt);
+    return d.toLocaleString();
+};
 
 const PurchaseOrdersPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -72,7 +89,8 @@ const PurchaseOrdersPage = () => {
     const canCurrentUserSignAcceptanceReport =
         !!acceptanceReportInfo?.exists
         && (
-            (isDirectorAdminSupport && !acceptanceReportInfo?.is_signed_by_director_of_administration_and_support)
+            isSuperuser
+            || (isDirectorAdminSupport && !acceptanceReportInfo?.is_signed_by_director_of_administration_and_support)
             || (isProtectionSecurityBureauChief && !acceptanceReportInfo?.is_signed_by_protection_and_security_bureau_chief)
             || (isSchoolHeadquarter && !acceptanceReportInfo?.is_signed_by_school_headquarter)
             || (isItBureauChief && !acceptanceReportInfo?.is_signed_by_it_bureau_chief)
@@ -132,21 +150,23 @@ const PurchaseOrdersPage = () => {
         }
     };
 
-    const submitSignAcceptanceReport = async () => {
+    const submitSignAcceptanceReport = async (signAs = null) => {
         if (!acceptanceReportPo) return;
         setAcceptanceReportError('');
         setSuccess('');
         setError('');
 
         try {
-            let signAs = null;
-            if (isDirectorAdminSupport) signAs = 'director_admin_support';
-            if (isProtectionSecurityBureauChief) signAs = 'protection_and_security_bureau_chief';
-            if (isSchoolHeadquarter) signAs = 'school_headquarter';
-            if (isItBureauChief) signAs = 'it_bureau_chief';
-            if (isStockConsumableResponsible) signAs = 'stock_consumable_responsible';
+            let role = signAs;
+            if (!role) {
+                if (isDirectorAdminSupport) role = 'director_admin_support';
+                if (isProtectionSecurityBureauChief) role = 'protection_and_security_bureau_chief';
+                if (isSchoolHeadquarter) role = 'school_headquarter';
+                if (isItBureauChief) role = 'it_bureau_chief';
+                if (isStockConsumableResponsible) role = 'stock_consumable_responsible';
+            }
 
-            const payload = signAs ? { sign_as: signAs, is_signed: true } : { is_signed: true };
+            const payload = role ? { sign_as: role, is_signed: true } : { is_signed: true };
             await purchaseOrderService.signAcceptanceReport(acceptanceReportPo.purchase_order_id, payload);
             const info = await purchaseOrderService.getAcceptanceReport(acceptanceReportPo.purchase_order_id);
             setAcceptanceReportInfo(info);
@@ -339,7 +359,6 @@ const PurchaseOrdersPage = () => {
     useEffect(() => {
         if (!canConsultPurchaseOrders) return;
         loadOrders();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canConsultPurchaseOrders]);
 
     if (!canConsultPurchaseOrders) {
@@ -362,311 +381,620 @@ const PurchaseOrdersPage = () => {
         `#${o.purchase_order_id}`.includes(searchTerm)
     );
 
-    const getStatusColor = (o) => {
-        if (o.has_remaining === false) return 'badge-success';
-        if (o.has_remaining === true) return 'badge-warning';
-        return 'badge-secondary';
+    const getStatusKey = (o) => {
+        if (o.has_remaining === false) return 'received';
+        if (o.has_remaining === true) return 'partial';
+        return 'pending';
     };
 
-    const getStatusText = (o) => {
-        if (o.has_remaining === false) return t('poOrders.statusReceived');
-        if (o.has_remaining === true) return t('poOrders.statusPartial');
-        return t('poOrders.statusPending');
-    };
+    const statusConfig = useMemo(() => ({
+        pending: {
+            label: t('poOrders.statusPending'),
+            color: '#6366f1',
+            bg: 'rgba(99, 102, 241, 0.12)',
+            border: 'rgba(99, 102, 241, 0.25)',
+            glow: 'rgba(99, 102, 241, 0.06)',
+            dot: '#6366f1',
+        },
+        partial: {
+            label: t('poOrders.statusPartial'),
+            color: '#f59e0b',
+            bg: 'rgba(245, 158, 11, 0.12)',
+            border: 'rgba(245, 158, 11, 0.25)',
+            glow: 'rgba(245, 158, 11, 0.06)',
+            dot: '#f59e0b',
+        },
+        received: {
+            label: t('poOrders.statusReceived'),
+            color: '#10b981',
+            bg: 'rgba(16, 185, 129, 0.12)',
+            border: 'rgba(16, 185, 129, 0.25)',
+            glow: 'rgba(16, 185, 129, 0.06)',
+            dot: '#10b981',
+        },
+    }), [t]);
+
+    const groupedOrders = useMemo(() => {
+        const groups = { pending: [], partial: [], received: [] };
+        filteredOrders.forEach(o => {
+            groups[getStatusKey(o)].push(o);
+        });
+        return groups;
+    }, [filteredOrders]);
+
+    const stats = useMemo(() => ({
+        total: filteredOrders.length,
+        pending: groupedOrders.pending.length,
+        partial: groupedOrders.partial.length,
+        received: groupedOrders.received.length,
+    }), [filteredOrders, groupedOrders]);
 
     return (
-        <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
+        <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1440px', margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-6)' }}>
                 <div>
-                    <h1 className="page-title" style={{ fontSize: 'var(--font-size-4xl)', marginBottom: 'var(--space-2)' }}>{t('poOrders.title')}</h1>
-                    <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
+                    <h1 style={{ fontSize: 'var(--font-size-3xl)', fontWeight: '800', letterSpacing: '-0.03em', margin: 0 }}>
+                        {t('poOrders.title')}
+                    </h1>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)', margin: 0, marginTop: 'var(--space-1)' }}>
                         {t('poOrders.subtitle')}
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                    <button 
-                        type="button" 
-                        className="btn btn-secondary" 
-                        onClick={loadOrders} 
+                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={loadOrders}
                         disabled={loading}
-                        style={{ padding: 'var(--space-3) var(--space-4)' }}
+                        style={{ padding: 'var(--space-2) var(--space-3)', gap: 'var(--space-2)' }}
                     >
-                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                        <span>{t('common.refresh')}</span>
+                        <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
                     </button>
                     {isStockConsumableResponsible && (
-                        <button 
-                            type="button" 
-                            className="btn btn-primary" 
+                        <button
+                            type="button"
+                            className="btn btn-primary"
                             onClick={() => navigate('/dashboard/purchase-orders/create')}
-                            style={{ padding: 'var(--space-3) var(--space-6)' }}
+                            style={{ padding: 'var(--space-2) var(--space-5)', gap: 'var(--space-2)' }}
                         >
-                            <Plus size={18} />
+                            <Plus size={16} />
                             <span>{t('poOrders.newOrder')}</span>
                         </button>
                     )}
                 </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-                <div style={{ position: 'relative', flex: 1 }}>
-                    <Search 
-                        size={18} 
-                        style={{ 
-                            position: 'absolute', 
-                            left: 'var(--space-4)', 
-                            top: '50%', 
-                            transform: 'translateY(-50%)', 
-                            color: 'var(--color-text-muted)' 
-                        }} 
+            {/* Stats + Search Row */}
+            <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', alignItems: 'stretch' }}>
+                {[
+                    { key: 'total', value: stats.total, icon: Package, color: 'var(--color-accent-primary)' },
+                    { key: 'pending', value: stats.pending, icon: CircleDot, color: statusConfig.pending.color },
+                    { key: 'partial', value: stats.partial, icon: History, color: statusConfig.partial.color },
+                    { key: 'received', value: stats.received, icon: CheckCircle2, color: statusConfig.received.color },
+                ].map(s => (
+                    <div
+                        key={s.key}
+                        style={{
+                            flex: 1,
+                            padding: 'var(--space-3) var(--space-4)',
+                            background: 'var(--color-bg-card)',
+                            border: '1px solid var(--color-border)',
+                            borderRadius: 'var(--radius-lg)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-3)',
+                        }}
+                    >
+                        <div style={{
+                            width: '32px', height: '32px', borderRadius: 'var(--radius-md)',
+                            background: `${s.color}18`, border: `1px solid ${s.color}35`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        }}>
+                            <s.icon size={16} style={{ color: s.color }} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '800', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                                {s.value}
+                            </div>
+                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                {t(`poOrders.stat${s.key.charAt(0).toUpperCase() + s.key.slice(1)}`)}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                <div style={{ position: 'relative', flex: 1.5 }}>
+                    <Search
+                        size={16}
+                        style={{
+                            position: 'absolute',
+                            left: 'var(--space-3)',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'var(--color-text-muted)',
+                        }}
                     />
-                    <input 
-                        type="text" 
-                        placeholder={t('poOrders.searchPlaceholder')} 
+                    <input
+                        type="text"
+                        placeholder={t('poOrders.searchPlaceholder')}
                         className="form-input"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ paddingLeft: 'var(--space-12)', height: '48px', background: 'var(--color-bg-card)' }}
+                        style={{ paddingLeft: 'var(--space-10)', height: '100%', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)' }}
                     />
                 </div>
-                <button className="btn btn-secondary" style={{ width: '48px', padding: 0 }}>
-                    <Filter size={18} />
-                </button>
             </div>
 
-            <div className="card" style={{ border: 'none', background: 'transparent' }}>
-                {loading ? (
-                    <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
-                        <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                        <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('poOrders.loadingOrders')}</span>
-                    </div>
-                ) : filteredOrders.length === 0 ? (
-                    <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
-                        <div className="empty-state-icon">
-                            <Package size={64} />
-                        </div>
-                        <h3 className="empty-state-title">{t('poOrders.noOrdersFound')}</h3>
-                        <p className="empty-state-text">
-                            {searchTerm ? t('poOrders.noResultsFor', { term: searchTerm }) : t('poOrders.noOrdersYet')}
-                        </p>
-                    </div>
-                ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: 'var(--space-4)', paddingTop: 'var(--space-1)' }}>
-                        {filteredOrders.map((o) => (
-                            <div 
-                                key={`po-${o.purchase_order_id}`} 
-                                className="card" 
-                                style={{ 
-                                    background: 'var(--color-bg-card)', 
-                                    border: '1px solid var(--color-border)',
-                                    transition: 'all 0.2s ease',
-                                    cursor: 'default'
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--color-accent-primary)';
-                                    e.currentTarget.style.transform = 'translateY(-2px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor = 'var(--color-border)';
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                }}
-                            >
-                                <div className="card-body" style={{ padding: 'var(--space-5)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
-                                        <div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)' }}>
-                                                <span style={{ 
-                                                    fontSize: 'var(--font-size-xs)', 
-                                                    fontWeight: '700', 
-                                                    color: 'var(--color-accent-secondary)',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.05em'
-                                                }}>
-                                                    #{o.purchase_order_id}
-                                                </span>
-                                                <span className={`badge ${getStatusColor(o)}`} style={{ fontSize: '10px', padding: '2px 8px' }}>
-                                                    {getStatusText(o)}
-                                                </span>
-                                            </div>
-                                            <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                                {o.purchase_order_code || t('poOrders.unnamedOrder')}
-                                            </h3>
-                                        </div>
-                                        <button 
-                                            className="btn btn-secondary" 
-                                            style={{ padding: 'var(--space-2)', borderRadius: 'var(--radius-full)' }}
-                                            onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}`)}
-                                        >
-                                            <ChevronRight size={18} />
-                                        </button>
-                                    </div>
+            {/* Pipeline Flow Indicator */}
+            {!loading && filteredOrders.length > 0 && (
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                    marginBottom: 'var(--space-5)', padding: '0 var(--space-1)',
+                }}>
+                    {['pending', 'partial', 'received'].map((key, i) => (
+                        <span key={key} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                            <span style={{
+                                width: '8px', height: '8px', borderRadius: 'var(--radius-full)',
+                                background: statusConfig[key].dot,
+                                boxShadow: `0 0 8px ${statusConfig[key].dot}40`,
+                            }} />
+                            <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: '700', color: statusConfig[key].color, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                {statusConfig[key].label}
+                            </span>
+                            {i < 2 && <ArrowRight size={12} style={{ color: 'var(--color-text-muted)', margin: '0 var(--space-1)' }} />}
+                        </span>
+                    ))}
+                </div>
+            )}
 
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-5)' }}>
-                                        <Building2 size={16} />
-                                        <span style={{ fontSize: 'var(--font-size-sm)' }}>
-                                            {o.supplier_name || (o.supplier_id ? t('poOrders.supplierWithId', { id: o.supplier_id }) : t('poOrders.noSupplier'))}
+            {/* Main Content */}
+            {loading ? (
+                <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
+                    <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
+                    <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('poOrders.loadingOrders')}</span>
+                </div>
+            ) : filteredOrders.length === 0 ? (
+                <div style={{
+                    background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)',
+                    border: '1px solid var(--color-border)', padding: 'var(--space-16)',
+                    textAlign: 'center',
+                }}>
+                    <Package size={48} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }} />
+                    <h3 style={{ fontWeight: '700', marginBottom: 'var(--space-2)' }}>{t('poOrders.noOrdersFound')}</h3>
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                        {searchTerm ? t('poOrders.noResultsFor', { term: searchTerm }) : t('poOrders.noOrdersYet')}
+                    </p>
+                </div>
+            ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-4)', alignItems: 'start' }}>
+                    {['pending', 'partial', 'received'].map(statusKey => {
+                        const cfg = statusConfig[statusKey];
+                        const columnOrders = groupedOrders[statusKey];
+                        return (
+                            <div key={statusKey}>
+                                {/* Column Header */}
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: 'var(--space-3) var(--space-4)',
+                                    background: cfg.bg,
+                                    border: `1px solid ${cfg.border}`,
+                                    borderRadius: 'var(--radius-lg)',
+                                    marginBottom: 'var(--space-3)',
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        <span style={{
+                                            width: '10px', height: '10px', borderRadius: 'var(--radius-full)',
+                                            background: cfg.dot,
+                                            boxShadow: `0 0 6px ${cfg.dot}50`,
+                                        }} />
+                                        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '700', color: cfg.color }}>
+                                            {cfg.label}
                                         </span>
                                     </div>
-
-                                    <div style={{ 
-                                        display: 'grid', 
-                                        gridTemplateColumns: 'repeat(3, 1fr)', 
-                                        gap: 'var(--space-2)',
-                                        paddingTop: 'var(--space-4)',
-                                        borderTop: '1px solid var(--color-border)'
+                                    <span style={{
+                                        fontSize: 'var(--font-size-xs)', fontWeight: '800',
+                                        color: cfg.color, opacity: 0.8,
+                                        background: `${cfg.color}15`, padding: '2px 8px',
+                                        borderRadius: 'var(--radius-full)',
                                     }}>
-                                        <button 
-                                            className="btn btn-secondary" 
-                                            style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)' }}
-                                            onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/receive`)}
-                                            disabled={o.has_remaining === false}
-                                            title={t('poOrders.receiveItems')}
-                                        >
-                                            <Package size={18} />
-                                            <span>{t('poOrders.receive')}</span>
-                                        </button>
-                                        <button 
-                                            className="btn btn-secondary" 
-                                            style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)' }}
-                                            onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/backorder-reports`)}
-                                            title={t('poOrders.backorders')}
-                                        >
-                                            <History size={18} />
-                                            <span>{t('poOrders.history')}</span>
-                                        </button>
-                                        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
-                                            <button 
-                                                className="btn btn-secondary" 
-                                                style={{ flexDirection: 'column', gap: 'var(--space-1)', padding: 'var(--space-3) 0', fontSize: 'var(--font-size-xs)', width: '100%' }}
-                                                onClick={() => openAcceptanceReportModal(o)}
-                                                disabled={isStockConsumableResponsible ? (o.has_remaining !== false) : false}
-                                                title={t('poOrders.acceptanceReport')}
-                                            >
-                                                <ClipboardCheck size={18} />
-                                                <span>{t('poOrders.report')}</span>
-                                            </button>
-                                        </div>
-                                    </div>
+                                        {columnOrders.length}
+                                    </span>
+                                </div>
 
-                                    <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
-                                        <button 
-                                            className="btn btn-secondary" 
-                                            style={{ flex: 1, gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', padding: 'var(--space-2)' }}
-                                            onClick={() => openDeliveryNoteModal(o)}
-                                            disabled={o.has_remaining !== false}
+                                {/* Order Cards */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                                    {columnOrders.map(o => (
+                                        <div
+                                            key={`po-${o.purchase_order_id}`}
+                                            style={{
+                                                background: 'var(--color-bg-card)',
+                                                border: '1px solid var(--color-border)',
+                                                borderRadius: 'var(--radius-lg)',
+                                                padding: 'var(--space-4)',
+                                                transition: 'all 0.15s ease',
+                                                cursor: 'default',
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.borderColor = cfg.border;
+                                                e.currentTarget.style.background = cfg.glow;
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.borderColor = 'var(--color-border)';
+                                                e.currentTarget.style.background = 'var(--color-bg-card)';
+                                            }}
                                         >
-                                            <FileText size={14} />
-                                            <span>{t('poOrders.deliveryNote')}</span>
-                                        </button>
-                                        <button 
-                                            className="btn btn-secondary" 
-                                            style={{ flex: 1, gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', padding: 'var(--space-2)' }}
-                                            onClick={() => openInvoiceModal(o)}
-                                            disabled={o.has_remaining !== false}
-                                        >
-                                            <Receipt size={14} />
-                                            <span>{t('poOrders.invoice')}</span>
-                                        </button>
-                                    </div>
+                                            {/* Status accent line */}
+                                            <div style={{
+                                                position: 'absolute', left: 0, top: 0, bottom: 0,
+                                                width: '3px', background: cfg.dot, borderRadius: '3px 0 0 3px',
+                                            }} />
+
+                                            {/* Top row: ID + Code + Finance */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)', paddingLeft: 'var(--space-2)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', minWidth: 0 }}>
+                                                    <span style={{
+                                                        fontSize: 'var(--font-size-xs)', fontWeight: '800',
+                                                        color: cfg.color, fontFamily: 'monospace',
+                                                    }}>
+                                                        #{o.purchase_order_id}
+                                                    </span>
+                                                    <span style={{
+                                                        fontSize: 'var(--font-size-sm)', fontWeight: '700',
+                                                        color: 'var(--color-text-primary)',
+                                                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                                    }}>
+                                                        {o.purchase_order_code || t('poOrders.unnamedOrder')}
+                                                    </span>
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexShrink: 0 }}>
+                                                    {o.is_signed_by_finance && (
+                                                        <span title={t('poOrders.financeSigned')} style={{
+                                                            width: '18px', height: '18px', borderRadius: 'var(--radius-full)',
+                                                            background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        }}>
+                                                            <Banknote size={10} style={{ color: 'var(--color-success)' }} />
+                                                        </span>
+                                                    )}
+                                                    <button
+                                                        className="btn btn-secondary"
+                                                        style={{ padding: '4px', borderRadius: 'var(--radius-md)', minWidth: '24px', height: '24px' }}
+                                                        onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}`)}
+                                                        title={t('poOrders.viewDetails')}
+                                                    >
+                                                        <ChevronRight size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Supplier */}
+                                            <div style={{
+                                                display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)',
+                                                marginBottom: 'var(--space-3)', paddingLeft: 'var(--space-2)',
+                                            }}>
+                                                <Building2 size={12} style={{ flexShrink: 0 }} />
+                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                    {o.supplier_name || (o.supplier_id ? t('poOrders.supplierWithId', { id: o.supplier_id }) : t('poOrders.noSupplier'))}
+                                                </span>
+                                            </div>
+
+                                            {/* Document Status Dots */}
+                                            <div style={{
+                                                display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                                                paddingLeft: 'var(--space-2)', marginBottom: 'var(--space-3)',
+                                            }}>
+                                                {[
+                                                    { icon: Truck, label: t('poOrders.deliveryNote'), active: o.has_remaining === false },
+                                                    { icon: Receipt, label: t('poOrders.invoice'), active: o.has_remaining === false },
+                                                    { icon: ClipboardCheck, label: t('poOrders.acceptanceReport'), active: o.has_remaining === false },
+                                                ].map(doc => (
+                                                    <span
+                                                        key={doc.label}
+                                                        title={doc.label}
+                                                        style={{
+                                                            width: '22px', height: '22px', borderRadius: 'var(--radius-md)',
+                                                            background: doc.active ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255,255,255,0.04)',
+                                                            border: `1px solid ${doc.active ? 'rgba(16, 185, 129, 0.25)' : 'var(--color-border)'}`,
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            transition: 'all 0.15s ease',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        <doc.icon size={11} style={{ color: doc.active ? 'var(--color-success)' : 'var(--color-text-muted)' }} />
+                                                    </span>
+                                                ))}
+                                            </div>
+
+                                            {/* Action row - icon only */}
+                                            <div style={{
+                                                display: 'flex', gap: 'var(--space-1)',
+                                                borderTop: '1px solid var(--color-border)',
+                                                paddingTop: 'var(--space-2)',
+                                                paddingLeft: 'var(--space-2)',
+                                            }}>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '4px 6px', fontSize: 'var(--font-size-xs)', gap: 'var(--space-1)', minHeight: '26px' }}
+                                                    onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/receive`)}
+                                                    disabled={o.has_remaining === false}
+                                                    title={t('poOrders.receiveItems')}
+                                                >
+                                                    <Package size={12} />
+                                                </button>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '4px 6px', fontSize: 'var(--font-size-xs)', gap: 'var(--space-1)', minHeight: '26px' }}
+                                                    onClick={() => navigate(`/dashboard/purchase-orders/${o.purchase_order_id}/backorder-reports`)}
+                                                    title={t('poOrders.backorders')}
+                                                >
+                                                    <History size={12} />
+                                                </button>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '4px 6px', fontSize: 'var(--font-size-xs)', gap: 'var(--space-1)', minHeight: '26px' }}
+                                                    onClick={() => openAcceptanceReportModal(o)}
+                                                    disabled={isStockConsumableResponsible ? (o.has_remaining !== false) : false}
+                                                    title={t('poOrders.acceptanceReport')}
+                                                >
+                                                    <ClipboardCheck size={12} />
+                                                </button>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '4px 6px', fontSize: 'var(--font-size-xs)', gap: 'var(--space-1)', minHeight: '26px' }}
+                                                    onClick={() => openDeliveryNoteModal(o)}
+                                                    disabled={o.has_remaining !== false}
+                                                    title={t('poOrders.deliveryNote')}
+                                                >
+                                                    <FileText size={12} />
+                                                </button>
+                                                <button
+                                                    className="btn btn-secondary"
+                                                    style={{ padding: '4px 6px', fontSize: 'var(--font-size-xs)', gap: 'var(--space-1)', minHeight: '26px' }}
+                                                    onClick={() => openInvoiceModal(o)}
+                                                    disabled={o.has_remaining !== false}
+                                                    title={t('poOrders.invoice')}
+                                                >
+                                                    <Receipt size={12} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {columnOrders.length === 0 && (
+                                        <div style={{
+                                            padding: 'var(--space-8) var(--space-4)',
+                                            textAlign: 'center',
+                                            color: 'var(--color-text-muted)',
+                                            fontSize: 'var(--font-size-xs)',
+                                            border: '1px dashed var(--color-border)',
+                                            borderRadius: 'var(--radius-lg)',
+                                        }}>
+                                            —
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             {showDeliveryNoteModal && deliveryNotePo && (
                 <div className="modal-overlay">
-                    <div className="modal" style={{ maxWidth: '600px' }}>
-                        <div className="modal-header">
-                            <div>
-                                <h2 className="modal-title">{t('poOrders.deliveryNote')}</h2>
-                                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
-                                    PO #{deliveryNotePo.purchase_order_id} • {deliveryNotePo.purchase_order_code}
-                                </p>
+                    <div className="modal" style={{ maxWidth: '560px' }}>
+                        <div className="modal-header" style={{ padding: 'var(--space-5) var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <div style={{
+                                    width: '40px',
+                                    height: '40px',
+                                    borderRadius: 'var(--radius-lg)',
+                                    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.15))',
+                                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0
+                                }}>
+                                    <Truck size={20} style={{ color: 'var(--color-accent-tertiary)' }} />
+                                </div>
+                                <div>
+                                    <h2 className="modal-title" style={{ fontSize: 'var(--font-size-lg)', fontWeight: '700', letterSpacing: '-0.01em' }}>{t('poOrders.deliveryNote')}</h2>
+                                    <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0, marginTop: '2px' }}>
+                                        PO #{deliveryNotePo.purchase_order_id} • {deliveryNotePo.purchase_order_code}
+                                    </p>
+                                </div>
                             </div>
-                            <button className="modal-close" onClick={() => !deliveryNoteSubmitting && closeDeliveryNoteModal()}>
-                                <X size={20} />
+                            <button className="modal-close" onClick={() => !deliveryNoteSubmitting && closeDeliveryNoteModal()} style={{
+                                width: '32px', height: '32px', borderRadius: 'var(--radius-md)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <X size={18} />
                             </button>
                         </div>
 
-                        <div className="modal-body">
+                        <div className="modal-body" style={{ padding: 'var(--space-6)' }}>
                             {deliveryNoteError && (
-                                <div className="error-message" style={{ marginBottom: 'var(--space-4)' }}>
-                                    {deliveryNoteError}
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                                    padding: 'var(--space-3) var(--space-4)',
+                                    background: 'rgba(239, 68, 68, 0.08)',
+                                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                                    borderRadius: 'var(--radius-md)',
+                                    marginBottom: 'var(--space-5)',
+                                    color: 'var(--color-error)',
+                                    fontSize: 'var(--font-size-sm)',
+                                    fontWeight: '500'
+                                }}>
+                                    <AlertCircle size={16} style={{ flexShrink: 0 }} />
+                                    <span>{deliveryNoteError}</span>
                                 </div>
                             )}
 
                             {deliveryNoteLoading ? (
-                                <div className="loading-state">
-                                    <div className="loading-spinner"></div>
-                                    <span>{t('poOrders.fetchingDetails')}</span>
+                                <div className="loading-state" style={{ padding: 'var(--space-10) 0' }}>
+                                    <div className="loading-spinner" style={{ width: '36px', height: '36px' }}></div>
+                                    <span style={{ marginTop: 'var(--space-4)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>{t('poOrders.fetchingDetails')}</span>
                                 </div>
                             ) : deliveryNoteInfo?.exists ? (
-                                <div className="form">
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
-                                        <div className="form-group">
-                                            <label className="form-label">{t('poOrders.noteId')}</label>
-                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                <div>
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        gap: 'var(--space-3)',
+                                        marginBottom: 'var(--space-4)'
+                                    }}>
+                                        <div style={{
+                                            padding: 'var(--space-4)',
+                                            background: 'rgba(255, 255, 255, 0.03)',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-lg)'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                <Hash size={13} style={{ color: 'var(--color-accent-tertiary)' }} />
+                                                <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('poOrders.noteId')}</span>
+                                            </div>
+                                            <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '700', color: 'var(--color-text-primary)' }}>
                                                 {deliveryNoteInfo.delivery_note_id}
                                             </div>
                                         </div>
-                                        <div className="form-group">
-                                            <label className="form-label">{t('poOrders.issueDate')}</label>
-                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                        <div style={{
+                                            padding: 'var(--space-4)',
+                                            background: 'rgba(255, 255, 255, 0.03)',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-lg)'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                <Calendar size={13} style={{ color: 'var(--color-accent-tertiary)' }} />
+                                                <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('poOrders.issueDate')}</span>
+                                            </div>
+                                            <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '700', color: 'var(--color-text-primary)' }}>
                                                 {deliveryNoteInfo.delivery_note_date}
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">{t('poOrders.referenceCode')}</label>
-                                        <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
+                                    <div style={{
+                                        padding: 'var(--space-4)',
+                                        background: 'rgba(255, 255, 255, 0.03)',
+                                        border: '1px solid var(--color-border)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        marginBottom: 'var(--space-6)'
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                            <FileText size={13} style={{ color: 'var(--color-accent-tertiary)' }} />
+                                            <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('poOrders.referenceCode')}</span>
+                                        </div>
+                                        <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '700', color: 'var(--color-text-primary)' }}>
                                             {deliveryNoteInfo.delivery_note_code}
                                         </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        style={{ marginTop: 'var(--space-2)' }}
-                                        onClick={consultDeliveryNote}
-                                        disabled={!deliveryNoteInfo.has_digital_copy}
-                                    >
-                                        <Download size={18} />
-                                        <span>{t('poOrders.downloadPdf')}</span>
-                                    </button>
+
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: 'var(--space-3)',
+                                        paddingTop: 'var(--space-4)',
+                                        borderTop: '1px solid var(--color-border)'
+                                    }}>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            style={{ flex: 1, justifyContent: 'center' }}
+                                            onClick={consultDeliveryNote}
+                                            disabled={!deliveryNoteInfo.has_digital_copy}
+                                        >
+                                            <Download size={16} />
+                                            <span>{t('poOrders.downloadPdf')}</span>
+                                        </button>
+                                        {!deliveryNoteInfo.has_digital_copy && (
+                                            <span style={{
+                                                display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                                fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)',
+                                                padding: '0 var(--space-3)'
+                                            }}>
+                                                <Paperclip size={14} />
+                                                No digital copy
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="form">
-                                    <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
-                                        {t('poOrders.registerDeliveryNote')}
-                                    </p>
-                                    <div className="form-group">
-                                        <label className="form-label">{t('poOrders.deliveryNoteCode')}</label>
-                                        <input 
-                                            className="form-input" 
-                                            placeholder={t('poOrders.enterReferenceCode')}
-                                            value={deliveryNoteCode} 
-                                            onChange={(e) => setDeliveryNoteCode(e.target.value)} 
-                                            disabled={deliveryNoteSubmitting} 
-                                        />
+                                <div>
+                                    <div style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 'var(--space-3)',
+                                        padding: 'var(--space-4)',
+                                        background: 'rgba(99, 102, 241, 0.06)',
+                                        border: '1px solid rgba(99, 102, 241, 0.15)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        marginBottom: 'var(--space-5)'
+                                    }}>
+                                        <FileCheck size={18} style={{ color: 'var(--color-accent-tertiary)', flexShrink: 0 }} />
+                                        <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                                            {t('poOrders.registerDeliveryNote')}
+                                        </p>
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">{t('poOrders.digitalCopyPdf')}</label>
+
+                                    <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                        <label className="form-label" style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>{t('poOrders.deliveryNoteCode')}</label>
+                                        <div style={{ position: 'relative' }}>
+                                            <Hash size={16} style={{
+                                                position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)',
+                                                color: 'var(--color-text-muted)', pointerEvents: 'none'
+                                            }} />
+                                            <input 
+                                                className="form-input" 
+                                                placeholder={t('poOrders.enterReferenceCode')}
+                                                value={deliveryNoteCode} 
+                                                onChange={(e) => setDeliveryNoteCode(e.target.value)} 
+                                                disabled={deliveryNoteSubmitting}
+                                                style={{ paddingLeft: 'var(--space-10)', height: '44px', fontSize: 'var(--font-size-sm)' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
+                                        <label className="form-label" style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>{t('poOrders.digitalCopyPdf')}</label>
                                         <div 
                                             style={{ 
-                                                border: '2px dashed var(--color-border)', 
-                                                borderRadius: 'var(--radius-md)', 
-                                                padding: 'var(--space-6)',
+                                                border: deliveryNoteFile ? '1px solid rgba(99, 102, 241, 0.3)' : '2px dashed rgba(255, 255, 255, 0.12)', 
+                                                borderRadius: 'var(--radius-lg)', 
+                                                padding: 'var(--space-8) var(--space-6)',
                                                 textAlign: 'center',
                                                 position: 'relative',
-                                                cursor: 'pointer',
-                                                background: deliveryNoteFile ? 'var(--color-bg-card-hover)' : 'transparent'
+                                                cursor: deliveryNoteSubmitting ? 'not-allowed' : 'pointer',
+                                                background: deliveryNoteFile ? 'rgba(99, 102, 241, 0.06)' : 'rgba(255, 255, 255, 0.02)',
+                                                transition: 'all var(--transition-fast)'
                                             }}
-                                            onClick={() => document.getElementById('dn-file').click()}
+                                            onClick={() => !deliveryNoteSubmitting && document.getElementById('dn-file').click()}
+                                            onMouseEnter={(e) => {
+                                                if (!deliveryNoteSubmitting && !deliveryNoteFile) {
+                                                    e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.4)';
+                                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)';
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (!deliveryNoteFile) {
+                                                    e.currentTarget.style.borderColor = '2px dashed rgba(255, 255, 255, 0.12)';
+                                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+                                                }
+                                            }}
                                         >
-                                            <Upload size={32} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }} />
-                                            <p style={{ margin: 0, fontSize: 'var(--font-size-sm)' }}>
+                                            <div style={{
+                                                width: '48px', height: '48px', borderRadius: 'var(--radius-full)',
+                                                background: deliveryNoteFile ? 'rgba(16, 185, 129, 0.12)' : 'rgba(99, 102, 241, 0.1)',
+                                                border: deliveryNoteFile ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(99, 102, 241, 0.2)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                margin: '0 auto var(--space-3)'
+                                            }}>
+                                                {deliveryNoteFile ? <FileCheck size={22} style={{ color: 'var(--color-success)' }} /> : <Upload size={22} style={{ color: 'var(--color-accent-tertiary)' }} />}
+                                            </div>
+                                            <p style={{ margin: 0, fontSize: 'var(--font-size-sm)', fontWeight: '600', color: deliveryNoteFile ? 'var(--color-success)' : 'var(--color-text-primary)' }}>
                                                 {deliveryNoteFile ? deliveryNoteFile.name : t('poOrders.clickToUpload')}
+                                            </p>
+                                            <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                                PDF only
                                             </p>
                                             <input
                                                 id="dn-file"
@@ -678,14 +1006,25 @@ const PurchaseOrdersPage = () => {
                                             />
                                         </div>
                                     </div>
+
                                     <button 
                                         type="button" 
                                         className="btn btn-primary" 
                                         onClick={submitCreateDeliveryNote} 
                                         disabled={deliveryNoteSubmitting || !deliveryNoteCode || !deliveryNoteFile}
-                                        style={{ width: '100%' }}
+                                        style={{ width: '100%', justifyContent: 'center', height: '44px', fontSize: 'var(--font-size-sm)', fontWeight: '600' }}
                                     >
-                                        {deliveryNoteSubmitting ? t('poOrders.creating') : t('poOrders.registerDeliveryNoteBtn')}
+                                        {deliveryNoteSubmitting ? (
+                                            <>
+                                                <div className="loading-spinner" style={{ width: '18px', height: '18px', borderWidth: '2px' }}></div>
+                                                <span>{t('poOrders.creating')}</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FileCheck size={18} />
+                                                <span>{t('poOrders.registerDeliveryNoteBtn')}</span>
+                                            </>
+                                        )}
                                     </button>
                                 </div>
                             )}
@@ -798,23 +1137,29 @@ const PurchaseOrdersPage = () => {
             )}
 
             {showAcceptanceReportModal && acceptanceReportPo && (
-                <div className="modal-overlay">
-                    <div className="modal" style={{ maxWidth: '800px' }}>
-                        <div className="modal-header">
-                            <div>
-                                <h2 className="modal-title">{t('poOrders.acceptanceReport')}</h2>
-                                <p style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', margin: 0 }}>
-                                    PO #{acceptanceReportPo.purchase_order_id} • {acceptanceReportPo.purchase_order_code}
-                                </p>
+                <div className="modal-overlay ar-modal-overlay">
+                    <div className="modal ar-modal">
+                        <div className="ar-modal-header">
+                            <div className="ar-modal-header-left">
+                                <div className="ar-modal-icon">
+                                    <FileCheck size={20} />
+                                </div>
+                                <div>
+                                    <h2 className="ar-modal-title">{t('poOrders.acceptanceReport')}</h2>
+                                    <p className="ar-modal-subtitle">
+                                        PO #{acceptanceReportPo.purchase_order_id} • {acceptanceReportPo.purchase_order_code}
+                                    </p>
+                                </div>
                             </div>
-                            <button className="modal-close" onClick={() => !acceptanceReportSubmitting && closeAcceptanceReportModal()}>
-                                <X size={20} />
+                            <button className="ar-modal-close" onClick={() => !acceptanceReportSubmitting && closeAcceptanceReportModal()}>
+                                <X size={18} />
                             </button>
                         </div>
 
-                        <div className="modal-body">
+                        <div className="ar-modal-body">
                             {acceptanceReportError && (
-                                <div className="error-message" style={{ marginBottom: 'var(--space-4)' }}>
+                                <div className="ar-modal-error">
+                                    <AlertCircle size={16} />
                                     {acceptanceReportError}
                                 </div>
                             )}
@@ -825,50 +1170,61 @@ const PurchaseOrdersPage = () => {
                                     <span>{t('poOrders.fetchingReport')}</span>
                                 </div>
                             ) : acceptanceReportInfo?.exists ? (
-                                <div className="form">
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
-                                        <div className="form-group">
-                                            <label className="form-label">{t('poOrders.reportId')}</label>
-                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
-                                                {acceptanceReportInfo.acceptance_report_id}
+                                <>
+                                    <div className="ar-info-grid">
+                                        <div className="ar-info-card">
+                                            <div className="ar-info-card-icon">
+                                                <Hash size={16} />
+                                            </div>
+                                            <div className="ar-info-card-content">
+                                                <span className="ar-info-card-label">{t('poOrders.reportId')}</span>
+                                                <span className="ar-info-card-value">{acceptanceReportInfo.acceptance_report_id}</span>
                                             </div>
                                         </div>
-                                        <div className="form-group">
-                                            <label className="form-label">{t('poOrders.dateAndTime')}</label>
-                                            <div className="form-input" style={{ background: 'var(--color-bg-secondary)', opacity: 0.8 }}>
-                                                {acceptanceReportInfo.acceptance_report_datetime}
+                                        <div className="ar-info-card">
+                                            <div className="ar-info-card-icon">
+                                                <Clock size={16} />
+                                            </div>
+                                            <div className="ar-info-card-content">
+                                                <span className="ar-info-card-label">{t('poOrders.dateAndTime')}</span>
+                                                <span className="ar-info-card-value">{formatDateTime(acceptanceReportInfo.acceptance_report_datetime)}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <h4 style={{ fontSize: 'var(--font-size-sm)', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: 'var(--space-3)' }}>
-                                        {t('poOrders.signaturesStatus')}
-                                    </h4>
-                                    
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)', marginBottom: 'var(--space-6)' }}>
-                                        {[
-                                            { label: t('poOrders.sigDirectorOfAdmin'), signed: acceptanceReportInfo.is_signed_by_director_of_administration_and_support },
-                                            { label: t('poOrders.sigSecurityChief'), signed: acceptanceReportInfo.is_signed_by_protection_and_security_bureau_chief },
-                                            { label: t('poOrders.sigItBureauChief'), signed: acceptanceReportInfo.is_signed_by_information_technilogy_bureau_chief },
-                                            { label: t('poOrders.sigStockResponsible'), signed: acceptanceReportInfo.acceptance_report_is_stock_item_and_consumable_responsible },
-                                            { label: t('poOrders.sigSchoolHeadquarter'), signed: acceptanceReportInfo.is_signed_by_school_headquarter },
-                                        ].map((sig, idx) => (
-                                            <div key={idx} style={{ 
-                                                padding: 'var(--space-3)', 
-                                                background: 'var(--color-bg-card)', 
-                                                border: '1px solid var(--color-border)',
-                                                borderRadius: 'var(--radius-md)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 'var(--space-2)'
-                                            }}>
-                                                {sig.signed ? <CheckCircle2 size={16} className="text-success" /> : <XCircle size={16} style={{ color: 'var(--color-text-muted)' }} />}
-                                                <span style={{ fontSize: '11px', fontWeight: '500' }}>{sig.label}</span>
-                                            </div>
-                                        ))}
+                                    <div className="ar-signatures-section">
+                                        <div className="ar-signatures-header">
+                                            <PenTool size={14} />
+                                            {t('poOrders.signaturesStatus')}
+                                        </div>
+                                        <div className="ar-signatures-grid">
+                                            {[
+                                                { label: t('poOrders.sigDirectorOfAdmin'), signed: acceptanceReportInfo.is_signed_by_director_of_administration_and_support, signAs: 'director_admin_support' },
+                                                { label: t('poOrders.sigSecurityChief'), signed: acceptanceReportInfo.is_signed_by_protection_and_security_bureau_chief, signAs: 'protection_and_security_bureau_chief' },
+                                                { label: t('poOrders.sigItBureauChief'), signed: acceptanceReportInfo.is_signed_by_information_technilogy_bureau_chief, signAs: 'it_bureau_chief' },
+                                                { label: t('poOrders.sigStockResponsible'), signed: acceptanceReportInfo.acceptance_report_is_stock_item_and_consumable_responsible, signAs: 'stock_consumable_responsible' },
+                                                { label: t('poOrders.sigSchoolHeadquarter'), signed: acceptanceReportInfo.is_signed_by_school_headquarter, signAs: 'school_headquarter' },
+                                            ].map((sig, idx) => (
+                                                <div key={idx} className={`ar-signature-chip ${sig.signed ? 'signed' : ''}`}>
+                                                    <span className="ar-signature-chip-icon">
+                                                        {sig.signed ? <CheckCircle2 size={16} className="text-success" /> : <XCircle size={16} style={{ color: 'var(--color-text-muted)' }} />}
+                                                    </span>
+                                                    <span className="ar-signature-chip-label">{sig.label}</span>
+                                                    {isSuperuser && !sig.signed && (
+                                                        <button
+                                                            type="button"
+                                                            className="ar-signature-chip-btn"
+                                                            onClick={() => submitSignAcceptanceReport(sig.signAs)}
+                                                        >
+                                                            <PenTool size={12} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+                                    <div className="ar-modal-footer">
                                         {isStockConsumableResponsible && !arePurchaseOrderItemsMoved(acceptanceReportPo.purchase_order_id) && 
                                          acceptanceReportInfo?.is_signed_by_director_of_administration_and_support && 
                                          acceptanceReportInfo?.is_signed_by_protection_and_security_bureau_chief && 
@@ -876,13 +1232,13 @@ const PurchaseOrdersPage = () => {
                                          acceptanceReportInfo?.is_signed_by_information_technilogy_bureau_chief && 
                                          acceptanceReportInfo?.acceptance_report_is_stock_item_and_consumable_responsible && (
                                             <button type="button" className="btn btn-primary" onClick={() => navigate(`/dashboard/purchase-orders/${acceptanceReportPo.purchase_order_id}/move-items`)}>
-                                                <Package size={18} />
+                                                <Package size={16} />
                                                 <span>{t('poOrders.moveItemsToStock')}</span>
                                             </button>
                                         )}
-                                        {canSignAcceptanceReport && canCurrentUserSignAcceptanceReport && (
-                                            <button type="button" className="btn btn-primary" onClick={submitSignAcceptanceReport}>
-                                                <PenTool size={18} />
+                                        {!isSuperuser && canSignAcceptanceReport && canCurrentUserSignAcceptanceReport && (
+                                            <button type="button" className="btn btn-primary" onClick={() => submitSignAcceptanceReport()}>
+                                                <PenTool size={16} />
                                                 <span>{t('poOrders.signReport')}</span>
                                             </button>
                                         )}
@@ -892,46 +1248,35 @@ const PurchaseOrdersPage = () => {
                                             onClick={consultAcceptanceReportPdf}
                                             disabled={!acceptanceReportInfo.has_digital_copy}
                                         >
-                                            <Download size={18} />
+                                            <Download size={16} />
                                             <span>{t('poOrders.downloadPdf')}</span>
                                         </button>
                                     </div>
-                                </div>
+                                </>
                             ) : isStockConsumableResponsible ? (
-                                <div className="form">
-                                    <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-4)' }}>
+                                <>
+                                    <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>
                                         {t('poOrders.createAcceptanceReportDesc')}
                                     </p>
-                                    <div className="form-group">
-                                        <label className="form-label">{t('poOrders.digitalCopyPdf')}</label>
-                                        <div 
-                                            style={{ 
-                                                border: '2px dashed var(--color-border)', 
-                                                borderRadius: 'var(--radius-md)', 
-                                                padding: 'var(--space-8)',
-                                                textAlign: 'center',
-                                                position: 'relative',
-                                                cursor: 'pointer',
-                                                background: acceptanceReportFile ? 'var(--color-bg-card-hover)' : 'transparent'
-                                            }}
-                                            onClick={() => document.getElementById('ar-file').click()}
-                                        >
-                                            <Upload size={40} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }} />
-                                            <p style={{ margin: 0, fontSize: 'var(--font-size-base)', fontWeight: '500' }}>
-                                                {acceptanceReportFile ? acceptanceReportFile.name : t('poOrders.chooseFile')}
-                                            </p>
-                                            <p style={{ margin: 'var(--space-1) 0 0', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                                {t('poOrders.onlyPdfSupported')}
-                                            </p>
-                                            <input
-                                                id="ar-file"
-                                                type="file"
-                                                accept="application/pdf"
-                                                style={{ display: 'none' }}
-                                                onChange={(e) => setAcceptanceReportFile(e.target.files?.[0] || null)}
-                                                disabled={acceptanceReportSubmitting}
-                                            />
-                                        </div>
+                                    <div 
+                                        className={`ar-upload-area ${acceptanceReportFile ? 'has-file' : ''}`}
+                                        onClick={() => document.getElementById('ar-file').click()}
+                                    >
+                                        <Upload size={40} className="ar-upload-icon" />
+                                        <p className="ar-upload-text">
+                                            {acceptanceReportFile ? acceptanceReportFile.name : t('poOrders.chooseFile')}
+                                        </p>
+                                        <p className="ar-upload-hint">
+                                            {t('poOrders.onlyPdfSupported')}
+                                        </p>
+                                        <input
+                                            id="ar-file"
+                                            type="file"
+                                            accept="application/pdf"
+                                            style={{ display: 'none' }}
+                                            onChange={(e) => setAcceptanceReportFile(e.target.files?.[0] || null)}
+                                            disabled={acceptanceReportSubmitting}
+                                        />
                                     </div>
                                     <button 
                                         type="button" 
@@ -942,11 +1287,11 @@ const PurchaseOrdersPage = () => {
                                     >
                                         {acceptanceReportSubmitting ? t('poOrders.creating') : t('poOrders.createAcceptanceReport')}
                                     </button>
-                                </div>
+                                </>
                             ) : (
-                                <div className="empty-state" style={{ padding: 'var(--space-10)' }}>
-                                    <ClipboardCheck size={48} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-3)' }} />
-                                    <p style={{ color: 'var(--color-text-secondary)' }}>{t('poOrders.noAcceptanceReportYet')}</p>
+                                <div className="ar-empty-state">
+                                    <ClipboardCheck size={48} className="ar-empty-state-icon" />
+                                    <p className="ar-empty-state-text">{t('poOrders.noAcceptanceReportYet')}</p>
                                 </div>
                             )}
                         </div>

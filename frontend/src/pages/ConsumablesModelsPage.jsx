@@ -420,7 +420,7 @@ const ConsumablesModelsPage = () => {
                     </div>
                 </div>
                 {authService.isSuperuser() && (
-                    <button className="btn btn-primary" onClick={() => { setEditingModel(null); setModelForm({ consumable_brand: '', model_name_en: '', model_name_ar: '', model_code: '' }); setShowModelForm(true); }} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                    <button className="btn btn-primary" onClick={() => { setEditingModel(null); setModelForm({ consumable_brand: '', model_name_en: '', model_name_ar: '', model_code: '' }); setShowModelForm(true); }} style={{ padding: 'var(--space-3) var(--space-6)', width: 'auto' }}>
                         <Plus size={18} />
                         <span>{t('consumableModels.addModel', 'Add Model')}</span>
                     </button>

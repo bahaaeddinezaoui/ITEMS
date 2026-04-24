@@ -1,5 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+    ArrowLeft,
+    Package,
+    AlertCircle,
+    CheckCircle2,
+    Loader2,
+    Hash,
+    Tag,
+    ClipboardList,
+    Shield,
+    FileText,
+    Box,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { stockItemModelService, stockItemService } from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -56,7 +69,6 @@ const StockItemInstanceCreatePage = () => {
 
         if (!isStockConsumableResponsible) return;
         load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isStockConsumableResponsible, modelIdParam]);
 
     useEffect(() => {
@@ -73,7 +85,6 @@ const StockItemInstanceCreatePage = () => {
             }
             return next;
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [qty]);
 
     if (!isStockConsumableResponsible) {
@@ -97,6 +108,7 @@ const StockItemInstanceCreatePage = () => {
             }
 
             let createdCount = 0;
+            const createdIds = [];
             for (let i = 0; i < lines.length; i += 1) {
                 const l = lines[i] || {};
                 const payload = {
@@ -110,9 +122,22 @@ const StockItemInstanceCreatePage = () => {
                     maintenance_step_id: null,
                 };
 
-                await stockItemService.create(payload);
+                const res = await stockItemService.create(payload);
                 createdCount += 1;
+                if (res?.stock_item_id) {
+                    createdIds.push(res.stock_item_id);
+                }
             }
+
+            // Save created stock item IDs to draft so they can be deleted on clear
+            const DRAFT_KEY = 'purchase_order_create_draft_v1';
+            try {
+                const raw = window.localStorage.getItem(DRAFT_KEY);
+                const draft = raw ? JSON.parse(raw) : {};
+                const existingIds = draft.createdStockItemIds || [];
+                draft.createdStockItemIds = [...existingIds, ...createdIds];
+                window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+            } catch { /* ignore */ }
 
             setSuccess(createdCount === 1 ? t('stockItemInstanceCreate.oneCreated') : t('stockItemInstanceCreate.countCreated', { count: createdCount }));
             setLines((prev) => prev.map(() => ({
@@ -136,112 +161,226 @@ const StockItemInstanceCreatePage = () => {
     };
 
     return (
-        <div className="page-container">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 'var(--space-4)' }}>
-                <div>
-                    <h1 className="page-title">{t('stockItemInstanceCreate.title')}</h1>
-                    <p className="page-subtitle">{t('stockItemInstanceCreate.subtitle')}</p>
-                </div>
-                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders/create')}>
+        <div className="page-container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Page Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/dashboard/purchase-orders/create')}
+                        disabled={submitting}
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)',
+                            background: 'transparent', border: 'none', color: 'var(--color-text-muted)',
+                            cursor: 'pointer', padding: 0, fontSize: 'var(--font-size-sm)', fontWeight: 500,
+                            transition: 'color var(--transition-fast)',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                        onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                    >
+                        <ArrowLeft size={16} />
                         {t('common.back')}
                     </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                        <div style={{
+                            width: 48, height: 48, borderRadius: 'var(--radius-lg)',
+                            background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center',
+                            justifyContent: 'center', boxShadow: 'var(--shadow-glow)', flexShrink: 0,
+                        }}>
+                            <Package size={24} style={{ color: 'white' }} />
+                        </div>
+                        <div>
+                            <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)' }}>
+                                {t('stockItemInstanceCreate.title')}
+                            </h1>
+                            <p className="page-subtitle" style={{ fontSize: 'var(--font-size-base)' }}>
+                                {t('stockItemInstanceCreate.subtitle')}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            {/* Alerts */}
             {error && (
-                <div className="alert alert-error" style={{ marginBottom: 'var(--space-4)' }}>
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                    background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)',
+                    borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                    marginBottom: 'var(--space-6)', color: 'var(--color-error)', fontSize: 'var(--font-size-sm)',
+                }}>
+                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
                     {error}
                 </div>
             )}
             {success && (
-                <div className="alert alert-success" style={{ marginBottom: 'var(--space-4)' }}>
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                    background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)',
+                    borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                    marginBottom: 'var(--space-6)', color: 'var(--color-success)', fontSize: 'var(--font-size-sm)',
+                }}>
+                    <CheckCircle2 size={18} style={{ flexShrink: 0 }} />
                     {success}
                 </div>
             )}
 
-            <div className="card">
-                <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>{t('stockItemInstanceCreate.model')}</h2>
+            {/* Model Info Card */}
+            <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
+                <div className="card-header" style={{ padding: 'var(--space-4) var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <Tag size={18} style={{ color: 'var(--color-accent-secondary)' }} />
+                        <h2 className="card-title" style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('stockItemInstanceCreate.model')}</h2>
+                    </div>
                 </div>
-                <div className="card-body" style={{ color: 'var(--color-text-secondary)' }}>
-                    {loading ? t('common.loading') : model ? `${model.model_name || ''} (#${model.stock_item_model_id})` : t('stockItemInstanceCreate.notFound')}
+                <div className="card-body" style={{ padding: 'var(--space-5) var(--space-6)' }}>
+                    {loading ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', color: 'var(--color-text-muted)' }}>
+                            <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                            {t('common.loading')}
+                        </div>
+                    ) : model ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                            <div style={{
+                                width: 40, height: 40, borderRadius: 'var(--radius-md)',
+                                background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.25)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                            }}>
+                                <Package size={18} style={{ color: 'var(--color-accent-secondary)' }} />
+                            </div>
+                            <div>
+                                <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{model.model_name || ''}</div>
+                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                                    <Hash size={12} /> {model.stock_item_model_id}
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div style={{ color: 'var(--color-text-muted)' }}>{t('stockItemInstanceCreate.notFound')}</div>
+                    )}
                 </div>
             </div>
 
-            <div className="card" style={{ marginTop: 'var(--space-4)' }}>
-                <div className="card-header">
-                    <h2 className="card-title" style={{ margin: 0 }}>{t('stockItemInstanceCreate.coreInformation')}</h2>
+            {/* Instance Form */}
+            <div className="card" style={{ marginBottom: 'var(--space-6)' }}>
+                <div className="card-header" style={{ padding: 'var(--space-4) var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <div style={{
+                            width: 32, height: 32, borderRadius: 'var(--radius-md)',
+                            background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.25)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <ClipboardList size={16} style={{ color: 'var(--color-accent-secondary)' }} />
+                        </div>
+                        <div>
+                            <h2 className="card-title" style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('stockItemInstanceCreate.coreInformation')}</h2>
+                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                {lines.length === 1 ? t('stockItemInstanceCreate.oneItemToCreate') : t('stockItemInstanceCreate.countItemsToCreate', { count: lines.length })}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div className="card-body">
+                <div className="card-body" style={{ padding: 'var(--space-4) var(--space-6)' }}>
                     <form onSubmit={submit}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                             {lines.map((l, idx) => (
-                                <div key={`line-${idx}`} className="card" style={{ background: 'var(--color-bg-primary)' }}>
-                                    <div
-                                        className="card-body"
-                                        style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: '1.2fr 0.8fr 1fr 0.8fr 1.6fr',
-                                            gap: 'var(--space-4)',
-                                            alignItems: 'end',
-                                        }}
-                                    >
-                                        <div className="form-group">
-                                            <label className="form-label">{t('stockItemInstanceCreate.nameItem', { index: idx + 1 })}</label>
-                                            <input
-                                                className="form-input"
-                                                value={l.stock_item_name}
-                                                onChange={(e) => updateLine(idx, { stock_item_name: e.target.value })}
-                                                disabled={submitting}
-                                            />
+                                <div
+                                    key={`line-${idx}`}
+                                    style={{
+                                        background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+                                        borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                                        transition: 'all var(--transition-fast)',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'stretch' }}>
+                                        {/* Line Number Badge */}
+                                        <div style={{
+                                            width: 28, height: 28, borderRadius: 'var(--radius-full)',
+                                            background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.25)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 'var(--font-size-xs)', fontWeight: 700, flexShrink: 0, alignSelf: 'flex-start',
+                                            color: 'var(--color-accent-secondary)', marginTop: 'var(--space-1)',
+                                        }}>
+                                            {idx + 1}
                                         </div>
 
-                                        <div className="form-group">
-                                            <label className="form-label">{t('common.status')}</label>
-                                            <select
-                                                className="form-input"
-                                                value={l.stock_item_status}
-                                                onChange={(e) => updateLine(idx, { stock_item_status: e.target.value })}
-                                                disabled={submitting}
-                                            >
-                                                <option value="not_delivered_to_company">{t('stockItemInstanceCreate.notDeliveredToCompany')}</option>
-                                                <option value="in_stock">{t('stockItemInstanceCreate.inStock')}</option>
-                                                <option value="in_use">{t('stockItemInstanceCreate.inUse')}</option>
-                                                <option value="reserved">{t('stockItemInstanceCreate.reserved')}</option>
-                                                <option value="expired">{t('stockItemInstanceCreate.expired')}</option>
-                                                <option value="failed">{t('stockItemInstanceCreate.failed')}</option>
-                                                <option value="lost">{t('stockItemInstanceCreate.lost')}</option>
-                                                <option value="stolen">{t('stockItemInstanceCreate.stolen')}</option>
-                                                <option value="irrecoverably_damaged">{t('stockItemInstanceCreate.irrecoverablyDamaged')}</option>
-                                                <option value="destroyed">{t('stockItemInstanceCreate.destroyed')}</option>
-                                            </select>
-                                        </div>
+                                        {/* Line Fields */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 1fr 0.8fr', gap: 'var(--space-4)', alignItems: 'end', flex: 1 }}>
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <Tag size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                    {t('stockItemInstanceCreate.nameItem', { index: idx + 1 })}
+                                                </label>
+                                                <input
+                                                    className="form-input"
+                                                    value={l.stock_item_name}
+                                                    onChange={(e) => updateLine(idx, { stock_item_name: e.target.value })}
+                                                    disabled={submitting}
+                                                />
+                                            </div>
 
-                                        <div className="form-group">
-                                            <label className="form-label">{t('stockItemInstanceCreate.inventoryNumber')}</label>
-                                            <input
-                                                className="form-input"
-                                                value={l.stock_item_inventory_number}
-                                                onChange={(e) => updateLine(idx, { stock_item_inventory_number: e.target.value })}
-                                                disabled={submitting}
-                                            />
-                                        </div>
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <Shield size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                    {t('common.status')}
+                                                </label>
+                                                <select
+                                                    className="form-input"
+                                                    value={l.stock_item_status}
+                                                    onChange={(e) => updateLine(idx, { stock_item_status: e.target.value })}
+                                                    disabled={submitting}
+                                                >
+                                                    <option value="not_delivered_to_company">{t('stockItemInstanceCreate.notDeliveredToCompany')}</option>
+                                                    <option value="in_stock">{t('stockItemInstanceCreate.inStock')}</option>
+                                                    <option value="in_use">{t('stockItemInstanceCreate.inUse')}</option>
+                                                    <option value="reserved">{t('stockItemInstanceCreate.reserved')}</option>
+                                                    <option value="expired">{t('stockItemInstanceCreate.expired')}</option>
+                                                    <option value="failed">{t('stockItemInstanceCreate.failed')}</option>
+                                                    <option value="lost">{t('stockItemInstanceCreate.lost')}</option>
+                                                    <option value="stolen">{t('stockItemInstanceCreate.stolen')}</option>
+                                                    <option value="irrecoverably_damaged">{t('stockItemInstanceCreate.irrecoverablyDamaged')}</option>
+                                                    <option value="destroyed">{t('stockItemInstanceCreate.destroyed')}</option>
+                                                </select>
+                                            </div>
 
-                                        <div className="form-group">
-                                            <label className="form-label">{t('stockItemInstanceCreate.warrantyMonths')}</label>
-                                            <input
-                                                className="form-input"
-                                                type="number"
-                                                min="0"
-                                                value={l.stock_item_warranty_expiry_in_months}
-                                                onChange={(e) => updateLine(idx, { stock_item_warranty_expiry_in_months: e.target.value })}
-                                                disabled={submitting}
-                                            />
-                                        </div>
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <Hash size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                    {t('stockItemInstanceCreate.inventoryNumber')}
+                                                </label>
+                                                <input
+                                                    className="form-input"
+                                                    value={l.stock_item_inventory_number}
+                                                    onChange={(e) => updateLine(idx, { stock_item_inventory_number: e.target.value })}
+                                                    disabled={submitting}
+                                                />
+                                            </div>
 
-                                        <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                                            <label className="form-label">{t('stockItemInstanceCreate.nameInAdminCert')}</label>
+                                            <div className="form-group" style={{ marginBottom: 0 }}>
+                                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <Shield size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                    {t('stockItemInstanceCreate.warrantyMonths')}
+                                                </label>
+                                                <input
+                                                    className="form-input"
+                                                    type="number"
+                                                    min="0"
+                                                    value={l.stock_item_warranty_expiry_in_months}
+                                                    onChange={(e) => updateLine(idx, { stock_item_warranty_expiry_in_months: e.target.value })}
+                                                    disabled={submitting}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Admin cert field - same card, full width below */}
+                                    <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'end', marginTop: 'var(--space-3)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)' }}>
+                                        <div style={{ width: 28, flexShrink: 0 }} />
+                                        <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
+                                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                <FileText size={12} style={{ color: 'var(--color-text-muted)' }} />
+                                                {t('stockItemInstanceCreate.nameInAdminCert')}
+                                            </label>
                                             <input
                                                 className="form-input"
                                                 value={l.stock_item_name_in_administrative_certificate}
@@ -254,8 +393,24 @@ const StockItemInstanceCreatePage = () => {
                             ))}
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
-                            <button type="submit" className="btn btn-primary" disabled={submitting || loading || !modelIdParam || lines.length === 0}>
+                        {/* Submit Bar */}
+                        <div style={{
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            marginTop: 'var(--space-8)', padding: 'var(--space-5) var(--space-6)',
+                            background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                            borderRadius: 'var(--radius-xl)', backdropFilter: 'blur(10px)',
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                <Box size={16} />
+                                <span>{lines.length === 1 ? t('stockItemInstanceCreate.oneItem') : t('stockItemInstanceCreate.countItems', { count: lines.length })}</span>
+                            </div>
+                            <button
+                                type="submit"
+                                className="btn btn-primary"
+                                disabled={submitting || loading || !modelIdParam || lines.length === 0}
+                                style={{ width: 'auto', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-8)' }}
+                            >
+                                {submitting ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Package size={18} />}
                                 {submitting ? t('common.saving') : (lines.length === 1 ? t('stockItemInstanceCreate.createStockItem') : t('stockItemInstanceCreate.createCountStockItems', { count: lines.length }))}
                             </button>
                         </div>

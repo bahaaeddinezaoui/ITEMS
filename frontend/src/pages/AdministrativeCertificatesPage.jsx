@@ -151,7 +151,6 @@ const AdministrativeCertificatesPage = () => {
     useEffect(() => {
         if (!isAssetResponsible) return;
         fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAssetResponsible]);
 
     const handleCreate = async (e) => {

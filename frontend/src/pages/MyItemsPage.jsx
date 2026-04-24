@@ -244,6 +244,17 @@ const MyItemsPage = () => {
         const name = type === 'asset' ? item.asset_name : type === 'stock_item' ? item.stock_item_name : item.consumable_name;
         const inventory = type === 'asset' ? item.asset_inventory_number : type === 'stock_item' ? item.stock_item_inventory_number : item.consumable_inventory_number;
         const status = type === 'asset' ? item.asset_status : type === 'stock_item' ? item.stock_item_status : item.consumable_status;
+        const statusAr = type === 'asset' ? item.asset_status_ar : type === 'stock_item' ? item.stock_item_status_ar : item.consumable_status_ar;
+        const statusEn = type === 'asset' ? item.asset_status_en : type === 'stock_item' ? item.stock_item_status_en : item.consumable_status_en;
+        const displayStatus = (() => {
+            const lang = i18n.language;
+            if (lang === 'ar') {
+                if (statusAr && statusEn && statusAr !== statusEn) return `${statusAr} (${statusEn})`;
+                return statusAr || statusEn || status;
+            }
+            if (statusEn && statusAr && statusEn !== statusAr) return `${statusEn} (${statusAr})`;
+            return statusEn || statusAr || status;
+        })();
         const serial = type === 'asset' ? item.asset_serial_number : type === 'consumable' ? item.consumable_serial_number : null;
 
         return (
@@ -301,7 +312,7 @@ const MyItemsPage = () => {
                         )}
                         <div style={{ marginTop: 'var(--space-2)' }}>
                             <span className={`badge badge-${status?.toLowerCase() === 'active' || status?.toLowerCase() === 'assigned' ? 'success' : 'warning'}`}>
-                                {status}
+                                {displayStatus}
                             </span>
                         </div>
                     </div>

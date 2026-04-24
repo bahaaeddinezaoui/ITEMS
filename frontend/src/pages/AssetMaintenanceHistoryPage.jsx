@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { assetService, maintenanceService, maintenanceStepService } from '../services/api';
 
 const AssetMaintenanceHistoryPage = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [assets, setAssets] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedAsset, setSelectedAsset] = useState(null);
@@ -140,7 +140,7 @@ const AssetMaintenanceHistoryPage = () => {
                                         <td>{a.asset_name || '-'}</td>
                                         <td style={{ fontFamily: 'monospace' }}>{a.asset_inventory_number || '-'}</td>
                                         <td style={{ fontFamily: 'monospace' }}>{a.asset_serial_number || '-'}</td>
-                                        <td><span className={getStatusBadge(a.asset_status)}>{a.asset_status || '-'}</span></td>
+                                        <td><span className={getStatusBadge(a.asset_status)}>{(() => { const lang = i18n.language; const sAr = a.asset_status_ar; const sEn = a.asset_status_en; if (lang === 'ar') { return sAr || sEn || a.asset_status || '-'; } return sEn || sAr || a.asset_status || '-'; })()}</span></td>
                                         <td>
                                             <button className="btn btn-primary" onClick={() => { setSelectedAsset(a); loadHistory(a); }}>
                                                 {t('assetMaintenanceHistory.viewHistory')}

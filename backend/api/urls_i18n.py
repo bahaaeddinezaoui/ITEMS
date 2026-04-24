@@ -48,6 +48,7 @@ from api.views_i18n import (
     CompanyAssetRequestTranslationViewSet,
     ExternalMaintenanceDocumentTranslationViewSet,
     MaintenanceStepItemRequestTranslationViewSet,
+    AssetIncidentReportTranslationViewSet,
     # Metadata
     I18NMetadataView,
     I18NSearchView,
@@ -101,6 +102,7 @@ router.register(r'translations/administrative-certificates', AdministrativeCerti
 router.register(r'translations/company-asset-requests', CompanyAssetRequestTranslationViewSet, basename='companyassetrequest-translation')
 router.register(r'translations/ext-maintenance-documents', ExternalMaintenanceDocumentTranslationViewSet, basename='extmaintenancedocument-translation')
 router.register(r'translations/maintenance-step-item-requests', MaintenanceStepItemRequestTranslationViewSet, basename='maintenancestepitemrequest-translation')
+router.register(r'translations/asset-incident-reports', AssetIncidentReportTranslationViewSet, basename='assetincidentreport-translation')
 
 # URL patterns
 urlpatterns = [
