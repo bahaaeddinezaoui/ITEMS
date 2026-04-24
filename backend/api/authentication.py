@@ -46,6 +46,12 @@ class UserAccountJWTAuthentication(JWTAuthentication):
                 return None
                 
             user = UserAccount.objects.get(user_id=user_id)
+
+            if user.account_status != 'active':
+                raise exceptions.AuthenticationFailed('Account is not active', code='account_inactive')
+
+            if not user.is_approved:
+                raise exceptions.AuthenticationFailed('Account pending approval', code='account_pending_approval')
             
             if not hasattr(user, 'is_authenticated'):
                 user.is_authenticated = True

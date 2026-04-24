@@ -48,6 +48,21 @@ api.interceptors.response.use(
                 return Promise.reject(error);
             }
 
+            try {
+                const detail = error?.response?.data?.detail;
+                const apiError = error?.response?.data?.error;
+                const msg = (typeof detail === 'string' && detail.trim())
+                    ? detail
+                    : (typeof apiError === 'string' && apiError.trim())
+                        ? apiError
+                        : '';
+                if (msg) {
+                    sessionStorage.setItem('auth_redirect_message', msg);
+                }
+            } catch {
+                // ignore
+            }
+
             // Clear tokens and redirect to login
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');

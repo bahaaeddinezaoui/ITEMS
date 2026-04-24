@@ -734,14 +734,16 @@ const MaintenanceSteps = ({
     const getLocalizedPersonName = (person) => {
         if (!person) return '';
         const lang = i18n.language;
+        const fnAr = person.first_name_ar || person.first_name || '';
+        const lnAr = person.last_name_ar || person.last_name || '';
+        const fnEn = person.first_name_en || person.first_name || '';
+        const lnEn = person.last_name_en || person.last_name || '';
+        const nameAr = `${fnAr} ${lnAr}`.trim();
+        const nameEn = `${fnEn} ${lnEn}`.trim();
         if (lang === 'ar') {
-            const first = person.first_name_ar || person.first_name || '';
-            const last = person.last_name_ar || person.last_name || '';
-            return `${first} ${last}`.trim();
+            return nameAr === nameEn ? nameAr : `${nameAr} (${nameEn})`;
         }
-        const first = person.first_name_en || person.first_name || '';
-        const last = person.last_name_en || person.last_name || '';
-        return `${first} ${last}`.trim();
+        return nameEn === nameAr ? nameEn : `${nameEn} (${nameAr})`;
     };
 
     const loadData = async () => {

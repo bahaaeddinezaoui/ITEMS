@@ -1440,12 +1440,28 @@ const PersonsPage = () => {
                                                             <input
                                                                 type="checkbox"
                                                                 checked={approvalAccountEditData.is_approved}
-                                                                onChange={(e) => handleApprovalAccountEditChange('is_approved', e.target.checked)}
+                                                                disabled={!approvalEditData.is_approved && !approvalAccountEditData.is_approved}
+                                                                onChange={(e) => {
+                                                                    if (!approvalEditData.is_approved && e.target.checked) {
+                                                                        setApprovalError(t('persons.approvePersonBeforeAccount', 'Approve the person before approving the user account.'));
+                                                                        return;
+                                                                    }
+                                                                    handleApprovalAccountEditChange('is_approved', e.target.checked);
+                                                                }}
                                                                 style={{ width: '16px', height: '16px', accentColor: 'var(--color-accent-primary)' }}
                                                             />
                                                             {t('persons.accountApproved')}
                                                         </label>
                                                     </div>
+                                                    {!approvalEditData.is_approved && (
+                                                        <div style={{
+                                                            marginTop: '6px',
+                                                            fontSize: 'var(--font-size-xs)',
+                                                            color: 'var(--color-text-muted)',
+                                                        }}>
+                                                            {t('persons.approvePersonBeforeAccount', 'Approve the person before approving the user account.')}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ) : (

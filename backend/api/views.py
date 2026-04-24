@@ -1822,6 +1822,11 @@ class UserAccountDetailView(APIView):
             update_fields.append("account_status")
 
         if is_approved is not None:
+            if is_approved and ua.person and not ua.person.is_approved:
+                return Response(
+                    {"error": "Cannot approve a user account before approving the person"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             ua.is_approved = is_approved
             update_fields.append("is_approved")
             if is_approved and ua.account_status == "pending_approval":
@@ -1855,11 +1860,6 @@ class UserAccountDetailView(APIView):
                         "DELETE FROM person_role_mapping WHERE person_id = %s",
                         [ua.person_id],
                     )
-
-        # If user account is approved, also approve the person
-        if ua.is_approved and ua.person and not ua.person.is_approved:
-            ua.person.is_approved = True
-            ua.person.save(update_fields=["is_approved"])
 
         return Response({
             "message": "User account updated successfully",
@@ -12563,15 +12563,15 @@ class ApproveUserAccountView(APIView):
         if target.is_approved:
             return Response({"message": "Account is already approved"}, status=status.HTTP_200_OK)
 
+        if target.person and not target.person.is_approved:
+            return Response(
+                {"error": "Cannot approve a user account before approving the person"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         target.is_approved = True
         target.account_status = "active"
         target.save(update_fields=["is_approved", "account_status"])
-
-        # Also approve the person
-        person = target.person
-        if person and not person.is_approved:
-            person.is_approved = True
-            person.save(update_fields=["is_approved"])
 
         return Response(
             {

@@ -74,9 +74,19 @@ import './index.css';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, canOperate, logout } = useAuth();
 
     if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
+
+    if (!canOperate) {
+        try {
+            sessionStorage.setItem('auth_redirect_message', 'Account is not active or pending approval');
+        } catch {
+            // ignore
+        }
+        logout();
         return <Navigate to="/login" replace />;
     }
 

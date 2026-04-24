@@ -137,7 +137,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserAccount
-        fields = ['user_id', 'username', 'person', 'is_superuser', 'roles', 'last_login', 'is_approved']
+        fields = ['user_id', 'username', 'person', 'is_superuser', 'roles', 'last_login', 'is_approved', 'account_status']
 
     def get_is_superuser(self, obj):
         return obj.is_superuser()

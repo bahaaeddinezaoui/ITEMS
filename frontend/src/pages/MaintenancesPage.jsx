@@ -28,7 +28,16 @@ import {
     DollarSign,
     Settings2,
     Layers,
+    Check,
+    ArrowLeft,
+    ArrowRight,
 } from 'lucide-react';
+
+const CREATE_STEPS = [
+    { key: 'asset', icon: Monitor },
+    { key: 'assignment', icon: UserPlus },
+    { key: 'details', icon: FileText },
+];
 
 const MaintenancesPage = () => {
     const { t, i18n } = useTranslation();
@@ -45,6 +54,7 @@ const MaintenancesPage = () => {
 
     const [assets, setAssets] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [createStep, setCreateStep] = useState(0);
     const [selectedAsset, setSelectedAsset] = useState('');
     const [createDescription, setCreateDescription] = useState('');
 
@@ -385,6 +395,7 @@ const MaintenancesPage = () => {
         setFilterAssetBrand('');
         setFilterAssetModel('');
         setFilterAssetStatus('');
+        setCreateStep(0);
         try {
             const saved = localStorage.getItem('maintenanceCreateDestinationMode');
             if (saved && ['maintenance_room', 'asset_current', 'other'].includes(saved)) {
@@ -442,16 +453,45 @@ const MaintenancesPage = () => {
         }
     };
 
+    const validateCreateStep = (step) => {
+        if (step === 0) {
+            if (!selectedAsset) {
+                setError(t('maintenances.selectAssetError'));
+                return false;
+            }
+        }
+        if (step === 1) {
+            if (!selectedTechnician) {
+                setError(t('maintenances.selectTechnicianError'));
+                return false;
+            }
+            if (destinationMode === 'maintenance_room' && assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation) && !selectedMaintenanceLocation) {
+                setError(t('maintenances.selectMaintenanceLocationError'));
+                return false;
+            }
+            if (destinationMode === 'other' && !selectedMaintenanceLocation) {
+                setError(t('maintenances.selectDestinationError'));
+                return false;
+            }
+        }
+        setError('');
+        return true;
+    };
+
+    const handleCreateNext = () => {
+        if (validateCreateStep(createStep)) {
+            setCreateStep((prev) => Math.min(prev + 1, CREATE_STEPS.length - 1));
+        }
+    };
+
+    const handleCreateBack = () => {
+        setError('');
+        setCreateStep((prev) => Math.max(prev - 1, 0));
+    };
+
     const handleCreateSubmit = async (e) => {
-        e.preventDefault();
-        if (!selectedAsset) {
-            setError(t('maintenances.selectAssetError'));
-            return;
-        }
-        if (!selectedTechnician) {
-            setError(t('maintenances.selectTechnicianError'));
-            return;
-        }
+        if (e) e.preventDefault();
+        if (!validateCreateStep(0) || !validateCreateStep(1)) return;
 
         setSubmitting(true);
         try {
@@ -461,23 +501,11 @@ const MaintenancesPage = () => {
                 description: createDescription,
             };
             const mode = destinationMode;
-            if (mode === 'asset_current') {
-                // No destination move; maintenance occurs where the asset currently is
-            } else if (mode === 'maintenance_room') {
-                if (assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation)) {
-                    if (!selectedMaintenanceLocation) {
-                        setError(t('maintenances.selectMaintenanceLocationError'));
-                        setSubmitting(false);
-                        return;
-                    }
+            if (mode === 'maintenance_room') {
+                if (assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation) && selectedMaintenanceLocation) {
                     payload.destination_location_id = Number(selectedMaintenanceLocation);
                 }
-            } else if (mode === 'other') {
-                if (!selectedMaintenanceLocation) {
-                    setError(t('maintenances.selectDestinationError'));
-                    setSubmitting(false);
-                    return;
-                }
+            } else if (mode === 'other' && selectedMaintenanceLocation) {
                 payload.destination_location_id = Number(selectedMaintenanceLocation);
             }
             await maintenanceService.createDirect(payload);
@@ -871,7 +899,7 @@ const MaintenancesPage = () => {
                                     style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', width: 'auto', minHeight: 38, minWidth: 150 }}
                                     value={filterStartFrom}
                                     onChange={(e) => setFilterStartFrom(e.target.value)}
-                                    title={t('maintenances.startDate', 'Start date') + ' (from)'}
+                                    title={`${t('maintenances.startDate', 'Start date')} (${t('common.from', 'From')})`}
                                 />
                             </div>
 
@@ -885,7 +913,7 @@ const MaintenancesPage = () => {
                                     style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', width: 'auto', minHeight: 38, minWidth: 150 }}
                                     value={filterStartTo}
                                     onChange={(e) => setFilterStartTo(e.target.value)}
-                                    title={t('maintenances.startDate', 'Start date') + ' (to)'}
+                                    title={`${t('maintenances.startDate', 'Start date')} (${t('common.to', 'To')})`}
                                 />
                             </div>
 
@@ -914,7 +942,7 @@ const MaintenancesPage = () => {
                                     >
                                         <option value="start_datetime">{t('maintenances.startDate')}</option>
                                         <option value="end_datetime">{t('maintenances.endDate')}</option>
-                                        <option value="maintenance_id">ID</option>
+                                        <option value="maintenance_id">{t('common.id', 'ID')}</option>
                                         <option value="asset">{t('assets.asset')}</option>
                                         <option value="description">{t('common.description')}</option>
                                         <option value="maintenance_status">{t('common.status')}</option>
@@ -1228,14 +1256,14 @@ const MaintenancesPage = () => {
                         className="modal"
                         onClick={(e) => e.stopPropagation()}
                         style={{
-                            maxWidth: 1100,
+                            maxWidth: 800,
                             maxHeight: '95vh',
                             overflow: 'hidden',
                             display: 'flex',
                             flexDirection: 'column',
                         }}
                     >
-                        <div className="modal-header" style={{ gap: '0.75rem' }}>
+                        <div className="modal-header" style={{ gap: '0.75rem', flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <div style={{
                                     width: 32, height: 32, borderRadius: 'var(--radius-md)',
@@ -1243,11 +1271,53 @@ const MaintenancesPage = () => {
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     flexShrink: 0,
                                 }}>
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
-                                    </svg>
+                                    <Wrench size={16} style={{ color: 'var(--color-primary)' }} />
                                 </div>
                                 <h3 className="modal-title" style={{ margin: 0 }}>{t('maintenances.createMaintenance')}</h3>
+                            </div>
+                            <div className="wizard-steps" style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: '2.5rem', minWidth: 200 }}>
+                                {CREATE_STEPS.map((step, index) => {
+                                    const StepIcon = step.icon;
+                                    const isActive = index === createStep;
+                                    const isCompleted = index < createStep;
+                                    return (
+                                        <div key={step.key} className="wizard-step-item" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', flex: '0 0 auto' }}>
+                                            <button
+                                                type="button"
+                                                className={`wizard-step-dot ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
+                                                onClick={() => { if (isCompleted) { setError(''); setCreateStep(index); } }}
+                                                disabled={!isCompleted && !isActive}
+                                                style={{
+                                                    width: 28, height: 28, borderRadius: '50%',
+                                                    border: `2px solid ${isActive ? 'var(--color-primary)' : isCompleted ? 'var(--color-success)' : 'var(--color-border)'}`,
+                                                    background: isActive ? 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.1)' : isCompleted ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-bg-secondary)',
+                                                    color: isActive ? 'var(--color-primary)' : isCompleted ? 'var(--color-success)' : 'var(--color-text-secondary)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    cursor: (isCompleted || isActive) ? 'pointer' : 'default',
+                                                    padding: 0, fontSize: 0, transition: 'all 0.2s ease',
+                                                }}
+                                            >
+                                                {isCompleted ? <Check size={14} strokeWidth={3} /> : <StepIcon size={14} />}
+                                            </button>
+                                            <span style={{
+                                                fontSize: '0.65rem', fontWeight: 600, marginTop: 4,
+                                                color: isActive ? 'var(--color-primary)' : isCompleted ? 'var(--color-success)' : 'var(--color-text-secondary)',
+                                                whiteSpace: 'nowrap',
+                                            }}>
+                                                {t(`maintenances.createStep${step.key.charAt(0).toUpperCase()}${step.key.slice(1)}`)}
+                                            </span>
+                                            {index < CREATE_STEPS.length - 1 && (
+                                                <div style={{
+                                                    position: 'absolute', top: 14,
+                                                    left: i18n.language === 'ar' ? undefined : 'calc(50% + 14px)',
+                                                    right: i18n.language === 'ar' ? 'calc(50% + 14px)' : undefined,
+                                                    width: '2.5rem', height: 2,
+                                                    background: isCompleted ? 'rgba(16, 185, 129, 0.4)' : 'var(--color-border)',
+                                                }} />
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                             <button className="modal-close" onClick={() => !submitting && setShowCreateModal(false)}>
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1257,10 +1327,15 @@ const MaintenancesPage = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                                {/* Left Column: Asset Selection */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <form onSubmit={(e) => { e.preventDefault(); if (createStep === CREATE_STEPS.length - 1) handleCreateSubmit(e); else handleCreateNext(); }} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                                {error && (
+                                    <div style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', color: 'var(--color-error)', fontSize: 'var(--font-size-sm)' }}>
+                                        {error}
+                                    </div>
+                                )}
+                                {createStep === 0 && (
+                                <div className="wizard-step-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: 700, margin: '0 auto', width: '100%' }}>
                                     {/* Asset Filters */}
                                     <div style={{ padding: '0.75rem', backgroundColor: 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(var(--color-primary-rgb, 59, 130, 246), 0.12)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem', fontSize: 'var(--font-size-sm)', fontWeight: 600, color: 'var(--color-primary)' }}>
@@ -1488,17 +1563,13 @@ const MaintenancesPage = () => {
                                         </div>
                                     </div>
                                 </div>
+                                )}
 
-                                {/* Right Column: Assignment & Details */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                {createStep === 1 && (
+                                <div className="wizard-step-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: 700, margin: '0 auto', width: '100%' }}>
                                     {/* Assignment Section */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                            <circle cx="9" cy="7" r="4" />
-                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                        </svg>
+                                        <UserPlus size={12} />
                                         {t('maintenances.assignment')}
                                     </div>
 
@@ -1583,21 +1654,31 @@ const MaintenancesPage = () => {
                                             />
                                         </div>
                                     )}
+                                </div>
+                                )}
 
+                                {createStep === 2 && (
+                                <div className="wizard-step-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: 700, margin: '0 auto', width: '100%' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        <FileText size={12} />
+                                        {t('maintenances.createStepDetails')}
+                                    </div>
                                     <div className="form-group" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         <label htmlFor="description_create" className="form-label">{t('maintenances.description')}</label>
                                         <textarea
                                             id="description_create"
                                             className="form-input"
-                                            style={{ flex: 1, minHeight: 80 }}
+                                            style={{ flex: 1, minHeight: 120 }}
                                             value={createDescription}
                                             onChange={(e) => setCreateDescription(e.target.value)}
+                                            placeholder={t('maintenances.descriptionPlaceholder', 'Describe the maintenance issue or task...')}
                                         />
                                     </div>
                                 </div>
+                                )}
                             </div>
 
-                            <div className="modal-footer" style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-4) var(--space-6)' }}>
+                            <div className="modal-footer" style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-4) var(--space-6)', display: 'flex', justifyContent: 'space-between' }}>
                                 <button
                                     type="button"
                                     className="btn btn-secondary"
@@ -1606,9 +1687,34 @@ const MaintenancesPage = () => {
                                 >
                                     {t('common.cancel')}
                                 </button>
-                                <button type="submit" className="btn btn-primary" disabled={submitting} style={{ minWidth: 120 }}>
-                                    {submitting ? t('maintenances.creating') : t('maintenances.createMaintenance')}
-                                </button>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    {createStep > 0 && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            onClick={handleCreateBack}
+                                            disabled={submitting}
+                                            style={{ minWidth: 100, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                                        >
+                                            {i18n.language === 'ar' ? <><ArrowRight size={14} /> {t('common.back', 'Back')}</> : <><ArrowLeft size={14} /> {t('common.back', 'Back')}</>}
+                                        </button>
+                                    )}
+                                    {createStep < CREATE_STEPS.length - 1 && (
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            onClick={handleCreateNext}
+                                            style={{ minWidth: 100, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                                        >
+                                            {i18n.language === 'ar' ? <>{t('common.next', 'Next')} <ArrowLeft size={14} /></> : <>{t('common.next', 'Next')} <ArrowRight size={14} /></>}
+                                        </button>
+                                    )}
+                                    {createStep === CREATE_STEPS.length - 1 && (
+                                        <button type="submit" className="btn btn-primary" disabled={submitting} style={{ minWidth: 120 }}>
+                                            {submitting ? t('maintenances.creating') : t('maintenances.createMaintenance')}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </form>
                     </div>

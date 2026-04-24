@@ -99,6 +99,18 @@ const LoginPage = () => {
         return () => clearInterval(interval);
     }, []);
 
+    useEffect(() => {
+        try {
+            const msg = sessionStorage.getItem('auth_redirect_message');
+            if (msg) {
+                setError(msg);
+                sessionStorage.removeItem('auth_redirect_message');
+            }
+        } catch {
+            // ignore
+        }
+    }, []);
+
     const getLoginErrorMessage = (err) => {
         const status = err?.response?.status;
 

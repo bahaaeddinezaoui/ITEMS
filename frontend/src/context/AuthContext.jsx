@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         isAuthenticated: !!user,
         isSuperuser: user?.is_superuser || false,
+        canOperate: !!user && (user?.is_approved === true) && ((user?.account_status || 'active') === 'active'),
     };
 
     return (
