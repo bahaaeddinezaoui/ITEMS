@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { MapPin } from 'lucide-react';
 import i18n from '../i18n';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const getLocalizedLocationName = (item, currentLang) => {
     if (currentLang === 'ar') {
@@ -296,16 +297,16 @@ const LocationInventoryPage = () => {
                                     <tr key={loc.location_id}>
                                         <td><strong>{getLocalizedLocationName(loc, currentLang)}</strong></td>
                                         <td style={{ color: 'var(--color-text-secondary)' }}>{getLocalizedLocationType(loc, currentLang) || t('common.unknown')}</td>
-                                        <td style={{ textAlign: 'center' }}>
+                                        <td style={{ textAlign: 'center', minWidth: '80px' }}>
                                             <span className="badge badge-info">{loc.asset_count}</span>
                                         </td>
-                                        <td style={{ textAlign: 'center' }}>
+                                        <td style={{ textAlign: 'center', minWidth: '80px' }}>
                                             <span className="badge badge-info">{loc.stock_item_count}</span>
                                         </td>
-                                        <td style={{ textAlign: 'center' }}>
+                                        <td style={{ textAlign: 'center', minWidth: '80px' }}>
                                             <span className="badge badge-info">{loc.consumable_count}</span>
                                         </td>
-                                        <td style={{ textAlign: 'center', fontWeight: 700 }}>
+                                        <td style={{ textAlign: 'center', fontWeight: 700, minWidth: '80px' }}>
                                             {loc.asset_count + loc.stock_item_count + loc.consumable_count}
                                         </td>
                                     </tr>
@@ -322,65 +323,62 @@ const LocationInventoryPage = () => {
                         📋 {t('locationInventory.itemDetails')} {filteredItems.length > 0 ? <span style={{ color: 'var(--color-text-secondary)', fontWeight: 400 }}>({filteredItems.length} {t('locationInventory.items')})</span> : null}
                     </h2>
                 </div>
-                {loading ? (
-                    <div className="loading-state">
-                        <div className="loading-spinner" />
-                        <span>{t('locationInventory.loadingInventory')}</span>
-                    </div>
-                ) : error ? (
-                    <div className="card-body">
+                <div className="card-body">
+                    {loading ? (
+                        <SkeletonListRows count={8} />
+                    ) : error ? (
                         <div className="error-message">{error}</div>
-                    </div>
-                ) : filteredItems.length === 0 ? (
-                    <div className="empty-state">
-                        <div className="empty-state-title">{t('locationInventory.noItemsFound')}</div>
-                        <div className="empty-state-text">{t('locationInventory.noItemsMatchCriteria')}</div>
-                    </div>
-                ) : (
-                    <div className="card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
-                        {filteredItems.map((item, index) => (
-                            <div key={`${item.item_type}-${item.item_id}-${index}`} style={{
-                                background: 'var(--color-bg-secondary)',
-                                borderRadius: 'var(--radius-lg)',
-                                padding: 'var(--space-4)',
-                                border: '1px solid var(--color-border)',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 'var(--space-3)',
-                                transition: 'box-shadow 0.2s, transform 0.2s',
-                                cursor: 'default',
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                                    <span style={{ fontSize: 22 }}>{getItemTypeIcon(item.item_type)}</span>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <strong style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</strong>
+                    ) : filteredItems.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-title">{t('locationInventory.noItemsFound')}</div>
+                            <div className="empty-state-text">{t('locationInventory.noItemsMatchCriteria')}</div>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+                            {filteredItems.map((item, index) => (
+                                <div key={`${item.item_type}-${item.item_id}-${index}`} style={{
+                                    background: 'var(--color-bg-secondary)',
+                                    borderRadius: 'var(--radius-lg)',
+                                    padding: 'var(--space-4)',
+                                    border: '1px solid var(--color-border)',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 'var(--space-3)',
+                                    transition: 'box-shadow 0.2s, transform 0.2s',
+                                    cursor: 'default',
+                                }}
+                                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                        <span style={{ fontSize: 22 }}>{getItemTypeIcon(item.item_type)}</span>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <strong style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</strong>
+                                        </div>
+                                        <span className={`badge ${getStatusBadge(item.status)}`}>
+                                            {formatStatusLabel(item.status)}
+                                        </span>
                                     </div>
-                                    <span className={`badge ${getStatusBadge(item.status)}`}>
-                                        {formatStatusLabel(item.status)}
-                                    </span>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2) var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                        {item.inventory_number && (
+                                            <span style={{ fontFamily: 'monospace', color: 'var(--color-text-primary)' }}>🔢 {item.inventory_number}</span>
+                                        )}
+                                        {item.serial_number && (
+                                            <span>🔧 {item.serial_number}</span>
+                                        )}
+                                        {item.model && (
+                                            <span>🏷️ {item.model}{item.brand ? ` / ${item.brand}` : ''}</span>
+                                        )}
+                                        {item.type && (
+                                            <span>📁 {item.type}</span>
+                                        )}
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📍 {getLocalizedLocationName(item, currentLang) || '-'}</span>
+                                    </div>
                                 </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2) var(--space-3)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                    {item.inventory_number && (
-                                        <span style={{ fontFamily: 'monospace', color: 'var(--color-text-primary)' }}>🔢 {item.inventory_number}</span>
-                                    )}
-                                    {item.serial_number && (
-                                        <span>🔧 {item.serial_number}</span>
-                                    )}
-                                    {item.model && (
-                                        <span>🏷️ {item.model}{item.brand ? ` / ${item.brand}` : ''}</span>
-                                    )}
-                                    {item.type && (
-                                        <span>📁 {item.type}</span>
-                                    )}
-                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📍 {getLocalizedLocationName(item, currentLang) || '-'}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </>
     );

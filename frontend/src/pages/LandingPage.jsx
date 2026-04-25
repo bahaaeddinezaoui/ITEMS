@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import DarkVeil from '../components/DarkVeil';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function LandingPage() {
     const { t } = useTranslation();
@@ -107,7 +109,9 @@ export default function LandingPage() {
     ];
     return (
         <div className="landing-page">
-            <div className="landing-bg" aria-hidden="true" />
+            <div className="landing-bg" aria-hidden="true">
+                <DarkVeil speed={0.3} />
+            </div>
 
             <header className="landing-header">
                 <div className="landing-brand">
@@ -125,6 +129,7 @@ export default function LandingPage() {
                 </div>
 
                 <nav className="landing-actions">
+                    <ThemeToggle />
                     <Link className="btn btn-secondary landing-btn" to="/login">
                         {t('landingPage.signIn')}
                     </Link>

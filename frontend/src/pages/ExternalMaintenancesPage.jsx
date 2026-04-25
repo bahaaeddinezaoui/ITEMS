@@ -7,6 +7,7 @@ import {
 import { externalMaintenanceProviderService, externalMaintenanceService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const STATUS_CONFIG = {
     DRAFT: { badge: 'badge-info', icon: Wrench },
@@ -379,9 +380,8 @@ const ExternalMaintenancesPage = () => {
 
             {/* Loading / Empty */}
             {loading ? (
-                <div className="empty-state" style={{ padding: 'var(--space-16)' }}>
-                    <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                    <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('externalMaintenances.loading')}</p>
+                <div style={{ padding: 'var(--space-12)' }}>
+                    <SkeletonListRows count={6} />
                 </div>
             ) : items.length === 0 ? (
                 <div className="empty-state" style={{ padding: 'var(--space-16)' }}>
@@ -487,7 +487,7 @@ const ExternalMaintenancesPage = () => {
 
                             {/* Visual Timeline */}
                             <div style={{
-                                background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                                background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)', boxShadow: 'var(--glass-shadow)',
                                 borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)',
                             }}>
                                 <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-4)' }}>
@@ -499,7 +499,7 @@ const ExternalMaintenancesPage = () => {
                             {/* Action sections */}
                             {isAssetResponsible && !selectedItem.item_sent_to_external_maintenance_datetime && (
                                 <div style={{
-                                    background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                                    background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)', boxShadow: 'var(--glass-shadow)',
                                     borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)',
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
@@ -557,7 +557,7 @@ const ExternalMaintenancesPage = () => {
 
                             {isAssetResponsible && selectedItem.item_sent_to_external_maintenance_datetime && !selectedItem.item_received_by_maintenance_provider_datetime && (
                                 <div style={{
-                                    background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                                    background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)', boxShadow: 'var(--glass-shadow)',
                                     borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)',
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
@@ -574,7 +574,7 @@ const ExternalMaintenancesPage = () => {
 
                             {isAssetResponsible && selectedItem.item_received_by_maintenance_provider_datetime && !selectedItem.item_sent_to_company_datetime && (
                                 <div style={{
-                                    background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                                    background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)', boxShadow: 'var(--glass-shadow)',
                                     borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)',
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
@@ -591,7 +591,7 @@ const ExternalMaintenancesPage = () => {
 
                             {isAssetResponsible && selectedItem.item_sent_to_company_datetime && !selectedItem.item_received_by_company_datetime && (
                                 <div style={{
-                                    background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                                    background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)', boxShadow: 'var(--glass-shadow)',
                                     borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)',
                                 }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { History } from 'lucide-react';
 import { assetService, maintenanceService, maintenanceStepService } from '../services/api';
+import { SkeletonCardList } from '../components/SkeletonCard';
 
 const AssetMaintenanceHistoryPage = () => {
     const { t, i18n } = useTranslation();
@@ -340,9 +341,8 @@ const AssetMaintenanceHistoryPage = () => {
             </div>
 
             {loadingAssets ? (
-                <div className="loading-state">
-                    <div className="loading-spinner" />
-                    <span>{t('assetMaintenanceHistory.loadingAssets')}</span>
+                <div style={{ padding: 'var(--space-12)' }}>
+                    <SkeletonCardList count={3} cardLines={2} gap="var(--space-4)" />
                 </div>
             ) : null}
 
@@ -415,9 +415,8 @@ const AssetMaintenanceHistoryPage = () => {
                         </button>
                     </div>
                     {loadingHistory ? (
-                        <div className="loading-state">
-                            <div className="loading-spinner" />
-                            <span>{t('assetMaintenanceHistory.loadingHistory')}</span>
+                        <div className="card-body">
+                            <SkeletonCardList count={3} cardLines={2} gap="var(--space-4)" />
                         </div>
                     ) : error ? (
                         <div className="card-body">

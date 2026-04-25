@@ -4,6 +4,7 @@ import { ArrowLeft, Package, RefreshCw, Send } from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { SkeletonCardList } from '../components/SkeletonCard';
 
 const PurchaseOrderReceivePage = () => {
     const { user, isSuperuser } = useAuth();
@@ -188,9 +189,8 @@ const PurchaseOrderReceivePage = () => {
             {success && <div className="success-message">{success}</div>}
 
             {loading ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>
-                    <span className="loading-spinner" aria-hidden="true" />
-                    <span>{t('common.loading')}</span>
+                <div style={{ padding: 'var(--space-12)' }}>
+                    <SkeletonCardList count={1} cardLines={3} />
                 </div>
             ) : !order ? (
                 <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.notFound')}</div>

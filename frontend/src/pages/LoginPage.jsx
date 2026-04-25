@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import DarkVeil from '../components/DarkVeil';
 
 const LoginPage = () => {
     const { t } = useTranslation();
@@ -256,6 +257,9 @@ const LoginPage = () => {
 
             {/* Right Side - Feature Carousel */}
             <div className="login-right">
+                <div className="login-right-bg">
+                    <DarkVeil />
+                </div>
                 <div className="feature-carousel">
                     <div className="feature-header">
                         <h2>{t('landing.whyChoose')}</h2>

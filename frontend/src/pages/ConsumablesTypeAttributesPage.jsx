@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { SkeletonListRows } from '../components/SkeletonCard';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { SlidersHorizontal } from 'lucide-react';
 import { consumableAttributeDefinitionService, consumableTypeAttributeService, consumableTypeService } from '../services/api';
 
@@ -8,9 +9,10 @@ const ConsumablesTypeAttributesPage = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
+    const { typeId } = useParams(); // Using useParams instead of query string if possible, or keeping consistency
 
     const query = useMemo(() => new URLSearchParams(location.search), [location.search]);
-    const typeId = query.get('typeId');
+    const typeIdFromQuery = query.get('typeId') || typeId;
 
     const [consumableType, setConsumableType] = useState(null);
     const [typeAttributes, setTypeAttributes] = useState([]);
@@ -29,21 +31,21 @@ const ConsumablesTypeAttributesPage = () => {
     });
 
     useEffect(() => {
-        if (!typeId) {
+        if (!typeIdFromQuery) {
             setError(t('consumablesTypeAttributes.typeIdRequired'));
             return;
         }
         fetchAll();
-    }, [typeId]);
+    }, [typeIdFromQuery]);
 
     const fetchAll = async () => {
         setLoading(true);
         setError(null);
         try {
             const [type, defs, attrs] = await Promise.all([
-                consumableTypeService.getById(typeId),
+                consumableTypeService.getById(typeIdFromQuery),
                 consumableAttributeDefinitionService.getAll(),
-                consumableTypeAttributeService.getByConsumableType(typeId),
+                consumableTypeAttributeService.getByConsumableType(typeIdFromQuery),
             ]);
             setConsumableType(type);
             setAttributeDefinitions(Array.isArray(defs) ? defs : []);
@@ -70,7 +72,7 @@ const ConsumablesTypeAttributesPage = () => {
         setError(null);
         try {
             const payload = {
-                consumable_type: Number(typeId),
+                consumable_type: Number(typeIdFromQuery),
                 consumable_attribute_definition: Number(form.consumable_attribute_definition),
                 is_mandatory: form.is_mandatory,
                 default_value: form.default_value || null,
@@ -89,7 +91,7 @@ const ConsumablesTypeAttributesPage = () => {
     const handleDelete = async (definitionId) => {
         if (!window.confirm(t('consumablesTypeAttributes.confirmRemove'))) return;
         try {
-            await consumableTypeAttributeService.delete(Number(typeId), Number(definitionId));
+            await consumableTypeAttributeService.delete(Number(typeIdFromQuery), Number(definitionId));
             await fetchAll();
         } catch (err) {
             setError(t('consumablesTypeAttributes.removeError') + ': ' + err.message);
@@ -200,38 +202,33 @@ const ConsumablesTypeAttributesPage = () => {
                 )}
 
                 <div style={{ overflowY: 'auto', flex: 1, padding: 'var(--space-4)' }}>
-                    {loading && <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>}
-                    {!loading && typeAttributes.length === 0 && (
+                    {loading ? (
+                        <SkeletonListRows count={6} />
+                    ) : typeAttributes.length === 0 ? (
                         <div style={{ color: 'var(--color-text-secondary)' }}>{t('consumablesTypeAttributes.noAttributes')}</div>
-                    )}
-
-                    {typeAttributes.map(attr => (
-                        <div
-                            key={attr.consumable_attribute_definition}
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: 'var(--space-2) 0',
-                                borderBottom: '1px solid var(--color-border)'
-                            }}
-                        >
-                            <div>
-                                <div style={{ fontWeight: '500' }}>{attr.definition?.description || `Definition ${attr.consumable_attribute_definition}`}</div>
-                                <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
-                                    {(attr.definition?.data_type || 'n/a')}{attr.definition?.unit ? ` • ${attr.definition.unit}` : ''}
-                                    {attr.is_mandatory ? ` • ${t('common.mandatory').toLowerCase()}` : ''}
-                                    {attr.default_value ? ` • ${t('consumablesTypeAttributes.default')}: ${attr.default_value}` : ''}
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => handleDelete(attr.consumable_attribute_definition)}
-                                style={{ border: 'none', background: 'none', color: '#999', cursor: 'pointer' }}
+                    ) : (
+                        typeAttributes.map(attr => (
+                            <div
+                                key={attr.consumable_attribute_definition}
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: 'var(--space-3)',
+                                    marginBottom: 'var(--space-2)',
+                                    background: 'var(--color-bg-secondary)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    border: '1px solid var(--color-border)'
+                                }}
                             >
-                                &times;
-                            </button>
-                        </div>
-                    ))}
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ fontWeight: '600' }}>{attr.definition?.description || `${t('consumablesTypeAttributes.attribute')} #${attr.consumable_attribute_definition}`}</div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{attr.definition?.data_type}{attr.definition?.unit ? ` (${attr.definition.unit})` : ''}{attr.is_mandatory ? ` · ${t('consumablesTypeAttributes.mandatory')}` : ''}</div>
+                                </div>
+                                <button onClick={() => handleDelete(attr.consumable_attribute_definition)} style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-error)' }} title={t('common.delete')}><SlidersHorizontal size={14} /></button>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

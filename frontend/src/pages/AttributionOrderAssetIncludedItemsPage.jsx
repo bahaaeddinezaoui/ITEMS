@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import {
     assetModelService,
     stockItemModelService,
@@ -257,6 +258,16 @@ const AttributionOrderAssetIncludedItemsPage = () => {
 
     const totalStockItems = stockItemRows.length;
     const totalConsumables = consumableRows.length;
+
+    if (loading) {
+        return (
+            <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+                    <SkeletonListRows count={6} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>

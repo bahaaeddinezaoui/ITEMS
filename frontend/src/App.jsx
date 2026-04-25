@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -123,6 +124,7 @@ const PublicRoute = ({ children }) => {
 
 function App() {
     return (
+        <ThemeProvider>
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
@@ -730,6 +732,7 @@ function App() {
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
+        </ThemeProvider>
     );
 }
 

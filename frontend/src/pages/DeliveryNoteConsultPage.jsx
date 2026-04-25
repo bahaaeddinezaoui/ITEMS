@@ -4,6 +4,7 @@ import { purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const DeliveryNoteConsultPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -82,7 +83,11 @@ const DeliveryNoteConsultPage = () => {
             )}
 
             {loading ? (
-                <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>
+                <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+                        <SkeletonListRows count={6} />
+                    </div>
+                </div>
             ) : pdfUrl ? (
                 <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden', height: '78vh' }}>
                     <iframe title={t('deliveryNote.pdfTitle')} src={pdfUrl} style={{ width: '100%', height: '100%', border: 'none', background: 'var(--color-bg-secondary)' }} />

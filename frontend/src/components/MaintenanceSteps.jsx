@@ -1292,8 +1292,8 @@ const MaintenanceSteps = ({
     };
 
     return (
-        <div className="maintenance-steps-container p-4 border-t" style={{ backgroundColor: 'var(--color-bg-secondary)', borderColor: 'var(--color-border)' }}>
-            <div className="card" style={{ backgroundColor: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)' }}>
+        <div className="maintenance-steps-container p-4 border-t" style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)' }}>
+            <div className="card" style={{ backgroundColor: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)', boxShadow: 'var(--glass-shadow)' }}>
                 <div className="card-body p-3">
                     <div
                         className="d-flex justify-content-between align-items-center mb-3"
@@ -1617,7 +1617,7 @@ const MaintenanceSteps = ({
                     {loading && combinedSteps.length === 0 ? (
                         <div className="text-center py-4" style={{ color: 'var(--color-text-secondary)', marginTop: 12 }}>{t('mSteps.loadingSteps')}</div>
                     ) : combinedSteps.length === 0 ? (
-                        <div className="empty-state p-4 text-center rounded border" style={{ color: 'var(--color-text-secondary)', backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)', marginTop: 12 }}>
+                        <div className="empty-state p-4 text-center rounded border" style={{ color: 'var(--color-text-secondary)', backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)', marginTop: 12, backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)' }}>
                             <p>{t('mSteps.noStepsYet')}</p>
                         </div>
                     ) : (
@@ -1786,8 +1786,11 @@ const MaintenanceSteps = ({
                         zIndex: 50,
                         width: 420,
                         padding: 'var(--space-4)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--glass-border)',
+                        background: 'var(--glass-bg)',
+                        backdropFilter: 'var(--glass-backdrop)',
+                        WebkitBackdropFilter: 'var(--glass-backdrop)',
+                        boxShadow: 'var(--glass-shadow)',
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
@@ -1962,8 +1965,11 @@ const MaintenanceSteps = ({
                         zIndex: 50,
                         width: 520,
                         padding: 'var(--space-4)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--glass-border)',
+                        background: 'var(--glass-bg)',
+                        backdropFilter: 'var(--glass-backdrop)',
+                        WebkitBackdropFilter: 'var(--glass-backdrop)',
+                        boxShadow: 'var(--glass-shadow)',
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
@@ -2063,8 +2069,10 @@ const MaintenanceSteps = ({
                             maxWidth: 620,
                             borderRadius: 'var(--radius-lg)',
                             overflow: 'hidden',
-                            border: '1px solid var(--color-border)',
-                            boxShadow: '0 18px 60px rgba(0,0,0,0.18)',
+                            border: '1px solid var(--glass-border)',
+                            boxShadow: 'var(--glass-shadow)',
+                            backdropFilter: 'var(--glass-backdrop)',
+                            WebkitBackdropFilter: 'var(--glass-backdrop)',
                         }}
                     >
                         <div
@@ -2198,8 +2206,11 @@ const MaintenanceSteps = ({
                         zIndex: 50,
                         width: 520,
                         padding: 'var(--space-4)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg-tertiary)',
+                        border: '1px solid var(--glass-border)',
+                        background: 'var(--glass-bg)',
+                        backdropFilter: 'var(--glass-backdrop)',
+                        WebkitBackdropFilter: 'var(--glass-backdrop)',
+                        boxShadow: 'var(--glass-shadow)',
                     }}
                 >
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
@@ -2634,7 +2645,7 @@ const MaintenanceSteps = ({
                                         <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 8 }}>
                                             {t('mSteps.queuedLocalInfo')}
                                         </div>
-                                        <div className="table-container rounded border overflow-hidden" style={{ backgroundColor: 'var(--color-bg-tertiary)', borderColor: 'var(--color-border)' }}>
+                                        <div className="table-container rounded border overflow-hidden" style={{ backgroundColor: 'var(--glass-bg)', borderColor: 'var(--glass-border)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)' }}>
                                             <table className="data-table mb-0">
                                                 <thead style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
                                                     <tr>

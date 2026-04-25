@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { locationService, locationTypeService, locationRelationService } from '../services/api';
-import { Search, SlidersHorizontal, ArrowUpDown, MapPin, Plus, X, Pencil, Trash2, Network, ChevronDown, XCircle } from 'lucide-react';
+import { MapPin, Plus, Search, SlidersHorizontal, ArrowUpDown, X, Pencil, Trash2, ChevronDown, XCircle, Network, Check } from 'lucide-react';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import TranslatableInput from '../components/TranslatableInput';
 
 const getBilingualName = (item, currentLang) => {
@@ -1402,9 +1403,8 @@ const LocationsPage = () => {
                 {/* Card Body */}
                 <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
                     {loading ? (
-                        <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
-                            <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                            <span>{t('common.loading')}</span>
+                        <div style={{ padding: 'var(--space-12)' }}>
+                            <SkeletonListRows count={8} />
                         </div>
                     ) : filteredLocations.length === 0 ? (
                         <div style={{

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { positionRoleMappingService, positionService, roleService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { Search, SlidersHorizontal, ArrowUpDown, Plus, X, XCircle, ChevronDown, Link2, Briefcase, Shield, Trash2 } from 'lucide-react';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const getBilingualPositionLabel = (item, currentLang) => {
     const labelAr = item.position_label_ar;
@@ -405,9 +406,8 @@ const PositionRoleMappingsPage = () => {
 
             {/* Mappings Table */}
             {loading ? (
-                <div className="empty-state">
-                    <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                    <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('common.loading')}</p>
+                <div style={{ padding: 'var(--space-12)' }}>
+                    <SkeletonListRows count={8} />
                 </div>
             ) : filteredMappings.length === 0 ? (
                 <div className="empty-state">

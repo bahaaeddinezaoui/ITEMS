@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { dashboardService } from '../services/api';
+import LiquidEther from '../components/LiquidEther';
 
 const DashboardHome = () => {
     const { user, isSuperuser } = useAuth();
@@ -343,7 +344,26 @@ const DashboardHome = () => {
     return (
         <>
             <div className="dashboard-hero">
-                <div className="dashboard-hero-main">
+                <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+                    <LiquidEther
+                        colors={['#5227FF', '#FF9FFC', '#B497CF']}
+                        mouseForce={20}
+                        cursorSize={100}
+                        isViscous={false}
+                        viscous={30}
+                        iterationsViscous={32}
+                        iterationsPoisson={32}
+                        resolution={0.5}
+                        isBounce={false}
+                        autoDemo={true}
+                        autoSpeed={0.5}
+                        autoIntensity={2.2}
+                        takeoverDuration={0.25}
+                        autoResumeDelay={3000}
+                        autoRampDuration={0.6}
+                    />
+                </div>
+                <div className="dashboard-hero-main" style={{ position: 'relative', zIndex: 1 }}>
                     <div className="dashboard-hero-kicker">{t('app.title')}</div>
                     <h1 className="dashboard-hero-title">{t('common.welcome')}, {getFullName()}!</h1>
                     <div className="dashboard-hero-meta">
@@ -353,7 +373,7 @@ const DashboardHome = () => {
                     </div>
                 </div>
 
-                <div className="dashboard-hero-actions">
+                <div className="dashboard-hero-actions" style={{ position: 'relative', zIndex: 1 }}>
                     <button type="button" className="dashboard-quick-btn" onClick={() => navigate('/dashboard/my-items')}>
                         {t('nav.myItems')}
                     </button>

@@ -4,6 +4,7 @@ import { backorderReportService, purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, RefreshCw, Package, Droplets, Clock, FileText, CheckCircle2, Truck, BarChart3 } from 'lucide-react';
+import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
 
 const ModelCard = ({ item, type }) => {
     const ordered = Number(item.quantity_ordered ?? 0);
@@ -257,7 +258,9 @@ const PurchaseOrderBackorderReportsPage = () => {
             )}
 
             {loading ? (
-                <div className="loading-state"><div className="loading-spinner" />{t('common.loading')}</div>
+                <div style={{ padding: 'var(--space-12)' }}>
+                    <SkeletonCardList count={1} cardLines={3} />
+                </div>
             ) : !order ? (
                 <EmptyState icon={FileText} message={t('backorderReports.notFound')} />
             ) : (
@@ -315,7 +318,7 @@ const PurchaseOrderBackorderReportsPage = () => {
                         </div>
                         <div className="card-body">
                             {remainingLoading ? (
-                                <div className="loading-state"><div className="loading-spinner" />{t('common.loading')}</div>
+                                <SkeletonListRows count={5} />
                             ) : remainingItems.length === 0 ? (
                                 <EmptyState icon={CheckCircle2} message={t('backorderReports.allItemsReceived')} />
                             ) : (
@@ -351,7 +354,7 @@ const PurchaseOrderBackorderReportsPage = () => {
                         </div>
                         <div className="card-body">
                             {reportsLoading ? (
-                                <div className="loading-state"><div className="loading-spinner" />{t('common.loading')}</div>
+                                <SkeletonListRows count={5} />
                             ) : reports.length === 0 ? (
                                 <EmptyState icon={FileText} message={t('backorderReports.noReportsYet')} />
                             ) : (
@@ -397,7 +400,9 @@ const PurchaseOrderBackorderReportsPage = () => {
 
                                     {/* Selected report snapshot */}
                                     {selectedLoading ? (
-                                        <div className="loading-state"><div className="loading-spinner" />{t('common.loading')}</div>
+                                        <div style={{ padding: 'var(--space-6)' }}>
+                                            <SkeletonCardList count={1} cardLines={3} />
+                                        </div>
                                     ) : !selectedReport ? (
                                         <div style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)', textAlign: 'center', padding: 'var(--space-6)' }}>
                                             {t('backorderReports.selectReport')}

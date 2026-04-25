@@ -137,13 +137,19 @@
     "superuser": "مسؤول",
     "profile": "الملف الشخصي",
     "security": "الأمان",
+    "theme": "المظهر",
+    "themeLight": "فاتح",
+    "themeDark": "داكن",
+    "themeSystem": "النظام",
     "pending": "قيد الانتظار",
     "timeline": "الجدول الزمني",
     "locale": "ar-SA",
     "selected": "محدد",
     "submitting": "جاري الإرسال...",
     "ascending": "تصاعدي",
-    "descending": "تنازلي"
+    "descending": "تنازلي",
+    "expandSidebar": "توسيع الشريط الجانبي",
+    "collapseSidebar": "طي الشريط الجانبي"
   },
   "auth": {
     "username": "اسم المستخدم",

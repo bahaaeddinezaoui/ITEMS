@@ -4,6 +4,7 @@ import { purchaseOrderService, locationService, stockItemService, consumableServ
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, RefreshCw, Package, Droplets, MapPin, ArrowRightLeft, Loader2, AlertCircle, CheckCircle2, Send } from 'lucide-react';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const getBilingualItemName = (item, kind, lang) => {
     const name = kind === 'stock_item' ? item.stock_item_name : item.consumable_name;
@@ -437,9 +438,8 @@ const PurchaseOrderMoveItemsPage = () => {
             )}
 
             {loading ? (
-                <div className="loading-state">
-                    <Loader2 size={24} className="spin-icon" />
-                    <span>{t('common.loading')}</span>
+                <div style={{ padding: 'var(--space-12)' }}>
+                    <SkeletonListRows count={8} />
                 </div>
             ) : (
                 <>

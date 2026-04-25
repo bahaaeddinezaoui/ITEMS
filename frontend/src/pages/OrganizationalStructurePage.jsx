@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { organizationalStructureService, organizationalStructureRelationService, organizationalStructureTypeService } from '../services/api';
 import TranslatableInput from '../components/TranslatableInput';
 import { Search, SlidersHorizontal, ArrowUpDown, Building2, Plus, X, Pencil, Trash2, Network, ChevronDown, XCircle, Check } from 'lucide-react';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const getBilingualStructureName = (item, currentLang) => {
     const nameAr = item.structure_name_ar;
@@ -152,29 +153,29 @@ const HierarchyModal = ({
                 <div style={{ padding: '28px', background: '#0f172a' }}>
                     {hasRelation && !editingRelation ? (
                         <div style={{ background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '14px', padding: '20px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)' }}>
-                                    <Check size={24} color="white" strokeWidth={2.5} />
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '11px', color: '#86efac', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600', marginBottom: '4px' }}>{t('organizationalStructure.currentParent')}</div>
-                                    <div style={{ fontWeight: '700', color: '#f0fdf4', fontSize: '17px', letterSpacing: '-0.3px' }}>
-                                        {relations.map((relation) => {
-                                            const parentStructure = structures.find(s => s.organizational_structure_id === relation.parent_organizational_structure);
-                                            return parentStructure ? getBilingualStructureName(parentStructure, i18n.language) : '';
-                                        }).join(', ')}
-                                    </div>
-                                </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 14px rgba(34, 197, 94, 0.4)' }}>
+                                <Check size={24} color="white" strokeWidth={2.5} />
                             </div>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <button onClick={() => handleEditRelation(relations[0])} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '10px 16px', color: '#f0fdf4', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}>
-                                    <Pencil size={14} /> {t('common.change')}
-                                </button>
-                                <button onClick={() => handleDeleteRelation(relations[0].child_organizational_structure, relations[0].parent_organizational_structure)} style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '10px', padding: '10px 14px', color: '#fca5a5', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; }}>
-                                    <Trash2 size={14} />
-                                </button>
+                            <div>
+                                <div style={{ fontSize: '11px', color: '#86efac', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: '600', marginBottom: '4px' }}>{t('organizationalStructure.currentParent')}</div>
+                                <div style={{ fontWeight: '700', color: '#f0fdf4', fontSize: '17px', letterSpacing: '-0.3px' }}>
+                                    {relations.map((relation) => {
+                                        const parentStructure = structures.find(s => s.organizational_structure_id === relation.parent_organizational_structure);
+                                        return parentStructure ? getBilingualStructureName(parentStructure, i18n.language) : '';
+                                    }).join(', ')}
+                                </div>
                             </div>
                         </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            <button onClick={() => handleEditRelation(relations[0])} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '10px 16px', color: '#f0fdf4', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}>
+                                <Pencil size={14} /> {t('common.change')}
+                            </button>
+                            <button onClick={() => handleDeleteRelation(relations[0].child_organizational_structure, relations[0].parent_organizational_structure)} style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '10px', padding: '10px 14px', color: '#fca5a5', fontSize: '13px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; }}>
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
+                    </div>
                     ) : null}
 
                     {(editingRelation || !hasRelation) && (
@@ -363,9 +364,8 @@ const StructuresList = ({
                 </div>
                 <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
                     {loading ? (
-                        <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
-                            <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                            <span>{t('common.loading')}</span>
+                        <div style={{ padding: 'var(--space-12)' }}>
+                            <SkeletonListRows count={8} />
                         </div>
                     ) : filteredStructures.length === 0 ? (
                         <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--color-text-muted)' }}>

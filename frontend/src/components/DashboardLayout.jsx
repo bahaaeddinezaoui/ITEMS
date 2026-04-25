@@ -2,14 +2,48 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/useTheme';
 import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
+import PageTransition from './PageTransition';
+import Iridescence from './Iridescence';
+
+const NavSection = ({ title, isSidebarCollapsed, isCollapsed, onToggle, children }) => (
+    <div className={`nav-section${isCollapsed ? ' nav-section--collapsed' : ''}`}>
+        {!isSidebarCollapsed && title && (
+            <button className="nav-section-title" onClick={onToggle} aria-expanded={!isCollapsed}>
+                {title}
+                <svg className="nav-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </button>
+        )}
+        <div className="nav-section-links">
+            <div>
+                {children}
+            </div>
+        </div>
+    </div>
+);
 
 const DashboardLayout = () => {
     const { user, logout, isSuperuser } = useAuth();
+    const { isDark } = useTheme();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [collapsedSections, setCollapsedSections] = useState(new Set(['dashboard', 'orgStructure', 'my', 'reports', 'inventory', 'maintenance']));
     const userMenuRef = useRef(null);
+
+    const toggleSection = (key) => {
+        setCollapsedSections(prev => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
+            return next;
+        });
+    };
 
     const handleLogout = () => {
         logout();
@@ -89,8 +123,16 @@ const DashboardLayout = () => {
 
     return (
         <div className="dashboard-layout">
+            <div className="dashboard-iridescence-bg" aria-hidden="true">
+                <Iridescence
+                    color={isDark ? [0.05, 0, 0.08] : [1, 1, 1]}
+                    mouseReact={false}
+                    amplitude={0.1}
+                    speed={1.0}
+                />
+            </div>
             {/* Sidebar */}
-            <aside className="sidebar">
+            <aside className={`sidebar${isSidebarCollapsed ? ' sidebar--collapsed' : ''}`}>
                 <div className="sidebar-header">
                     <div className="sidebar-logo">
                         <div className="sidebar-logo-icon">
@@ -98,77 +140,87 @@ const DashboardLayout = () => {
                                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                             </svg>
                         </div>
-                        <span className="sidebar-logo-text">EMS</span>
+                        {!isSidebarCollapsed && <span className="sidebar-logo-text">EMS</span>}
                     </div>
+                    <button
+                        className="sidebar-toggle-btn"
+                        onClick={() => setIsSidebarCollapsed(v => !v)}
+                        title={isSidebarCollapsed ? t('common.expandSidebar') : t('common.collapseSidebar')}
+                        aria-label={isSidebarCollapsed ? t('common.expandSidebar') : t('common.collapseSidebar')}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            {isSidebarCollapsed
+                                ? <polyline points="9 18 15 12 9 6" />
+                                : <polyline points="15 18 9 12 15 6" />
+                            }
+                        </svg>
+                    </button>
                 </div>
 
                 <nav className="sidebar-nav">
-                    <div className="nav-section">
-                        <span className="nav-section-title">{t('nav.dashboard')}</span>
-                        <NavLink to="/dashboard" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                    <NavSection title={t('nav.dashboard')} isSidebarCollapsed={isSidebarCollapsed} isCollapsed={!isSidebarCollapsed && collapsedSections.has('dashboard')} onToggle={() => toggleSection('dashboard')}>
+                        <NavLink to="/dashboard" end className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.dashboard') : undefined}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <rect x="3" y="3" width="7" height="7" />
                                 <rect x="14" y="3" width="7" height="7" />
                                 <rect x="14" y="14" width="7" height="7" />
                                 <rect x="3" y="14" width="7" height="7" />
                             </svg>
-                            {t('nav.dashboard')}
+                            {!isSidebarCollapsed && t('nav.dashboard')}
                         </NavLink>
-                    </div>
+                    </NavSection>
 
                     {isSuperuser && (
-                        <>
-                            <div className="nav-section">
-                                <span className="nav-section-title">{t('nav.organizationalStructure')}</span>
+                        <NavSection title={t('nav.organizationalStructure')} isSidebarCollapsed={isSidebarCollapsed} isCollapsed={!isSidebarCollapsed && collapsedSections.has('orgStructure')} onToggle={() => toggleSection('orgStructure')}>
 
-                                <NavLink to="/dashboard/organizational-structure" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/organizational-structure" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.organizationalStructure') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                         <circle cx="12" cy="7" r="4" />
                                         <path d="M3.27 6.96a3 3 0 0 1 5.46 0" />
                                         <path d="M15.27 6.96a3 3 0 0 1 5.46 0" />
                                     </svg>
-                                    {t('nav.organizationalStructure')}
+                                    {!isSidebarCollapsed && t('nav.organizationalStructure')}
                                 </NavLink>
 
-                                <NavLink to="/dashboard/persons" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/persons" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.persons') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                         <circle cx="9" cy="7" r="4" />
                                         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                     </svg>
-                                    {t('nav.persons')}
+                                    {!isSidebarCollapsed && t('nav.persons')}
                                 </NavLink>
 
-                                <NavLink to="/dashboard/user-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/user-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.userApproval') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                                         <circle cx="9" cy="7" r="4" />
                                         <polyline points="16 11 18 13 22 9" />
                                     </svg>
-                                    {t('nav.userApproval')}
+                                    {!isSidebarCollapsed && t('nav.userApproval')}
                                 </NavLink>
 
-                                <NavLink to="/dashboard/locations" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/locations" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.locations') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <rect x="3" y="3" width="18" height="18" rx="2" />
                                         <path d="M9 3v18M9 9h12M9 15h12" />
                                     </svg>
-                                    {t('nav.locations')}
+                                    {!isSidebarCollapsed && t('nav.locations')}
                                 </NavLink>
 
-                                <NavLink to="/dashboard/positions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/positions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.positions') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                         <circle cx="9" cy="7" r="4" />
                                         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
                                         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                                     </svg>
-                                    {t('nav.positions')}
+                                    {!isSidebarCollapsed && t('nav.positions')}
                                 </NavLink>
 
-                                <NavLink to="/dashboard/position-role-mappings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/position-role-mappings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.positionRoleLinks') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M8 7h8" />
                                         <path d="M8 12h8" />
@@ -177,86 +229,82 @@ const DashboardLayout = () => {
                                         <circle cx="20" cy="12" r="1.5" />
                                         <circle cx="4" cy="17" r="1.5" />
                                     </svg>
-                                    {t('nav.positionRoleLinks')}
+                                    {!isSidebarCollapsed && t('nav.positionRoleLinks')}
                                 </NavLink>
-                            </div>
-                        </>
+                        </NavSection>
                     )}
 
-                    <div className="nav-section">
-                        <span className="nav-section-title">{t('navSections.my')}</span>
-                        <NavLink to="/dashboard/my-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                    <NavSection title={t('navSections.my')} isSidebarCollapsed={isSidebarCollapsed} isCollapsed={!isSidebarCollapsed && collapsedSections.has('my')} onToggle={() => toggleSection('my')}>
+                        <NavLink to="/dashboard/my-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.myItems') : undefined}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                 <circle cx="12" cy="7" r="4" />
                             </svg>
-                            {t('nav.myItems')}
+                            {!isSidebarCollapsed && t('nav.myItems')}
                         </NavLink>
-                        <NavLink to="/dashboard/my-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                        <NavLink to="/dashboard/my-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.myReports') : undefined}>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M3 3h18v18H3z" />
                                 <path d="M7 7h10" />
                                 <path d="M7 12h10" />
                                 <path d="M7 17h6" />
                             </svg>
-                            {t('nav.myReports')}
+                            {!isSidebarCollapsed && t('nav.myReports')}
                         </NavLink>
-                    </div>
+                    </NavSection>
 
                     {(canViewProblemReports || canViewIncidentReports) && (
-                        <div className="nav-section">
-                            <span className="nav-section-title">{t('navSections.reports')}</span>
+                        <NavSection title={t('navSections.reports')} isSidebarCollapsed={isSidebarCollapsed} isCollapsed={!isSidebarCollapsed && collapsedSections.has('reports')} onToggle={() => toggleSection('reports')}>
                             {canViewProblemReports && (
-                                <NavLink to="/dashboard/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.reports') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M3 3h18v18H3z" />
                                         <path d="M7 7h10" />
                                         <path d="M7 12h10" />
                                         <path d="M7 17h6" />
                                     </svg>
-                                    {t('nav.reports')}
+                                    {!isSidebarCollapsed && t('nav.reports')}
                                 </NavLink>
                             )}
                             {canViewIncidentReports && (
-                                <NavLink to="/dashboard/incident-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/incident-reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('assetIncidentReports.title') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M3 3h18v18H3z" />
                                         <path d="M7 7h10" />
                                         <path d="M7 12h10" />
                                         <path d="M7 17h6" />
                                     </svg>
-                                    {t('assetIncidentReports.title')}
+                                    {!isSidebarCollapsed && t('assetIncidentReports.title')}
                                 </NavLink>
                             )}
-                        </div>
+                        </NavSection>
                     )}
 
                     {(isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible || isAssetResponsible || isDirectorAdminSupport || isProtectionSecurityBureauChief || isSchoolHeadquarter || isMaintenanceChief || isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
-                        <div className="nav-section">
-                            <span className="nav-section-title">{t('navSections.inventory')}</span>
+                        <NavSection title={t('navSections.inventory')} isSidebarCollapsed={isSidebarCollapsed} isCollapsed={!isSidebarCollapsed && collapsedSections.has('inventory')} onToggle={() => toggleSection('inventory')}>
 
                             {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief || isMaintenanceChief || isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
-                                <NavLink to="/dashboard/location-inventory" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/location-inventory" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.locationInventory') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
                                         <circle cx="12" cy="9" r="2.5" />
                                     </svg>
-                                    {t('nav.locationInventory')}
+                                    {!isSidebarCollapsed && t('nav.locationInventory')}
                                 </NavLink>
                             )}
 
                             {(isSuperuser || isExploitationChief || isItBureauChief || isAssetResponsible) && (
-                                <NavLink to="/dashboard/assets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/assets" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.assets') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
                                         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
                                     </svg>
-                                    {t('nav.assets')}
+                                    {!isSidebarCollapsed && t('nav.assets')}
                                 </NavLink>
                             )}
 
                             {canViewPurchaseOrders && (
-                                <NavLink to="/dashboard/purchase-orders" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/purchase-orders" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.purchaseOrders') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M9 12h6" />
                                         <path d="M9 16h6" />
@@ -264,32 +312,32 @@ const DashboardLayout = () => {
                                         <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                         <path d="M15 2v4h4" />
                                     </svg>
-                                    {t('nav.purchaseOrders')}
+                                    {!isSidebarCollapsed && t('nav.purchaseOrders')}
                                 </NavLink>
                             )}
 
                             {(isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible) && (
                                 <>
-                                    <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <NavLink to="/dashboard/stock-items" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.stockItems') : undefined}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <circle cx="9" cy="21" r="1" />
                                             <circle cx="20" cy="21" r="1" />
                                             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                                         </svg>
-                                        {t('nav.stockItems')}
+                                        {!isSidebarCollapsed && t('nav.stockItems')}
                                     </NavLink>
 
-                                    <NavLink to="/dashboard/consumables" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <NavLink to="/dashboard/consumables" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.consumables') : undefined}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                                         </svg>
-                                        {t('nav.consumables')}
+                                        {!isSidebarCollapsed && t('nav.consumables')}
                                     </NavLink>
                                 </>
                             )}
 
                             {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
-                                <NavLink to="/dashboard/attribution-orders" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/attribution-orders" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.attributionOrders') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                                         <polyline points="14 2 14 8 20 8" />
@@ -297,12 +345,12 @@ const DashboardLayout = () => {
                                         <line x1="16" y1="17" x2="8" y2="17" />
                                         <polyline points="10 9 9 9 8 9" />
                                     </svg>
-                                    {t('nav.attributionOrders')}
+                                    {!isSidebarCollapsed && t('nav.attributionOrders')}
                                 </NavLink>
                             )}
 
                             {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
-                                <NavLink to="/dashboard/company-asset-requests" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/company-asset-requests" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.companyAssetRequests') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M9 12h6" />
                                         <path d="M9 16h6" />
@@ -310,24 +358,24 @@ const DashboardLayout = () => {
                                         <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                         <path d="M15 2v4h4" />
                                     </svg>
-                                    {t('nav.companyAssetRequests')}
+                                    {!isSidebarCollapsed && t('nav.companyAssetRequests')}
                                 </NavLink>
                             )}
 
                             {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
-                                <NavLink to="/dashboard/administrative-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/administrative-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.administrativeCertificates') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                                         <polyline points="14 2 14 8 20 8" />
                                         <path d="M8 13h8" />
                                         <path d="M8 17h8" />
                                     </svg>
-                                    {t('nav.administrativeCertificates')}
+                                    {!isSidebarCollapsed && t('nav.administrativeCertificates')}
                                 </NavLink>
                             )}
 
                             {(isSuperuser || isExploitationChief || isItBureauChief || isStockConsumableResponsible) && (
-                                <NavLink to="/dashboard/stock-consumable-destruction-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/stock-consumable-destruction-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.stockConsumableDestructionCertificates') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M3 6h18" />
                                         <path d="M8 6V4h8v2" />
@@ -335,12 +383,12 @@ const DashboardLayout = () => {
                                         <path d="M10 11v6" />
                                         <path d="M14 11v6" />
                                     </svg>
-                                    {t('nav.stockConsumableDestructionCertificates')}
+                                    {!isSidebarCollapsed && t('nav.stockConsumableDestructionCertificates')}
                                 </NavLink>
                             )}
 
                             {(isSuperuser || isExploitationChief || isItBureauChief || isAssetResponsible) && (
-                                <NavLink to="/dashboard/asset-destruction-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/asset-destruction-certificates" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('assetDestructionCertificates.title') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M3 6h18" />
                                         <path d="M8 6V4h8v2" />
@@ -348,21 +396,21 @@ const DashboardLayout = () => {
                                         <path d="M10 11v6" />
                                         <path d="M14 11v6" />
                                     </svg>
-                                    {t('assetDestructionCertificates.title')}
+                                    {!isSidebarCollapsed && t('assetDestructionCertificates.title')}
                                 </NavLink>
                             )}
 
                             {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
-                                <NavLink to="/dashboard/external-maintenances" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/external-maintenances" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.externalMaintenances') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
                                     </svg>
-                                    {t('nav.externalMaintenances')}
+                                    {!isSidebarCollapsed && t('nav.externalMaintenances')}
                                 </NavLink>
                             )}
 
                             {(isSuperuser || isAssetResponsible || isExploitationChief || isItBureauChief) && (
-                                <NavLink to="/dashboard/asset-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/asset-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.assetMovementsApprovals') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M9 12h6" />
                                         <path d="M9 16h6" />
@@ -370,7 +418,7 @@ const DashboardLayout = () => {
                                         <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                         <path d="M15 2v4h4" />
                                     </svg>
-                                    {t('nav.assetMovementsApprovals')}
+                                    {!isSidebarCollapsed && t('nav.assetMovementsApprovals')}
                                 </NavLink>
                             )}
 
@@ -378,17 +426,17 @@ const DashboardLayout = () => {
 
                             {(isSuperuser || isStockConsumableResponsible || isExploitationChief) && (
                                 <>
-                                    <NavLink to="/dashboard/stock-consumables-inventory" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <NavLink to="/dashboard/stock-consumables-inventory" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.stockConsumablesInventory') : undefined}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <rect x="3" y="3" width="7" height="7" />
                                             <rect x="14" y="3" width="7" height="7" />
                                             <rect x="14" y="14" width="7" height="7" />
                                             <rect x="3" y="14" width="7" height="7" />
                                         </svg>
-                                        {t('nav.stockConsumablesInventory')}
+                                        {!isSidebarCollapsed && t('nav.stockConsumablesInventory')}
                                     </NavLink>
 
-                                    <NavLink to="/dashboard/item-requests-inbox" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <NavLink to="/dashboard/item-requests-inbox" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.itemRequestsInbox') : undefined}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M9 12h6" />
                                             <path d="M9 16h6" />
@@ -396,10 +444,10 @@ const DashboardLayout = () => {
                                             <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                             <path d="M15 2v4h4" />
                                         </svg>
-                                        {t('nav.itemRequestsInbox')}
+                                        {!isSidebarCollapsed && t('nav.itemRequestsInbox')}
                                     </NavLink>
 
-                                    <NavLink to="/dashboard/included-item-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                    <NavLink to="/dashboard/included-item-movements-approval" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.includedItemsApprovals') : undefined}>
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M9 12h6" />
                                             <path d="M9 16h6" />
@@ -407,35 +455,34 @@ const DashboardLayout = () => {
                                             <path d="M7 22h10a2 2 0 0 0 2-2V6l-4-4H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
                                             <path d="M15 2v4h4" />
                                         </svg>
-                                        {t('nav.includedItemsApprovals')}
+                                        {!isSidebarCollapsed && t('nav.includedItemsApprovals')}
                                     </NavLink>
                                 </>
                             )}
-                        </div>
+                        </NavSection>
                     )}
 
                     {(isSuperuser || user?.roles?.some(r =>
                         ['maintenance_chief', 'it_maintenance_technician', 'it_bureau_chief', 'network_maintenance_technician'].includes(r.role_code)
                     )) && (
-                        <div className="nav-section">
-                            <span className="nav-section-title">{t('navSections.maintenance')}</span>
-                            <NavLink to="/dashboard/maintenances" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                        <NavSection title={t('navSections.maintenance')} isSidebarCollapsed={isSidebarCollapsed} isCollapsed={!isSidebarCollapsed && collapsedSections.has('maintenance')} onToggle={() => toggleSection('maintenance')}>
+                            <NavLink to="/dashboard/maintenances" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.maintenances') : undefined}>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
                                 </svg>
-                                {t('nav.maintenances')}
+                                {!isSidebarCollapsed && t('nav.maintenances')}
                             </NavLink>
                             {(isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
-                                <NavLink to="/dashboard/my-maintenance-stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/my-maintenance-stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.myMaintenanceStats') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                                         <circle cx="12" cy="7" r="4" />
                                     </svg>
-                                    {t('nav.myMaintenanceStats')}
+                                    {!isSidebarCollapsed && t('nav.myMaintenanceStats')}
                                 </NavLink>
                             )}
                             {(isSuperuser || isMaintenanceChief) && (
-                                <NavLink to="/dashboard/asset-maintenance-history" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/asset-maintenance-history" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('assetMaintenanceHistory.title') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <rect x="3" y="4" width="18" height="16" rx="2" />
                                         <path d="M8 2v4M16 2v4" />
@@ -443,24 +490,35 @@ const DashboardLayout = () => {
                                         <path d="M8 14h8" />
                                         <path d="M8 18h6" />
                                     </svg>
-                                    {t('assetMaintenanceHistory.title')}
+                                    {!isSidebarCollapsed && t('assetMaintenanceHistory.title')}
                                 </NavLink>
                             )}
                             {(isMaintenanceChief || isItBureauChief || isSuperuser) && (
-                                <NavLink to="/dashboard/maintenance-stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                                <NavLink to="/dashboard/maintenance-stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.maintenanceStats') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M18 20V10" />
                                         <path d="M12 20V4" />
                                         <path d="M6 20v-6" />
                                     </svg>
-                                    {t('nav.maintenanceStats')}
+                                    {!isSidebarCollapsed && t('nav.maintenanceStats')}
                                 </NavLink>
                             )}
-                        </div>
+                        </NavSection>
                     )}
                 </nav>
 
-                <div className="sidebar-footer">
+                <div className="sidebar-footer" style={{
+                    padding: 'var(--space-3) var(--space-4)',
+                    borderTop: '1px solid var(--color-border)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--space-3)',
+                }}>
+                    {!isSidebarCollapsed && (
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <ThemeToggle />
+                        </div>
+                    )}
                     <div
                         className="user-info"
                         ref={userMenuRef}
@@ -477,11 +535,13 @@ const DashboardLayout = () => {
                         }}
                     >
                         <div className="user-avatar">{getInitials()}</div>
-                        <div className="user-details">
-                            <div className="user-name">{getFullName()}</div>
-                            <div className="user-role">{getRoleLabel()}</div>
-                        </div>
-                        {isUserMenuOpen && (
+                        {!isSidebarCollapsed && (
+                            <div className="user-details">
+                                <div className="user-name">{getFullName()}</div>
+                                <div className="user-role">{getRoleLabel()}</div>
+                            </div>
+                        )}
+                        {!isSidebarCollapsed && isUserMenuOpen && (
                             <div
                                 className="user-menu"
                                 role="menu"
@@ -547,7 +607,9 @@ const DashboardLayout = () => {
 
             {/* Main Content */}
             <main className="main-content">
-                <Outlet />
+                <PageTransition>
+                    <Outlet />
+                </PageTransition>
             </main>
         </div>
     );

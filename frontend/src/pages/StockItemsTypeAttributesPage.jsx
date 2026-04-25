@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
 import { stockItemAttributeDefinitionService, stockItemTypeAttributeService, stockItemTypeService } from '../services/api';
 
@@ -63,7 +64,7 @@ const StockItemsTypeAttributesPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.stock_item_attribute_definition) {
-            setError(t('stockItemTypeAttributes.selectDefinition'));
+            setError(t('stockItemTypeAttributes.selectAttributeDefinition'));
             return;
         }
         setSaving(true);
@@ -103,6 +104,16 @@ const StockItemsTypeAttributesPage = () => {
     const availableDefinitions = useMemo(() => {
         return attributeDefinitions.filter(d => !usedDefinitionIds.has(d.stock_item_attribute_definition_id));
     }, [attributeDefinitions, usedDefinitionIds]);
+
+    if (loading) {
+        return (
+            <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+                    <SkeletonListRows count={6} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
@@ -200,38 +211,31 @@ const StockItemsTypeAttributesPage = () => {
                 )}
 
                 <div style={{ overflowY: 'auto', flex: 1, padding: 'var(--space-4)' }}>
-                    {loading && <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>}
-                    {!loading && typeAttributes.length === 0 && (
+                    {typeAttributes.length === 0 ? (
                         <div style={{ color: 'var(--color-text-secondary)' }}>{t('stockItemTypeAttributes.noAttributes')}</div>
-                    )}
-
-                    {typeAttributes.map(attr => (
-                        <div
-                            key={attr.stock_item_attribute_definition}
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: 'var(--space-2) 0',
-                                borderBottom: '1px solid var(--color-border)'
-                            }}
-                        >
-                            <div>
-                                <div style={{ fontWeight: '500' }}>{attr.definition?.description || `${t('stockItemTypeAttributes.definition')} ${attr.stock_item_attribute_definition}`}</div>
-                                <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
-                                    {(attr.definition?.data_type || 'n/a')}{attr.definition?.unit ? ` • ${attr.definition.unit}` : ''}
-                                    {attr.is_mandatory ? ` • ${t('stockItemTypeAttributes.mandatory').toLowerCase()}` : ''}
-                                    {attr.default_value ? ` • ${t('stockItemTypeAttributes.defaultLabel')} ${attr.default_value}` : ''}
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => handleDelete(attr.stock_item_attribute_definition)}
-                                style={{ border: 'none', background: 'none', color: '#999', cursor: 'pointer' }}
+                    ) : (
+                        typeAttributes.map(attr => (
+                            <div
+                                key={attr.stock_item_attribute_definition}
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: 'var(--space-3)',
+                                    marginBottom: 'var(--space-2)',
+                                    background: 'var(--color-bg-secondary)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    border: '1px solid var(--color-border)'
+                                }}
                             >
-                                &times;
-                            </button>
-                        </div>
-                    ))}
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ fontWeight: '600' }}>{attr.definition?.description || `${t('stockItemTypeAttributes.attribute')} #${attr.stock_item_attribute_definition}`}</div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{attr.definition?.data_type}{attr.definition?.unit ? ` (${attr.definition.unit})` : ''}{attr.is_mandatory ? ` · ${t('stockItemTypeAttributes.mandatory')}` : ''}</div>
+                                </div>
+                                <button onClick={() => handleDelete(attr.stock_item_attribute_definition)} style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-error)' }} title={t('common.delete')}><SlidersHorizontal size={14} /></button>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

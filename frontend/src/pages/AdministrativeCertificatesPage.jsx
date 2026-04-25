@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import {
     administrativeCertificateService,
     attributionOrderService,
@@ -248,7 +249,15 @@ const AdministrativeCertificatesPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    if (loading) return <div className="loading">{t('common.loading')}</div>;
+    if (loading) {
+        return (
+            <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+                    <SkeletonListRows count={6} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="administrative-certificates-page">

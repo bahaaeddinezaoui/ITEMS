@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
 import { assetAttributeDefinitionService, assetTypeAttributeService, assetTypeService } from '../services/api';
 
@@ -200,38 +201,33 @@ const AssetsTypeAttributesPage = () => {
                 )}
 
                 <div style={{ overflowY: 'auto', flex: 1, padding: 'var(--space-4)' }}>
-                    {loading && <div style={{ color: 'var(--color-text-secondary)' }}>{t('common.loading')}</div>}
-                    {!loading && typeAttributes.length === 0 && (
+                    {loading ? (
+                        <SkeletonListRows count={6} />
+                    ) : typeAttributes.length === 0 ? (
                         <div style={{ color: 'var(--color-text-secondary)' }}>{t('assetsTypeAttributes.noAttributes')}</div>
-                    )}
-
-                    {typeAttributes.map(attr => (
-                        <div
-                            key={attr.asset_attribute_definition}
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                padding: 'var(--space-2) 0',
-                                borderBottom: '1px solid var(--color-border)'
-                            }}
-                        >
-                            <div>
-                                <div style={{ fontWeight: '500' }}>{attr.definition?.description || `Definition ${attr.asset_attribute_definition}`}</div>
-                                <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-xs)' }}>
-                                    {(attr.definition?.data_type || 'n/a')}{attr.definition?.unit ? ` • ${attr.definition.unit}` : ''}
-                                    {attr.is_mandatory ? ` • ${t('common.mandatory').toLowerCase()}` : ''}
-                                    {attr.default_value ? ` • ${t('assetsTypeAttributes.default')}: ${attr.default_value}` : ''}
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => handleDelete(attr.asset_attribute_definition)}
-                                style={{ border: 'none', background: 'none', color: '#999', cursor: 'pointer' }}
+                    ) : (
+                        typeAttributes.map(attr => (
+                            <div
+                                key={attr.asset_attribute_definition}
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    padding: 'var(--space-3)',
+                                    marginBottom: 'var(--space-2)',
+                                    background: 'var(--color-bg-secondary)',
+                                    borderRadius: 'var(--radius-sm)',
+                                    border: '1px solid var(--color-border)'
+                                }}
                             >
-                                &times;
-                            </button>
-                        </div>
-                    ))}
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div style={{ fontWeight: '600' }}>{attr.description || `${t('assetsTypeAttributes.attribute')} #${attr.asset_attribute_definition}`}</div>
+                                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{attr.data_type}{attr.unit ? ` (${attr.unit})` : ''}{attr.is_mandatory ? ` · ${t('assetsTypeAttributes.mandatory')}` : ''}</div>
+                                </div>
+                                <button onClick={() => handleDelete(attr.asset_attribute_definition)} style={{ padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-error)' }} title={t('common.delete')}><SlidersHorizontal size={14} /></button>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { positionService, positionRoleMappingService, roleService } from '../services/api';
 import { Search, ArrowUpDown, Briefcase, Plus, X, Pencil, Trash2, ChevronDown, XCircle, Shield } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const getBilingualPositionLabel = (item, currentLang) => {
     const labelAr = item.position_label_ar;
@@ -407,9 +408,8 @@ const PositionsPage = () => {
                 </div>
                 <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
                     {loading ? (
-                        <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
-                            <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                            <span>{t('common.loading')}</span>
+                        <div style={{ padding: 'var(--space-12)' }}>
+                            <SkeletonListRows count={8} />
                         </div>
                     ) : filteredPositions.length === 0 ? (
                         <div style={{ padding: 'var(--space-12)', textAlign: 'center', color: 'var(--color-text-muted)' }}>

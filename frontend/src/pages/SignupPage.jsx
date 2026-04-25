@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authService } from '../services/api';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import { SkeletonCardList } from '../components/SkeletonCard';
 import {
     Eye, EyeOff, Check, X, UserPlus,
     User, Building2, Shield, ArrowLeft, ArrowRight,
@@ -155,6 +156,16 @@ const SignupPage = () => {
             setLoading(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)' }}>
+                    <SkeletonCardList count={4} cardLines={2} />
+                </div>
+            </div>
+        );
+    }
 
     if (success) {
         return (

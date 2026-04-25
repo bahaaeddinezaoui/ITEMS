@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { assetService, personService, problemReportService, locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { SkeletonCardList } from '../components/SkeletonCard';
 import { BarChart3 } from 'lucide-react';
 
 const ReportsPage = () => {
@@ -351,9 +352,8 @@ const ReportsPage = () => {
 
                 <div style={{ padding: 'var(--space-4)' }}>
                     {loading ? (
-                        <div className="empty-state">
-                            <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('common.loading')}</p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+                            <SkeletonCardList count={6} cardLines={3} gap="var(--space-4)" bodyPadding="var(--space-6)" style={{ display: 'contents' }} />
                         </div>
                     ) : filteredReports.length === 0 ? (
                         <div className="empty-state">

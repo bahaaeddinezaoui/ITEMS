@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import {
     Search,
     SlidersHorizontal,
@@ -516,7 +517,15 @@ const AttributionOrdersPage = () => {
         }
     };
 
-    if (loading) return <div className="loading">{t('common.loading')}</div>;
+    if (loading) {
+        return (
+            <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+                    <SkeletonListRows count={6} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>

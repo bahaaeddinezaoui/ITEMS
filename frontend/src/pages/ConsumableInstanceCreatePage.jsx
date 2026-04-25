@@ -14,6 +14,7 @@ import {
     Box,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { SkeletonCard } from '../components/SkeletonCard';
 import { consumableModelService, consumableService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 
@@ -224,10 +225,7 @@ const ConsumableInstanceCreatePage = () => {
                 </div>
                 <div className="card-body" style={{ padding: 'var(--space-5) var(--space-6)' }}>
                     {loading ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', color: 'var(--color-text-muted)' }}>
-                            <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                            {t('common.loading')}
-                        </div>
+                        <SkeletonCard header={false} lines={4} />
                     ) : model ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
                             <div style={{

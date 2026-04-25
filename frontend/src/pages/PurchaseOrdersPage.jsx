@@ -36,6 +36,7 @@ import {
 import { purchaseOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { SkeletonKanban, SkeletonCardList } from '../components/SkeletonCard';
 
 const formatDateTime = (dt) => {
     if (!dt) return '—';
@@ -548,9 +549,8 @@ const PurchaseOrdersPage = () => {
 
             {/* Main Content */}
             {loading ? (
-                <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
-                    <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                    <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('poOrders.loadingOrders')}</span>
+                <div style={{ padding: 'var(--space-16)' }}>
+                    <SkeletonKanban columns={3} cardsPerColumn={4} />
                 </div>
             ) : filteredOrders.length === 0 ? (
                 <div style={{
@@ -832,9 +832,8 @@ const PurchaseOrdersPage = () => {
                             )}
 
                             {deliveryNoteLoading ? (
-                                <div className="loading-state" style={{ padding: 'var(--space-10) 0' }}>
-                                    <div className="loading-spinner" style={{ width: '36px', height: '36px' }}></div>
-                                    <span style={{ marginTop: 'var(--space-4)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>{t('poOrders.fetchingDetails')}</span>
+                                <div style={{ padding: 'var(--space-8) 0' }}>
+                                    <SkeletonCardList count={2} cardLines={2} gap="var(--space-4)" />
                                 </div>
                             ) : deliveryNoteInfo?.exists ? (
                                 <div>
@@ -1055,9 +1054,8 @@ const PurchaseOrdersPage = () => {
                             )}
 
                             {invoiceLoading ? (
-                                <div className="loading-state">
-                                    <div className="loading-spinner"></div>
-                                    <span>{t('poOrders.fetchingInvoice')}</span>
+                                <div style={{ padding: 'var(--space-4) 0' }}>
+                                    <SkeletonCardList count={2} cardLines={2} gap="var(--space-4)" />
                                 </div>
                             ) : invoiceInfo?.exists ? (
                                 <div className="form">
@@ -1164,9 +1162,8 @@ const PurchaseOrdersPage = () => {
                             )}
 
                             {acceptanceReportLoading ? (
-                                <div className="loading-state">
-                                    <div className="loading-spinner"></div>
-                                    <span>{t('poOrders.fetchingReport')}</span>
+                                <div style={{ padding: 'var(--space-4) 0' }}>
+                                    <SkeletonCardList count={2} cardLines={2} gap="var(--space-4)" />
                                 </div>
                             ) : acceptanceReportInfo?.exists ? (
                                 <>

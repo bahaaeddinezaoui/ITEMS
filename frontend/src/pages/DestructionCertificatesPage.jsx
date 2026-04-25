@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import {
     Shield,
     FileText,
@@ -24,6 +24,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { SkeletonCardList } from '../components/SkeletonCard';
 
 const DestructionCertificatesPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -223,9 +224,14 @@ const DestructionCertificatesPage = () => {
 
     if (loading) {
         return (
-            <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
-                <Loader2 size={28} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
-                <span>{t('common.loading')}</span>
+            <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                <div className="page-header">
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Shield size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('destructionCertificates.title')}</h1>
+                    <p className="page-subtitle">{t('destructionCertificates.subtitle')}</p>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-4)' }}>
+                    <SkeletonListRows count={6} />
+                </div>
             </div>
         );
     }

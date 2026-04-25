@@ -17,6 +17,7 @@ import {
     assetAssignmentService,
     authService
 } from '../services/api';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const AssetsPage = () => {
     const { t, i18n } = useTranslation();
@@ -1024,9 +1025,8 @@ const AssetsPage = () => {
                         {/* Asset List */}
                         <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
                             {loading ? (
-                                <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
-                                    <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                                    <span>{t('assets.loading', 'Loading...')}</span>
+                                <div style={{ padding: 'var(--space-12)' }}>
+                                    <SkeletonListRows count={8} />
                                 </div>
                             ) : filteredAssets.length === 0 ? (
                                 <div className="empty-state" style={{ padding: 'var(--space-12)' }}>

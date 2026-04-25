@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import { assetService, assetTypeService, assetBrandService, assetModelService, maintenanceService, personService, locationService, maintenanceTypicalStepService, externalMaintenanceTypicalStepService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SearchableSelect from '../components/SearchableSelect';
@@ -32,6 +34,7 @@ import {
     ArrowLeft,
     ArrowRight,
 } from 'lucide-react';
+import Stepper, { Step } from '../components/Stepper';
 
 const CREATE_STEPS = [
     { key: 'asset', icon: Monitor },
@@ -55,6 +58,7 @@ const MaintenancesPage = () => {
     const [assets, setAssets] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [createStep, setCreateStep] = useState(0);
+    const [stepperDirection, setStepperDirection] = useState(0);
     const [selectedAsset, setSelectedAsset] = useState('');
     const [createDescription, setCreateDescription] = useState('');
 
@@ -76,6 +80,7 @@ const MaintenancesPage = () => {
     const [filterTechnician, setFilterTechnician] = useState('');
     const [filterStartFrom, setFilterStartFrom] = useState('');
     const [filterStartTo, setFilterStartTo] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
 
     // Asset filter states for Create Maintenance modal
     const [assetTypes, setAssetTypes] = useState([]);
@@ -427,6 +432,7 @@ const MaintenancesPage = () => {
         setFilterAssetModel('');
         setFilterAssetStatus('');
         setCreateStep(0);
+        setStepperDirection(0);
         try {
             const saved = localStorage.getItem('maintenanceCreateDestinationMode');
             if (saved && ['maintenance_room', 'asset_current', 'other'].includes(saved)) {
@@ -511,12 +517,14 @@ const MaintenancesPage = () => {
 
     const handleCreateNext = () => {
         if (validateCreateStep(createStep)) {
+            setStepperDirection(1);
             setCreateStep((prev) => Math.min(prev + 1, CREATE_STEPS.length - 1));
         }
     };
 
     const handleCreateBack = () => {
         setError('');
+        setStepperDirection(-1);
         setCreateStep((prev) => Math.max(prev - 1, 0));
     };
 
@@ -878,178 +886,225 @@ const MaintenancesPage = () => {
                             </div>
                         </div>
 
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            flexWrap: 'wrap',
-                            padding: '0.6rem',
-                            borderRadius: 'var(--radius-lg)',
-                            border: '1px solid var(--color-border)',
-                            background: 'var(--color-bg-primary)',
-                        }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', flex: '0 1 200px', maxWidth: 200 }}>
-                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                    {t('common.search', 'Search')}
-                                </span>
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.45rem',
-                                    background: 'var(--color-bg-secondary)',
-                                    border: '1px solid var(--color-border)',
-                                    borderRadius: 'var(--radius-md)',
-                                    padding: '0.4rem 0.65rem',
-                                    minHeight: 38,
-                                }}>
-                                    <Search size={14} style={{ color: 'var(--color-text-secondary)', flexShrink: 0 }} />
-                                    <input
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder={t('common.search', 'Search')}
-                                        style={{
-                                            border: 'none',
-                                            outline: 'none',
-                                            background: 'transparent',
-                                            fontSize: 'var(--font-size-sm)',
-                                            width: '100%',
-                                            minWidth: 0,
-                                            color: 'var(--color-text-primary)',
-                                        }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                    {t('common.status', 'Status')}
-                                </span>
-                                <select
-                                    className="form-input"
-                                    style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', width: 'auto', minWidth: 170, minHeight: 38 }}
-                                    value={filterStatus}
-                                    onChange={(e) => setFilterStatus(e.target.value)}
-                                    title={t('common.status', 'Status')}
-                                >
-                                    <option value="">{t('common.all', 'All')}</option>
-                                    {statusOptions.map((s) => (
-                                        <option key={s} value={s}>{translateMaintenanceStatus(s)}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                    {t('maintenances.technician', 'Technician')}
-                                </span>
-                                <select
-                                    className="form-input"
-                                    style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', width: 'auto', minWidth: 200, minHeight: 38 }}
-                                    value={filterTechnician}
-                                    onChange={(e) => setFilterTechnician(e.target.value)}
-                                    title={t('maintenances.technician', 'Technician')}
-                                >
-                                    <option value="">{t('common.all', 'All')}</option>
-                                    {technicianOptions.map((n) => (
-                                        <option key={n} value={n}>{n}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                    {t('maintenances.startDate', 'Start date')} ({t('common.from', 'From')})
-                                </span>
-                                <input
-                                    type="date"
-                                    className="form-input"
-                                    style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', width: 'auto', minHeight: 38, minWidth: 150 }}
-                                    value={filterStartFrom}
-                                    onChange={(e) => setFilterStartFrom(e.target.value)}
-                                    title={`${t('maintenances.startDate', 'Start date')} (${t('common.from', 'From')})`}
-                                />
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                    {t('maintenances.startDate', 'Start date')} ({t('common.to', 'To')})
-                                </span>
-                                <input
-                                    type="date"
-                                    className="form-input"
-                                    style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', width: 'auto', minHeight: 38, minWidth: 150 }}
-                                    value={filterStartTo}
-                                    onChange={(e) => setFilterStartTo(e.target.value)}
-                                    title={`${t('maintenances.startDate', 'Start date')} (${t('common.to', 'To')})`}
-                                />
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                    {t('common.sort', 'Sort')}
-                                </span>
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.35rem',
-                                    background: 'var(--color-bg-secondary)',
-                                    border: '1px solid var(--color-border)',
-                                    borderRadius: 'var(--radius-md)',
-                                    padding: '0.35rem 0.6rem',
-                                    fontSize: 'var(--font-size-xs)',
-                                    color: 'var(--color-text-secondary)',
-                                    fontWeight: 500,
-                                    minHeight: 38,
-                                }}>
-                                    <ArrowUpDown size={12} />
-                                    <select
-                                        style={{ border: 'none', background: 'transparent', fontSize: 'inherit', color: 'inherit', fontWeight: 'inherit', cursor: 'pointer', outline: 'none', padding: 0 }}
-                                        value={sortKey}
-                                        onChange={(e) => { setSortKey(e.target.value); setSortDirection('desc'); }}
-                                    >
-                                        <option value="start_datetime">{t('maintenances.startDate')}</option>
-                                        <option value="end_datetime">{t('maintenances.endDate')}</option>
-                                        <option value="maintenance_id">{t('common.id', 'ID')}</option>
-                                        <option value="asset">{t('assets.asset')}</option>
-                                        <option value="description">{t('common.description')}</option>
-                                        <option value="maintenance_status">{t('common.status')}</option>
-                                        <option value="performed_by_person_name">{t('maintenances.technician')}</option>
-                                    </select>
-                                    <button
-                                        onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
-                                        title={sortDirection === 'asc' ? t('maintenances.oldestFirst') : t('maintenances.newestFirst')}
-                                        style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', padding: 0 }}
-                                    >
-                                        {sortDirection === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {(searchQuery || filterStatus || filterTechnician || filterStartFrom || filterStartTo) && (
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-secondary"
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setFilterStatus('');
-                                        setFilterTechnician('');
-                                        setFilterStartFrom('');
-                                        setFilterStartTo('');
-                                    }}
-                                    style={{ width: 'auto', whiteSpace: 'nowrap' }}
-                                >
-                                    {t('common.clear', 'Clear')}
-                                </button>
-                            )}
-                        </div>
                     </div>
                 </div>
 
+                    {createPortal(
+                        <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                            {showFilters && (
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '0.5rem',
+                                    padding: '0.75rem',
+                                    borderRadius: 'var(--radius-lg)',
+                                    border: '1px solid var(--glass-border)',
+                                    background: 'var(--glass-bg)',
+                                    backdropFilter: 'var(--glass-backdrop)',
+                                    WebkitBackdropFilter: 'var(--glass-backdrop)',
+                                    boxShadow: 'var(--glass-shadow)',
+                                    maxWidth: 'calc(100vw - 3rem)',
+                                    minWidth: 240,
+                                }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                            {t('common.search', 'Search')}
+                                        </span>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.45rem',
+                                            background: 'var(--color-bg-secondary)',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-md)',
+                                            padding: '0.4rem 0.65rem',
+                                            minHeight: 38,
+                                        }}>
+                                            <Search size={14} style={{ color: 'var(--color-text-secondary)', flexShrink: 0 }} />
+                                            <input
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                placeholder={t('common.search', 'Search')}
+                                                style={{
+                                                    border: 'none',
+                                                    outline: 'none',
+                                                    background: 'transparent',
+                                                    fontSize: 'var(--font-size-sm)',
+                                                    width: '100%',
+                                                    minWidth: 0,
+                                                    color: 'var(--color-text-primary)',
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                            {t('common.status', 'Status')}
+                                        </span>
+                                        <select
+                                            className="form-input"
+                                            style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', minHeight: 38 }}
+                                            value={filterStatus}
+                                            onChange={(e) => setFilterStatus(e.target.value)}
+                                            title={t('common.status', 'Status')}
+                                        >
+                                            <option value="">{t('common.all', 'All')}</option>
+                                            {statusOptions.map((s) => (
+                                                <option key={s} value={s}>{translateMaintenanceStatus(s)}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                            {t('maintenances.technician', 'Technician')}
+                                        </span>
+                                        <select
+                                            className="form-input"
+                                            style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', minHeight: 38 }}
+                                            value={filterTechnician}
+                                            onChange={(e) => setFilterTechnician(e.target.value)}
+                                            title={t('maintenances.technician', 'Technician')}
+                                        >
+                                            <option value="">{t('common.all', 'All')}</option>
+                                            {technicianOptions.map((n) => (
+                                                <option key={n} value={n}>{n}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                            {t('maintenances.startDate', 'Start date')} ({t('common.from', 'From')})
+                                        </span>
+                                        <input
+                                            type="date"
+                                            className="form-input"
+                                            style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', minHeight: 38 }}
+                                            value={filterStartFrom}
+                                            onChange={(e) => setFilterStartFrom(e.target.value)}
+                                            title={`${t('maintenances.startDate', 'Start date')} (${t('common.from', 'From')})`}
+                                        />
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                            {t('maintenances.startDate', 'Start date')} ({t('common.to', 'To')})
+                                        </span>
+                                        <input
+                                            type="date"
+                                            className="form-input"
+                                            style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', minHeight: 38 }}
+                                            value={filterStartTo}
+                                            onChange={(e) => setFilterStartTo(e.target.value)}
+                                            title={`${t('maintenances.startDate', 'Start date')} (${t('common.to', 'To')})`}
+                                        />
+                                    </div>
+
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
+                                            {t('common.sort', 'Sort')}
+                                        </span>
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.35rem',
+                                            background: 'var(--color-bg-secondary)',
+                                            border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-md)',
+                                            padding: '0.35rem 0.6rem',
+                                            fontSize: 'var(--font-size-xs)',
+                                            color: 'var(--color-text-secondary)',
+                                            fontWeight: 500,
+                                            minHeight: 38,
+                                        }}>
+                                            <ArrowUpDown size={12} />
+                                            <select
+                                                style={{ border: 'none', background: 'transparent', fontSize: 'inherit', color: 'inherit', fontWeight: 'inherit', cursor: 'pointer', outline: 'none', padding: 0 }}
+                                                value={sortKey}
+                                                onChange={(e) => { setSortKey(e.target.value); setSortDirection('desc'); }}
+                                            >
+                                                <option value="start_datetime">{t('maintenances.startDate')}</option>
+                                                <option value="end_datetime">{t('maintenances.endDate')}</option>
+                                                <option value="maintenance_id">{t('common.id', 'ID')}</option>
+                                                <option value="asset">{t('assets.asset')}</option>
+                                                <option value="description">{t('common.description')}</option>
+                                                <option value="maintenance_status">{t('common.status')}</option>
+                                                <option value="performed_by_person_name">{t('maintenances.technician')}</option>
+                                            </select>
+                                            <button
+                                                onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                                                title={sortDirection === 'asc' ? t('maintenances.oldestFirst') : t('maintenances.newestFirst')}
+                                                style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', padding: 0 }}
+                                            >
+                                                {sortDirection === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {(searchQuery || filterStatus || filterTechnician || filterStartFrom || filterStartTo) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setSearchQuery('');
+                                                setFilterStatus('');
+                                                setFilterTechnician('');
+                                                setFilterStartFrom('');
+                                                setFilterStartTo('');
+                                            }}
+                                            style={{ whiteSpace: 'nowrap', padding: '0.35rem 0.75rem', fontSize: 'var(--font-size-xs)', fontWeight: 500, minHeight: 38 }}
+                                            className="btn btn-sm btn-secondary"
+                                        >
+                                            {t('common.clear', 'Clear')}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => setShowFilters(v => !v)}
+                                style={{
+                                    width: 48,
+                                    height: 48,
+                                    borderRadius: '50%',
+                                    border: 'none',
+                                    background: showFilters ? 'var(--color-accent-primary)' : 'var(--glass-bg)',
+                                    color: showFilters ? '#fff' : 'var(--color-text-primary)',
+                                    backdropFilter: showFilters ? 'none' : 'var(--glass-backdrop)',
+                                    WebkitBackdropFilter: showFilters ? 'none' : 'var(--glass-backdrop)',
+                                    boxShadow: 'var(--glass-shadow)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s ease',
+                                    position: 'relative',
+                                }}
+                                title={t('common.filters', 'Filters')}
+                            >
+                                <Settings2 size={20} />
+                                {(searchQuery || filterStatus || filterTechnician || filterStartFrom || filterStartTo) && !showFilters && (
+                                    <span style={{
+                                        position: 'absolute',
+                                        top: 2,
+                                        right: 2,
+                                        width: 8,
+                                        height: 8,
+                                        borderRadius: '50%',
+                                        background: 'var(--color-error)',
+                                        border: '2px solid var(--color-bg-secondary)',
+                                    }} />
+                                )}
+                            </button>
+                        </div>,
+                        document.body
+                    )}
+
                 <div className="card-body" style={{ padding: 0 }}>
                     {loading ? (
-                        <div className="empty-state">
-                            <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('maintenances.loading')}</p>
+                        <div style={{ padding: 'var(--space-12)' }}>
+                            <SkeletonListRows count={8} />
                         </div>
                     ) : error ? (
                         <div className="empty-state">
@@ -1080,12 +1135,15 @@ const MaintenancesPage = () => {
                                             cursor: 'pointer',
                                             transition: 'background 0.15s ease, box-shadow 0.15s ease',
                                             borderRadius: 'var(--radius-md)',
-                                            border: '1px solid var(--color-border)',
+                                            border: '1px solid var(--glass-border)',
                                             borderInlineStart: `4px solid ${statusColor}`,
-                                            background: 'var(--color-bg-primary)',
+                                            background: 'var(--glass-bg)',
+                                            backdropFilter: 'var(--glass-backdrop)',
+                                            WebkitBackdropFilter: 'var(--glass-backdrop)',
+                                            boxShadow: 'var(--glass-shadow)',
                                         }}
-                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-secondary)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--color-bg-primary)'; e.currentTarget.style.boxShadow = 'none'; }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--glass-hover-bg)'; e.currentTarget.style.borderColor = 'var(--glass-hover-border)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}
                                     >
                                         {/* Status indicator column */}
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '0.25rem', minWidth: 44, gap: '0.35rem' }}>
@@ -1369,7 +1427,7 @@ const MaintenancesPage = () => {
                             flexDirection: 'column',
                         }}
                     >
-                        <div className="modal-header" style={{ gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <div className="modal-header" style={{ gap: '0.75rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 <div style={{
                                     width: 32, height: 32, borderRadius: 'var(--radius-md)',
@@ -1380,50 +1438,6 @@ const MaintenancesPage = () => {
                                     <Wrench size={16} style={{ color: 'var(--color-primary)' }} />
                                 </div>
                                 <h3 className="modal-title" style={{ margin: 0 }}>{t('maintenances.createMaintenance')}</h3>
-                            </div>
-                            <div className="wizard-steps" style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: '2.5rem', minWidth: 200 }}>
-                                {CREATE_STEPS.map((step, index) => {
-                                    const StepIcon = step.icon;
-                                    const isActive = index === createStep;
-                                    const isCompleted = index < createStep;
-                                    return (
-                                        <div key={step.key} className="wizard-step-item" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', flex: '0 0 auto' }}>
-                                            <button
-                                                type="button"
-                                                className={`wizard-step-dot ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
-                                                onClick={() => { if (isCompleted) { setError(''); setCreateStep(index); } }}
-                                                disabled={!isCompleted && !isActive}
-                                                style={{
-                                                    width: 28, height: 28, borderRadius: '50%',
-                                                    border: `2px solid ${isActive ? 'var(--color-primary)' : isCompleted ? 'var(--color-success)' : 'var(--color-border)'}`,
-                                                    background: isActive ? 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.1)' : isCompleted ? 'rgba(16, 185, 129, 0.15)' : 'var(--color-bg-secondary)',
-                                                    color: isActive ? 'var(--color-primary)' : isCompleted ? 'var(--color-success)' : 'var(--color-text-secondary)',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    cursor: (isCompleted || isActive) ? 'pointer' : 'default',
-                                                    padding: 0, fontSize: 0, transition: 'all 0.2s ease',
-                                                }}
-                                            >
-                                                {isCompleted ? <Check size={14} strokeWidth={3} /> : <StepIcon size={14} />}
-                                            </button>
-                                            <span style={{
-                                                fontSize: '0.65rem', fontWeight: 600, marginTop: 4,
-                                                color: isActive ? 'var(--color-primary)' : isCompleted ? 'var(--color-success)' : 'var(--color-text-secondary)',
-                                                whiteSpace: 'nowrap',
-                                            }}>
-                                                {t(`maintenances.createStep${step.key.charAt(0).toUpperCase()}${step.key.slice(1)}`)}
-                                            </span>
-                                            {index < CREATE_STEPS.length - 1 && (
-                                                <div style={{
-                                                    position: 'absolute', top: 14,
-                                                    left: i18n.language === 'ar' ? undefined : 'calc(50% + 14px)',
-                                                    right: i18n.language === 'ar' ? 'calc(50% + 14px)' : undefined,
-                                                    width: '2.5rem', height: 2,
-                                                    background: isCompleted ? 'rgba(16, 185, 129, 0.4)' : 'var(--color-border)',
-                                                }} />
-                                            )}
-                                        </div>
-                                    );
-                                })}
                             </div>
                             <button className="modal-close" onClick={() => !submitting && setShowCreateModal(false)}>
                                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1440,7 +1454,42 @@ const MaintenancesPage = () => {
                                         {error}
                                     </div>
                                 )}
-                                {createStep === 0 && (
+                                <Stepper
+                                    step={createStep + 1}
+                                    direction={stepperDirection}
+                                    onStepChange={(newStep, dir) => { setError(''); setStepperDirection(dir); setCreateStep(newStep - 1); }}
+                                    onBeforeStepChange={(newStep, oldStep) => {
+                                        if (newStep > oldStep) return false;
+                                        setError('');
+                                        return true;
+                                    }}
+                                    hideFooter
+                                    disableStepIndicators={submitting}
+                                    stepCircleContainerClassName="create-maintenance-stepper"
+                                    contentClassName="create-maintenance-stepper-content"
+                                    renderStepIndicator={({ step, currentStep, onStepClick }) => {
+                                        const stepConfig = CREATE_STEPS[step - 1];
+                                        const StepIcon = stepConfig?.icon;
+                                        const isActive = step === currentStep;
+                                        const isCompleted = step < currentStep;
+                                        const status = isActive ? 'active' : isCompleted ? 'complete' : 'inactive';
+                                        return (
+                                            <div
+                                                className={`stepper-custom-step-indicator ${status}`}
+                                                onClick={() => !submitting && isCompleted && onStepClick(step)}
+                                                style={{ cursor: isCompleted && !submitting ? 'pointer' : 'default', opacity: (!isActive && !isCompleted) ? 0.5 : 1, pointerEvents: submitting ? 'none' : 'auto' }}
+                                            >
+                                                <div className={`stepper-custom-step-indicator-dot ${status}`}>
+                                                    {isCompleted ? <Check size={14} strokeWidth={3} /> : StepIcon ? <StepIcon size={14} /> : <span className="stepper-step-number">{step}</span>}
+                                                </div>
+                                                <span className={`stepper-custom-step-indicator-label ${status}`}>
+                                                    {t(`maintenances.createStep${stepConfig.key.charAt(0).toUpperCase()}${stepConfig.key.slice(1)}`)}
+                                                </span>
+                                            </div>
+                                        );
+                                    }}
+                                >
+                                <Step>
                                 <div className="wizard-step-content" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', margin: '0 auto', width: '100%', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
                                     {/* Left Column: Asset Filters */}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
@@ -1674,9 +1723,9 @@ const MaintenancesPage = () => {
                                         </div>
                                     </div>
                                 </div>
-                                )}
+                                </Step>
 
-                                {createStep === 1 && (
+                                <Step>
                                 <div className="wizard-step-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: 700, margin: '0 auto', width: '100%' }}>
                                     {/* Assignment Section */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -1766,9 +1815,9 @@ const MaintenancesPage = () => {
                                         </div>
                                     )}
                                 </div>
-                                )}
+                                </Step>
 
-                                {createStep === 2 && (
+                                <Step>
                                 <div className="wizard-step-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: 700, margin: '0 auto', width: '100%' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--font-size-xs)', fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                         <FileText size={12} />
@@ -1786,7 +1835,8 @@ const MaintenancesPage = () => {
                                         />
                                     </div>
                                 </div>
-                                )}
+                                </Step>
+                                </Stepper>
                             </div>
 
                             <div className="modal-footer" style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-4) var(--space-6)', display: 'flex', justifyContent: 'space-between' }}>

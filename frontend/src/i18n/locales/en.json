@@ -137,13 +137,19 @@
     "superuser": "Superuser",
     "profile": "Profile",
     "security": "Security",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
     "pending": "Pending",
     "timeline": "Timeline",
     "locale": "en-US",
     "selected": "Selected",
     "submitting": "Submitting...",
     "ascending": "Ascending",
-    "descending": "Descending"
+    "descending": "Descending",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar"
   },
   "auth": {
     "username": "Username",

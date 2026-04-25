@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Plus, Search, Pencil, Trash2, X, XCircle, Tag, ChevronUp, ChevronDown } from 'lucide-react';
 import { stockItemBrandService, authService } from '../services/api';
 import BrandModal from '../components/BrandModal';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const getBilingualBrandName = (item, currentLang) => {
     const nameAr = item.brand_name_ar;
@@ -260,7 +261,7 @@ const StockItemsBrandsPage = () => {
                     </h2>
                     <span style={{
                         marginLeft: 'auto',
-                        fontSize: 'var(--font-size-sm)',
+                        fontSize: 'var(--font-size-xs)',
                         color: 'var(--color-text-muted)',
                         background: 'var(--color-bg-card)',
                         padding: 'var(--space-1) var(--space-3)',
@@ -298,9 +299,8 @@ const StockItemsBrandsPage = () => {
                 {/* Brand List */}
                 <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
                     {loading ? (
-                        <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
-                            <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                            <span>{t('stockItemBrands.loading', 'Loading...')}</span>
+                        <div style={{ padding: 'var(--space-12)' }}>
+                            <SkeletonListRows count={8} />
                         </div>
                     ) : filteredBrands.length === 0 ? (
                         <div className="empty-state" style={{ padding: 'var(--space-12)' }}>

@@ -24,6 +24,7 @@ import { consumableAttributeDefinitionService, consumableTypeAttributeService, c
 import { Tag as TagIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import TranslatableInput from '../components/TranslatableInput';
+import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
 
 const getBilingualConsumableTypeLabel = (item, currentLang) => {
     const labelAr = item.consumable_type_label_ar;
@@ -318,9 +319,10 @@ const ConsumablesTypesPage = () => {
                     </div>
 
                     {loading ? (
-                        <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
-                            <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                            <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('consumablesTypes.loading')}</span>
+                        <div style={{ padding: 'var(--space-16)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+                                <SkeletonCardList count={6} cardLines={2} gap="var(--space-4)" bodyPadding="var(--space-6)" style={{ display: 'contents' }} />
+                            </div>
                         </div>
                     ) : filteredTypes.length === 0 ? (
                         <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
@@ -555,9 +557,8 @@ const ConsumablesTypesPage = () => {
 
                             {/* Attributes List */}
                             {attributesLoading ? (
-                                <div className="loading-state" style={{ padding: 'var(--space-8)' }}>
-                                    <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                                    <span>Loading attributes...</span>
+                                <div style={{ padding: 'var(--space-8)' }}>
+                                    <SkeletonListRows count={4} rowHeight={40} />
                                 </div>
                             ) : typeAttributes.length === 0 ? (
                                 <div style={{ 

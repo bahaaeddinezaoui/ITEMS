@@ -19,11 +19,11 @@ import {
     Settings,
     Image
 } from 'lucide-react';
-import { stockItemAttributeDefinitionService, stockItemTypeAttributeService, stockItemTypeService } from '../services/api';
-import { Tag as TagIcon } from 'lucide-react';
+import { stockItemTypeService, stockItemAttributeDefinitionService, stockItemTypeAttributeService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import TranslatableInput from '../components/TranslatableInput';
+import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
 
 const getBilingualStockItemTypeLabel = (item, currentLang) => {
     const labelAr = item.stock_item_type_label_ar;
@@ -364,9 +364,10 @@ const StockItemsTypesPage = () => {
                     </div>
 
                     {loading ? (
-                        <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
-                            <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                            <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('stockItemTypes.loadingTypes')}</span>
+                        <div style={{ padding: 'var(--space-16)' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+                                <SkeletonCardList count={6} cardLines={2} gap="var(--space-4)" bodyPadding="var(--space-6)" style={{ display: 'contents' }} />
+                            </div>
                         </div>
                     ) : filteredTypes.length === 0 ? (
                         <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
@@ -601,9 +602,8 @@ const StockItemsTypesPage = () => {
 
                             {/* Attributes List */}
                             {attributesLoading ? (
-                                <div className="loading-state" style={{ padding: 'var(--space-8)' }}>
-                                    <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                                    <span>{t('stockItemTypes.loadingAttributes')}</span>
+                                <div style={{ padding: 'var(--space-8)' }}>
+                                    <SkeletonListRows count={4} rowHeight={40} />
                                 </div>
                             ) : typeAttributes.length === 0 ? (
                                 <div style={{ 

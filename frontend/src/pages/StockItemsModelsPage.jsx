@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Search, Pencil, Sliders, Link2, Layers, Box, X, XCircle, Tag, Image, ChevronUp, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { stockItemAttributeDefinitionService, stockItemBrandService, stockItemModelAttributeService, stockItemModelService, stockItemTypeService, authService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const StockItemsModelsPage = () => {
     const navigate = useNavigate();
@@ -532,9 +533,8 @@ const StockItemsModelsPage = () => {
                     {/* Model List */}
                     <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
                         {loading ? (
-                            <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
-                                <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                                <span>{t('stockItemModels.loading', 'Loading...')}</span>
+                            <div style={{ padding: 'var(--space-12)' }}>
+                                <SkeletonListRows count={8} />
                             </div>
                         ) : filteredModels.length === 0 ? (
                             <div className="empty-state" style={{ padding: 'var(--space-12)' }}>

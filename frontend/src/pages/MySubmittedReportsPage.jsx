@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { problemReportService } from '../services/api';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
 
@@ -103,12 +104,9 @@ const MySubmittedReportsPage = () => {
                     <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>{t('mySubmittedReports.submittedReports')}</h2>
                 </div>
 
-                <div className="table-container">
+                <div className="card-body">
                     {loading ? (
-                        <div className="empty-state">
-                            <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                            <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('common.loading')}</p>
-                        </div>
+                        <SkeletonListRows count={6} />
                     ) : filteredReports.length === 0 ? (
                         <div className="empty-state">
                             <h3 className="empty-state-title">{t('mySubmittedReports.noReports')}</h3>

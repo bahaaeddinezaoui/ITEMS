@@ -12,6 +12,7 @@ import {
     RotateCcw,
     Activity
 } from 'lucide-react';
+import { SkeletonCardList } from '../components/SkeletonCard';
 
 const MaintenanceStatsPage = () => {
     const { t } = useTranslation();
@@ -39,9 +40,16 @@ const MaintenanceStatsPage = () => {
 
     if (loading) {
         return (
-            <div className="loading-state">
-                <div className="loading-spinner"></div>
-                <span>{t('maintenanceStats.fetchingAnalytics')}</span>
+            <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><BarChart3 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('maintenanceStats.title')}</h1>
+                        <p className="page-subtitle">{t('maintenanceStats.subtitle')}</p>
+                    </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+                    <SkeletonCardList count={6} cardLines={2} gap="var(--space-4)" style={{ display: 'contents' }} />
+                </div>
             </div>
         );
     }

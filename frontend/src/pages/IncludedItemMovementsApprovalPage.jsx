@@ -16,6 +16,7 @@ import {
 import { movementApprovalService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { SkeletonCardList } from '../components/SkeletonCard';
 
 const IncludedItemMovementsApprovalPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -210,9 +211,10 @@ const IncludedItemMovementsApprovalPage = () => {
             )}
 
             {loading ? (
-                <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
-                    <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                    <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('includedItemMovements.loadingApprovals')}</span>
+                <div style={{ padding: 'var(--space-16)' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 'var(--space-6)' }}>
+                        <SkeletonCardList count={6} cardLines={2} gap="var(--space-6)" style={{ display: 'contents' }} />
+                    </div>
                 </div>
             ) : totalPending === 0 ? (
                 <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>

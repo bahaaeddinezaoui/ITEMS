@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import { authService } from '../services/api';
 import { UserCheck, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -128,118 +129,116 @@ const UserApprovalPage = () => {
             )}
 
             {/* Loading */}
-            {loading && (
-                <div style={{ textAlign: 'center', padding: 'var(--space-8)' }}>
-                    <span className="loading-spinner" />
-                    <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-2)' }}>
-                        {t('common.loading')}
-                    </p>
+            {loading ? (
+                <div style={{ padding: 'var(--space-8)' }}>
+                    <SkeletonListRows count={5} />
                 </div>
-            )}
-
-            {/* Empty State */}
-            {!loading && pendingUsers.length === 0 && (
-                <div style={{
-                    textAlign: 'center',
-                    padding: 'var(--space-8)',
-                    background: 'var(--color-surface)',
-                    borderRadius: 'var(--radius-lg)',
-                    border: '1px solid var(--color-border)'
-                }}>
-                    <CheckCircle size={48} color="var(--color-success, #22c55e)" style={{ marginBottom: 'var(--space-4)' }} />
-                    <h3 style={{ margin: 0, marginBottom: 'var(--space-2)' }}>{t('userApproval.noPendingTitle')}</h3>
-                    <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>{t('userApproval.noPendingMessage')}</p>
-                </div>
-            )}
-
-            {/* User Cards */}
-            {!loading && pendingUsers.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                    {pendingUsers.map((user) => (
-                        <div
-                            key={user.user_id}
-                            style={{
-                                background: 'var(--color-surface)',
-                                borderRadius: 'var(--radius-lg)',
-                                border: '1px solid var(--color-border)',
-                                padding: 'var(--space-5)',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                flexWrap: 'wrap',
-                                gap: 'var(--space-4)'
-                            }}
-                        >
-                            <div style={{ flex: 1, minWidth: '250px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
-                                    <div style={{
-                                        width: '36px',
-                                        height: '36px',
-                                        background: 'var(--gradient-primary)',
-                                        borderRadius: 'var(--radius-full)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        fontWeight: '600',
-                                        fontSize: '14px'
-                                    }}>
-                                        {getDisplayName(user).charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <div style={{ fontWeight: '600', fontSize: 'var(--font-size-base)' }}>
-                                            {getDisplayName(user)}
-                                        </div>
-                                        <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                                            @{user.username}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
-                                    {user.person?.sex && (
-                                        <span>{t('signup.sex')}: {t(`signup.${user.person.sex.toLowerCase()}`)}</span>
-                                    )}
-                                    {user.role_label && (
-                                        <span>{t('signup.role')}: {user.role_label}</span>
-                                    )}
-                                    {user.position_label && (
-                                        <span>{t('signup.position')}: {user.position_label}</span>
-                                    )}
-                                    {user.created_at_datetime && (
-                                        <span>{t('userApproval.registeredOn')}: {formatDate(user.created_at_datetime)}</span>
-                                    )}
-                                </div>
-
-                                {/* Arabic name if available */}
-                                {(user.first_name_ar || user.last_name_ar) && (
-                                    <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', direction: 'rtl' }}>
-                                        {user.first_name_ar} {user.last_name_ar}
-                                    </div>
-                                )}
-                            </div>
-
-                            <button
-                                className="btn btn-primary"
-                                onClick={() => handleApprove(user.user_id)}
-                                disabled={approving === user.user_id}
-                                style={{ minWidth: '120px' }}
-                            >
-                                {approving === user.user_id ? (
-                                    <>
-                                        <span className="loading-spinner" />
-                                        {t('common.loading')}
-                                    </>
-                                ) : (
-                                    <>
-                                        <UserCheck size={16} />
-                                        {t('userApproval.approve')}
-                                    </>
-                                )}
-                            </button>
+            ) : (
+                <>
+                    {!loading && pendingUsers.length === 0 && (
+                        <div style={{
+                            textAlign: 'center',
+                            padding: 'var(--space-8)',
+                            background: 'var(--color-surface)',
+                            borderRadius: 'var(--radius-lg)',
+                            border: '1px solid var(--color-border)'
+                        }}>
+                            <CheckCircle size={48} color="var(--color-success, #22c55e)" style={{ marginBottom: 'var(--space-4)' }} />
+                            <h3 style={{ margin: 0, marginBottom: 'var(--space-2)' }}>{t('userApproval.noPendingTitle')}</h3>
+                            <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>{t('userApproval.noPendingMessage')}</p>
                         </div>
-                    ))}
-                </div>
+                    )}
+
+                    {/* User Cards */}
+                    {!loading && pendingUsers.length > 0 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                            {pendingUsers.map((user) => (
+                                <div
+                                    key={user.user_id}
+                                    style={{
+                                        background: 'var(--color-surface)',
+                                        borderRadius: 'var(--radius-lg)',
+                                        border: '1px solid var(--color-border)',
+                                        padding: 'var(--space-5)',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                        gap: 'var(--space-4)'
+                                    }}
+                                >
+                                    <div style={{ flex: 1, minWidth: '250px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
+                                            <div style={{
+                                                width: '36px',
+                                                height: '36px',
+                                                background: 'var(--gradient-primary)',
+                                                borderRadius: 'var(--radius-full)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white',
+                                                fontWeight: '600',
+                                                fontSize: '14px'
+                                            }}>
+                                                {getDisplayName(user).charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <div style={{ fontWeight: '600', fontSize: 'var(--font-size-base)' }}>
+                                                    {getDisplayName(user)}
+                                                </div>
+                                                <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
+                                                    @{user.username}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-4)', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                            {user.person?.sex && (
+                                                <span>{t('signup.sex')}: {t(`signup.${user.person.sex.toLowerCase()}`)}</span>
+                                            )}
+                                            {user.role_label && (
+                                                <span>{t('signup.role')}: {user.role_label}</span>
+                                            )}
+                                            {user.position_label && (
+                                                <span>{t('signup.position')}: {user.position_label}</span>
+                                            )}
+                                            {user.created_at_datetime && (
+                                                <span>{t('userApproval.registeredOn')}: {formatDate(user.created_at_datetime)}</span>
+                                            )}
+                                        </div>
+
+                                        {/* Arabic name if available */}
+                                        {(user.first_name_ar || user.last_name_ar) && (
+                                            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--space-1)', direction: 'rtl' }}>
+                                                {user.first_name_ar} {user.last_name_ar}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => handleApprove(user.user_id)}
+                                        disabled={approving === user.user_id}
+                                        style={{ minWidth: '120px' }}
+                                    >
+                                        {approving === user.user_id ? (
+                                            <>
+                                                <span className="loading-spinner" />
+                                                {t('common.loading')}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <UserCheck size={16} />
+                                                {t('userApproval.approve')}
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

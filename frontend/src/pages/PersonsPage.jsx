@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { authService, personService, roleService, userAccountService } from '../services/api';
 import { Search, SlidersHorizontal, ArrowUpDown, Plus, X, ChevronDown, UserPlus, Users, ShieldCheck, Edit3 } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const PersonsPage = () => {
     const { t, i18n } = useTranslation();
@@ -659,9 +660,8 @@ const PersonsPage = () => {
 
             {/* Content */}
             {loading ? (
-                <div className="empty-state">
-                    <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                    <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('persons.loading')}</p>
+                <div style={{ padding: 'var(--space-12)' }}>
+                    <SkeletonListRows count={8} />
                 </div>
             ) : error ? (
                 <div className="empty-state">
@@ -1160,9 +1160,8 @@ const PersonsPage = () => {
                         </div>
 
                         {approvalLoading ? (
-                            <div className="modal-body" style={{ textAlign: 'center', padding: 'var(--space-10)' }}>
-                                <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                                <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('persons.loadingInfo')}</p>
+                            <div className="modal-body" style={{ padding: 'var(--space-10)' }}>
+                                <SkeletonListRows count={4} />
                             </div>
                         ) : (
                             <form onSubmit={handleApprovalSubmit}>

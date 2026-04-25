@@ -9,6 +9,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Inbox } from 'lucide-react';
+import { SkeletonCardList } from '../components/SkeletonCard';
 
 const ItemRequestsInboxPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -244,7 +245,26 @@ const ItemRequestsInboxPage = () => {
         return <Navigate to="/dashboard" replace />;
     }
 
-    if (loading) return <div className="loading">{t('common.loading')}</div>;
+    if (loading) {
+        return (
+            <div className="page-container" style={{ padding: 'var(--space-6)' }}>
+                <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Inbox size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('itemRequestsInbox.title')}</h1>
+                        <p className="page-subtitle">{t('itemRequestsInbox.subtitle')}</p>
+                    </div>
+                </div>
+                <div className="card">
+                    <div className="card-header">
+                        <h2 className="card-title">{t('itemRequestsInbox.pendingRequests')}</h2>
+                    </div>
+                    <div className="card-body">
+                        <SkeletonCardList count={4} cardLines={2} gap="var(--space-4)" />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>

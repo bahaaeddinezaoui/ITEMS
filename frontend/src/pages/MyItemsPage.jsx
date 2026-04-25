@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     Box, 
@@ -21,6 +21,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { myItemsService, problemReportService, locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
 
 const MyItemsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -50,6 +51,28 @@ const MyItemsPage = () => {
     const [destinationLocationId, setDestinationLocationId] = useState('');
     const [loadingLocations, setLoadingLocations] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+
+    const tabContainerRef = useRef(null);
+    const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
+
+    const updateTabIndicator = () => {
+        if (!tabContainerRef.current) return;
+        const activeBtn = tabContainerRef.current.querySelector('[data-tab-active="true"]');
+        if (activeBtn) {
+            const containerRect = tabContainerRef.current.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            setTabIndicator({
+                left: btnRect.left - containerRect.left,
+                width: btnRect.width,
+            });
+        }
+    };
+
+    useEffect(() => {
+        updateTabIndicator();
+        window.addEventListener('resize', updateTabIndicator);
+        return () => window.removeEventListener('resize', updateTabIndicator);
+    }, [activeTab]);
 
     const isChief = useMemo(() => {
         if (isSuperuser) return true;
@@ -264,7 +287,7 @@ const MyItemsPage = () => {
                         <div style={{ 
                             width: '40px', 
                             height: '40px', 
-                            background: 'var(--color-bg-secondary)', 
+                            background: 'var(--glass-bg)', 
                             borderRadius: 'var(--radius-md)',
                             display: 'flex',
                             alignItems: 'center',
@@ -398,7 +421,7 @@ const MyItemsPage = () => {
             </div>
 
             {successMessage && (
-                <div className="success-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <div className="success-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)' }}>
                     <CheckCircle2 size={20} />
                     <span>{successMessage}</span>
                     <button onClick={() => setSuccessMessage('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
@@ -408,7 +431,7 @@ const MyItemsPage = () => {
             )}
 
             {error && (
-                <div className="error-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <div className="error-message" style={{ marginBottom: 'var(--space-6)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)' }}>
                     <XCircle size={20} />
                     <span>{error}</span>
                     <button onClick={() => setError('')} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
@@ -417,78 +440,113 @@ const MyItemsPage = () => {
                 </div>
             )}
 
-            <div style={{ marginBottom: 'var(--space-8)' }}>
-                <div className="card" style={{ padding: 'var(--space-1)', background: 'var(--color-bg-secondary)', display: 'inline-flex', borderRadius: 'var(--radius-lg)', alignItems: 'stretch' }}>
-                    <button 
-                        className={`btn ${activeTab === 'assets' ? 'btn-primary' : ''}`} 
-                        onClick={() => setActiveTab('assets')}
-                        style={{ 
-                            padding: 'var(--space-2) var(--space-8)', 
-                            borderRadius: 'var(--radius-md)',
-                            background: activeTab === 'assets' ? '' : 'transparent',
-                            color: activeTab === 'assets' ? '' : 'var(--color-text-secondary)',
-                            border: 'none',
-                            boxShadow: activeTab === 'assets' ? '' : 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: '44px'
-                        }}
-                    >
-                        {t('myItems.assets')}
-                    </button>
-                    <button 
-                        className={`btn ${activeTab === 'stock_items' ? 'btn-primary' : ''}`} 
-                        onClick={() => setActiveTab('stock_items')}
-                        style={{ 
-                            padding: 'var(--space-2) var(--space-8)', 
-                            borderRadius: 'var(--radius-md)',
-                            background: activeTab === 'stock_items' ? '' : 'transparent',
-                            color: activeTab === 'stock_items' ? '' : 'var(--color-text-secondary)',
-                            border: 'none',
-                            boxShadow: activeTab === 'stock_items' ? '' : 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: '44px',
-                            textAlign: 'center',
-                            lineHeight: '1.2'
-                        }}
-                    >
-                        {t('myItems.stockItems')}
-                    </button>
-                    <button 
-                        className={`btn ${activeTab === 'consumables' ? 'btn-primary' : ''}`} 
-                        onClick={() => setActiveTab('consumables')}
-                        style={{ 
-                            padding: 'var(--space-2) var(--space-8)', 
-                            borderRadius: 'var(--radius-md)',
-                            background: activeTab === 'consumables' ? '' : 'transparent',
-                            color: activeTab === 'consumables' ? '' : 'var(--color-text-secondary)',
-                            border: 'none',
-                            boxShadow: activeTab === 'consumables' ? '' : 'none',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            minHeight: '44px'
-                        }}
-                    >
-                        {t('myItems.consumables')}
-                    </button>
-                </div>
-            </div>
-
-            {/* Search / Filter / Sort Toolbar */}
-            {!loading && !error && myItems && (
+            <div style={{ marginBottom: 'var(--space-5)' }}>
                 <div style={{
                     display: 'flex',
                     gap: 'var(--space-3)',
                     alignItems: 'center',
-                    marginBottom: 'var(--space-5)',
-                    flexWrap: 'wrap'
+                    flexWrap: 'wrap',
+                    background: 'var(--glass-bg)',
+                    backdropFilter: 'var(--glass-backdrop)',
+                    WebkitBackdropFilter: 'var(--glass-backdrop)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: 'var(--space-2) var(--space-4)',
+                    boxShadow: 'var(--glass-shadow)'
                 }}>
+                    {/* Tab Buttons */}
+                    <div ref={tabContainerRef} style={{ padding: '0', display: 'inline-flex', borderRadius: 'var(--radius-md)', alignItems: 'stretch', position: 'relative' }}>
+                        <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: tabIndicator.left,
+                            width: tabIndicator.width,
+                            height: '100%',
+                            background: 'var(--color-accent-primary)',
+                            borderRadius: 'var(--radius-md)',
+                            transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            zIndex: 0,
+                            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.3)',
+                        }} />
+                        <button 
+                            data-tab-active={activeTab === 'assets' ? 'true' : undefined}
+                            onClick={() => setActiveTab('assets')}
+                            style={{ 
+                                padding: 'var(--space-2) var(--space-6)', 
+                                borderRadius: 'var(--radius-md)',
+                                background: 'transparent',
+                                color: activeTab === 'assets' ? '#fff' : 'var(--color-text-secondary)',
+                                border: 'none',
+                                boxShadow: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minHeight: '36px',
+                                position: 'relative',
+                                zIndex: 1,
+                                transition: 'color 0.3s ease',
+                                fontWeight: activeTab === 'assets' ? '600' : '400',
+                                fontSize: 'var(--font-size-sm)',
+                            }}
+                        >
+                            {t('myItems.assets')}
+                        </button>
+                        <button 
+                            data-tab-active={activeTab === 'stock_items' ? 'true' : undefined}
+                            onClick={() => setActiveTab('stock_items')}
+                            style={{ 
+                                padding: 'var(--space-2) var(--space-6)', 
+                                borderRadius: 'var(--radius-md)',
+                                background: 'transparent',
+                                color: activeTab === 'stock_items' ? '#fff' : 'var(--color-text-secondary)',
+                                border: 'none',
+                                boxShadow: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minHeight: '36px',
+                            textAlign: 'center',
+                            lineHeight: '1.2',
+                                position: 'relative',
+                                zIndex: 1,
+                                transition: 'color 0.3s ease',
+                                fontWeight: activeTab === 'stock_items' ? '600' : '400',
+                                fontSize: 'var(--font-size-sm)',
+                            }}
+                        >
+                            {t('myItems.stockItems')}
+                        </button>
+                        <button 
+                            data-tab-active={activeTab === 'consumables' ? 'true' : undefined}
+                            onClick={() => setActiveTab('consumables')}
+                            style={{ 
+                                padding: 'var(--space-2) var(--space-6)', 
+                                borderRadius: 'var(--radius-md)',
+                                background: 'transparent',
+                                color: activeTab === 'consumables' ? '#fff' : 'var(--color-text-secondary)',
+                                border: 'none',
+                                boxShadow: 'none',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                minHeight: '36px',
+                                position: 'relative',
+                                zIndex: 1,
+                                transition: 'color 0.3s ease',
+                                fontWeight: activeTab === 'consumables' ? '600' : '400',
+                                fontSize: 'var(--font-size-sm)',
+                            }}
+                        >
+                            {t('myItems.consumables')}
+                        </button>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ width: '1px', height: '28px', background: 'var(--glass-border)', flexShrink: 0 }} />
+
                     {/* Search */}
-                    <div style={{ flex: 1, minWidth: '220px', position: 'relative' }}>
+                    {!loading && !error && myItems && (
+                    <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
                         <Search size={18} style={{
                             position: 'absolute',
                             left: 'var(--space-3)',
@@ -531,8 +589,10 @@ const MyItemsPage = () => {
                             </button>
                         )}
                     </div>
+                    )}
 
                     {/* Filter by Status */}
+                    {!loading && !error && myItems && (
                     <div style={{ position: 'relative', minWidth: '160px' }}>
                         <SlidersHorizontal size={16} style={{
                             position: 'absolute',
@@ -562,8 +622,10 @@ const MyItemsPage = () => {
                             <option value="retired">{t('myItems.statusRetired')}</option>
                         </select>
                     </div>
+                    )}
 
                     {/* Sort */}
+                    {!loading && !error && myItems && (
                     <div style={{ position: 'relative' }}>
                         <button
                             onClick={(e) => {
@@ -577,7 +639,9 @@ const MyItemsPage = () => {
                                 padding: 'var(--space-2) var(--space-4)',
                                 height: '42px',
                                 border: '1px solid var(--color-border)',
-                                background: 'var(--color-bg-card)',
+                                background: 'var(--glass-bg)',
+                                backdropFilter: 'var(--glass-backdrop)',
+                                WebkitBackdropFilter: 'var(--glass-backdrop)',
                                 color: 'var(--color-text-secondary)',
                                 borderRadius: 'var(--radius-md)',
                                 cursor: 'pointer',
@@ -600,10 +664,12 @@ const MyItemsPage = () => {
                                     position: 'absolute',
                                     top: 'calc(100% + 4px)',
                                     right: 0,
-                                    background: 'var(--color-bg-secondary)',
-                                    border: '1px solid var(--color-border)',
+                                    background: 'var(--glass-bg)',
+                                    backdropFilter: 'var(--glass-backdrop)',
+                                    WebkitBackdropFilter: 'var(--glass-backdrop)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: 'var(--radius-md)',
-                                    boxShadow: 'var(--shadow-lg)',
+                                    boxShadow: 'var(--glass-shadow)',
                                     padding: 'var(--space-2)',
                                     zIndex: 100,
                                     minWidth: '200px'
@@ -651,9 +717,10 @@ const MyItemsPage = () => {
                             </div>
                         )}
                     </div>
+                    )}
 
                     {/* Clear Filters */}
-                    {hasActiveFilters && (
+                    {hasActiveFilters && (!loading && !error && myItems) && (
                         <button
                             onClick={clearAllFilters}
                             style={{
@@ -677,7 +744,7 @@ const MyItemsPage = () => {
                         </button>
                     )}
                 </div>
-            )}
+            </div>
 
             {/* Results count */}
             {!loading && !error && myItems && (
@@ -693,12 +760,13 @@ const MyItemsPage = () => {
                 </h2>
                 
                 {loading ? (
-                    <div className="loading-state" style={{ padding: 'var(--space-16)' }}>
-                        <div className="loading-spinner" style={{ width: '40px', height: '40px' }}></div>
-                        <span style={{ fontSize: 'var(--font-size-lg)' }}>{t('myItems.loadingItems')}</span>
+                    <div style={{ padding: 'var(--space-16)' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-6)' }}>
+                            <SkeletonCardList count={6} cardLines={2} gap="var(--space-6)" bodyPadding="var(--space-5)" style={{ display: 'contents' }} />
+                        </div>
                     </div>
                 ) : filteredCurrentItems.length === 0 ? (
-                    <div className="empty-state" style={{ background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)' }}>
+                    <div className="empty-state" style={{ background: 'var(--glass-bg)', backdropFilter: 'var(--glass-backdrop)', WebkitBackdropFilter: 'var(--glass-backdrop)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-16)', boxShadow: 'var(--glass-shadow)' }}>
                         <div className="empty-state-icon">
                             {activeTab === 'assets' ? <Box size={64} /> : activeTab === 'stock_items' ? <ShoppingCart size={64} /> : <Layers size={64} />}
                         </div>
@@ -719,10 +787,10 @@ const MyItemsPage = () => {
                     <History size={20} className="text-accent" />
                     {t('myItems.ownershipHistory')}
                 </h2>
-                <div className="card" style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+                <div className="card" style={{ overflow: 'hidden' }}>
                     {loading ? (
-                        <div className="loading-state" style={{ padding: 'var(--space-8)' }}>
-                            <div className="loading-spinner"></div>
+                        <div style={{ padding: 'var(--space-8)' }}>
+                            <SkeletonListRows count={6} />
                         </div>
                     ) : (
                         renderHistoryTable(
@@ -740,7 +808,9 @@ const MyItemsPage = () => {
                     style={{
                         position: 'fixed',
                         inset: 0,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        backgroundColor: 'var(--overlay-bg)',
+                        backdropFilter: 'blur(4px)',
+                        WebkitBackdropFilter: 'blur(4px)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -756,7 +826,7 @@ const MyItemsPage = () => {
                 >
                     <div
                         className="card"
-                        style={{ width: '100%', maxWidth: 600 }}
+                        style={{ width: '100%', maxWidth: 600, boxShadow: 'var(--glass-shadow)' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

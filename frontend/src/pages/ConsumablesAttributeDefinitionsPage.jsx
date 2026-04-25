@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Trash2, X, XCircle, Settings2, Tag, Hash, Database, CheckCircle2, Calendar, ArrowLeft, Pencil } from 'lucide-react';
 import { consumableAttributeDefinitionService } from '../services/api';
 import TranslatableInput from '../components/TranslatableInput';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const dataTypeKeyMap = { string: 'string', number: 'number', bool: 'boolean', date: 'date' };
 
@@ -394,9 +395,8 @@ const ConsumablesAttributeDefinitionsPage = () => {
 
                 <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
                     {loading ? (
-                        <div className="loading-state" style={{ padding: 'var(--space-12)' }}>
-                            <div className="loading-spinner" style={{ width: '32px', height: '32px' }}></div>
-                            <span>{t('consumablesAttributeDefinitions.loadingDefinitions')}</span>
+                        <div style={{ padding: 'var(--space-12)' }}>
+                            <SkeletonListRows count={8} />
                         </div>
                     ) : attributeDefinitions.length === 0 ? (
                         <div style={{

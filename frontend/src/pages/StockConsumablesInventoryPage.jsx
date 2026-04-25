@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Package } from 'lucide-react';
 import { locationInventoryService, locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { SkeletonListRows } from '../components/SkeletonCard';
 
 const getBilingualName = (nameAr, nameEn, fallbackName, currentLang) => {
     if (currentLang === 'ar') {
@@ -270,9 +271,8 @@ const StockConsumablesInventoryPage = () => {
                     </h2>
                 </div>
                 {loading ? (
-                    <div className="loading-state">
-                        <div className="loading-spinner" />
-                        <span>{t('stockConsumablesInventory.loading')}</span>
+                    <div className="card-body">
+                        <SkeletonListRows count={8} />
                     </div>
                 ) : error ? (
                     <div className="card-body">

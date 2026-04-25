@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import MaintenanceSteps from '../components/MaintenanceSteps';
 import DestructionSelectionModal from '../components/DestructionSelectionModal';
+import { SkeletonListRows } from '../components/SkeletonCard';
 import {
     ChevronLeft,
     ChevronRight,
@@ -202,9 +203,8 @@ const MaintenanceStepsPage = () => {
             )}
 
             {loading ? (
-                <div className="empty-state">
-                    <div className="loading-spinner" style={{ margin: '0 auto' }} />
-                    <p style={{ marginTop: '1rem', color: 'var(--color-text-secondary)' }}>{t('maintenanceSteps.loadingSteps')}</p>
+                <div style={{ padding: 'var(--space-8)' }}>
+                    <SkeletonListRows count={6} />
                 </div>
             ) : (
                 <MaintenanceSteps
