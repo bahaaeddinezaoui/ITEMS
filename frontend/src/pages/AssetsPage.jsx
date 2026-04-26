@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Layers } from 'lucide-react';
+import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Layers, UserPlus } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
 import {
     assetTypeService,
@@ -18,6 +18,26 @@ import {
     authService
 } from '../services/api';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import SearchableSelect from '../components/SearchableSelect';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
+
+const getBilingualPersonName = (person, currentLang) => {
+    const firstEn = person.first_name_en || person.first_name || '';
+    const firstAr = person.first_name_ar || '';
+    const lastEn = person.last_name_en || person.last_name || '';
+    const lastAr = person.last_name_ar || '';
+    const nameEn = [firstEn, lastEn].filter(Boolean).join(' ');
+    const nameAr = [firstAr, lastAr].filter(Boolean).join(' ');
+    if (currentLang === 'ar') {
+        if (nameAr && nameEn && nameAr !== nameEn) return `${nameAr} (${nameEn})`;
+        return nameAr || nameEn || `Person ${person.person_id}`;
+    } else {
+        if (nameEn && nameAr && nameEn !== nameAr) return `${nameEn} (${nameAr})`;
+        return nameEn || nameAr || `Person ${person.person_id}`;
+    }
+};
 
 const AssetsPage = () => {
     const { t, i18n } = useTranslation();
@@ -110,12 +130,13 @@ const AssetsPage = () => {
     const [assignFormData, setAssignFormData] = useState({
         person: '',
         start_datetime: '',
-        end_datetime: '',
-        condition_on_assignment: 'New'
+        end_datetime: ''
     });
 
     const [editingAsset, setEditingAsset] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [movingAsset, setMovingAsset] = useState(null);
     const [showMoveModal, setShowMoveModal] = useState(false);
@@ -354,9 +375,9 @@ const AssetsPage = () => {
             setShowAssignForm(false);
             setAssigningAsset(null);
             fetchAssignments();
-            alert('Asset assigned successfully!');
+            showSuccess(t('assets.assignSuccess', 'Asset assigned successfully'));
         } catch (err) {
-            setError('Failed to assign asset: ' + (err.response?.data?.error || err.message));
+            showError('Failed to assign asset: ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -369,9 +390,9 @@ const AssetsPage = () => {
             await assetAssignmentService.discharge(assignmentId);
             setDischargingAssignment(null);
             fetchAssignments();
-            alert('Asset discharged successfully!');
+            showSuccess(t('assets.dischargeSuccess', 'Asset discharged successfully'));
         } catch (err) {
-            setError('Failed to discharge asset: ' + (err.response?.data?.error || err.message));
+            showError('Failed to discharge asset: ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -383,9 +404,9 @@ const AssetsPage = () => {
         try {
             await assetAssignmentService.confirm(assignmentId);
             fetchAssignments();
-            alert('Assignment confirmed successfully!');
+            showSuccess(t('assets.confirmSuccess', 'Assignment confirmed successfully'));
         } catch (err) {
-            setError('Failed to confirm assignment: ' + (err.response?.data?.error || err.message));
+            showError('Failed to confirm assignment: ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -445,9 +466,10 @@ const AssetsPage = () => {
             await assetTypeService.create(formData);
             setFormData({ asset_type_label: '', asset_type_code: '' });
             setShowTypeForm(false);
+            showSuccess(t('assets.createTypeSuccess', 'Asset type created successfully'));
             await fetchAssetTypes();
         } catch (err) {
-            setError(t('assets.createTypeError') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('assets.createTypeError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -490,12 +512,13 @@ const AssetsPage = () => {
                 warranty_expiry_in_months: '',
             });
             setShowModelForm(false);
+            showSuccess(t('assets.createModelSuccess', 'Asset model created successfully'));
             await fetchAssetModels(selectedAssetType.asset_type_id);
         } catch (err) {
             const errorMsg = err.response?.data ?
                 (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) :
                 err.message;
-            setError(t('assets.createModelError') + ': ' + errorMsg);
+            showError(t('assets.createModelError') + ': ' + errorMsg);
         } finally {
             setSaving(false);
         }
@@ -543,12 +566,13 @@ const AssetsPage = () => {
             setFormTranslations({});
             setEditingAsset(null);
             setShowAssetForm(false);
+            showSuccess(editingAsset ? t('assets.updateSuccess', 'Asset updated successfully') : t('assets.createSuccess', 'Asset created successfully'));
             await fetchAssets(selectedAssetModel.asset_model_id);
         } catch (err) {
             const errorMsg = err.response?.data ?
                 (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) :
                 err.message;
-            setError(`Failed to ${editingAsset ? 'update' : 'create'} asset: ` + errorMsg);
+            showError(`Failed to ${editingAsset ? 'update' : 'create'} asset: ` + errorMsg);
         } finally {
             setSaving(false);
         }
@@ -576,9 +600,10 @@ const AssetsPage = () => {
             await assetTypeAttributeService.create(payload);
             setTypeAttributeForm({ asset_attribute_definition: '', is_mandatory: false, default_value: '' });
             setShowTypeAttributeForm(false);
+            showSuccess(t('assets.typeAttrSuccess', 'Attribute assigned to type successfully'));
             await fetchAssetTypeAttributes(selectedAssetType.asset_type_id);
         } catch (err) {
-            setError('Failed to assign attribute to asset type: ' + err.message);
+            showError('Failed to assign attribute to asset type: ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -614,9 +639,10 @@ const AssetsPage = () => {
                 value_date: ''
             });
             setShowModelAttributeForm(false);
+            showSuccess(t('assets.modelAttrSuccess', 'Model attribute added successfully'));
             await fetchAssetModelAttributes(selectedAssetModel.asset_model_id);
         } catch (err) {
-            setError('Failed to add model attribute value: ' + err.message);
+            showError('Failed to add model attribute value: ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -652,9 +678,10 @@ const AssetsPage = () => {
                 value_date: ''
             });
             setShowAssetAttributeForm(false);
+            showSuccess(t('assets.assetAttrSuccess', 'Asset attribute added successfully'));
             await fetchAssetAttributes(selectedAsset.asset_id);
         } catch (err) {
-            setError('Failed to add asset attribute value: ' + err.message);
+            showError('Failed to add asset attribute value: ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -774,11 +801,12 @@ const AssetsPage = () => {
         try {
             const updated = await assetService.suggestForDestruction(selectedAsset.asset_id);
             setSelectedAsset(updated);
+            showSuccess(t('assets.suggestDestructionSuccess', 'Asset suggested for destruction successfully'));
             if (selectedAssetModel) {
                 await fetchAssets(selectedAssetModel.asset_model_id);
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to suggest asset for destruction');
+            showError(err.response?.data?.error || 'Failed to suggest asset for destruction');
         } finally {
             setSaving(false);
         }
@@ -842,9 +870,10 @@ const AssetsPage = () => {
                 await fetchAssets(selectedAssetModel.asset_model_id);
             }
             closeMoveModal();
+            showSuccess(t('assets.moveSuccess', 'Asset moved successfully'));
         } catch (err) {
             console.error(err);
-            setError(err.response?.data?.error || 'Failed to move asset');
+            showError(err.response?.data?.error || 'Failed to move asset');
         } finally {
             setMoveSubmitting(false);
         }
@@ -938,6 +967,7 @@ const AssetsPage = () => {
 
                 {/* Add/Edit Asset Modal */}
                 {showAssetForm && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => setShowAssetForm(false)}>
                         <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
@@ -945,6 +975,7 @@ const AssetsPage = () => {
                                 <button className="modal-close" onClick={() => setShowAssetForm(false)}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <form onSubmit={handleAssetSubmit} className="form">
                                     <div className="form-row">
                                         <div className="form-group">
@@ -992,6 +1023,7 @@ const AssetsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Layout */}
@@ -1118,8 +1150,7 @@ const AssetsPage = () => {
                                                             setAssignFormData({
                                                                 person: '',
                                                                 start_datetime: localISOTime,
-                                                                end_datetime: '',
-                                                                condition_on_assignment: asset.asset_status === 'in_stock' ? 'Good' : 'Needs Repair'
+                                                                end_datetime: ''
                                                             });
                                                             setShowAssignForm(true);
                                                         }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-success)' }} title={t('assets.assign')}>
@@ -1141,51 +1172,61 @@ const AssetsPage = () => {
 
                 {/* Assign Form Modal */}
                 {showAssignForm && assigningAsset && (
-                    <div className="modal-overlay" onClick={() => setShowAssignForm(false)}>
-                        <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3 className="modal-title">{t('assets.assignAsset')}</h3>
-                                <button className="modal-close" onClick={() => setShowAssignForm(false)}><X size={18} /></button>
+                    <ModalPortal>
+                    <div className="modal-overlay am-modal-overlay" onClick={() => setShowAssignForm(false)}>
+                        <div className="am-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="am-modal-header">
+                                <div className="am-modal-header-left">
+                                    <span className="am-modal-header-icon"><UserPlus size={16} /></span>
+                                    <div>
+                                        <h3 className="am-modal-title">{t('assets.assignAsset')}</h3>
+                                        <p className="am-modal-subtitle">{assigningAsset.asset_name || `Asset ${assigningAsset.asset_id}`}</p>
+                                    </div>
+                                </div>
+                                <button className="am-modal-close" onClick={() => setShowAssignForm(false)}><X size={16} /></button>
                             </div>
-                            <div className="modal-body">
-                                <form onSubmit={handleAssignSubmit}>
+                            <form onSubmit={handleAssignSubmit}>
+                                <div className="am-modal-body">
+                                    <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                     <div className="form-group">
                                         <label className="form-label">{t('assets.person')}</label>
-                                        <select name="person" value={assignFormData.person} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
-                                            <option value="">{t('assets.selectPerson')}</option>
-                                            {persons.map(p => <option key={p.person_id} value={p.person_id}>{p.person_name || `Person ${p.person_id}`}</option>)}
-                                        </select>
+                                        <SearchableSelect
+                                            value={assignFormData.person}
+                                            onChange={(e) => handleAssignInputChange({ target: { name: 'person', value: e.target.value } })}
+                                            options={persons.map(p => ({
+                                                value: p.person_id,
+                                                label: getBilingualPersonName(p, i18n.language),
+                                                searchText: [p.first_name_en, p.first_name_ar, p.last_name_en, p.last_name_ar, p.first_name, p.last_name].filter(Boolean).join(' ')
+                                            }))}
+                                            placeholder={t('assets.selectPerson')}
+                                            required
+                                            disabled={saving}
+                                        />
                                     </div>
                                     <div className="form-row">
                                         <div className="form-group">
                                             <label className="form-label">{t('assets.startDatetime')}</label>
-                                            <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }} />
+                                            <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required className="form-input" />
                                         </div>
                                         <div className="form-group">
                                             <label className="form-label">{t('assets.endDatetime')}</label>
-                                            <input type="datetime-local" name="end_datetime" value={assignFormData.end_datetime} onChange={handleAssignInputChange} className="form-input" style={{ height: '44px' }} />
+                                            <input type="datetime-local" name="end_datetime" value={assignFormData.end_datetime} onChange={handleAssignInputChange} className="form-input" />
                                         </div>
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">{t('assets.conditionOnAssignment')}</label>
-                                        <select name="condition_on_assignment" value={assignFormData.condition_on_assignment} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
-                                            <option value="New">{t('assets.conditionNew')}</option>
-                                            <option value="Good">{t('assets.conditionGood')}</option>
-                                            <option value="Needs Repair">{t('assets.conditionNeedsRepair')}</option>
-                                        </select>
-                                    </div>
-                                    <div className="form-actions">
-                                        <button type="submit" disabled={saving} className="btn btn-primary">{saving ? t('assets.assigning') : t('assets.assign')}</button>
-                                        <button type="button" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }} className="btn btn-secondary">{t('common.cancel')}</button>
-                                    </div>
-                                </form>
-                            </div>
+                                </div>
+                                <div className="am-modal-footer">
+                                    <button type="button" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }} className="am-btn-cancel">{t('common.cancel')}</button>
+                                    <button type="submit" disabled={saving} className="am-btn-assign">{saving ? t('assets.assigning') : t('assets.assign')}</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Asset Details Modal */}
                 {showAssetDetailsModal && selectedAsset && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={closeAssetDetailsModal}>
                         <div className="modal" style={{ maxWidth: '720px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
@@ -1200,6 +1241,7 @@ const AssetsPage = () => {
                                 <button className="modal-close" onClick={closeAssetDetailsModal}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 {canSuggestAssetForDestruction && (selectedAsset.asset_status || '').toLowerCase() === 'failed' && (
                                     <div style={{ marginBottom: 'var(--space-4)' }}>
                                         <button
@@ -1317,10 +1359,12 @@ const AssetsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Discharge Assignment Modal */}
                 {dischargingAssignment && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => setDischargingAssignment(null)}>
                         <div className="modal" style={{ maxWidth: '480px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
@@ -1328,6 +1372,7 @@ const AssetsPage = () => {
                                 <button className="modal-close" onClick={() => setDischargingAssignment(null)}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <p>{t('assets.dischargeConfirm')}</p>
                                 <div className="form-actions">
                                     <button onClick={() => handleDischarge(dischargingAssignment.assignment_id)} disabled={saving} className="btn btn-primary">{t('assets.discharge')}</button>
@@ -1336,10 +1381,12 @@ const AssetsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Move Asset Modal */}
                 {showMoveModal && movingAsset && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => !moveSubmitting && closeMoveModal()}>
                         <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
@@ -1347,6 +1394,7 @@ const AssetsPage = () => {
                                 <button className="modal-close" onClick={closeMoveModal} disabled={moveSubmitting}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <form onSubmit={submitMove}>
                                     <div className="form-group">
                                         <div style={{
@@ -1398,6 +1446,7 @@ const AssetsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
             </div>
         );
@@ -2048,8 +2097,7 @@ const AssetsPage = () => {
                                                                             setAssignFormData({
                                                                                 person: '',
                                                                                 start_datetime: localISOTime,
-                                                                                end_datetime: '',
-                                                                                condition_on_assignment: asset.asset_status === 'in_stock' ? 'Good' : 'Needs Repair'
+                                                                                end_datetime: ''
                                                                             });
                                                                             setShowAssignForm(true);
                                                                         }}
@@ -2169,47 +2217,56 @@ const AssetsPage = () => {
             </div>
 
             {showAssignForm && assigningAsset && (
-                <div className="modal-overlay" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }}>
-                    <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h3 className="modal-title">{t('assets.assignAsset')}</h3>
-                            <button className="modal-close" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }}><X size={18} /></button>
+                <ModalPortal>
+                <div className="modal-overlay am-modal-overlay" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }}>
+                    <div className="am-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="am-modal-header">
+                            <div className="am-modal-header-left">
+                                <span className="am-modal-header-icon"><UserPlus size={16} /></span>
+                                <div>
+                                    <h3 className="am-modal-title">{t('assets.assignAsset')}</h3>
+                                    <p className="am-modal-subtitle">{assigningAsset.asset_name || `Asset ${assigningAsset.asset_id}`}</p>
+                                </div>
+                            </div>
+                            <button className="am-modal-close" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }}><X size={16} /></button>
                         </div>
-                        <div className="modal-body">
-                            <form onSubmit={handleAssignSubmit}>
+                        <form onSubmit={handleAssignSubmit}>
+                            <div className="am-modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <div className="form-group">
                                     <label className="form-label">{t('assets.person')}</label>
-                                    <select name="person" value={assignFormData.person} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
-                                        <option value="">{t('assets.selectPerson')}</option>
-                                        {persons.map(p => <option key={p.person_id} value={p.person_id}>{p.person_name || `Person ${p.person_id}`}</option>)}
-                                    </select>
+                                    <SearchableSelect
+                                        value={assignFormData.person}
+                                        onChange={(e) => handleAssignInputChange({ target: { name: 'person', value: e.target.value } })}
+                                        options={persons.map(p => ({
+                                            value: p.person_id,
+                                            label: getBilingualPersonName(p, i18n.language),
+                                            searchText: [p.first_name_en, p.first_name_ar, p.last_name_en, p.last_name_ar, p.first_name, p.last_name].filter(Boolean).join(' ')
+                                        }))}
+                                        placeholder={t('assets.selectPerson')}
+                                        required
+                                        disabled={saving}
+                                    />
                                 </div>
                                 <div className="form-row">
                                     <div className="form-group">
                                         <label className="form-label">{t('assets.startDatetime')}</label>
-                                        <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }} />
+                                        <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required className="form-input" />
                                     </div>
                                     <div className="form-group">
                                         <label className="form-label">{t('assets.endDatetime')}</label>
-                                        <input type="datetime-local" name="end_datetime" value={assignFormData.end_datetime} onChange={handleAssignInputChange} className="form-input" style={{ height: '44px' }} />
+                                        <input type="datetime-local" name="end_datetime" value={assignFormData.end_datetime} onChange={handleAssignInputChange} className="form-input" />
                                     </div>
                                 </div>
-                                <div className="form-group">
-                                    <label className="form-label">{t('assets.conditionOnAssignment')}</label>
-                                    <select name="condition_on_assignment" value={assignFormData.condition_on_assignment} onChange={handleAssignInputChange} required className="form-input" style={{ height: '44px' }}>
-                                        <option value="New">{t('assets.conditionNew')}</option>
-                                        <option value="Good">{t('assets.conditionGood')}</option>
-                                        <option value="Needs Repair">{t('assets.conditionNeedsRepair')}</option>
-                                    </select>
-                                </div>
-                                <div className="form-actions">
-                                    <button type="submit" disabled={saving} className="btn btn-primary">{saving ? t('assets.assigning') : t('assets.assign')}</button>
-                                    <button type="button" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }} className="btn btn-secondary">{t('common.cancel')}</button>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+                            <div className="am-modal-footer">
+                                <button type="button" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }} className="am-btn-cancel">{t('common.cancel')}</button>
+                                <button type="submit" disabled={saving} className="am-btn-assign">{saving ? t('assets.assigning') : t('assets.assign')}</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {showAssetDetailsModal && selectedAsset && (
@@ -2494,6 +2551,7 @@ const AssetsPage = () => {
                             </button>
                         </div>
                         <div className="modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <form onSubmit={submitMove}>
                                 <div style={{ marginBottom: 'var(--space-6)' }}>
                                     <div style={{

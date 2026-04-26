@@ -3,6 +3,8 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { assetModelService, authService, consumableModelService, stockItemModelService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { Link2 } from 'lucide-react';
+import ModalPortal from '../components/ModalPortal';
+import SearchableSelect from '../components/SearchableSelect';
 
 const StockItemModelCompatibilityPage = () => {
     const navigate = useNavigate();
@@ -135,7 +137,7 @@ const StockItemModelCompatibilityPage = () => {
                     backgroundColor: 'var(--color-bg-secondary)'
                 }}>
                     <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('stockItemModelCompatibility.compatibleAssetModels')}</h2>
-                    {isSuperuser && !showAddForm && (
+                    {isSuperuser && (
                         <button
                             onClick={() => setShowAddForm(true)}
                             style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
@@ -145,40 +147,6 @@ const StockItemModelCompatibilityPage = () => {
                     )}
                 </div>
 
-                {isSuperuser && showAddForm && (
-                    <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
-                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                            <select
-                                value={selectedAssetModelId}
-                                onChange={(e) => setSelectedAssetModelId(e.target.value)}
-                                style={{ flex: 1, padding: 'var(--space-2)' }}
-                            >
-                                <option value="">{t('stockItemModelCompatibility.selectAssetModel')}</option>
-                                {availableAssetModels.map((m) => (
-                                    <option key={m.asset_model_id} value={m.asset_model_id}>
-                                        {m.model_name || `Model ${m.asset_model_id}`}
-                                    </option>
-                                ))}
-                            </select>
-                            <button
-                                onClick={addCompatibility}
-                                disabled={!selectedAssetModelId || loading}
-                                style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                            >
-                                {t('common.add')}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowAddForm(false);
-                                    setSelectedAssetModelId('');
-                                }}
-                                style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                            >
-                                {t('common.cancel')}
-                            </button>
-                        </div>
-                    </div>
-                )}
 
                 <div style={{ overflowY: 'auto', flex: 1 }}>
                     {(Array.isArray(compatibleAssetModels) ? compatibleAssetModels : []).map((m) => (
@@ -202,6 +170,54 @@ const StockItemModelCompatibilityPage = () => {
                     )}
                 </div>
             </div>
+            {/* Add Compatible Asset Model Modal */}
+            {showAddForm && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => { setShowAddForm(false); setSelectedAssetModelId(''); }}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px', width: '90vw', minHeight: '500px' }}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('stockItemModelCompatibility.addCompatibleModel')}</h3>
+                                <button className="modal-close" onClick={() => { setShowAddForm(false); setSelectedAssetModelId(''); }}>&times;</button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                        {t('stockItemModelCompatibility.selectAssetModel')}
+                                    </label>
+                                    <SearchableSelect
+                                        value={selectedAssetModelId}
+                                        onChange={(e) => setSelectedAssetModelId(e.target.value)}
+                                        placeholder={t('stockItemModelCompatibility.selectAssetModel')}
+                                        options={availableAssetModels.map((m) => ({
+                                            value: m.asset_model_id,
+                                            label: `${m.brand_name || ''} ${m.model_name || `Model ${m.asset_model_id}`}`.trim(),
+                                        }))}
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAddForm(false); setSelectedAssetModelId(''); }}
+                                    className="btn btn-secondary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={addCompatibility}
+                                    disabled={!selectedAssetModelId || loading}
+                                    className="btn btn-primary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
         </div>
     );
 };

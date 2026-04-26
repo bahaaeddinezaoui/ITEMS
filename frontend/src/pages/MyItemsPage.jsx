@@ -22,6 +22,9 @@ import { useAuth } from '../context/AuthContext';
 import { myItemsService, problemReportService, locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const MyItemsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -35,6 +38,8 @@ const MyItemsPage = () => {
     const [sortField, setSortField] = useState('name');
     const [sortDirection, setSortDirection] = useState('asc');
     const [showSortMenu, setShowSortMenu] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [myItems, setMyItems] = useState(null);
 
@@ -261,9 +266,11 @@ const MyItemsPage = () => {
             setReportTarget(null);
             setReportObservation('');
             setSuccessMessage(t('myItems.reportSubmitted'));
+            showSuccess(t('myItems.reportSubmitted'));
         } catch (e) {
             const msg = e?.response?.data?.error || e?.message || t('myItems.failedSubmitReport');
             setReportModalError(typeof msg === 'string' ? msg : t('myItems.failedSubmitReport'));
+            showError(typeof msg === 'string' ? msg : t('myItems.failedSubmitReport'));
         } finally {
             setReportSubmitting(false);
         }
@@ -372,7 +379,6 @@ const MyItemsPage = () => {
                             <th>{t('myItems.itemName')}</th>
                             <th>{t('myItems.startDate')}</th>
                             <th>{t('myItems.endDate')}</th>
-                            <th>{t('myItems.condition')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -392,9 +398,6 @@ const MyItemsPage = () => {
                                     </td>
                                     <td>{r.start_datetime ? new Date(r.start_datetime).toLocaleDateString() : '-'}</td>
                                     <td>{r.end_datetime ? new Date(r.end_datetime).toLocaleDateString() : t('myItems.present')}</td>
-                                    <td>
-                                        <span className="badge badge-secondary">{r.condition_on_assignment || t('common.na')}</span>
-                                    </td>
                                 </tr>
                             );
                         })}
@@ -817,48 +820,40 @@ const MyItemsPage = () => {
             </div>
 
             {showReportModal && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        inset: 0,
-                        backgroundColor: 'var(--overlay-bg)',
-                        backdropFilter: 'blur(4px)',
-                        WebkitBackdropFilter: 'blur(4px)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: 'var(--space-6)',
-                        zIndex: 50,
-                    }}
-                    onClick={() => {
-                        if (!reportSubmitting) {
-                            setShowReportModal(false);
-                            setReportTarget(null);
-                        }
-                    }}
-                >
-                    <div
-                        className="card"
-                        style={{ width: '100%', maxWidth: 600, boxShadow: 'var(--glass-shadow)' }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>{t('myItems.reportProblemTitle')}</h2>
-                            <button
-                                className="btn btn-secondary"
-                                style={{ padding: '0.15rem 0.4rem', fontSize: 'var(--font-size-xs)' }}
-                                onClick={() => {
-                                    if (!reportSubmitting) {
-                                        setShowReportModal(false);
-                                        setReportTarget(null);
-                                    }
-                                }}
-                            >
-                                {t('common.close')}
-                            </button>
+                <ModalPortal>
+                <div className="modal-overlay" onClick={() => {
+                    if (!reportSubmitting) {
+                        setShowReportModal(false);
+                        setReportTarget(null);
+                    }
+                }}>
+                    <div className="modal" style={{ maxWidth: 600 }} onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <div style={{
+                                    width: '36px',
+                                    height: '36px',
+                                    background: 'rgba(239, 68, 68, 0.12)',
+                                    borderRadius: 'var(--radius-md)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--color-error)'
+                                }}>
+                                    <AlertCircle size={18} />
+                                </div>
+                                <h2 className="modal-title">{t('myItems.reportProblemTitle')}</h2>
+                            </div>
+                            <button className="modal-close" onClick={() => {
+                                if (!reportSubmitting) {
+                                    setShowReportModal(false);
+                                    setReportTarget(null);
+                                }
+                            }}><X size={18} /></button>
                         </div>
 
-                        <div style={{ padding: 'var(--space-4)' }}>
+                        <div className="modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div style={{ marginBottom: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>
                                 {reportTarget ? `${reportTarget.item_label} (${reportTarget.item_type} #${reportTarget.item_id})` : ''}
                             </div>
@@ -886,15 +881,10 @@ const MyItemsPage = () => {
                                 value={reportObservation}
                                 onChange={(e) => setReportObservation(e.target.value)}
                                 rows={4}
+                                className="form-input"
                                 style={{
                                     width: '100%',
-                                    padding: 'var(--space-3)',
-                                    border: '1px solid var(--color-border)',
-                                    borderRadius: 'var(--radius-sm)',
                                     resize: 'vertical',
-                                    fontFamily: 'inherit',
-                                    fontSize: 'var(--font-size-sm)',
-                                    boxSizing: 'border-box',
                                     marginBottom: 'var(--space-4)',
                                 }}
                             />
@@ -911,11 +901,7 @@ const MyItemsPage = () => {
                                             onChange={(e) => setDestinationLocationId(e.target.value)}
                                             disabled={loadingLocations}
                                             className="form-input"
-                                            style={{
-                                                width: '100%',
-                                                background: 'var(--color-surface)',
-                                                color: 'var(--color-text)',
-                                            }}
+                                            style={{ width: '100%' }}
                                         >
                                             <option value="">{loadingLocations ? t('myItems.loadingLocations') : t('myItems.selectMaintenanceLocation')}</option>
                                             {maintenanceLocations.map((r) => (
@@ -960,7 +946,7 @@ const MyItemsPage = () => {
                                                 {eligibleItems.stock_items.length === 0 ? (
                                                     <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{t('myItems.noneAvailable')}</div>
                                                 ) : (
-                                                    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                                    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                                         {eligibleItems.stock_items.map(s => (
                                                             <label key={s.stock_item_id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)', cursor: 'pointer' }}>
                                                                 <input 
@@ -1001,7 +987,7 @@ const MyItemsPage = () => {
                                                 {eligibleItems.consumables.length === 0 ? (
                                                     <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{t('myItems.noneAvailable')}</div>
                                                 ) : (
-                                                    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
+                                                    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
                                                         {eligibleItems.consumables.map(c => (
                                                             <label key={c.consumable_id} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)', cursor: 'pointer' }}>
                                                                 <input 
@@ -1019,31 +1005,32 @@ const MyItemsPage = () => {
                                     )}
                                 </div>
                             )}
+                        </div>
 
-                            <div style={{ marginTop: 'var(--space-4)', display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-                                <button
-                                    className="btn btn-secondary"
-                                    onClick={() => {
-                                        if (!reportSubmitting) {
-                                            setShowReportModal(false);
-                                            setReportTarget(null);
-                                        }
-                                    }}
-                                    disabled={reportSubmitting}
-                                >
-                                    {t('common.cancel')}
-                                </button>
-                                <button
-                                    className="btn btn-primary"
-                                    onClick={submitReport}
-                                    disabled={reportSubmitting}
-                                >
-                                    {reportSubmitting ? t('common.saving') : t('myItems.reportProblem')}
-                                </button>
-                            </div>
+                        <div className="modal-footer">
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => {
+                                    if (!reportSubmitting) {
+                                        setShowReportModal(false);
+                                        setReportTarget(null);
+                                    }
+                                }}
+                                disabled={reportSubmitting}
+                            >
+                                {t('common.cancel')}
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={submitReport}
+                                disabled={reportSubmitting}
+                            >
+                                {reportSubmitting ? t('common.saving') : t('myItems.reportProblem')}
+                            </button>
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </div>
     );

@@ -3,6 +3,7 @@ import { positionRoleMappingService, positionService, roleService } from '../ser
 import { useTranslation } from 'react-i18next';
 import { Search, SlidersHorizontal, ArrowUpDown, Plus, X, XCircle, ChevronDown, Link2, Briefcase, Shield, Trash2 } from 'lucide-react';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
 
 const getBilingualPositionLabel = (item, currentLang) => {
     const labelAr = item.position_label_ar;
@@ -534,8 +535,9 @@ const PositionRoleMappingsPage = () => {
 
             {/* Create Link Modal */}
             {isModalOpen && (
-                <div className="modal-overlay" onClick={handleCloseModal} style={{ background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)' }}>
-                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', width: '90%', borderRadius: '16px', border: '1px solid rgba(148, 163, 184, 0.2)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }}>
+                <ModalPortal>
+                <div className="modal-overlay" onClick={handleCloseModal}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', width: '90%' }}>
                         {/* Modal Header */}
                         <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -559,7 +561,7 @@ const PositionRoleMappingsPage = () => {
                         </div>
 
                         {/* Modal Body */}
-                        <div style={{ padding: '28px', background: '#0f172a' }}>
+                        <div style={{ padding: '28px', background: 'var(--color-bg-card)' }}>
                             <form onSubmit={handleCreate}>
                                 <div style={{ marginBottom: '20px' }}>
                                     <label style={labelStyle}>{t('positionRoleMappings.position')} <span style={{ color: '#ef4444' }}>*</span></label>
@@ -640,6 +642,7 @@ const PositionRoleMappingsPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </div>
     );

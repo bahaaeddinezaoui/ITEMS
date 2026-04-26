@@ -2,8 +2,9 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { assignmentsService, assetAssignmentService, stockItemAssignmentService, consumableAssignmentService, personService } from '../services/api';
-import { ChevronLeft, ChevronRight, UserCheck, UserX, Filter, X, History, ArrowRightLeft, CheckSquare, Box, ShoppingCart, Layers, Hash, Tag, Calendar, User, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, UserCheck, UserX, Filter, X, History, ArrowRightLeft, CheckSquare, Box, ShoppingCart, Layers, Hash, Calendar, User, ShieldCheck } from 'lucide-react';
 import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
 
 const getBilingualName = (nameAr, nameEn, fallbackName, currentLang) => {
     if (currentLang === 'ar') {
@@ -67,7 +68,6 @@ const AssignmentsPage = () => {
     const [isActiveFilter, setIsActiveFilter] = useState('');
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
-    const [conditionFilter, setConditionFilter] = useState('');
     const [confirmedFilter, setConfirmedFilter] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortField, setSortField] = useState('-start_datetime');
@@ -103,8 +103,6 @@ const AssignmentsPage = () => {
     const [reassignPersons, setReassignPersons] = useState([]);
     const [reassignSelectedPerson, setReassignSelectedPerson] = useState(null);
     const [reassignStartDate, setReassignStartDate] = useState('');
-    const [reassignCondition, setReassignCondition] = useState('good');
-
     const roleCodes = useMemo(() => {
         return Array.isArray(user?.roles) ? user.roles.map(r => r.role_code).filter(Boolean) : [];
     }, [user]);
@@ -137,7 +135,6 @@ const AssignmentsPage = () => {
             if (isActiveFilter) params.is_active = isActiveFilter;
             if (dateFrom) params.date_from = dateFrom;
             if (dateTo) params.date_to = dateTo;
-            if (conditionFilter) params.condition = conditionFilter;
             if (confirmedFilter) params.confirmed = confirmedFilter;
             if (positionFilter) params.position = positionFilter;
             if (searchQuery.trim()) params.search = searchQuery.trim();
@@ -153,7 +150,7 @@ const AssignmentsPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [itemTypeFilter, isActiveFilter, dateFrom, dateTo, conditionFilter, confirmedFilter, positionFilter, searchQuery, sortField, page, pageSize, t]);
+    }, [itemTypeFilter, isActiveFilter, dateFrom, dateTo, confirmedFilter, positionFilter, searchQuery, sortField, page, pageSize, t]);
 
     useEffect(() => {
         fetchAssignments();
@@ -196,7 +193,6 @@ const AssignmentsPage = () => {
         setIsActiveFilter('');
         setDateFrom('');
         setDateTo('');
-        setConditionFilter('');
         setConfirmedFilter('');
         setPositionFilter('');
         setSearchQuery('');
@@ -204,7 +200,7 @@ const AssignmentsPage = () => {
         setPage(1);
     };
 
-    const hasActiveFilters = itemTypeFilter || isActiveFilter || dateFrom || dateTo || conditionFilter || confirmedFilter || positionFilter;
+    const hasActiveFilters = itemTypeFilter || isActiveFilter || dateFrom || dateTo || confirmedFilter || positionFilter;
 
     // Bulk discharge
     const toggleSelect = (key) => {
@@ -272,7 +268,6 @@ const AssignmentsPage = () => {
         setReassignPersons([]);
         setReassignSelectedPerson(null);
         setReassignStartDate(startDate);
-        setReassignCondition('good');
     };
 
     const searchPersons = async (query) => {
@@ -293,7 +288,6 @@ const AssignmentsPage = () => {
                 item_type: reassignModal.assignment.item_type,
                 new_person_id: reassignSelectedPerson.person_id,
                 start_datetime: reassignStartDate,
-                condition_on_assignment: reassignCondition,
             });
             setReassignModal({ open: false, loading: false, error: '', assignment: null });
             await fetchAssignments();
@@ -312,11 +306,6 @@ const AssignmentsPage = () => {
         } catch {
             return dt;
         }
-    };
-
-    const formatCondition = (condition) => {
-        if (!condition) return '-';
-        return condition.split('_').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
     };
 
     const getItemTypeLabel = (type) => {
@@ -467,21 +456,6 @@ const AssignmentsPage = () => {
                                     value={dateTo}
                                     onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
                                 />
-                            </div>
-
-                            <div className="filter-item">
-                                <label className="form-label">{t('assignments.condition')}</label>
-                                <select
-                                    className="form-input"
-                                    value={conditionFilter}
-                                    onChange={(e) => { setConditionFilter(e.target.value); setPage(1); }}
-                                >
-                                    <option value="">{t('common.all')}</option>
-                                    <option value="new">{t('assignments.conditionNew')}</option>
-                                    <option value="good">{t('assignments.conditionGood')}</option>
-                                    <option value="used">{t('assignments.conditionUsed')}</option>
-                                    <option value="damaged">{t('assignments.conditionDamaged')}</option>
-                                </select>
                             </div>
 
                             <div className="filter-item">
@@ -662,8 +636,6 @@ const AssignmentsPage = () => {
                                                     </div>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                                                    <Tag size={14} style={{ flexShrink: 0 }} />
-                                                    <span>{t('assignments.condition')}: {formatCondition(assignment.condition_on_assignment)}</span>
                                                     {isConfirmed ? (
                                                         <span className="badge badge-success" style={{ fontSize: '0.75em' }}>{t('assignments.confirmedYes')}</span>
                                                     ) : (
@@ -748,8 +720,9 @@ const AssignmentsPage = () => {
 
             {/* Item History Timeline Modal */}
             {historyModal.open && (
-                <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setHistoryModal(prev => ({ ...prev, open: false }))}>
-                    <div className="modal" style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', maxWidth: 700, width: '90%', maxHeight: '80vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
+                <ModalPortal>
+                <div className="modal-overlay" onClick={() => setHistoryModal(prev => ({ ...prev, open: false }))}>
+                    <div className="modal" style={{ maxWidth: 700, width: '90%', maxHeight: '80vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
                             <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <History size={20} />
@@ -781,7 +754,6 @@ const AssignmentsPage = () => {
                                                 <div>{t('assignments.startDate')}: {formatDatetime(entry.start_datetime)}</div>
                                                 <div>{t('assignments.endDate')}: {formatDatetime(entry.end_datetime)}</div>
                                                 <div>{t('assignments.assignedBy')}: {getPersonName(entry.assigned_by_person, lang)}</div>
-                                                <div>{t('assignments.condition')}: {formatCondition(entry.condition_on_assignment)}</div>
                                                 {entry.person_position && <div>{t('assignments.position')}: {entry.person_position.position_label}</div>}
                                             </div>
                                         </div>
@@ -791,12 +763,14 @@ const AssignmentsPage = () => {
                         )}
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {/* Quick Reassign Modal */}
             {reassignModal.open && reassignModal.assignment && (
-                <div className="modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setReassignModal(prev => ({ ...prev, open: false }))}>
-                    <div className="modal" style={{ background: 'var(--color-surface)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', maxWidth: 500, width: '90%', maxHeight: '80vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
+                <ModalPortal>
+                <div className="modal-overlay" onClick={() => setReassignModal(prev => ({ ...prev, open: false }))}>
+                    <div className="modal" style={{ maxWidth: 500, width: '90%', maxHeight: '80vh', overflow: 'auto' }} onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
                             <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <ArrowRightLeft size={20} />
@@ -850,16 +824,6 @@ const AssignmentsPage = () => {
                             />
                         </div>
 
-                        <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-                            <label className="form-label">{t('assignments.condition')}</label>
-                            <select className="form-input" value={reassignCondition} onChange={(e) => setReassignCondition(e.target.value)}>
-                                <option value="new">{t('assignments.conditionNew')}</option>
-                                <option value="good">{t('assignments.conditionGood')}</option>
-                                <option value="used">{t('assignments.conditionUsed')}</option>
-                                <option value="damaged">{t('assignments.conditionDamaged')}</option>
-                            </select>
-                        </div>
-
                         <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
                             <button className="btn btn-outline" onClick={() => setReassignModal(prev => ({ ...prev, open: false }))}>
                                 {t('common.cancel', 'Cancel')}
@@ -874,6 +838,7 @@ const AssignmentsPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </>
     );

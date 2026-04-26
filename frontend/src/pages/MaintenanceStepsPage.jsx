@@ -6,6 +6,9 @@ import { useTranslation } from 'react-i18next';
 import MaintenanceSteps from '../components/MaintenanceSteps';
 import DestructionSelectionModal from '../components/DestructionSelectionModal';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 import {
     ChevronLeft,
     ChevronRight,
@@ -20,6 +23,8 @@ const MaintenanceStepsPage = () => {
     const { maintenanceId } = useParams();
     const { user, isSuperuser } = useAuth();
     const { t, i18n } = useTranslation();
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [maintenance, setMaintenance] = useState(null);
     const [maintenanceSteps, setMaintenanceSteps] = useState([]);
@@ -117,8 +122,10 @@ const MaintenanceStepsPage = () => {
             const updated = await assetService.suggestForDestruction(asset.asset_id, selectionData);
             setAsset(updated);
             setDestructionModalOpen(false);
+            showSuccess(t('maintenanceSteps.suggestDestructionSuccess', 'Suggested for destruction successfully'));
         } catch (err) {
             setError(err?.response?.data?.error || t('maintenanceSteps.suggestDestructionError'));
+            showError(err?.response?.data?.error || t('maintenanceSteps.suggestDestructionError'));
         } finally {
             setSuggesting(false);
         }
@@ -147,9 +154,11 @@ const MaintenanceStepsPage = () => {
             setMaintenance(updated);
             setEndModalOpen(false);
             setTriggerReturnModalAfterEnd(true);
+            showSuccess(isSuccessfulValue ? t('maintenanceSteps.endedSuccessfully', 'Maintenance ended successfully') : t('maintenanceSteps.endedAsFailed', 'Maintenance ended as failed'));
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.error || t('maintenanceSteps.endError'));
+            showError(err.response?.data?.error || t('maintenanceSteps.endError'));
         } finally {
             setEnding(false);
         }
@@ -224,6 +233,7 @@ const MaintenanceStepsPage = () => {
             )}
 
             {endModalOpen && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => (ending ? null : setEndModalOpen(false))}>
                     <div
                         className="modal"
@@ -297,6 +307,7 @@ const MaintenanceStepsPage = () => {
                         </div>
 
                         <div className="modal-body" style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div style={{ fontSize: 'var(--font-size-md)', fontWeight: 700, color: 'var(--color-text-primary)' }}>
                                 {t('maintenanceSteps.wasSuccessful')}
                             </div>
@@ -351,6 +362,7 @@ const MaintenanceStepsPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
             <DestructionSelectionModal 
                 isOpen={destructionModalOpen}

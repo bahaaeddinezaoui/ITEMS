@@ -4,6 +4,9 @@ import { ArrowLeft, Plus, Search, Pencil, Sliders, Link2, Layers, Box, X, XCircl
 import { stockItemAttributeDefinitionService, stockItemBrandService, stockItemModelAttributeService, stockItemModelService, stockItemTypeService, authService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const StockItemsModelsPage = () => {
     const navigate = useNavigate();
@@ -41,6 +44,8 @@ const StockItemsModelsPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [showBrandForm, setShowBrandForm] = useState(false);
     const [brandSaving, setBrandSaving] = useState(false);
@@ -149,9 +154,10 @@ const StockItemsModelsPage = () => {
             setBrandForm({ brand_name: '', brand_photo: null });
             setBrandPhotoPreview(null);
             setShowBrandForm(false);
+            showSuccess(t('stockItemModels.createBrandSuccess', 'Brand created successfully'));
             await fetchStockItemBrands();
         } catch (err) {
-            setError(t('stockItemModels.createBrandError') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('stockItemModels.createBrandError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setBrandSaving(false);
         }
@@ -229,9 +235,10 @@ const StockItemsModelsPage = () => {
             setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '' });
             setShowModelForm(false);
             setEditingModel(null);
+            showSuccess(editingModel ? t('stockItemModels.updateSuccess', 'Model updated successfully') : t('stockItemModels.createSuccess', 'Model created successfully'));
             await fetchTypeAndModels(typeId);
         } catch (err) {
-            setError(t('stockItemModels.saveModelError', { action: editingModel ? t('stockItemModels.update') : t('stockItemModels.create') }) + ': ' + (err.response?.data?.error || err.message));
+            showError(t('stockItemModels.saveModelError', { action: editingModel ? t('stockItemModels.update') : t('stockItemModels.create') }) + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setModelSaving(false);
         }
@@ -300,9 +307,10 @@ const StockItemsModelsPage = () => {
                 value_date: ''
             });
             setShowModelAttributeForm(false);
+            showSuccess(t('stockItemModels.modelAttrSuccess', 'Model attribute added successfully'));
             await fetchStockItemModelAttributes(selectedStockItemModel.stock_item_model_id);
         } catch (err) {
-            setError(t('stockItemModels.addAttributeError') + ': ' + err.message);
+            showError(t('stockItemModels.addAttributeError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -439,9 +447,10 @@ const StockItemsModelsPage = () => {
 
             {/* Add/Edit Model Modal */}
             {showModelForm && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={handleCancelModelForm}>
                     <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
+                        <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                                 <Plus size={18} style={{ color: 'var(--color-accent-primary)' }} />
                                 <h3 className="modal-title" style={{ margin: 0 }}>
@@ -453,6 +462,7 @@ const StockItemsModelsPage = () => {
                             </button>
                         </div>
                         <form onSubmit={handleModelSubmit} className="modal-body" style={{ padding: 'var(--space-5)' }}>
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
                                 <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
                                     {t('stockItemModels.selectBrandPlaceholder')} *
@@ -499,6 +509,7 @@ const StockItemsModelsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {/* Layout */}
@@ -612,6 +623,7 @@ const StockItemsModelsPage = () => {
 
                 {/* Attributes Modal */}
                 {showAttributesModal && selectedStockItemModel && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => { setShowAttributesModal(false); setShowModelAttributeForm(false); }}>
                         <div className="modal" style={{ maxWidth: '640px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)' }}>
@@ -637,6 +649,7 @@ const StockItemsModelsPage = () => {
                             </div>
 
                             <div className="modal-body" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 {showModelAttributeForm && (
                                     <form onSubmit={handleModelAttributeSubmit} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-accent-primary)' }}>
                                         <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
@@ -723,6 +736,7 @@ const StockItemsModelsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Manage Brands Card */}

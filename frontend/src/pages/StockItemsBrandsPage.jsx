@@ -5,6 +5,7 @@ import { ArrowLeft, Plus, Search, Pencil, Trash2, X, XCircle, Tag, ChevronUp, Ch
 import { stockItemBrandService, authService } from '../services/api';
 import BrandModal from '../components/BrandModal';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import useModalFeedback from '../components/useModalFeedback';
 
 const getBilingualBrandName = (item, currentLang) => {
     const nameAr = item.brand_name_ar;
@@ -38,6 +39,8 @@ const StockItemsBrandsPage = () => {
     const [sortField, setSortField] = useState('brand_name');
     const [sortDirection, setSortDirection] = useState('asc');
     const [statusFilter, setStatusFilter] = useState('');
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     useEffect(() => {
         fetchBrands();
@@ -116,10 +119,10 @@ const StockItemsBrandsPage = () => {
                 }
                 await stockItemBrandService.create(formData);
             }
-            resetForm();
+            showSuccess(editingBrand ? t('stockItemBrands.updateSuccess', 'Brand updated successfully') : t('stockItemBrands.createSuccess', 'Brand created successfully'));
             await fetchBrands();
         } catch (err) {
-            setError(t('stockItemBrands.saveError', 'Failed to save brand') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('stockItemBrands.saveError', 'Failed to save brand') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -242,6 +245,9 @@ const StockItemsBrandsPage = () => {
                 }}
                 saving={saving}
                 i18nKeyPrefix="stockItemBrands"
+                feedbackType={feedbackType}
+                feedbackMessage={feedbackMessage}
+                onClearFeedback={clearFeedback}
             />
 
             {/* Brands List Card */}

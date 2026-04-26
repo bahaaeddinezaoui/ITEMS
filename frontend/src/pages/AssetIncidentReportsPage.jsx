@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Plus, X, AlertTriangle, CheckCircle2, Search, FileText, ShieldCheck, Clock, Upload, ChevronRight } from 'lucide-react';
 import { assetIncidentReportService, assetService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const getReasons = (t) => [
     { value: 'stolen', label: t('assetIncidentReports.stolen') },
@@ -93,7 +96,9 @@ const AssetIncidentReportsPage = () => {
     const [reasonFilter, setReasonFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [serialSearch, setSerialSearch] = useState('');
-    const [showCreateForm, setShowCreateForm] = useState(false);
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
     const [reviewingReport, setReviewingReport] = useState(null);
     const [reviewRole, setReviewRole] = useState('');
     const [reviewDraft, setReviewDraft] = useState({
@@ -191,7 +196,7 @@ const AssetIncidentReportsPage = () => {
     }, [applyStatusToAllByDefault]);
 
     const resetCreateForm = () => {
-        setShowCreateForm(false);
+        setShowCreateModal(false);
         setForm({
             asset: '',
             reason: 'stolen',
@@ -262,8 +267,10 @@ const AssetIncidentReportsPage = () => {
             setShowItemStatusModal(false);
             resetCreateForm();
             setSuccess(t('assetIncidentReports.createdSuccessfully'));
+            showSuccess(t('assetIncidentReports.createdSuccessfully'));
         } catch (e) {
             setError(e?.response?.data?.error || t('assetIncidentReports.failedToCreate'));
+            showError(e?.response?.data?.error || t('assetIncidentReports.failedToCreate'));
         } finally {
             setSubmitting(false);
         }
@@ -497,9 +504,11 @@ const AssetIncidentReportsPage = () => {
             await assetIncidentReportService.update(reviewingReport.asset_incident_report_id, payload);
             await loadData();
             setSuccess(t('assetIncidentReports.reviewSaved', { role: t(roleConfig.labelKey) }));
+            showSuccess(t('assetIncidentReports.reviewSaved', { role: t(roleConfig.labelKey) }));
             closeReviewModal();
         } catch (e2) {
             setError(e2?.response?.data?.error || t('assetIncidentReports.failedToSaveReview'));
+            showError(e2?.response?.data?.error || t('assetIncidentReports.failedToSaveReview'));
         } finally {
             setReviewSubmitting(false);
         }
@@ -539,9 +548,11 @@ const AssetIncidentReportsPage = () => {
             });
             await loadData();
             setSuccess(t('assetIncidentReports.ownerNoteSaved'));
+            showSuccess(t('assetIncidentReports.ownerNoteSaved'));
             closeOwnerModal();
         } catch (e2) {
             setError(e2?.response?.data?.error || t('assetIncidentReports.failedToSaveOwnerNote'));
+            showError(e2?.response?.data?.error || t('assetIncidentReports.failedToSaveOwnerNote'));
         } finally {
             setOwnerSubmitting(false);
         }
@@ -570,12 +581,12 @@ const AssetIncidentReportsPage = () => {
                     </button>
                     {canCreate && (
                         <button
-                            className={`btn btn-${showCreateForm ? 'secondary' : 'primary'}`}
-                            onClick={() => setShowCreateForm((prev) => !prev)}
+                            className={`btn btn-${showCreateModal ? 'secondary' : 'primary'}`}
+                            onClick={() => setShowCreateModal((prev) => !prev)}
                             style={{ whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)', width: 'auto' }}
                         >
-                            {showCreateForm ? <X size={18} /> : <Plus size={18} />}
-                            {showCreateForm ? t('common.cancel') : t('assetIncidentReports.newReport')}
+                            {showCreateModal ? <X size={18} /> : <Plus size={18} />}
+                            {showCreateModal ? t('common.cancel') : t('assetIncidentReports.newReport')}
                         </button>
                     )}
                 </div>
@@ -652,7 +663,8 @@ const AssetIncidentReportsPage = () => {
                 </div>
             </div>
 
-            {canCreate && showCreateForm && (
+            {canCreate && showCreateModal && (
+                <ModalPortal>
                 <div className="modal-overlay ir-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) resetCreateForm(); }}>
                     <div className="modal-content ir-modal-content">
                         <div className="ir-modal-header">
@@ -670,6 +682,7 @@ const AssetIncidentReportsPage = () => {
                             </button>
                         </div>
                         <form onSubmit={handleCreate} className="ir-modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div className="ir-two-col">
                                 {/* Left column: Asset selection */}
                                 <div className="ir-col-left">
@@ -840,6 +853,7 @@ const AssetIncidentReportsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             <div className="card">
@@ -1035,6 +1049,7 @@ const AssetIncidentReportsPage = () => {
             </div>
 
             {reviewingReport && (
+                <ModalPortal>
                 <div className="modal-overlay rv-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) closeReviewModal(); }}>
                     <div className="modal-content rv-modal-content">
                         <div className="rv-modal-header">
@@ -1052,6 +1067,7 @@ const AssetIncidentReportsPage = () => {
                             </button>
                         </div>
                         <form onSubmit={submitRoleReview} className="rv-modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div className="rv-two-col">
                                 {/* Left column: Report info + Role */}
                                 <div className="rv-col-left">
@@ -1330,9 +1346,11 @@ const AssetIncidentReportsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {showItemStatusModal && (
+                <ModalPortal>
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
@@ -1347,6 +1365,7 @@ const AssetIncidentReportsPage = () => {
                             </button>
                         </div>
                         <form onSubmit={submitItemStatusModal} className="modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div className="form-group">
                                 <label className="form-label">{t('assetIncidentReports.stockItems')}</label>
                                 <div style={{ maxHeight: 200, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 'var(--space-2)' }}>
@@ -1430,8 +1449,10 @@ const AssetIncidentReportsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
             {ownerEditingReport && (
+                <ModalPortal>
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
@@ -1446,6 +1467,7 @@ const AssetIncidentReportsPage = () => {
                             </button>
                         </div>
                         <form onSubmit={submitOwnerReview} className="modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div className="form-group">
                                 <label className="form-label">{t('assetIncidentReports.ownerNoteLabel')}</label>
                                 <textarea
@@ -1479,6 +1501,7 @@ const AssetIncidentReportsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </div>
     );

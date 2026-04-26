@@ -4,6 +4,9 @@ import { assetService, personService, problemReportService, locationService } fr
 import { useTranslation } from 'react-i18next';
 import { SkeletonCardList } from '../components/SkeletonCard';
 import { BarChart3 } from 'lucide-react';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const ReportsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -18,6 +21,7 @@ const ReportsPage = () => {
     const [showCreateMaintenanceModal, setShowCreateMaintenanceModal] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
     const [selectedTechnician, setSelectedTechnician] = useState('');
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
     const [maintenanceDescription, setMaintenanceDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
@@ -90,14 +94,41 @@ const ReportsPage = () => {
         display: 'inline-flex',
         alignItems: 'center',
         gap: '0.4rem',
-        padding: '0.15rem 0.5rem',
+        padding: '0.35rem 0.75rem',
         borderRadius: '999px',
-        border: '1px solid var(--color-border)',
-        background: 'var(--color-bg-card)',
+        border: '1px solid var(--glass-border)',
+        background: 'rgba(255, 255, 255, 0.06)',
         color: 'var(--color-text-secondary)',
-        fontSize: '0.8rem',
-        lineHeight: 1.6,
+        fontSize: '0.75rem',
+        fontWeight: 500,
+        lineHeight: 1.4,
         whiteSpace: 'nowrap',
+        backdropFilter: 'blur(8px)',
+    };
+
+    const typeChipStyle = (type) => {
+        const colors = {
+            asset: { border: 'rgba(99, 102, 241, 0.4)', bg: 'rgba(99, 102, 241, 0.12)', text: '#818cf8' },
+            stock_item: { border: 'rgba(14, 165, 233, 0.4)', bg: 'rgba(14, 165, 233, 0.12)', text: '#38bdf8' },
+            consumable: { border: 'rgba(168, 85, 247, 0.4)', bg: 'rgba(168, 85, 247, 0.12)', text: '#c084fc' },
+        };
+        const c = colors[type] || colors.asset;
+        return {
+            ...chipStyle,
+            border: `1px solid ${c.border}`,
+            background: c.bg,
+            color: c.text,
+            fontWeight: 600,
+        };
+    };
+
+    const getTypeAccentColor = (type) => {
+        const colors = {
+            asset: '#6366f1',
+            stock_item: '#0ea5e9',
+            consumable: '#a855f7',
+        };
+        return colors[type] || '#6366f1';
     };
 
     const loadReports = async () => {
@@ -264,13 +295,14 @@ const ReportsPage = () => {
                     : (selectedMaintenanceLocationId ? Number(selectedMaintenanceLocationId) : null),
             });
             setShowCreateMaintenanceModal(false);
+            showSuccess(t('reports.createMaintenanceSuccess', 'Maintenance created successfully'));
             setSelectedReport(null);
             setSelectedTechnician('');
             setMaintenanceDescription('');
             setSelectedMaintenanceLocationId('');
         } catch (err) {
             const msg = err?.response?.data?.error || err?.message || t('reports.createError');
-            setError(typeof msg === 'string' ? msg : t('reports.createError'));
+            showError(typeof msg === 'string' ? msg : t('reports.createError'));
         } finally {
             setSubmitting(false);
         }
@@ -374,62 +406,218 @@ const ReportsPage = () => {
                                 const abs = r?.report_datetime ? new Date(r.report_datetime).toLocaleString() : '-';
                                 const who = r?.person_name || r?.person_id || '—';
                                 const observation = (r?.owner_observation || '').trim() || '—';
+                                const accentColor = getTypeAccentColor(r?.item_type);
+
+                                // Item details
+                                const itemName = r?.item_name || null;
+                                const itemBrand = r?.item_brand_name || null;
+                                const itemModel = r?.item_model_name || null;
+                                const itemInventory = r?.item_inventory_number || null;
+                                const itemSerial = r?.item_serial_number || null;
+                                const itemServiceTag = r?.item_service_tag || null;
+                                const itemStatus = r?.item_status || null;
+                                const itemLocation = r?.item_current_location || null;
+                                const itemLocationType = r?.item_current_location_type || null;
 
                                 return (
                                     <div
                                         key={`${r.item_type}-${r.report_id}`}
                                         className="card"
                                         style={{
-                                            padding: 'var(--space-4)',
-                                            background: 'var(--color-bg-card)',
-                                            border: '1px solid var(--color-border)',
-                                            boxShadow: 'var(--shadow-sm)',
+                                            position: 'relative',
+                                            overflow: 'hidden',
+                                            borderLeft: `3px solid ${accentColor}`,
                                         }}
                                     >
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-3)' }}>
-                                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                                                <span style={{ ...chipStyle, borderColor: 'rgba(99, 102, 241, 0.35)', color: 'var(--color-text-primary)' }}>
-                                                    {typeLabel || t('reports.item')}
-                                                </span>
-                                                <span style={chipStyle}>#{r?.report_id}</span>
-                                                <span style={chipStyle}>
-                                                    {r?.item_type === 'asset' ? 'asset' : typeLabel} #{r?.item_id}
-                                                </span>
+                                        {/* Subtle gradient overlay for enhanced glassmorphism */}
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                inset: 0,
+                                                background: `linear-gradient(135deg, ${accentColor}08 0%, transparent 50%)`,
+                                                pointerEvents: 'none',
+                                            }}
+                                        />
+                                        <div className="card-body" style={{ position: 'relative', zIndex: 1 }}>
+                                            {/* Header: Type chips + timestamp */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+                                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                                    <span style={typeChipStyle(r?.item_type)}>
+                                                        {typeLabel || t('reports.item')}
+                                                    </span>
+                                                    <span style={chipStyle}>Report #{r?.report_id}</span>
+                                                </div>
+                                                <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: 500 }} title={abs}>
+                                                    {rel || abs}
+                                                </div>
                                             </div>
 
-                                            <div style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', whiteSpace: 'nowrap' }} title={abs}>
-                                                {rel || abs}
+                                            {/* Item Details Section */}
+                                            <div style={{ marginTop: 'var(--space-4)' }}>
+                                                {/* Item Name */}
+                                                {itemName && (
+                                                    <div style={{
+                                                        fontSize: 'var(--font-size-lg)',
+                                                        fontWeight: 700,
+                                                        color: 'var(--color-text-primary)',
+                                                        lineHeight: 1.3,
+                                                        marginBottom: 'var(--space-2)',
+                                                    }}>
+                                                        {itemName}
+                                                    </div>
+                                                )}
+
+                                                {/* Brand & Model */}
+                                                {(itemBrand || itemModel) && (
+                                                    <div style={{
+                                                        display: 'flex',
+                                                        gap: '0.75rem',
+                                                        alignItems: 'center',
+                                                        flexWrap: 'wrap',
+                                                        marginBottom: 'var(--space-2)',
+                                                    }}>
+                                                        {itemBrand && (
+                                                            <span style={{
+                                                                fontSize: '0.85rem',
+                                                                color: 'var(--color-text-secondary)',
+                                                                fontWeight: 500,
+                                                            }}>
+                                                                {itemBrand}
+                                                            </span>
+                                                        )}
+                                                        {itemBrand && itemModel && (
+                                                            <span style={{ color: 'var(--color-text-muted)' }}>•</span>
+                                                        )}
+                                                        {itemModel && (
+                                                            <span style={{
+                                                                fontSize: '0.85rem',
+                                                                color: 'var(--color-text-secondary)',
+                                                            }}>
+                                                                {itemModel}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Item Meta: ID, Inventory, Serial, Service Tag, Status */}
+                                                <div style={{
+                                                    display: 'flex',
+                                                    gap: '0.5rem',
+                                                    alignItems: 'center',
+                                                    flexWrap: 'wrap',
+                                                }}>
+                                                    <span style={{ ...chipStyle, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                        {r?.item_type === 'asset' ? 'Asset' : typeLabel} #{r?.item_id}
+                                                    </span>
+                                                    {itemInventory && (
+                                                        <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                                            Inv: {itemInventory}
+                                                        </span>
+                                                    )}
+                                                    {itemSerial && (
+                                                        <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                                            SN: {itemSerial}
+                                                        </span>
+                                                    )}
+                                                    {itemServiceTag && (
+                                                        <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                                            Tag: {itemServiceTag}
+                                                        </span>
+                                                    )}
+                                                    {itemStatus && (
+                                                        <span style={{
+                                                            ...chipStyle,
+                                                            fontSize: '0.7rem',
+                                                            border: `1px solid ${accentColor}40`,
+                                                            color: accentColor,
+                                                        }}>
+                                                            {itemStatus}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {/* Current Location */}
+                                                {itemLocation && (
+                                                    <div style={{
+                                                        marginTop: 'var(--space-3)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '0.5rem',
+                                                    }}>
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--color-text-muted)', flexShrink: 0 }}>
+                                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                                            <circle cx="12" cy="10" r="3" />
+                                                        </svg>
+                                                        <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                                                            {itemLocation}
+                                                            {itemLocationType && (
+                                                                <span style={{ color: 'var(--color-text-muted)' }}> ({itemLocationType})</span>
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
 
-                                        <div style={{ marginTop: '0.75rem', color: 'var(--color-text-primary)', fontWeight: 600, lineHeight: 1.35 }}>
-                                            {observation.length > 120 ? `${observation.slice(0, 120)}…` : observation}
-                                        </div>
+                                            {/* Observation content */}
+                                            <div style={{
+                                                marginTop: 'var(--space-4)',
+                                                padding: 'var(--space-3) var(--space-4)',
+                                                background: 'rgba(255, 255, 255, 0.03)',
+                                                borderRadius: 'var(--radius-md)',
+                                                border: '1px solid var(--glass-border)',
+                                            }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+                                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                        {t('reports.ownerObservation')}
+                                                    </div>
+                                                    <div style={{ color: 'var(--color-text-muted)', fontSize: '0.7rem' }}>
+                                                        {t('reports.by')} {who}
+                                                    </div>
+                                                </div>
+                                                <div style={{ color: 'var(--color-text-primary)', fontWeight: 500, lineHeight: 1.5, fontSize: '0.95rem' }}>
+                                                    {observation.length > 120 ? `${observation.slice(0, 120)}…` : observation}
+                                                </div>
+                                            </div>
 
-                                        <div style={{ marginTop: '0.5rem', color: 'var(--color-text-secondary)', fontSize: '0.92rem' }}>
-                                            <span style={{ color: 'var(--color-text-muted)' }}>{t('reports.by')}</span> {who}
-                                        </div>
+                                            {/* Actions footer */}
+                                            <div style={{
+                                                marginTop: 'var(--space-5)',
+                                                paddingTop: 'var(--space-4)',
+                                                borderTop: '1px solid var(--glass-border)',
+                                                display: 'flex',
+                                                gap: 'var(--space-3)',
+                                                alignItems: 'center',
+                                                flexWrap: 'wrap',
+                                            }}>
+                                                {r?.item_type === 'asset' && (
+                                                    <button
+                                                        className="btn btn-secondary"
+                                                        onClick={() => openAssetDetails(r)}
+                                                        disabled={loadingAsset}
+                                                        style={{ padding: '0.5rem 1rem', width: 'auto', fontSize: '0.85rem' }}
+                                                    >
+                                                        {t('reports.viewAsset')}
+                                                    </button>
+                                                )}
 
-                                        <div style={{ marginTop: 'var(--space-4)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
-                                            {r?.item_type === 'asset' && (
-                                                <button
-                                                    className="btn btn-secondary"
-                                                    onClick={() => openAssetDetails(r)}
-                                                    disabled={loadingAsset}
-                                                    style={{ padding: '0.5rem 0.75rem' }}
-                                                >
-                                                    {t('reports.viewAsset')}
-                                                </button>
-                                            )}
+                                                {canCreateMaintenance && (
+                                                    <button
+                                                        className="btn btn-primary"
+                                                        onClick={() => openCreateMaintenance(r)}
+                                                        style={{
+                                                            padding: '0.5rem 1rem',
+                                                            width: 'auto',
+                                                            fontSize: '0.85rem',
+                                                            boxShadow: `0 4px 14px ${accentColor}40`,
+                                                        }}
+                                                    >
+                                                        {t('reports.createMaintenance')}
+                                                    </button>
+                                                )}
 
-                                            {canCreateMaintenance && (
-                                                <button className="btn btn-primary" onClick={() => openCreateMaintenance(r)} style={{ padding: '0.5rem 0.75rem' }}>
-                                                    {t('reports.createMaintenance')}
-                                                </button>
-                                            )}
-
-                                            <div style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.85rem' }} title={abs}>
-                                                {abs}
+                                                <div style={{ marginLeft: 'auto', color: 'var(--color-text-muted)', fontSize: '0.8rem' }} title={abs}>
+                                                    {abs}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -441,6 +629,7 @@ const ReportsPage = () => {
             </div>
 
             {showCreateMaintenanceModal && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => !submitting && setShowCreateMaintenanceModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
@@ -455,6 +644,7 @@ const ReportsPage = () => {
 
                         <form onSubmit={submitCreateMaintenance}>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <div className="form-group">
                                     <label className="form-label">{t('reports.report')}</label>
                                     <div className="form-input">
@@ -544,9 +734,11 @@ const ReportsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {showAssetModal && selectedAsset && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => setShowAssetModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
@@ -647,6 +839,7 @@ const ReportsPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </>
     );

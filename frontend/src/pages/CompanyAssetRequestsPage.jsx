@@ -4,6 +4,9 @@ import { SkeletonListRows } from '../components/SkeletonCard';
 import { companyAssetRequestService, attributionOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { ClipboardCheck } from 'lucide-react';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const getRequestSignatureFields = (t) => [
     { key: 'is_signed_by_company', label: t('companyAssetRequests.company'), fullLabel: t('companyAssetRequests.signedByCompany'), short: 'C' },
@@ -22,6 +25,8 @@ const CompanyAssetRequestsPage = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
     const [requests, setRequests] = useState([]);
     const [ordersById, setOrdersById] = useState({});
 
@@ -154,10 +159,12 @@ const CompanyAssetRequestsPage = () => {
                 setShowAllSignaturesModal(true);
             } else {
                 setSuccess(t('companyAssetRequests.signaturesUpdated'));
+                showSuccess(t('companyAssetRequests.signaturesUpdated'));
                 closeEditModal();
             }
         } catch (err) {
             setError(err?.response?.data?.error || t('companyAssetRequests.updateSignaturesFailed'));
+            showError(err?.response?.data?.error || t('companyAssetRequests.updateSignaturesFailed'));
         } finally {
             setSubmitting(false);
         }
@@ -269,6 +276,7 @@ const CompanyAssetRequestsPage = () => {
             setRequests(reqList);
 
             setSuccess(t('companyAssetRequests.createSuccess'));
+            showSuccess(t('companyAssetRequests.createSuccess'));
             setShowCreateForm(false);
             setCreateForm({
                 attribution_order: '',
@@ -285,6 +293,7 @@ const CompanyAssetRequestsPage = () => {
             });
         } catch (err) {
             setError(err.response?.data?.error || t('companyAssetRequests.createError'));
+            showError(err.response?.data?.error || t('companyAssetRequests.createError'));
         } finally {
             setSubmitting(false);
         }
@@ -428,6 +437,7 @@ const CompanyAssetRequestsPage = () => {
             </div>
 
             {showCreateForm && (
+                <ModalPortal>
                 <div className="modal-overlay company-asset-requests-modal-overlay" onClick={() => !submitting && setShowCreateForm(false)}>
                     <div className="modal company-asset-requests-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header company-asset-requests-modal-header">
@@ -440,6 +450,7 @@ const CompanyAssetRequestsPage = () => {
                             </button>
                         </div>
                         <div className="modal-body company-asset-requests-modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <form onSubmit={handleCreate}>
                                 {Object.keys(ordersById).length > 0 && attributionOrdersWithRequest.size >= Object.keys(ordersById).length && (
                                     <div className="company-asset-requests-modal-warning">
@@ -563,9 +574,11 @@ const CompanyAssetRequestsPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {showEditModal && (
+                <ModalPortal>
                 <div className="modal-overlay company-asset-requests-modal-overlay" onClick={closeEditModal}>
                     <div className="modal company-asset-requests-edit-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header company-asset-requests-modal-header">
@@ -578,6 +591,7 @@ const CompanyAssetRequestsPage = () => {
                             </button>
                         </div>
                         <div className="modal-body company-asset-requests-modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <form onSubmit={handleSaveSignatures}>
                                 <div className="company-asset-requests-modal-signatures">
                                     {getRequestSignatureFields(t).map((field) => (
@@ -605,9 +619,11 @@ const CompanyAssetRequestsPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {showSaveConfirmModal && (
+                <ModalPortal>
                 <div className="modal-overlay company-asset-requests-modal-overlay" onClick={cancelSaveSignatures}>
                     <div className="modal company-asset-requests-confirm-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header company-asset-requests-modal-header">
@@ -637,9 +653,11 @@ const CompanyAssetRequestsPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {showAllSignaturesModal && (
+                <ModalPortal>
                 <div className="modal-overlay company-asset-requests-modal-overlay" onClick={closeAllSignaturesModal}>
                     <div className="modal company-asset-requests-confirm-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header company-asset-requests-modal-header">
@@ -657,6 +675,7 @@ const CompanyAssetRequestsPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </div>
     );

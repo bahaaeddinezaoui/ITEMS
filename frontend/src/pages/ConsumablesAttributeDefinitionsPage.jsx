@@ -5,6 +5,8 @@ import { Plus, Trash2, X, XCircle, Settings2, Tag, Hash, Database, CheckCircle2,
 import { consumableAttributeDefinitionService } from '../services/api';
 import TranslatableInput from '../components/TranslatableInput';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const dataTypeKeyMap = { string: 'string', number: 'number', bool: 'boolean', date: 'date' };
 
@@ -30,6 +32,8 @@ const ConsumablesAttributeDefinitionsPage = () => {
 
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
     const [editingId, setEditingId] = useState(null);
 
     const [form, setForm] = useState({
@@ -111,9 +115,10 @@ const ConsumablesAttributeDefinitionsPage = () => {
             setFormTranslations({});
             setEditingId(null);
             setShowForm(false);
+            showSuccess(editingId ? t('consumablesAttributeDefinitions.updateSuccess', 'Attribute definition updated successfully') : t('consumablesAttributeDefinitions.createSuccess', 'Attribute definition created successfully'));
             await fetchAttributeDefinitions();
         } catch (err) {
-            setError(t('consumablesAttributeDefinitions.createError') + ': ' + err.message);
+            showError(t('consumablesAttributeDefinitions.createError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -279,6 +284,7 @@ const ConsumablesAttributeDefinitionsPage = () => {
                         {/* Modal Body */}
                         <div style={{ padding: 'var(--space-6)' }}>
                             <form onSubmit={handleSubmit}>
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
                                     <TranslatableInput
                                         label={t('consumablesAttributeDefinitions.description')}

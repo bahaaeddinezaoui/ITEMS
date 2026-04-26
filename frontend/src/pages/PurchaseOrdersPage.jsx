@@ -37,6 +37,9 @@ import { purchaseOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { SkeletonKanban, SkeletonCardList } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const formatDateTime = (dt) => {
     if (!dt) return '—';
@@ -60,6 +63,8 @@ const PurchaseOrdersPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [orders, setOrders] = useState([]);
 
@@ -173,8 +178,10 @@ const PurchaseOrdersPage = () => {
             const info = await purchaseOrderService.getAcceptanceReport(acceptanceReportPo.purchase_order_id);
             setAcceptanceReportInfo(info);
             setSuccess(t('poOrders.acceptanceReportSigned'));
+            showSuccess(t('poOrders.acceptanceReportSigned'));
         } catch (e) {
             setAcceptanceReportError(e?.response?.data?.error || t('poOrders.signAcceptanceReportError'));
+            showError(e?.response?.data?.error || t('poOrders.signAcceptanceReportError'));
         }
     };
 
@@ -214,12 +221,14 @@ const PurchaseOrdersPage = () => {
             const data = await purchaseOrderService.createAcceptanceReport(acceptanceReportPo.purchase_order_id, fd);
             const arId = data?.acceptance_report_id;
             setSuccess(arId ? t('poOrders.acceptanceReportCreatedWithId', { id: arId }) : t('poOrders.acceptanceReportCreated'));
+            showSuccess(arId ? t('poOrders.acceptanceReportCreatedWithId', { id: arId }) : t('poOrders.acceptanceReportCreated'));
 
             const info = await purchaseOrderService.getAcceptanceReport(acceptanceReportPo.purchase_order_id);
             setAcceptanceReportInfo(info);
             await loadOrders();
         } catch (e) {
             setAcceptanceReportError(e?.response?.data?.error || t('poOrders.createAcceptanceReportError'));
+            showError(e?.response?.data?.error || t('poOrders.createAcceptanceReportError'));
         } finally {
             setAcceptanceReportSubmitting(false);
         }
@@ -264,12 +273,14 @@ const PurchaseOrdersPage = () => {
             const data = await purchaseOrderService.createDeliveryNote(deliveryNotePo.purchase_order_id, fd);
             const dnId = data?.delivery_note_id;
             setSuccess(dnId ? t('poOrders.deliveryNoteCreatedWithId', { id: dnId }) : t('poOrders.deliveryNoteCreated'));
+            showSuccess(dnId ? t('poOrders.deliveryNoteCreatedWithId', { id: dnId }) : t('poOrders.deliveryNoteCreated'));
 
             const info = await purchaseOrderService.getDeliveryNote(deliveryNotePo.purchase_order_id);
             setDeliveryNoteInfo(info);
             await loadOrders();
         } catch (e) {
             setDeliveryNoteError(e?.response?.data?.error || t('poOrders.createDeliveryNoteError'));
+            showError(e?.response?.data?.error || t('poOrders.createDeliveryNoteError'));
         } finally {
             setDeliveryNoteSubmitting(false);
         }
@@ -317,12 +328,14 @@ const PurchaseOrdersPage = () => {
             const data = await purchaseOrderService.createInvoice(invoicePo.purchase_order_id, fd);
             const invId = data?.invoice_id;
             setSuccess(invId ? t('poOrders.invoiceCreatedWithId', { id: invId }) : t('poOrders.invoiceCreated'));
+            showSuccess(invId ? t('poOrders.invoiceCreatedWithId', { id: invId }) : t('poOrders.invoiceCreated'));
 
             const info = await purchaseOrderService.getInvoice(invoicePo.purchase_order_id);
             setInvoiceInfo(info);
             await loadOrders();
         } catch (e) {
             setInvoiceError(e?.response?.data?.error || t('poOrders.createInvoiceError'));
+            showError(e?.response?.data?.error || t('poOrders.createInvoiceError'));
         } finally {
             setInvoiceSubmitting(false);
         }
@@ -781,9 +794,10 @@ const PurchaseOrdersPage = () => {
             )}
 
             {showDeliveryNoteModal && deliveryNotePo && (
+                <ModalPortal>
                 <div className="modal-overlay">
                     <div className="modal" style={{ maxWidth: '560px' }}>
-                        <div className="modal-header" style={{ padding: 'var(--space-5) var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
+                        <div className="modal-header" style={{ padding: 'var(--space-5) var(--space-6)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                                 <div style={{
                                     width: '40px',
@@ -814,6 +828,7 @@ const PurchaseOrdersPage = () => {
                         </div>
 
                         <div className="modal-body" style={{ padding: 'var(--space-6)' }}>
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             {deliveryNoteError && (
                                 <div style={{
                                     display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
@@ -1029,9 +1044,11 @@ const PurchaseOrdersPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {showInvoiceModal && invoicePo && (
+                <ModalPortal>
                 <div className="modal-overlay">
                     <div className="modal" style={{ maxWidth: '600px' }}>
                         <div className="modal-header">
@@ -1047,6 +1064,7 @@ const PurchaseOrdersPage = () => {
                         </div>
 
                         <div className="modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             {invoiceError && (
                                 <div className="error-message" style={{ marginBottom: 'var(--space-4)' }}>
                                     {invoiceError}
@@ -1131,9 +1149,11 @@ const PurchaseOrdersPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {showAcceptanceReportModal && acceptanceReportPo && (
+                <ModalPortal>
                 <div className="modal-overlay ar-modal-overlay">
                     <div className="modal ar-modal">
                         <div className="ar-modal-header">
@@ -1154,6 +1174,7 @@ const PurchaseOrdersPage = () => {
                         </div>
 
                         <div className="ar-modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             {acceptanceReportError && (
                                 <div className="ar-modal-error">
                                     <AlertCircle size={16} />
@@ -1293,6 +1314,7 @@ const PurchaseOrdersPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </div>
     );

@@ -5,6 +5,7 @@ import { ArrowLeft, Plus, Search, Pencil, Trash2, X, XCircle, Tag, Image, Chevro
 import { assetBrandService, authService } from '../services/api';
 import BrandModal from '../components/BrandModal';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import useModalFeedback from '../components/useModalFeedback';
 
 const getBilingualBrandName = (item, currentLang) => {
     const nameAr = item.brand_name_ar;
@@ -38,6 +39,8 @@ const AssetsBrandsPage = () => {
     const [sortField, setSortField] = useState('brand_name');
     const [sortDirection, setSortDirection] = useState('asc');
     const [statusFilter, setStatusFilter] = useState('');
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     useEffect(() => {
         fetchBrands();
@@ -116,10 +119,10 @@ const AssetsBrandsPage = () => {
                 }
                 await assetBrandService.create(formData);
             }
-            resetForm();
+            showSuccess(editingBrand ? t('assetBrands.updateSuccess', 'Brand updated successfully') : t('assetBrands.createSuccess', 'Brand created successfully'));
             await fetchBrands();
         } catch (err) {
-            setError(t('assetBrands.saveError', 'Failed to save brand') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('assetBrands.saveError', 'Failed to save brand') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -242,6 +245,9 @@ const AssetsBrandsPage = () => {
                 }}
                 saving={saving}
                 i18nKeyPrefix="assetBrands"
+                feedbackType={feedbackType}
+                feedbackMessage={feedbackMessage}
+                onClearFeedback={clearFeedback}
             />
 
             {/* Brands List Card */}

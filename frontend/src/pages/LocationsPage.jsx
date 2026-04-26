@@ -4,6 +4,9 @@ import { locationService, locationTypeService, locationRelationService } from '.
 import { MapPin, Plus, Search, SlidersHorizontal, ArrowUpDown, X, Pencil, Trash2, ChevronDown, XCircle, Network, Check } from 'lucide-react';
 import { SkeletonListRows } from '../components/SkeletonCard';
 import TranslatableInput from '../components/TranslatableInput';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const getBilingualName = (item, currentLang) => {
     const nameAr = item.location_name_ar;
@@ -59,17 +62,11 @@ const LocationHierarchyModal = ({
     const hasRelation = relations.length > 0;
 
     return (
-        <div className="modal-overlay" onClick={onClose} style={{
-            background: 'rgba(15, 23, 42, 0.75)',
-            backdropFilter: 'blur(4px)'
-        }}>
+        <ModalPortal>
+        <div className="modal-overlay" onClick={onClose}>
             <div className="modal" style={{
                 maxWidth: '520px',
-                width: '90%',
-                borderRadius: '16px',
-                border: '1px solid rgba(148, 163, 184, 0.2)',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-                overflow: 'hidden'
+                width: '90%'
             }} onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div style={{
@@ -132,7 +129,7 @@ const LocationHierarchyModal = ({
                 </div>
 
                 {/* Body */}
-                <div style={{ padding: '28px', background: '#0f172a' }}>
+                <div style={{ padding: '28px', background: 'var(--color-bg-card)' }}>
                     {/* Current Parent Card */}
                     {hasRelation ? (
                         <div style={{
@@ -419,6 +416,7 @@ const LocationHierarchyModal = ({
                 </div>
             </div>
         </div>
+        </ModalPortal>
     );
 };
 
@@ -665,6 +663,8 @@ const LocationsPage = () => {
     const [successMessage, setSuccessMessage] = useState(null);
     const [showForm, setShowForm] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Search, filter, sort state
@@ -768,9 +768,11 @@ const LocationsPage = () => {
             if (editingId) {
                 await locationService.update(editingId, payload);
                 setSuccessMessage(t('messages.updateSuccess'));
+                showSuccess(t('messages.updateSuccess'));
             } else {
                 await locationService.create(payload);
                 setSuccessMessage(t('messages.createSuccess'));
+                showSuccess(t('messages.createSuccess'));
             }
             setFormData({ location_name: '', location_type: '' });
             setFormTranslations({});
@@ -781,6 +783,7 @@ const LocationsPage = () => {
             await fetchAllRelations();
         } catch (err) {
             setError(t('locations.saveError') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('locations.saveError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -858,9 +861,11 @@ const LocationsPage = () => {
                     relationFormData
                 );
                 setSuccessMessage(t('locations.relationUpdateSuccess'));
+                showSuccess(t('locations.relationUpdateSuccess'));
             } else {
                 await locationRelationService.create(relationFormData);
                 setSuccessMessage(t('locations.relationCreateSuccess'));
+                showSuccess(t('locations.relationCreateSuccess'));
             }
 
             setRelationFormData({
@@ -974,13 +979,7 @@ const LocationsPage = () => {
                     </p>
                 </div>
                 <button
-                    onClick={() => {
-                        if (showForm) {
-                            handleCancel();
-                        } else {
-                            setShowForm(true);
-                        }
-                    }}
+                    onClick={() => setShowForm(true)}
                     className="btn btn-primary"
                     style={{
                         display: 'flex',
@@ -991,8 +990,8 @@ const LocationsPage = () => {
                         width: 'auto'
                     }}
                 >
-                    {showForm ? <X size={18} /> : <Plus size={18} />}
-                    <span>{showForm ? t('common.cancel') : t('locations.addLocation')}</span>
+                    <Plus size={18} />
+                    <span>{t('locations.addLocation')}</span>
                 </button>
             </div>
 
@@ -1016,98 +1015,76 @@ const LocationsPage = () => {
                 </div>
             )}
 
-            {/* Add/Edit Form */}
+            {/* Add/Edit Location Modal */}
             {showForm && (
-                <div style={{
-                    background: 'var(--color-bg-card)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-xl)',
-                    marginBottom: 'var(--space-6)',
-                    overflow: 'hidden',
-                    backdropFilter: 'blur(10px)',
-                    boxShadow: 'var(--shadow-md)'
-                }}>
-                    <div style={{
-                        padding: 'var(--space-5) var(--space-6)',
-                        borderBottom: '1px solid var(--color-border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-3)',
-                        background: 'linear-gradient(180deg, rgba(99, 102, 241, 0.08), transparent)'
-                    }}>
-                        <div style={{
-                            width: '36px',
-                            height: '36px',
-                            background: 'var(--color-accent-glow)',
-                            borderRadius: 'var(--radius-md)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'var(--color-accent-primary)'
-                        }}>
-                            {editingId ? <Pencil size={18} /> : <Plus size={18} />}
-                        </div>
-                        <div>
-                            <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>
-                                {editingId ? t('locations.editLocation') : t('locations.addLocation')}
-                            </h3>
-                            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', margin: 0, marginTop: '2px' }}>
-                                {editingId ? t('locations.locationDetails') : t('locations.locationNamePlaceholder')}
-                            </p>
-                        </div>
-                    </div>
-                    <div style={{ padding: 'var(--space-6)' }}>
-                        <form onSubmit={handleSubmit}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-5)', marginBottom: 'var(--space-5)' }}>
-                                <div className="form-group" style={{ marginBottom: 0 }}>
-                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
-                                        {t('locations.locationName')} <span style={{ color: 'var(--color-error)' }}>*</span>
-                                    </label>
-                                    <TranslatableInput
-                                        baseFieldName="location_name"
-                                        value={formData.location_name}
-                                        onChange={handleInputChange}
-                                        translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.location_name]))}
-                                        onTranslationChange={handleFormTranslationChange}
-                                        placeholder={t('locations.locationNamePlaceholder')}
-                                        required
-                                    />
+                <ModalPortal>
+                <div className="modal-overlay" onClick={handleCancel}>
+                    <div className="modal" style={{ maxWidth: '560px' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <div style={{
+                                    width: '36px',
+                                    height: '36px',
+                                    background: 'var(--color-accent-glow)',
+                                    borderRadius: 'var(--radius-md)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--color-accent-primary)'
+                                }}>
+                                    {editingId ? <Pencil size={18} /> : <Plus size={18} />}
                                 </div>
-                                <div className="form-group" style={{ marginBottom: 0 }}>
-                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
-                                        {t('locations.locationType')} <span style={{ color: 'var(--color-error)' }}>*</span>
-                                    </label>
-                                    <select
-                                        name="location_type"
-                                        value={formData.location_type}
-                                        onChange={(e) => handleInputChange('location_type', e.target.value)}
-                                        required
-                                        className="form-input"
-                                        style={{ width: '100%', height: '44px' }}
-                                    >
-                                        <option value="">{t('locations.selectLocationType')}</option>
-                                        {locationTypes.map((rt) => (
-                                            <option key={rt.location_type_id} value={rt.location_type_id}>
-                                                {getBilingualTypeLabel(rt, i18n.language)}
-                                            </option>
-                                        ))}
-                                    </select>
+                                <div>
+                                    <h2 className="modal-title">{editingId ? t('locations.editLocation') : t('locations.addLocation')}</h2>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end' }}>
+                            <button className="modal-close" onClick={handleCancel}><X size={18} /></button>
+                        </div>
+                        <form onSubmit={handleSubmit}>
+                            <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-5)' }}>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                            {t('locations.locationName')} <span style={{ color: 'var(--color-error)' }}>*</span>
+                                        </label>
+                                        <TranslatableInput
+                                            baseFieldName="location_name"
+                                            value={formData.location_name}
+                                            onChange={handleInputChange}
+                                            translations={Object.fromEntries(Object.entries(formTranslations).map(([k, v]) => [k, v.location_name]))}
+                                            onTranslationChange={handleFormTranslationChange}
+                                            placeholder={t('locations.locationNamePlaceholder')}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                            {t('locations.locationType')} <span style={{ color: 'var(--color-error)' }}>*</span>
+                                        </label>
+                                        <select
+                                            name="location_type"
+                                            value={formData.location_type}
+                                            onChange={(e) => handleInputChange('location_type', e.target.value)}
+                                            required
+                                            className="form-input"
+                                            style={{ width: '100%', height: '44px' }}
+                                        >
+                                            <option value="">{t('locations.selectLocationType')}</option>
+                                            {locationTypes.map((rt) => (
+                                                <option key={rt.location_type_id} value={rt.location_type_id}>
+                                                    {getBilingualTypeLabel(rt, i18n.language)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
                                 <button
                                     type="button"
                                     onClick={handleCancel}
-                                    className="btn"
-                                    style={{
-                                        padding: 'var(--space-3) var(--space-5)',
-                                        border: '1px solid var(--color-border)',
-                                        background: 'var(--color-bg-tertiary)',
-                                        color: 'var(--color-text)',
-                                        borderRadius: 'var(--radius-md)',
-                                        cursor: 'pointer',
-                                        fontWeight: '500'
-                                    }}
+                                    className="btn btn-secondary"
                                 >
                                     {t('common.cancel')}
                                 </button>
@@ -1115,7 +1092,6 @@ const LocationsPage = () => {
                                     type="submit"
                                     disabled={saving}
                                     className="btn btn-primary"
-                                    style={{ padding: 'var(--space-3) var(--space-6)', width: 'auto' }}
                                 >
                                     {saving ? (
                                         <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -1133,6 +1109,7 @@ const LocationsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {/* Search / Filter / Sort Toolbar */}

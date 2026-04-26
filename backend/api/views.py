@@ -4468,14 +4468,81 @@ class ProblemReportViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def _normalize_report(self, item_type, report):
+        item = getattr(report, item_type, None)
+        item_data = {"item_id": item.pk if item else None}
+
+        if item_type == "asset" and item:
+            asset_model = getattr(item, "asset_model", None)
+            asset_brand = getattr(asset_model, "asset_brand", None) if asset_model else None
+            # Get current location for asset
+            last_move = (
+                AssetMovement.objects.filter(asset=item)
+                .select_related("destination_location", "destination_location__location_type")
+                .order_by("-asset_movement_id")
+                .first()
+            )
+            current_location = getattr(last_move, "destination_location", None)
+            item_data.update({
+                "item_name": item.asset_name,
+                "item_inventory_number": item.asset_inventory_number,
+                "item_serial_number": item.asset_serial_number,
+                "item_service_tag": item.asset_service_tag,
+                "item_status": item.asset_status,
+                "item_model_name": getattr(asset_model, "model_name", None) if asset_model else None,
+                "item_brand_name": getattr(asset_brand, "brand_name", None) if asset_brand else None,
+                "item_current_location": getattr(current_location, "location_name", None),
+                "item_current_location_type": getattr(getattr(current_location, "location_type", None), "location_type_label", None),
+            })
+        elif item_type == "stock_item" and item:
+            stock_model = getattr(item, "stock_item_model", None)
+            stock_brand = getattr(stock_model, "stock_item_brand", None) if stock_model else None
+            # Get current location for stock item
+            last_move = (
+                StockItemMovement.objects.filter(stock_item=item)
+                .select_related("destination_location", "destination_location__location_type")
+                .order_by("-stock_item_movement_id")
+                .first()
+            )
+            current_location = getattr(last_move, "destination_location", None)
+            item_data.update({
+                "item_name": item.stock_item_name,
+                "item_inventory_number": item.stock_item_inventory_number,
+                "item_status": item.stock_item_status,
+                "item_model_name": getattr(stock_model, "model_name", None) if stock_model else None,
+                "item_brand_name": getattr(stock_brand, "brand_name", None) if stock_brand else None,
+                "item_current_location": getattr(current_location, "location_name", None),
+                "item_current_location_type": getattr(getattr(current_location, "location_type", None), "location_type_label", None),
+            })
+        elif item_type == "consumable" and item:
+            consumable_model = getattr(item, "consumable_model", None)
+            consumable_brand = getattr(consumable_model, "consumable_brand", None) if consumable_model else None
+            # Get current location for consumable
+            last_move = (
+                ConsumableMovement.objects.filter(consumable=item)
+                .select_related("destination_location", "destination_location__location_type")
+                .order_by("-consumable_movement_id")
+                .first()
+            )
+            current_location = getattr(last_move, "destination_location", None)
+            item_data.update({
+                "item_name": item.consumable_name,
+                "item_inventory_number": item.consumable_inventory_number,
+                "item_serial_number": item.consumable_serial_number,
+                "item_status": item.consumable_status,
+                "item_model_name": getattr(consumable_model, "model_name", None) if consumable_model else None,
+                "item_brand_name": getattr(consumable_brand, "brand_name", None) if consumable_brand else None,
+                "item_current_location": getattr(current_location, "location_name", None),
+                "item_current_location_type": getattr(getattr(current_location, "location_type", None), "location_type_label", None),
+            })
+
         return {
             "item_type": item_type,
             "report_id": report.report_id,
-            "item_id": getattr(report, item_type).pk if getattr(report, item_type, None) else None,
             "person_id": report.person_id if hasattr(report, "person_id") else report.person.person_id,
             "person_name": f"{report.person.first_name} {report.person.last_name}",
             "report_datetime": report.report_datetime,
             "owner_observation": report.owner_observation,
+            **item_data,
         }
 
     @action(detail=False, methods=["get"], url_path="eligible-items")
@@ -4592,9 +4659,15 @@ class ProblemReportViewSet(viewsets.ViewSet):
         )
 
     def list(self, request):
-        asset_reports = PersonReportsProblemOnAsset.objects.all().order_by("-report_datetime")
-        stock_reports = PersonReportsProblemOnStockItem.objects.all().order_by("-report_datetime")
-        consumable_reports = PersonReportsProblemOnConsumable.objects.all().order_by("-report_datetime")
+        asset_reports = PersonReportsProblemOnAsset.objects.select_related(
+            "asset", "asset__asset_model", "asset__asset_model__asset_brand"
+        ).all().order_by("-report_datetime")
+        stock_reports = PersonReportsProblemOnStockItem.objects.select_related(
+            "stock_item", "stock_item__stock_item_model", "stock_item__stock_item_model__stock_item_brand"
+        ).all().order_by("-report_datetime")
+        consumable_reports = PersonReportsProblemOnConsumable.objects.select_related(
+            "consumable", "consumable__consumable_model", "consumable__consumable_model__consumable_brand"
+        ).all().order_by("-report_datetime")
 
         data = [self._normalize_report("asset", r) for r in asset_reports] + [self._normalize_report("stock_item", r) for r in stock_reports] + [
             self._normalize_report("consumable", r) for r in consumable_reports
@@ -4609,9 +4682,15 @@ class ProblemReportViewSet(viewsets.ViewSet):
             return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
 
         person_id = user_account.person.person_id
-        asset_reports = PersonReportsProblemOnAsset.objects.filter(person_id=person_id).order_by("-report_datetime")
-        stock_reports = PersonReportsProblemOnStockItem.objects.filter(person_id=person_id).order_by("-report_datetime")
-        consumable_reports = PersonReportsProblemOnConsumable.objects.filter(person_id=person_id).order_by("-report_datetime")
+        asset_reports = PersonReportsProblemOnAsset.objects.select_related(
+            "asset", "asset__asset_model", "asset__asset_model__asset_brand"
+        ).filter(person_id=person_id).order_by("-report_datetime")
+        stock_reports = PersonReportsProblemOnStockItem.objects.select_related(
+            "stock_item", "stock_item__stock_item_model", "stock_item__stock_item_model__stock_item_brand"
+        ).filter(person_id=person_id).order_by("-report_datetime")
+        consumable_reports = PersonReportsProblemOnConsumable.objects.select_related(
+            "consumable", "consumable__consumable_model", "consumable__consumable_model__consumable_brand"
+        ).filter(person_id=person_id).order_by("-report_datetime")
 
         data = [self._normalize_report("asset", r) for r in asset_reports] + [self._normalize_report("stock_item", r) for r in stock_reports] + [
             self._normalize_report("consumable", r) for r in consumable_reports
@@ -12808,7 +12887,6 @@ class AssignmentsListView(APIView):
     - is_active: 'true' | 'false' (optional)
     - date_from: ISO date string (filters start_datetime >= date_from)
     - date_to: ISO date string (filters start_datetime <= date_to)
-    - condition: condition_on_assignment value (optional)
     - confirmed: 'true' | 'false' (whether confirmed by exploitation chief)
     - assigned_by: person_id of the assigner (optional)
     - person: person_id of the assignee (optional)
@@ -12884,11 +12962,6 @@ class AssignmentsListView(APIView):
                 qs = qs.filter(start_datetime__lte=date_to)
             except (ValueError, TypeError):
                 pass
-
-        # condition filter
-        condition = params.get('condition')
-        if condition:
-            qs = qs.filter(condition_on_assignment=condition)
 
         # confirmed filter
         confirmed = params.get('confirmed')
@@ -13090,7 +13163,7 @@ class AssignmentsListView(APIView):
         Request body must include 'action' field:
         - 'bulk_discharge': discharge multiple assignments. Body: {action, items: [{assignment_id, item_type}, ...]}
         - 'item_history': get full assignment history for an item. Body: {action, item_type, item_id}
-        - 'quick_reassign': discharge current and create new assignment. Body: {action, assignment_id, item_type, new_person_id, start_datetime, condition_on_assignment}
+        - 'quick_reassign': discharge current and create new assignment. Body: {action, assignment_id, item_type, new_person_id, start_datetime}
         """
         user_account = self._get_user_account(request)
         if not user_account:
@@ -13210,8 +13283,6 @@ class AssignmentsListView(APIView):
         item_type = request.data.get('item_type')
         new_person_id = request.data.get('new_person_id')
         start_datetime = request.data.get('start_datetime')
-        condition_on_assignment = request.data.get('condition_on_assignment', 'good')
-
         if not all([assignment_id, item_type, new_person_id, start_datetime]):
             return Response({"error": "assignment_id, item_type, new_person_id, and start_datetime are required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -13273,7 +13344,6 @@ class AssignmentsListView(APIView):
                 assigned_by_person=person,
                 **{f'{item_fk}_id': item_id},
                 start_datetime=start_datetime,
-                condition_on_assignment=condition_on_assignment,
                 is_active=True,
             )
 

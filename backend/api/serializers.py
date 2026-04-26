@@ -1378,7 +1378,7 @@ class AssetIsAssignedToPersonSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = AssetIsAssignedToPerson
-        fields = ['assignment_id', 'person', 'asset', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active', 'is_confirmed_by_exploitation_chief']
+        fields = ['assignment_id', 'person', 'asset', 'assigned_by_person', 'start_datetime', 'end_datetime', 'is_active', 'is_confirmed_by_exploitation_chief']
         read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
         extra_kwargs = {
             'is_active': {'required': False},
@@ -1820,7 +1820,7 @@ class StockItemIsAssignedToPersonSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = StockItemIsAssignedToPerson
-        fields = ['assignment_id', 'person', 'stock_item', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active', 'is_confirmed_by_exploitation_chief']
+        fields = ['assignment_id', 'person', 'stock_item', 'assigned_by_person', 'start_datetime', 'end_datetime', 'is_active', 'is_confirmed_by_exploitation_chief']
         read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
         extra_kwargs = {
             'is_active': {'required': False},
@@ -1968,7 +1968,7 @@ class ConsumableIsAssignedToPersonSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ConsumableIsAssignedToPerson
-        fields = ['assignment_id', 'person', 'consumable', 'assigned_by_person', 'start_datetime', 'end_datetime', 'condition_on_assignment', 'is_active', 'is_confirmed_by_exploitation_chief']
+        fields = ['assignment_id', 'person', 'consumable', 'assigned_by_person', 'start_datetime', 'end_datetime', 'is_active', 'is_confirmed_by_exploitation_chief']
         read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
         extra_kwargs = {
             'is_active': {'required': False},

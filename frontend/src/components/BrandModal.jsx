@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Image } from 'lucide-react';
 import TranslatableInput from './TranslatableInput';
+import ModalPortal from './ModalPortal';
+import ModalFeedback from './ModalFeedback';
 
 const BrandModal = ({
     isOpen,
@@ -17,6 +19,9 @@ const BrandModal = ({
     onPhotoChange,
     saving,
     i18nKeyPrefix,
+    feedbackType,
+    feedbackMessage,
+    onClearFeedback,
 }) => {
     const { t } = useTranslation();
 
@@ -39,6 +44,7 @@ const BrandModal = ({
     if (!isOpen) return null;
 
     return (
+        <ModalPortal>
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '560px' }}>
                 <div className="modal-header">
@@ -51,6 +57,7 @@ const BrandModal = ({
                 </div>
 
                 <div className="modal-body">
+                    <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={onClearFeedback} />
                     <form onSubmit={handleSubmit} className="form">
                         <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
                             <TranslatableInput
@@ -146,6 +153,7 @@ const BrandModal = ({
                 </div>
             </div>
         </div>
+        </ModalPortal>
     );
 };
 

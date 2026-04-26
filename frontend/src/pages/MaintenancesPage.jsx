@@ -7,6 +7,8 @@ import { assetService, assetTypeService, assetBrandService, assetModelService, m
 import { useAuth } from '../context/AuthContext';
 import SearchableSelect from '../components/SearchableSelect';
 import TranslatableInput from '../components/TranslatableInput';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 import {
     Clock,
     User,
@@ -35,6 +37,7 @@ import {
     ArrowRight,
 } from 'lucide-react';
 import Stepper, { Step } from '../components/Stepper';
+import ModalPortal from '../components/ModalPortal';
 
 const CREATE_STEPS = [
     { key: 'asset', icon: Monitor },
@@ -54,6 +57,8 @@ const MaintenancesPage = () => {
     const [selectedMaintenance, setSelectedMaintenance] = useState(null);
     const [selectedTechnician, setSelectedTechnician] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [assets, setAssets] = useState([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
@@ -549,10 +554,11 @@ const MaintenancesPage = () => {
             }
             await maintenanceService.createDirect(payload);
             setShowCreateModal(false);
+            showSuccess(t('maintenances.createSuccess', 'Maintenance created successfully'));
             loadMaintenances();
         } catch (err) {
             const msg = err?.response?.data?.error || err?.message || t('maintenances.createFailed');
-            setError(typeof msg === 'string' ? msg : t('maintenances.createFailed'));
+            showError(typeof msg === 'string' ? msg : t('maintenances.createFailed'));
         } finally {
             setSubmitting(false);
         }
@@ -575,9 +581,10 @@ const MaintenancesPage = () => {
                 performed_by_person: selectedTechnician || null
             });
             setShowAssignModal(false);
+            showSuccess(t('maintenances.assignSuccess', 'Technician assigned successfully'));
             loadMaintenances();
         } catch (err) {
-            setError(t('maintenances.assignFailed'));
+            showError(t('maintenances.assignFailed'));
             console.error(err);
         } finally {
             setSubmitting(false);
@@ -1355,6 +1362,7 @@ const MaintenancesPage = () => {
 
             {/* Assign Technician Modal */}
             {showAssignModal && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
@@ -1369,6 +1377,7 @@ const MaintenancesPage = () => {
 
                         <form onSubmit={handleAssignSubmit}>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <div className="form-group">
                                     <label className="form-label">{t('maintenances.maintenanceTask')}</label>
                                     <div className="form-input" style={{ backgroundColor: '#f5f5f5' }}>
@@ -1406,10 +1415,12 @@ const MaintenancesPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {/* Create Maintenance Modal */}
             {showCreateModal && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => !submitting && setShowCreateModal(false)}>
                     <div
                         className="modal"
@@ -1446,6 +1457,7 @@ const MaintenancesPage = () => {
 
                         <form onSubmit={(e) => { e.preventDefault(); if (createStep === CREATE_STEPS.length - 1) handleCreateSubmit(e); else handleCreateNext(); }} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
                             <div className="modal-body" style={{ overflowY: 'auto', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 {error && (
                                     <div style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-md)', color: 'var(--color-error)', fontSize: 'var(--font-size-sm)' }}>
                                         {error}
@@ -1836,7 +1848,7 @@ const MaintenancesPage = () => {
                                 </Stepper>
                             </div>
 
-                            <div className="modal-footer" style={{ borderTop: '1px solid var(--color-border)', padding: 'var(--space-4) var(--space-6)', display: 'flex', justifyContent: 'space-between' }}>
+                            <div className="modal-footer" style={{ padding: 'var(--space-4) var(--space-6)', display: 'flex', justifyContent: 'space-between' }}>
                                 <button
                                     type="button"
                                     className="btn btn-secondary"
@@ -1877,10 +1889,12 @@ const MaintenancesPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {/* Typical Steps Modal */}
             {showTypicalStepsModal && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => !submitting && setShowTypicalStepsModal(false)}>
                     <div
                         className="ts-modal"
@@ -1931,6 +1945,7 @@ const MaintenancesPage = () => {
 
                         {/* Body */}
                         <div className="ts-modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             {error && (
                                 <div className="ts-modal-error">
                                     <AlertTriangle size={14} />
@@ -2127,6 +2142,7 @@ const MaintenancesPage = () => {
 
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </>
     );

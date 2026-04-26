@@ -25,6 +25,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { SkeletonCardList } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
 
 const DestructionCertificatesPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -652,6 +653,7 @@ const DestructionCertificatesPage = () => {
 
             {/* Missing PDF Modal */}
             {showMissingPdfModal && (
+                <ModalPortal>
                 <div className="modal-overlay">
                     <div className="modal" style={{ maxWidth: '480px' }}>
                         <div className="modal-header">
@@ -693,6 +695,7 @@ const DestructionCertificatesPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </>
     );

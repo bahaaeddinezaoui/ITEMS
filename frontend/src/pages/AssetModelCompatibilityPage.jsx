@@ -3,6 +3,8 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { assetModelService, authService, consumableModelService, stockItemModelService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { Link2 } from 'lucide-react';
+import ModalPortal from '../components/ModalPortal';
+import SearchableSelect from '../components/SearchableSelect';
 
 const AssetModelCompatibilityPage = () => {
     const navigate = useNavigate();
@@ -274,7 +276,7 @@ const AssetModelCompatibilityPage = () => {
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
                         <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assetModelCompatibility.compatibleStockItemModels')}</h2>
-                        {isSuperuser && !showAddStockForm && (
+                        {isSuperuser && (
                             <button
                                 onClick={() => setShowAddStockForm(true)}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
@@ -284,40 +286,6 @@ const AssetModelCompatibilityPage = () => {
                         )}
                     </div>
 
-                    {isSuperuser && showAddStockForm && (
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                <select
-                                    value={selectedStockItemModelId}
-                                    onChange={(e) => setSelectedStockItemModelId(e.target.value)}
-                                    style={{ flex: 1, padding: 'var(--space-2)' }}
-                                >
-                                    <option value="">{t('assetModelCompatibility.selectStockItemModel')}</option>
-                                    {availableStockItemModels.map((m) => (
-                                        <option key={m.stock_item_model_id} value={m.stock_item_model_id}>
-                                            {m.model_name || `Model ${m.stock_item_model_id}`}
-                                        </option>
-                                    ))}
-                                </select>
-                                <button
-                                    onClick={addStockCompatibility}
-                                    disabled={!selectedStockItemModelId || loading}
-                                    style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    {t('common.add')}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowAddStockForm(false);
-                                        setSelectedStockItemModelId('');
-                                    }}
-                                    style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    {t('common.cancel')}
-                                </button>
-                            </div>
-                        </div>
-                    )}
 
                     <div style={{ overflowY: 'auto', flex: 1 }}>
                         {(Array.isArray(compatibleStockItemModels) ? compatibleStockItemModels : []).map((m) => (
@@ -352,7 +320,7 @@ const AssetModelCompatibilityPage = () => {
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
                         <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assetModelCompatibility.compatibleConsumableModels')}</h2>
-                        {isSuperuser && !showAddConsumableForm && (
+                        {isSuperuser && (
                             <button
                                 onClick={() => setShowAddConsumableForm(true)}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
@@ -362,40 +330,6 @@ const AssetModelCompatibilityPage = () => {
                         )}
                     </div>
 
-                    {isSuperuser && showAddConsumableForm && (
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                                <select
-                                    value={selectedConsumableModelId}
-                                    onChange={(e) => setSelectedConsumableModelId(e.target.value)}
-                                    style={{ flex: 1, padding: 'var(--space-2)' }}
-                                >
-                                    <option value="">{t('assetModelCompatibility.selectConsumableModel')}</option>
-                                    {availableConsumableModels.map((m) => (
-                                        <option key={m.consumable_model_id} value={m.consumable_model_id}>
-                                            {m.model_name || `Model ${m.consumable_model_id}`}
-                                        </option>
-                                    ))}
-                                </select>
-                                <button
-                                    onClick={addConsumableCompatibility}
-                                    disabled={!selectedConsumableModelId || loading}
-                                    style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    {t('common.add')}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowAddConsumableForm(false);
-                                        setSelectedConsumableModelId('');
-                                    }}
-                                    style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    {t('common.cancel')}
-                                </button>
-                            </div>
-                        </div>
-                    )}
 
                     <div style={{ overflowY: 'auto', flex: 1 }}>
                         {(Array.isArray(compatibleConsumableModels) ? compatibleConsumableModels : []).map((m) => (
@@ -448,7 +382,7 @@ const AssetModelCompatibilityPage = () => {
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
                         <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assetModelCompatibility.defaultStockItems')}</h2>
-                        {isSuperuser && !showAddDefaultStockForm && (
+                        {isSuperuser && (
                             <button
                                 onClick={() => setShowAddDefaultStockForm(true)}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
@@ -458,49 +392,6 @@ const AssetModelCompatibilityPage = () => {
                         )}
                     </div>
 
-                    {isSuperuser && showAddDefaultStockForm && (
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
-                        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-                            <select
-                                value={selectedDefaultStockModelId}
-                                onChange={(e) => setSelectedDefaultStockModelId(e.target.value)}
-                                style={{ flex: 1, padding: 'var(--space-2)' }}
-                            >
-                                <option value="">{t('assetModelCompatibility.selectStockItemModel')}</option>
-                                {availableDefaultStockModels.map((m) => (
-                                    <option key={m.stock_item_model_id} value={m.stock_item_model_id}>
-                                        {m.model_name || `Model ${m.stock_item_model_id}`}
-                                    </option>
-                                ))}
-                            </select>
-                            <input
-                                type="number"
-                                min="1"
-                                value={defaultStockQuantity}
-                                onChange={(e) => setDefaultStockQuantity(Number(e.target.value))}
-                                style={{ width: '60px', padding: 'var(--space-2)' }}
-                                placeholder={t('assetModelCompatibility.qty')}
-                            />
-                            <button
-                                onClick={addDefaultStockItem}
-                                disabled={!selectedDefaultStockModelId || loading}
-                                style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                            >
-                                {t('common.add')}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowAddDefaultStockForm(false);
-                                    setSelectedDefaultStockModelId('');
-                                    setDefaultStockQuantity(1);
-                                }}
-                                style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                            >
-                                {t('common.cancel')}
-                            </button>
-                        </div>
-                    </div>
-                    )}
 
                     <div style={{ overflowY: 'auto', flex: 1 }}>
                         {defaultStockItems.map((item) => (
@@ -536,7 +427,7 @@ const AssetModelCompatibilityPage = () => {
                         backgroundColor: 'var(--color-bg-secondary)'
                     }}>
                         <h2 style={{ fontSize: 'var(--font-size-md)', fontWeight: '600', margin: 0 }}>{t('assetModelCompatibility.defaultConsumables')}</h2>
-                        {isSuperuser && !showAddDefaultConsumableForm && (
+                        {isSuperuser && (
                             <button
                                 onClick={() => setShowAddDefaultConsumableForm(true)}
                                 style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
@@ -546,49 +437,6 @@ const AssetModelCompatibilityPage = () => {
                         )}
                     </div>
 
-                    {isSuperuser && showAddDefaultConsumableForm && (
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-tertiary)' }}>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-                                <select
-                                    value={selectedDefaultConsumableModelId}
-                                    onChange={(e) => setSelectedDefaultConsumableModelId(e.target.value)}
-                                    style={{ flex: 1, padding: 'var(--space-2)' }}
-                                >
-                                    <option value="">{t('assetModelCompatibility.selectConsumableModel')}</option>
-                                    {availableDefaultConsumableModels.map((m) => (
-                                        <option key={m.consumable_model_id} value={m.consumable_model_id}>
-                                            {m.model_name || `Model ${m.consumable_model_id}`}
-                                        </option>
-                                    ))}
-                                </select>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={defaultConsumableQuantity}
-                                    onChange={(e) => setDefaultConsumableQuantity(Number(e.target.value))}
-                                    style={{ width: '60px', padding: 'var(--space-2)' }}
-                                    placeholder={t('assetModelCompatibility.qty')}
-                                />
-                                <button
-                                    onClick={addDefaultConsumable}
-                                    disabled={!selectedDefaultConsumableModelId || loading}
-                                    style={{ padding: 'var(--space-2) var(--space-3)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    {t('common.add')}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setShowAddDefaultConsumableForm(false);
-                                        setSelectedDefaultConsumableModelId('');
-                                        setDefaultConsumableQuantity(1);
-                                    }}
-                                    style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    {t('common.cancel')}
-                                </button>
-                            </div>
-                        </div>
-                    )}
 
                     <div style={{ overflowY: 'auto', flex: 1 }}>
                         {defaultConsumables.map((item) => (
@@ -613,6 +461,230 @@ const AssetModelCompatibilityPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Add Compatible Stock Item Model Modal */}
+            {showAddStockForm && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => { setShowAddStockForm(false); setSelectedStockItemModelId(''); }}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px', width: '90vw', minHeight: '500px' }}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('assetModelCompatibility.addCompatibleModel')}</h3>
+                                <button className="modal-close" onClick={() => { setShowAddStockForm(false); setSelectedStockItemModelId(''); }}>&times;</button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                        {t('assetModelCompatibility.selectStockItemModel')}
+                                    </label>
+                                    <SearchableSelect
+                                        value={selectedStockItemModelId}
+                                        onChange={(e) => setSelectedStockItemModelId(e.target.value)}
+                                        placeholder={t('assetModelCompatibility.selectStockItemModel')}
+                                        options={availableStockItemModels.map((m) => ({
+                                            value: m.stock_item_model_id,
+                                            label: `${m.brand_name || ''} ${m.model_name || `Model ${m.stock_item_model_id}`}`.trim(),
+                                        }))}
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAddStockForm(false); setSelectedStockItemModelId(''); }}
+                                    className="btn btn-secondary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={addStockCompatibility}
+                                    disabled={!selectedStockItemModelId || loading}
+                                    className="btn btn-primary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
+
+            {/* Add Compatible Consumable Model Modal */}
+            {showAddConsumableForm && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => { setShowAddConsumableForm(false); setSelectedConsumableModelId(''); }}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px', width: '90vw', minHeight: '500px' }}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('assetModelCompatibility.addCompatibleModel')}</h3>
+                                <button className="modal-close" onClick={() => { setShowAddConsumableForm(false); setSelectedConsumableModelId(''); }}>&times;</button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                        {t('assetModelCompatibility.selectConsumableModel')}
+                                    </label>
+                                    <SearchableSelect
+                                        value={selectedConsumableModelId}
+                                        onChange={(e) => setSelectedConsumableModelId(e.target.value)}
+                                        placeholder={t('assetModelCompatibility.selectConsumableModel')}
+                                        options={availableConsumableModels.map((m) => ({
+                                            value: m.consumable_model_id,
+                                            label: `${m.brand_name || ''} ${m.model_name || `Model ${m.consumable_model_id}`}`.trim(),
+                                        }))}
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAddConsumableForm(false); setSelectedConsumableModelId(''); }}
+                                    className="btn btn-secondary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={addConsumableCompatibility}
+                                    disabled={!selectedConsumableModelId || loading}
+                                    className="btn btn-primary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
+
+            {/* Add Default Stock Item Modal */}
+            {showAddDefaultStockForm && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => { setShowAddDefaultStockForm(false); setSelectedDefaultStockModelId(''); setDefaultStockQuantity(1); }}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px', width: '90vw', minHeight: '500px' }}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('assetModelCompatibility.addDefaultItem')}</h3>
+                                <button className="modal-close" onClick={() => { setShowAddDefaultStockForm(false); setSelectedDefaultStockModelId(''); setDefaultStockQuantity(1); }}>&times;</button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                        {t('assetModelCompatibility.selectStockItemModel')}
+                                    </label>
+                                    <SearchableSelect
+                                        value={selectedDefaultStockModelId}
+                                        onChange={(e) => setSelectedDefaultStockModelId(e.target.value)}
+                                        placeholder={t('assetModelCompatibility.selectStockItemModel')}
+                                        options={availableDefaultStockModels.map((m) => ({
+                                            value: m.stock_item_model_id,
+                                            label: `${m.brand_name || ''} ${m.model_name || `Model ${m.stock_item_model_id}`}`.trim(),
+                                        }))}
+                                    />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                        {t('assetModelCompatibility.qty')}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={defaultStockQuantity}
+                                        onChange={(e) => setDefaultStockQuantity(Number(e.target.value))}
+                                        className="form-input"
+                                        style={{ height: '44px', width: '100px' }}
+                                        placeholder={t('assetModelCompatibility.qty')}
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAddDefaultStockForm(false); setSelectedDefaultStockModelId(''); setDefaultStockQuantity(1); }}
+                                    className="btn btn-secondary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={addDefaultStockItem}
+                                    disabled={!selectedDefaultStockModelId || loading}
+                                    className="btn btn-primary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
+
+            {/* Add Default Consumable Modal */}
+            {showAddDefaultConsumableForm && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => { setShowAddDefaultConsumableForm(false); setSelectedDefaultConsumableModelId(''); setDefaultConsumableQuantity(1); }}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px', width: '90vw', minHeight: '500px' }}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('assetModelCompatibility.addDefaultItem')}</h3>
+                                <button className="modal-close" onClick={() => { setShowAddDefaultConsumableForm(false); setSelectedDefaultConsumableModelId(''); setDefaultConsumableQuantity(1); }}>&times;</button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                        {t('assetModelCompatibility.selectConsumableModel')}
+                                    </label>
+                                    <SearchableSelect
+                                        value={selectedDefaultConsumableModelId}
+                                        onChange={(e) => setSelectedDefaultConsumableModelId(e.target.value)}
+                                        placeholder={t('assetModelCompatibility.selectConsumableModel')}
+                                        options={availableDefaultConsumableModels.map((m) => ({
+                                            value: m.consumable_model_id,
+                                            label: `${m.brand_name || ''} ${m.model_name || `Model ${m.consumable_model_id}`}`.trim(),
+                                        }))}
+                                    />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)', display: 'block' }}>
+                                        {t('assetModelCompatibility.qty')}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={defaultConsumableQuantity}
+                                        onChange={(e) => setDefaultConsumableQuantity(Number(e.target.value))}
+                                        className="form-input"
+                                        style={{ height: '44px', width: '100px' }}
+                                        placeholder={t('assetModelCompatibility.qty')}
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowAddDefaultConsumableForm(false); setSelectedDefaultConsumableModelId(''); setDefaultConsumableQuantity(1); }}
+                                    className="btn btn-secondary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={addDefaultConsumable}
+                                    disabled={!selectedDefaultConsumableModelId || loading}
+                                    className="btn btn-primary"
+                                    style={{ padding: 'var(--space-3) var(--space-6)' }}
+                                >
+                                    {t('common.add')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
         </div>
     );
 };

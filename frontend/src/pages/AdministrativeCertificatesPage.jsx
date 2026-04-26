@@ -10,6 +10,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { FileText } from 'lucide-react';
+import ModalPortal from '../components/ModalPortal';
 
 const getSignatureFields = (t) => [
     { key: 'is_signed_by_warehouse_storage_magaziner', label: t('adminCertificates.magaziner'), short: 'M' },
@@ -403,6 +404,7 @@ const AdministrativeCertificatesPage = () => {
             </div>
 
             {showCreateForm && (
+                <ModalPortal>
                 <div
                     className="modal-overlay administrative-certificates-modal-overlay"
                     onClick={() => {
@@ -568,6 +570,7 @@ const AdministrativeCertificatesPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </div>
     );

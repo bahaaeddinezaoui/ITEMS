@@ -4,6 +4,7 @@ import { organizationalStructureService, organizationalStructureRelationService,
 import TranslatableInput from '../components/TranslatableInput';
 import { Search, SlidersHorizontal, ArrowUpDown, Building2, Plus, X, Pencil, Trash2, Network, ChevronDown, XCircle, Check } from 'lucide-react';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
 
 const getBilingualStructureName = (item, currentLang) => {
     const nameAr = item.structure_name_ar;
@@ -45,8 +46,9 @@ const StructureFormModal = ({ isOpen, onClose, editingId, formData, handleFormCh
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" onClick={onClose} style={{ background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)' }}>
-            <div className="modal" style={{ maxWidth: '520px', width: '90%', borderRadius: '16px', border: '1px solid rgba(148, 163, 184, 0.2)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+        <ModalPortal>
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal" style={{ maxWidth: '520px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
                 <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -63,7 +65,7 @@ const StructureFormModal = ({ isOpen, onClose, editingId, formData, handleFormCh
                         </button>
                     </div>
                 </div>
-                <div style={{ padding: '28px', background: '#0f172a' }}>
+                <div style={{ padding: '28px', background: 'var(--color-bg-card)' }}>
                     <form onSubmit={handleSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                             <div>
@@ -113,6 +115,7 @@ const StructureFormModal = ({ isOpen, onClose, editingId, formData, handleFormCh
                 </div>
             </div>
         </div>
+        </ModalPortal>
     );
 };
 
@@ -128,8 +131,9 @@ const HierarchyModal = ({
     const hasRelation = relations.length > 0;
 
     return (
-        <div className="modal-overlay" onClick={onClose} style={{ background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)' }}>
-            <div className="modal" style={{ maxWidth: '520px', width: '90%', borderRadius: '16px', border: '1px solid rgba(148, 163, 184, 0.2)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+        <ModalPortal>
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal" style={{ maxWidth: '520px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
                 <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -150,7 +154,7 @@ const HierarchyModal = ({
                     </div>
                 </div>
 
-                <div style={{ padding: '28px', background: '#0f172a' }}>
+                <div style={{ padding: '28px', background: 'var(--color-bg-card)' }}>
                     {hasRelation && !editingRelation ? (
                         <div style={{ background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.05) 100%)', border: '1px solid rgba(34, 197, 94, 0.3)', borderRadius: '14px', padding: '20px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -214,6 +218,7 @@ const HierarchyModal = ({
                 </div>
             </div>
         </div>
+        </ModalPortal>
     );
 };
 

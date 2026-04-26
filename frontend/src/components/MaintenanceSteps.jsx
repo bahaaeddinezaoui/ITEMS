@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import SearchableSelect from './SearchableSelect';
 import {
     maintenanceStepService,
@@ -25,6 +24,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import ModalPortal from './ModalPortal';
 import {
     Power,
     Box,
@@ -1377,7 +1377,7 @@ const MaintenanceSteps = ({
                     </div>
 
                     {externalMaintenanceModalOpen && canCreateExternalMaintenance && (
-                        createPortal(
+                        <ModalPortal>
                             <div className="modal-overlay" onClick={() => closeExternalMaintenanceModal()}>
                                 <div
                                     className="modal"
@@ -1427,13 +1427,12 @@ const MaintenanceSteps = ({
                                         </div>
                                     </form>
                                 </div>
-                            </div>,
-                            document.body,
-                        )
+                            </div>
+                        </ModalPortal>
                     )}
 
                     {externalStepModalOpen && canCreateExternalMaintenance && (
-                        createPortal(
+                        <ModalPortal>
                             <div className="modal-overlay" onClick={() => closeExternalStepModal()}>
                                 <div
                                     className="modal"
@@ -1494,9 +1493,8 @@ const MaintenanceSteps = ({
                                         </div>
                                     </form>
                                 </div>
-                            </div>,
-                            document.body,
-                        )
+                            </div>
+                        </ModalPortal>
                     )}
 
                     {/* Error Message */}
@@ -1507,7 +1505,7 @@ const MaintenanceSteps = ({
                     )}
 
             {addingStep && canManageSteps && (
-                createPortal(
+                <ModalPortal>
                     <div className="modal-overlay" onClick={() => closeAddStepModal()}>
                         <div
                             className="modal"
@@ -1608,9 +1606,8 @@ const MaintenanceSteps = ({
                                 </div>
                             </form>
                         </div>
-                    </div>,
-                    document.body,
-                )
+                    </div>
+                </ModalPortal>
             )}
 
                     {/* Steps List - Compact Row View */}
@@ -1888,7 +1885,7 @@ const MaintenanceSteps = ({
             )}
 
             {statusEditorStepId && (
-                createPortal(
+                <ModalPortal>
                     <div className="modal-overlay" onClick={() => closeStatusEditor()}>
                         <div
                             className="modal"
@@ -1950,9 +1947,8 @@ const MaintenanceSteps = ({
                                 </button>
                             </div>
                         </div>
-                    </div>,
-                    document.body,
-                )
+                    </div>
+                </ModalPortal>
             )}
 
             {returnEditorOpen && returnEditorStep && (
@@ -2061,6 +2057,7 @@ const MaintenanceSteps = ({
             )}
 
             {returnMaintenanceOpen && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => (returnMaintenanceSubmitting ? null : closeReturnMaintenance())}>
                     <div
                         className="modal"
@@ -2194,6 +2191,7 @@ const MaintenanceSteps = ({
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {removeEditorOpen && removeEditorStep && (
@@ -2314,7 +2312,7 @@ const MaintenanceSteps = ({
             )}
 
             {assetConditionEditorOpen && assetConditionEditorStep && (
-                createPortal(
+                <ModalPortal>
                     <div className="modal-overlay" onClick={() => closeAssetConditionEditor()}>
                         <div
                             className="modal"
@@ -2422,13 +2420,12 @@ const MaintenanceSteps = ({
                                 </button>
                             </div>
                         </div>
-                    </div>,
-                    document.body,
-                )
+                    </div>
+                </ModalPortal>
             )}
 
             {attributeEditorOpen && attributeEditorStep && (
-                createPortal(
+                <ModalPortal>
                     <div className="modal-overlay" onClick={() => closeAttributeEditor()}>
                         <div
                             className="modal"
@@ -2708,9 +2705,8 @@ const MaintenanceSteps = ({
                                 </div>
                             </div>
                         </div>
-                    </div>,
-                    document.body,
-                )
+                    </div>
+                </ModalPortal>
             )}
 
         </div>

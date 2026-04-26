@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
+import ModalPortal from './ModalPortal';
 
 const DestructionSelectionModal = ({ 
     isOpen, 
@@ -69,6 +70,7 @@ const DestructionSelectionModal = ({
                           - selectedStockItems.length - selectedConsumables.length;
 
     return (
+        <ModalPortal>
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
                 <div className="modal-header">
@@ -162,6 +164,7 @@ const DestructionSelectionModal = ({
                 </div>
             </div>
         </div>
+        </ModalPortal>
     );
 };
 

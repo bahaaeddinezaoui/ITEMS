@@ -25,6 +25,9 @@ import { Tag as TagIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import TranslatableInput from '../components/TranslatableInput';
 import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const getBilingualConsumableTypeLabel = (item, currentLang) => {
     const labelAr = item.consumable_type_label_ar;
@@ -52,6 +55,8 @@ const ConsumablesTypesPage = () => {
 
     const [showTypeForm, setShowTypeForm] = useState(false);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
     const [formData, setFormData] = useState({
         consumable_type_label: '',
         consumable_type_code: '',
@@ -130,9 +135,10 @@ const ConsumablesTypesPage = () => {
             await consumableTypeAttributeService.create(payload);
             setTypeAttributeForm({ consumable_attribute_definition: '', is_mandatory: false, default_value: '' });
             setShowAddTypeAttributeForm(false);
+            showSuccess(t('consumablesTypes.typeAttrSuccess', 'Attribute added to type successfully'));
             await fetchTypeAttributes(selectedConsumableType.consumable_type_id);
         } catch (err) {
-            setError(t('consumablesTypes.addAttributeError') + ': ' + err.message);
+            showError(t('consumablesTypes.addAttributeError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -187,9 +193,10 @@ const ConsumablesTypesPage = () => {
             setFormData({ consumable_type_label: '', consumable_type_code: '' });
             setFormTranslations({});
             setShowTypeForm(false);
+            showSuccess(t('consumablesTypes.createSuccess', 'Consumable type created successfully'));
             await fetchTypes();
         } catch (err) {
-            setError(t('consumablesTypes.createError') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('consumablesTypes.createError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -429,10 +436,11 @@ const ConsumablesTypesPage = () => {
 
             {/* Modal for Type Attributes */}
             {showAttributesModal && selectedConsumableType && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => setShowAttributesModal(false)}>
                     <div className="modal" style={{ maxWidth: '700px', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="modal-header" style={{ borderBottom: '1px solid var(--color-border)', padding: 'var(--space-5)' }}>
+                        <div className="modal-header" style={{ padding: 'var(--space-5)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
                                 <div style={{ 
                                     width: '48px', 
@@ -460,6 +468,7 @@ const ConsumablesTypesPage = () => {
 
                         {/* Modal Body */}
                         <div className="modal-body" style={{ flex: 1, overflow: 'auto', padding: 'var(--space-5)' }}>
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             {/* Add Attribute Button */}
                             <button
                                 onClick={() => setShowAddTypeAttributeForm(!showAddTypeAttributeForm)}
@@ -657,10 +666,12 @@ const ConsumablesTypesPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {/* Modal for Creating New Type */}
             {showTypeForm && (
+                <ModalPortal>
                 <div className="modal-overlay">
                     <div className="modal" style={{ maxWidth: '500px' }}>
                         <div className="modal-header">
@@ -670,6 +681,7 @@ const ConsumablesTypesPage = () => {
                             </button>
                         </div>
                         <div className="modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <form onSubmit={handleTypeSubmit} className="form">
                                 <TranslatableInput
                                     label="Type Name"
@@ -704,6 +716,7 @@ const ConsumablesTypesPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </div>
     );

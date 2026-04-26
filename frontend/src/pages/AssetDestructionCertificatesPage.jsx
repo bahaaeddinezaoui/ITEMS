@@ -19,6 +19,7 @@ import {
 import { assetDestructionCertificateService, assetService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { SkeletonCardList } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
 
 const AssetDestructionCertificatesPage = () => {
     const { t } = useTranslation();
@@ -546,6 +547,7 @@ const AssetDestructionCertificatesPage = () => {
 
             {/* Missing PDF Modal */}
             {showMissingPdfModal && (
+                <ModalPortal>
                 <div className="modal-overlay">
                     <div className="modal" style={{ maxWidth: '480px' }}>
                         <div className="modal-header">
@@ -587,6 +589,7 @@ const AssetDestructionCertificatesPage = () => {
                         </div>
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </>
     );

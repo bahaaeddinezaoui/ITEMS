@@ -4,6 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Monitor, Smartphone, Globe, XCircle, Clock, Shield, AlertCircle, CheckCircle2, Lock, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY = 'incidentReportCompositionStatusStrategy';
 
@@ -25,6 +28,8 @@ const OptionsPage = () => {
     }, [user]);
 
     const [activeSection, setActiveSection] = useState('security');
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
+
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [formData, setFormData] = useState({
         oldPassword: '',
@@ -145,11 +150,13 @@ const OptionsPage = () => {
         try {
             await authService.changePassword(formData.oldPassword, formData.newPassword);
             setMessage({ type: 'success', text: t('options.passwordChangedSuccess') });
+            showSuccess(t('options.passwordChangedSuccess'));
             setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
             setShowPasswordForm(false);
         } catch (error) {
             const errorMsg = error.response?.data?.error || error.response?.data?.detail || t('options.passwordChangeError');
             setMessage({ type: 'error', text: errorMsg });
+            showError(errorMsg);
         } finally {
             setLoading(false);
         }
@@ -260,6 +267,7 @@ const OptionsPage = () => {
                                         )}
 
                                         <form className="form" onSubmit={handleSubmitPassword}>
+                                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                             <div className="form-group">
                                                 <label className="form-label">{t('options.oldPassword')}</label>
                                                 <input
@@ -679,6 +687,7 @@ const OptionsPage = () => {
                                 )}
                                 
                                 {showAutoAcceptConfirm && (
+                                    <ModalPortal>
                                     <div className="modal-overlay" onClick={() => !autoAcceptSubmitting && setShowAutoAcceptConfirm(false)}>
                                         <div className="modal" onClick={(e) => e.stopPropagation()}>
                                             <div className="modal-header">
@@ -691,6 +700,7 @@ const OptionsPage = () => {
                                                 </button>
                                             </div>
                                             <div className="modal-body">
+                                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                                 {autoAcceptLoading ? (
                                                     <div style={{ color: 'var(--color-text-secondary)' }}>{t('options.loadingPendingMovements')}</div>
                                                 ) : (
@@ -747,6 +757,7 @@ const OptionsPage = () => {
                                             </div>
                                         </div>
                                     </div>
+                                    </ModalPortal>
                                 )}
                             </div>
                         )}

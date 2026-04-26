@@ -4,6 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Search, ArrowUpDown, Pencil, Sliders, Link2, Layers, Box, X, XCircle, Tag, Hash, Image, ChevronUp, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { assetAttributeDefinitionService, assetBrandService, assetModelAttributeService, assetModelService, assetTypeService, authService } from '../services/api';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const AssetsModelsPage = () => {
     const { t } = useTranslation();
@@ -41,6 +44,8 @@ const AssetsModelsPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [showBrandForm, setShowBrandForm] = useState(false);
     const [brandSaving, setBrandSaving] = useState(false);
@@ -147,9 +152,10 @@ const AssetsModelsPage = () => {
             setBrandForm({ brand_name: '', brand_photo: null });
             setBrandPhotoPreview(null);
             setShowBrandForm(false);
+            showSuccess(t('assetModels.createBrandSuccess', 'Brand created successfully'));
             await fetchAssetBrands();
         } catch (err) {
-            setError(t('assetModels.createBrandError') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('assetModels.createBrandError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setBrandSaving(false);
         }
@@ -227,9 +233,10 @@ const AssetsModelsPage = () => {
             setModelForm({ asset_brand: '', model_name_en: '', model_name_ar: '', model_code: '' });
             setShowModelForm(false);
             setEditingModel(null);
+            showSuccess(editingModel ? t('assetModels.updateSuccess', 'Model updated successfully') : t('assetModels.createSuccess', 'Model created successfully'));
             await fetchTypeAndModels(typeId);
         } catch (err) {
-            setError((editingModel ? t('assetModels.updateError') : t('assetModels.createError')) + ': ' + (err.response?.data?.error || err.message));
+            showError((editingModel ? t('assetModels.updateError') : t('assetModels.createError')) + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setModelSaving(false);
         }
@@ -298,9 +305,10 @@ const AssetsModelsPage = () => {
                 value_date: ''
             });
             setShowModelAttributeForm(false);
+            showSuccess(t('assetModels.modelAttrSuccess', 'Model attribute added successfully'));
             await fetchAssetModelAttributes(selectedAssetModel.asset_model_id);
         } catch (err) {
-            setError(t('assetModels.addAttributeError') + ': ' + err.message);
+            showError(t('assetModels.addAttributeError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -441,9 +449,10 @@ const AssetsModelsPage = () => {
 
             {/* Add/Edit Model Modal */}
             {showModelForm && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={handleCancelModelForm}>
                     <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
+                        <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                                 <Plus size={18} style={{ color: 'var(--color-accent-primary)' }} />
                                 <h3 className="modal-title" style={{ margin: 0 }}>
@@ -455,6 +464,7 @@ const AssetsModelsPage = () => {
                             </button>
                         </div>
                         <form onSubmit={handleModelSubmit} className="modal-body" style={{ padding: 'var(--space-5)' }}>
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
                                 <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
                                     {t('assetModels.selectBrand')} *
@@ -501,6 +511,7 @@ const AssetsModelsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {/* Layout */}
@@ -623,6 +634,7 @@ const AssetsModelsPage = () => {
 
                 {/* Attributes Modal */}
                 {showAttributesModal && selectedAssetModel && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => { setShowAttributesModal(false); setShowModelAttributeForm(false); }}>
                         <div className="modal" style={{ maxWidth: '640px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)' }}>
@@ -648,6 +660,7 @@ const AssetsModelsPage = () => {
                             </div>
 
                             <div className="modal-body" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 {showModelAttributeForm && (
                                     <form onSubmit={handleModelAttributeSubmit} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-accent-primary)' }}>
                                         <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
@@ -734,6 +747,7 @@ const AssetsModelsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Manage Brands Card */}

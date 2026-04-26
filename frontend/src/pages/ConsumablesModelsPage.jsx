@@ -4,6 +4,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Search, Pencil, Sliders, Link2, Layers, Box, X, XCircle, Tag, Hash, Image, ChevronUp, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { consumableAttributeDefinitionService, consumableBrandService, consumableModelAttributeService, consumableModelService, consumableTypeService, authService } from '../services/api';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const ConsumablesModelsPage = () => {
     const { t } = useTranslation();
@@ -41,6 +44,8 @@ const ConsumablesModelsPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [showBrandForm, setShowBrandForm] = useState(false);
     const [brandSaving, setBrandSaving] = useState(false);
@@ -149,9 +154,10 @@ const ConsumablesModelsPage = () => {
             setBrandForm({ brand_name: '', brand_photo: null });
             setBrandPhotoPreview(null);
             setShowBrandForm(false);
+            showSuccess(t('consumableModels.createBrandSuccess', 'Brand created successfully'));
             await fetchConsumableBrands();
         } catch (err) {
-            setError(t('consumableModels.createBrandError') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('consumableModels.createBrandError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setBrandSaving(false);
         }
@@ -229,9 +235,10 @@ const ConsumablesModelsPage = () => {
             setModelForm({ consumable_brand: '', model_name_en: '', model_name_ar: '', model_code: '' });
             setShowModelForm(false);
             setEditingModel(null);
+            showSuccess(editingModel ? t('consumableModels.updateSuccess', 'Model updated successfully') : t('consumableModels.createSuccess', 'Model created successfully'));
             await fetchTypeAndModels(typeId);
         } catch (err) {
-            setError(t('consumableModels.saveModelError', { action: editingModel ? t('consumableModels.update') : t('consumableModels.create') }) + ': ' + (err.response?.data?.error || err.message));
+            showError(t('consumableModels.saveModelError', { action: editingModel ? t('consumableModels.update') : t('consumableModels.create') }) + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setModelSaving(false);
         }
@@ -300,9 +307,10 @@ const ConsumablesModelsPage = () => {
                 value_date: ''
             });
             setShowModelAttributeForm(false);
+            showSuccess(t('consumableModels.modelAttrSuccess', 'Model attribute added successfully'));
             await fetchConsumableModelAttributes(selectedConsumableModel.consumable_model_id);
         } catch (err) {
-            setError(t('consumableModels.addAttributeError') + ': ' + err.message);
+            showError(t('consumableModels.addAttributeError') + ': ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -439,9 +447,10 @@ const ConsumablesModelsPage = () => {
 
             {/* Add/Edit Model Modal */}
             {showModelForm && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={handleCancelModelForm}>
                     <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
+                        <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                                 <Plus size={18} style={{ color: 'var(--color-accent-primary)' }} />
                                 <h3 className="modal-title" style={{ margin: 0 }}>
@@ -453,6 +462,7 @@ const ConsumablesModelsPage = () => {
                             </button>
                         </div>
                         <form onSubmit={handleModelSubmit} className="modal-body" style={{ padding: 'var(--space-5)' }}>
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
                                 <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
                                     {t('consumableModels.selectBrand', 'Select Brand')} *
@@ -499,6 +509,7 @@ const ConsumablesModelsPage = () => {
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {/* Layout */}
@@ -612,6 +623,7 @@ const ConsumablesModelsPage = () => {
 
                 {/* Attributes Modal */}
                 {showAttributesModal && selectedConsumableModel && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => { setShowAttributesModal(false); setShowModelAttributeForm(false); }}>
                         <div className="modal" style={{ maxWidth: '640px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header" style={{ padding: 'var(--space-4) var(--space-5)' }}>
@@ -637,6 +649,7 @@ const ConsumablesModelsPage = () => {
                             </div>
 
                             <div className="modal-body" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 {showModelAttributeForm && (
                                     <form onSubmit={handleModelAttributeSubmit} style={{ marginBottom: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-accent-primary)' }}>
                                         <div className="form-group" style={{ marginBottom: 'var(--space-3)' }}>
@@ -723,6 +736,7 @@ const ConsumablesModelsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Manage Brands Card */}

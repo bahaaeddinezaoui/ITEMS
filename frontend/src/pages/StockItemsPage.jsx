@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Package, Hash } from 'lucide-react';
+import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Package, Hash, UserPlus } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
 import {
     authService,
@@ -17,6 +17,26 @@ import {
 } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import SearchableSelect from '../components/SearchableSelect';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
+
+const getBilingualPersonName = (person, currentLang) => {
+    const firstEn = person.first_name_en || person.first_name || '';
+    const firstAr = person.first_name_ar || '';
+    const lastEn = person.last_name_en || person.last_name || '';
+    const lastAr = person.last_name_ar || '';
+    const nameEn = [firstEn, lastEn].filter(Boolean).join(' ');
+    const nameAr = [firstAr, lastAr].filter(Boolean).join(' ');
+    if (currentLang === 'ar') {
+        if (nameAr && nameEn && nameAr !== nameEn) return `${nameAr} (${nameEn})`;
+        return nameAr || nameEn || `Person ${person.person_id}`;
+    } else {
+        if (nameEn && nameAr && nameEn !== nameAr) return `${nameEn} (${nameAr})`;
+        return nameEn || nameAr || `Person ${person.person_id}`;
+    }
+};
 
 const StockItemsPage = () => {
     const navigate = useNavigate();
@@ -73,8 +93,7 @@ const StockItemsPage = () => {
     const [dischargingAssignment, setDischargingAssignment] = useState(null);
     const [assignFormData, setAssignFormData] = useState({
         person: '',
-        start_datetime: '',
-        condition_on_assignment: 'Good'
+        start_datetime: ''
     });
 
     const [showTypeAttributeForm, setShowTypeAttributeForm] = useState(false);
@@ -134,6 +153,8 @@ const StockItemsPage = () => {
     
     const [editingStockItem, setEditingStockItem] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     useEffect(() => {
         fetchStockItemTypes();
@@ -412,9 +433,10 @@ const StockItemsPage = () => {
             await stockItemTypeService.create(formData);
             setFormData({ stock_item_type_label: '', stock_item_type_code: '' });
             setShowTypeForm(false);
+            showSuccess(t('stockItems.createTypeSuccess', 'Stock item type created successfully'));
             await fetchStockItemTypes();
         } catch (err) {
-            setError(t('stockItems.createTypeError') + ' ' + (err.response?.data?.error || err.message));
+            showError(t('stockItems.createTypeError') + ' ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -460,9 +482,10 @@ const StockItemsPage = () => {
                 warranty_expiry_in_months: '',
             });
             setShowModelForm(false);
+            showSuccess(t('stockItems.createModelSuccess', 'Stock item model created successfully'));
             await fetchStockItemModels(selectedStockItemType.stock_item_type_id);
         } catch (err) {
-            setError(t('stockItems.createModelError') + ' ' + (err.response?.data?.error || err.message));
+            showError(t('stockItems.createModelError') + ' ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -520,12 +543,13 @@ const StockItemsPage = () => {
             setFormTranslations({});
             setEditingStockItem(null);
             setShowStockItemForm(false);
+            showSuccess(editingStockItem ? t('stockItems.updateSuccess', 'Stock item updated successfully') : t('stockItems.createSuccess', 'Stock item created successfully'));
             await fetchStockItems(selectedStockItemModel.stock_item_model_id);
         } catch (err) {
             const errorMsg = err.response?.data ? 
                 (typeof err.response.data === 'object' ? JSON.stringify(err.response.data) : err.response.data) :
                 err.message;
-            setError(t(editingStockItem ? 'stockItems.updateItemError' : 'stockItems.createItemError') + ' ' + errorMsg);
+            showError(t(editingStockItem ? 'stockItems.updateItemError' : 'stockItems.createItemError') + ' ' + errorMsg);
         } finally {
             setSaving(false);
         }
@@ -570,9 +594,10 @@ const StockItemsPage = () => {
             await stockItemTypeAttributeService.create(payload);
             setTypeAttributeForm({ stock_item_attribute_definition: '', is_mandatory: false, default_value: '' });
             setShowTypeAttributeForm(false);
+            showSuccess(t('stockItems.typeAttrSuccess', 'Attribute assigned to type successfully'));
             await fetchStockItemTypeAttributes(selectedStockItemType.stock_item_type_id);
         } catch (err) {
-            setError(t('stockItems.assignAttrError') + ' ' + err.message);
+            showError(t('stockItems.assignAttrError') + ' ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -608,9 +633,10 @@ const StockItemsPage = () => {
                 value_date: ''
             });
             setShowStockItemAttributeForm(false);
+            showSuccess(t('stockItems.itemAttrSuccess', 'Item attribute added successfully'));
             await fetchStockItemAttributes(selectedStockItem.stock_item_id);
         } catch (err) {
-            setError(t('stockItems.addItemAttrError') + ' ' + err.message);
+            showError(t('stockItems.addItemAttrError') + ' ' + err.message);
         } finally {
             setSaving(false);
         }
@@ -684,14 +710,13 @@ const StockItemsPage = () => {
                 person: assignFormData.person,
                 stock_item: assigningStockItem.stock_item_id,
                 start_datetime: new Date(assignFormData.start_datetime).toISOString(),
-                condition_on_assignment: assignFormData.condition_on_assignment,
             });
             setShowAssignForm(false);
             setAssigningStockItem(null);
             await fetchAssignments();
-            alert(t('stockItems.assignedSuccess'));
+            showSuccess(t('stockItems.assignedSuccess'));
         } catch (err) {
-            setError(t('stockItems.assignError') + ' ' + (err.response?.data?.error || err.message));
+            showError(t('stockItems.assignError') + ' ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -704,9 +729,9 @@ const StockItemsPage = () => {
             await stockItemAssignmentService.discharge(assignmentId);
             setDischargingAssignment(null);
             await fetchAssignments();
-            alert(t('stockItems.dischargedSuccess'));
+            showSuccess(t('stockItems.dischargedSuccess'));
         } catch (err) {
-            setError(t('stockItems.dischargeError') + ' ' + (err.response?.data?.error || err.message));
+            showError(t('stockItems.dischargeError') + ' ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -730,11 +755,12 @@ const StockItemsPage = () => {
         try {
             const updated = await stockItemService.suggestForDestruction(selectedStockItem.stock_item_id);
             setSelectedStockItem(updated);
+            showSuccess(t('stockItems.suggestDestructionSuccess', 'Stock item suggested for destruction successfully'));
             if (selectedStockItemModel) {
                 await fetchStockItems(selectedStockItemModel.stock_item_model_id);
             }
         } catch (err) {
-            setError(err.response?.data?.error || t('stockItems.suggestDestructionError'));
+            showError(err.response?.data?.error || t('stockItems.suggestDestructionError'));
         } finally {
             setSaving(false);
         }
@@ -832,8 +858,9 @@ const StockItemsPage = () => {
                 await fetchStockItems(selectedStockItemModel.stock_item_model_id);
             }
             closeMoveModal();
+            showSuccess(t('stockItems.moveSuccess', 'Stock item moved successfully'));
         } catch (err) {
-            setError(t('stockItems.moveError') + ' ' + (err?.response?.data?.error || err.message));
+            showError(t('stockItems.moveError') + ' ' + (err?.response?.data?.error || err.message));
         } finally {
             setMoveSubmitting(false);
         }
@@ -869,9 +896,9 @@ const StockItemsPage = () => {
                 setSelectedStockItem(result.source_stock_item);
             }
             closeSplitModal();
-            setSuccessToast(t('stockItems.splitDone', { sourceVal: result?.source_remaining_value ?? '-', newVal: result?.new_item_value ?? '-' }));
+            showSuccess(t('stockItems.splitDone', { sourceVal: result?.source_remaining_value ?? '-', newVal: result?.new_item_value ?? '-' }));
         } catch (err) {
-            setError(t('stockItems.splitError') + ' ' + (err?.response?.data?.error || err.message));
+            showError(t('stockItems.splitError') + ' ' + (err?.response?.data?.error || err.message));
         } finally {
             setSplitSubmitting(false);
         }
@@ -971,6 +998,7 @@ const StockItemsPage = () => {
 
                 {/* Add/Edit Stock Item Modal */}
                 {showStockItemForm && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => setShowStockItemForm(false)}>
                         <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header" style={{ gap: 'var(--space-4)' }}>
@@ -993,6 +1021,7 @@ const StockItemsPage = () => {
                             </div>
                             <form onSubmit={handleStockItemSubmit}>
                                 <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+                                    <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                     <div className="form-group">
                                         <TranslatableInput
                                             label={t('stockItems.name')}
@@ -1040,6 +1069,7 @@ const StockItemsPage = () => {
                             </form>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Layout */}
@@ -1164,8 +1194,7 @@ const StockItemsPage = () => {
                                                             const localISOTime = new Date(now - tzOffset).toISOString().slice(0, 16);
                                                             setAssignFormData({
                                                                 person: '',
-                                                                start_datetime: localISOTime,
-                                                                condition_on_assignment: item.stock_item_status === 'in_stock' ? 'Good' : 'Needs Repair'
+                                                                start_datetime: localISOTime
                                                             });
                                                             setShowAssignForm(true);
                                                         }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-success)' }} title={t('stockItems.assign')}>
@@ -1187,6 +1216,7 @@ const StockItemsPage = () => {
 
                 {/* Stock Item Details Modal */}
                 {showStockItemDetailsModal && selectedStockItem && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={closeStockItemDetailsModal}>
                         <div className="modal" style={{ maxWidth: '720px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
@@ -1201,6 +1231,7 @@ const StockItemsPage = () => {
                                 <button className="modal-close" onClick={closeStockItemDetailsModal}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 {canSuggestStockItemForDestruction && (selectedStockItem.stock_item_status || '').toLowerCase() === 'failed' && (
                                     <div style={{ marginBottom: 'var(--space-4)' }}>
                                         <button
@@ -1318,10 +1349,12 @@ const StockItemsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Split Modal */}
                 {showSplitModal && splittingStockItem && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => !splitSubmitting && closeSplitModal()}>
                         <div className="modal" style={{ maxWidth: '620px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
@@ -1329,6 +1362,7 @@ const StockItemsPage = () => {
                                 <button className="modal-close" onClick={closeSplitModal} disabled={splitSubmitting}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <form onSubmit={submitSplit}>
                                     <div className="form-group">
                                         <label className="form-label">{t('stockItems.numericAttribute')}</label>
@@ -1420,10 +1454,12 @@ const StockItemsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Move Modal */}
                 {showMoveModal && movingStockItem && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => !moveSubmitting && closeMoveModal()}>
                         <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
@@ -1431,6 +1467,7 @@ const StockItemsPage = () => {
                                 <button className="modal-close" onClick={closeMoveModal} disabled={moveSubmitting}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <form onSubmit={submitMove}>
                                     <div className="form-group">
                                         <div style={{
@@ -1470,51 +1507,60 @@ const StockItemsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Assign Modal */}
                 {showAssignForm && assigningStockItem && (
-                    <div className="modal-overlay" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }}>
-                        <div className="modal" style={{ maxWidth: '520px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3 className="modal-title">{t('stockItems.assignItemTitle')}: {assigningStockItem.stock_item_name || t('stockItems.itemWithId', { id: assigningStockItem.stock_item_id })}</h3>
-                                <button className="modal-close" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }}><X size={18} /></button>
+                    <ModalPortal>
+                    <div className="modal-overlay am-modal-overlay" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }}>
+                        <div className="am-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="am-modal-header">
+                                <div className="am-modal-header-left">
+                                    <span className="am-modal-header-icon"><UserPlus size={16} /></span>
+                                    <div>
+                                        <h3 className="am-modal-title">{t('stockItems.assignItemTitle')}</h3>
+                                        <p className="am-modal-subtitle">{assigningStockItem.stock_item_name || t('stockItems.itemWithId', { id: assigningStockItem.stock_item_id })}</p>
+                                    </div>
+                                </div>
+                                <button className="am-modal-close" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }}><X size={16} /></button>
                             </div>
-                            <div className="modal-body">
-                                <form onSubmit={handleAssignSubmit}>
+                            <form onSubmit={handleAssignSubmit}>
+                                <div className="am-modal-body">
+                                    <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                     <div className="form-group">
                                         <label className="form-label">{t('stockItems.assignToPerson')}</label>
-                                        <select name="person" value={assignFormData.person} onChange={handleAssignInputChange} required disabled={saving} className="form-input" style={{ height: '44px' }}>
-                                            <option value="">{t('stockItems.selectPerson')}</option>
-                                            {persons.map(p => (
-                                                <option key={p.person_id} value={p.person_id}>
-                                                    {p.first_name} {p.last_name} ({p.person_id})
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <SearchableSelect
+                                            value={assignFormData.person}
+                                            onChange={(e) => handleAssignInputChange({ target: { name: 'person', value: e.target.value } })}
+                                            options={persons.map(p => ({
+                                                value: p.person_id,
+                                                label: getBilingualPersonName(p, i18n.language),
+                                                searchText: [p.first_name_en, p.first_name_ar, p.last_name_en, p.last_name_ar, p.first_name, p.last_name].filter(Boolean).join(' ')
+                                            }))}
+                                            placeholder={t('stockItems.selectPerson')}
+                                            required
+                                            disabled={saving}
+                                        />
                                     </div>
                                     <div className="form-group">
                                         <label className="form-label">{t('stockItems.startDateAuto')}</label>
-                                        <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required readOnly className="form-input" style={{ height: '44px', cursor: 'not-allowed' }} />
+                                        <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required readOnly className="form-input" />
                                     </div>
-                                    <div className="form-group">
-                                        <label className="form-label">{t('stockItems.condition')}</label>
-                                        <input type="text" name="condition_on_assignment" value={assignFormData.condition_on_assignment} onChange={handleAssignInputChange} placeholder={t('stockItems.conditionPlaceholder')} required disabled={saving} className="form-input" style={{ height: '44px' }} />
-                                    </div>
-                                    <div className="form-actions">
-                                        <button type="submit" disabled={saving} className="btn btn-primary">
-                                            {saving ? t('stockItems.assigning') : t('stockItems.assignItem')}
-                                        </button>
-                                        <button type="button" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }} className="btn btn-secondary">{t('stockItems.cancel')}</button>
-                                    </div>
-                                </form>
-                            </div>
+                                </div>
+                                <div className="am-modal-footer">
+                                    <button type="button" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }} className="am-btn-cancel">{t('stockItems.cancel')}</button>
+                                    <button type="submit" disabled={saving} className="am-btn-assign">{saving ? t('stockItems.assigning') : t('stockItems.assignItem')}</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
 
                 {/* Discharge Modal */}
                 {dischargingAssignment && (
+                    <ModalPortal>
                     <div className="modal-overlay" onClick={() => setDischargingAssignment(null)}>
                         <div className="modal" style={{ maxWidth: '480px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
@@ -1522,6 +1568,7 @@ const StockItemsPage = () => {
                                 <button className="modal-close" onClick={() => setDischargingAssignment(null)}><X size={18} /></button>
                             </div>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <p>
                                     {t('stockItems.dischargeConfirmText', { item: dischargingAssignment.stock_item?.stock_item_name || t('stockItems.stockItem'), person: dischargingAssignment.person })}
                                     <br /><br />
@@ -1536,6 +1583,7 @@ const StockItemsPage = () => {
                             </div>
                         </div>
                     </div>
+                    </ModalPortal>
                 )}
             </div>
         );
@@ -1969,8 +2017,7 @@ const StockItemsPage = () => {
                                                                             const localISOTime = new Date(now - tzOffset).toISOString().slice(0, 16);
                                                                             setAssignFormData({
                                                                                 person: '',
-                                                                                start_datetime: localISOTime,
-                                                                                condition_on_assignment: item.stock_item_status === 'in_stock' ? 'Good' : 'Needs Repair'
+                                                                                start_datetime: localISOTime
                                                                             });
                                                                             setShowAssignForm(true);
                                                                         }}
@@ -2467,92 +2514,50 @@ const StockItemsPage = () => {
             )}
 
             {showAssignForm && assigningStockItem && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.75)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    zIndex: 1000
-                }}>
-                    <div style={{
-                        backgroundColor: 'var(--color-bg-tertiary)',
-                        color: 'var(--color-text)',
-                        padding: 'var(--space-6)',
-                        borderRadius: 'var(--radius-md)',
-                        width: '100%',
-                        maxWidth: '520px',
-                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.25)',
-                        border: '1px solid var(--color-border)'
-                    }}>
-                        <h2 style={{ marginBottom: 'var(--space-4)' }}>{t('stockItems.assignItemTitle')}: {assigningStockItem.stock_item_name || t('stockItems.itemWithId', { id: assigningStockItem.stock_item_id })}</h2>
+                <ModalPortal>
+                <div className="modal-overlay am-modal-overlay" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }}>
+                    <div className="am-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="am-modal-header">
+                            <div className="am-modal-header-left">
+                                <span className="am-modal-header-icon"><UserPlus size={16} /></span>
+                                <div>
+                                    <h3 className="am-modal-title">{t('stockItems.assignItemTitle')}</h3>
+                                    <p className="am-modal-subtitle">{assigningStockItem.stock_item_name || t('stockItems.itemWithId', { id: assigningStockItem.stock_item_id })}</p>
+                                </div>
+                            </div>
+                            <button className="am-modal-close" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }}><X size={16} /></button>
+                        </div>
                         <form onSubmit={handleAssignSubmit}>
-                            <div style={{ marginBottom: 'var(--space-4)' }}>
-                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>{t('stockItems.assignToPerson')}</label>
-                                <select
-                                    name="person"
-                                    value={assignFormData.person}
-                                    onChange={handleAssignInputChange}
-                                    required
-                                    disabled={saving}
-                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
-                                >
-                                    <option value="">{t('stockItems.selectPerson')}</option>
-                                    {persons.map(p => (
-                                        <option key={p.person_id} value={p.person_id}>
-                                            {p.first_name} {p.last_name} ({p.person_id})
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="am-modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
+                                <div className="form-group">
+                                    <label className="form-label">{t('stockItems.assignToPerson')}</label>
+                                    <SearchableSelect
+                                        value={assignFormData.person}
+                                        onChange={(e) => handleAssignInputChange({ target: { name: 'person', value: e.target.value } })}
+                                        options={persons.map(p => ({
+                                            value: p.person_id,
+                                            label: getBilingualPersonName(p, i18n.language),
+                                            searchText: [p.first_name_en, p.first_name_ar, p.last_name_en, p.last_name_ar, p.first_name, p.last_name].filter(Boolean).join(' ')
+                                        }))}
+                                        placeholder={t('stockItems.selectPerson')}
+                                        required
+                                        disabled={saving}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">{t('stockItems.startDateAuto')}</label>
+                                    <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required readOnly className="form-input" />
+                                </div>
                             </div>
-                            <div style={{ marginBottom: 'var(--space-4)' }}>
-                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>{t('stockItems.startDateAuto')}</label>
-                                <input
-                                    type="datetime-local"
-                                    name="start_datetime"
-                                    value={assignFormData.start_datetime}
-                                    onChange={handleAssignInputChange}
-                                    required
-                                    readOnly
-                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-secondary)', cursor: 'not-allowed', color: 'var(--color-text)' }}
-                                />
-                            </div>
-                            <div style={{ marginBottom: 'var(--space-6)' }}>
-                                <label style={{ display: 'block', marginBottom: 'var(--space-2)' }}>{t('stockItems.condition')}</label>
-                                <input
-                                    type="text"
-                                    name="condition_on_assignment"
-                                    value={assignFormData.condition_on_assignment}
-                                    onChange={handleAssignInputChange}
-                                    placeholder={t('stockItems.conditionPlaceholder')}
-                                    required
-                                    disabled={saving}
-                                    style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
-                                />
-                            </div>
-                            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }}
-                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-bg-tertiary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', color: 'var(--color-text)' }}
-                                >
-                                    {t('stockItems.cancel')}
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    style={{ padding: 'var(--space-2) var(--space-4)', background: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                                >
-                                    {saving ? t('stockItems.assigning') : t('stockItems.assignItem')}
-                                </button>
+                            <div className="am-modal-footer">
+                                <button type="button" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }} className="am-btn-cancel">{t('stockItems.cancel')}</button>
+                                <button type="submit" disabled={saving} className="am-btn-assign">{saving ? t('stockItems.assigning') : t('stockItems.assignItem')}</button>
                             </div>
                         </form>
                     </div>
                 </div>
+                </ModalPortal>
             )}
 
             {dischargingAssignment && (

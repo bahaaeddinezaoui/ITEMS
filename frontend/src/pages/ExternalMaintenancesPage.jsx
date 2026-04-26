@@ -8,6 +8,9 @@ import { externalMaintenanceProviderService, externalMaintenanceService, locatio
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const STATUS_CONFIG = {
     DRAFT: { badge: 'badge-info', icon: Wrench },
@@ -75,6 +78,8 @@ const ExternalMaintenancesPage = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
@@ -186,12 +191,14 @@ const ExternalMaintenancesPage = () => {
                 Number(receiveCompanyLocationId),
             );
             setReceiveCompanyMessage({ type: 'success', text: t('externalMaintenances.confirmedReceivedByCompany') });
+            showSuccess(t('externalMaintenances.confirmedReceivedByCompany'));
             setSelectedItem(updated);
             setReceiveCompanyModalOpen(false);
             await load();
         } catch (err) {
             console.error(err);
             setReceiveCompanyMessage({ type: 'error', text: err.response?.data?.error || t('externalMaintenances.confirmReceivedByCompanyError') });
+            showError(err.response?.data?.error || t('externalMaintenances.confirmReceivedByCompanyError'));
         } finally {
             setReceiveCompanySubmitting(false);
         }
@@ -205,11 +212,13 @@ const ExternalMaintenancesPage = () => {
             setSentToCompanyMessage(null);
             const updated = await externalMaintenanceService.confirmSentToCompany(selectedItem.external_maintenance_id);
             setSentToCompanyMessage({ type: 'success', text: t('externalMaintenances.confirmedSentToCompany') });
+            showSuccess(t('externalMaintenances.confirmedSentToCompany'));
             setSelectedItem(updated);
             await load();
         } catch (err) {
             console.error(err);
             setSentToCompanyMessage({ type: 'error', text: err.response?.data?.error || t('externalMaintenances.confirmSentToCompanyError') });
+            showError(err.response?.data?.error || t('externalMaintenances.confirmSentToCompanyError'));
         } finally {
             setSentToCompanySubmitting(false);
         }
@@ -223,11 +232,13 @@ const ExternalMaintenancesPage = () => {
             setConfirmMessage(null);
             const updated = await externalMaintenanceService.confirmReceivedByProvider(selectedItem.external_maintenance_id);
             setConfirmMessage({ type: 'success', text: t('externalMaintenances.confirmedReceivedByProvider') });
+            showSuccess(t('externalMaintenances.confirmedReceivedByProvider'));
             setSelectedItem(updated);
             await load();
         } catch (err) {
             console.error(err);
             setConfirmMessage({ type: 'error', text: err.response?.data?.error || t('externalMaintenances.confirmReceiptError') });
+            showError(err.response?.data?.error || t('externalMaintenances.confirmReceiptError'));
         } finally {
             setConfirmSubmitting(false);
         }
@@ -289,11 +300,13 @@ const ExternalMaintenancesPage = () => {
                 include_composed: includeComposedOnFailed,
             });
             setMarkFailedMessage({ type: 'success', text: t('externalMaintenances.markedFailed') });
+            showSuccess(t('externalMaintenances.markedFailed'));
             setSelectedItem(updated);
             await load();
         } catch (err) {
             console.error(err);
             setMarkFailedMessage({ type: 'error', text: err.response?.data?.error || t('externalMaintenances.markFailedError') });
+            showError(err.response?.data?.error || t('externalMaintenances.markFailedError'));
         } finally {
             setMarkFailedSubmitting(false);
         }
@@ -345,11 +358,13 @@ const ExternalMaintenancesPage = () => {
                 Number(selectedDestinationLocationId),
             );
             setSendMessage({ type: 'success', text: t('externalMaintenances.sentToProvider') });
+            showSuccess(t('externalMaintenances.sentToProvider'));
             setSelectedItem(updated);
             await load();
         } catch (err) {
             console.error(err);
             setSendMessage({ type: 'error', text: err.response?.data?.error || t('externalMaintenances.sendToProviderError') });
+            showError(err.response?.data?.error || t('externalMaintenances.sendToProviderError'));
         } finally {
             setSendSubmitting(false);
         }
@@ -729,6 +744,7 @@ const ExternalMaintenancesPage = () => {
             )}
 
             {detailsOpen && selectedItem && (
+                <ModalPortal>
                 <div className="modal-overlay" onClick={() => closeDetails()}>
                     <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 720, display: 'flex', flexDirection: 'column', maxHeight: 'none', overflow: 'visible' }}>
                         <div className="modal-header">
@@ -930,6 +946,7 @@ const ExternalMaintenancesPage = () => {
                         </div>
 
                         {receiveCompanyModalOpen && (
+                            <ModalPortal>
                             <div className="modal-overlay" onClick={() => setReceiveCompanyModalOpen(false)}>
                                 <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
                                     <div className="modal-header">
@@ -942,6 +959,7 @@ const ExternalMaintenancesPage = () => {
                                         </button>
                                     </div>
                                     <div className="modal-body">
+                                        <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                         <MsgAlert message={receiveCompanyMessage} onDismiss={() => setReceiveCompanyMessage(null)} />
                                         <div className="form-group">
                                             <label className="form-label" style={{ fontSize: '12px' }}>{t('externalMaintenances.destinationLocation')}</label>
@@ -971,10 +989,12 @@ const ExternalMaintenancesPage = () => {
                                     </div>
                                 </div>
                             </div>
+                            </ModalPortal>
                         )}
 
                     </div>
                 </div>
+                </ModalPortal>
             )}
         </div>
     );

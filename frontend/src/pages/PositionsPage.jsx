@@ -4,6 +4,9 @@ import { positionService, positionRoleMappingService, roleService } from '../ser
 import { Search, ArrowUpDown, Briefcase, Plus, X, Pencil, Trash2, ChevronDown, XCircle, Shield } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const getBilingualPositionLabel = (item, currentLang) => {
     const labelAr = item.position_label_ar;
@@ -40,13 +43,14 @@ const focusBorder = (e) => { e.target.style.borderColor = '#6366f1'; e.target.st
 const blurBorder = (e) => { e.target.style.borderColor = 'rgba(71, 85, 105, 0.5)'; e.target.style.boxShadow = 'none'; };
 
 // Modal for Add/Edit Position
-const PositionFormModal = ({ isOpen, onClose, editingId, formData, handleFormChange, handleSubmit, saving, formTranslations, handleFormTranslationChange }) => {
+const PositionFormModal = ({ isOpen, onClose, editingId, formData, handleFormChange, handleSubmit, saving, formTranslations, handleFormTranslationChange, feedbackType, feedbackMessage, clearFeedback }) => {
     const { t } = useTranslation();
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" onClick={onClose} style={{ background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)' }}>
-            <div className="modal" style={{ maxWidth: '520px', width: '90%', borderRadius: '16px', border: '1px solid rgba(148, 163, 184, 0.2)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)', overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
+        <ModalPortal>
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal" style={{ maxWidth: '520px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
                 <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -63,7 +67,8 @@ const PositionFormModal = ({ isOpen, onClose, editingId, formData, handleFormCha
                         </button>
                     </div>
                 </div>
-                <div style={{ padding: '28px', background: '#0f172a' }}>
+                <div style={{ padding: '28px', background: 'var(--color-bg-card)' }}>
+                    <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                     <form onSubmit={handleSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                             <div>
@@ -107,6 +112,7 @@ const PositionFormModal = ({ isOpen, onClose, editingId, formData, handleFormCha
                 </div>
             </div>
         </div>
+        </ModalPortal>
     );
 };
 
@@ -121,6 +127,8 @@ const PositionsPage = () => {
     const [showFormModal, setShowFormModal] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
     const [formData, setFormData] = useState({
         position_label: '',
         position_code: '',
@@ -225,9 +233,11 @@ const PositionsPage = () => {
             if (editingId) {
                 await positionService.update(editingId, payload);
                 setSuccessMessage(t('messages.updateSuccess'));
+                showSuccess(t('messages.updateSuccess'));
             } else {
                 await positionService.create(payload);
                 setSuccessMessage(t('messages.createSuccess'));
+                showSuccess(t('messages.createSuccess'));
             }
             setFormData({ position_label: '', position_code: '', description: '' });
             setFormTranslations({});
@@ -236,6 +246,7 @@ const PositionsPage = () => {
             await fetchPositions();
         } catch (err) {
             setError(t('positions.saveError') + ': ' + (err.response?.data?.error || err.message));
+            showError(t('positions.saveError') + ': ' + (err.response?.data?.error || err.message));
         } finally {
             setSaving(false);
         }
@@ -496,6 +507,9 @@ const PositionsPage = () => {
                 saving={saving}
                 formTranslations={formTranslations}
                 handleFormTranslationChange={handleFormTranslationChange}
+                feedbackType={feedbackType}
+                feedbackMessage={feedbackMessage}
+                clearFeedback={clearFeedback}
             />
         </div>
     );

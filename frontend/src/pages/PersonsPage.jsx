@@ -4,6 +4,8 @@ import { authService, personService, roleService, userAccountService } from '../
 import { Search, SlidersHorizontal, ArrowUpDown, Plus, X, ChevronDown, UserPlus, Users, ShieldCheck, Edit3 } from 'lucide-react';
 import TranslatableInput from '../components/TranslatableInput';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import useModalFeedback from '../components/useModalFeedback';
+import ModalFeedback from '../components/ModalFeedback';
 
 const PersonsPage = () => {
     const { t, i18n } = useTranslation();
@@ -41,6 +43,8 @@ const PersonsPage = () => {
         role_code: '',
     });
     const [submitting, setSubmitting] = useState(false);
+
+    const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
     const [submittingAccount, setSubmittingAccount] = useState(false);
     const [roles, setRoles] = useState([]);
 
@@ -123,6 +127,7 @@ const PersonsPage = () => {
             }
             await personService.create(payload);
             setShowModal(false);
+            showSuccess(t('persons.createSuccess', 'Person created successfully'));
             setFormTranslations({});
             setFormData({
                 first_name: '',
@@ -133,7 +138,7 @@ const PersonsPage = () => {
             });
             loadPersons();
         } catch {
-            setError(t('persons.createError'));
+            showError(t('persons.createError'));
         } finally {
             setSubmitting(false);
         }
@@ -168,13 +173,14 @@ const PersonsPage = () => {
                 role_code: accountFormData.role_code || undefined,
             });
             setShowAccountModal(false);
+            showSuccess(t('persons.createAccountSuccess', 'Account created successfully'));
             setSelectedPersonForAccount(null);
         } catch (err) {
             const msg =
                 err?.response?.data?.error ||
                 err?.response?.data?.detail ||
                 t('persons.createAccountError');
-            setError(msg);
+            showError(msg);
         } finally {
             setSubmittingAccount(false);
         }
@@ -342,12 +348,13 @@ const PersonsPage = () => {
             }
 
             setShowApprovalModal(false);
+            showSuccess(t('persons.approvalSuccess', 'Person approved successfully'));
             setApprovalPerson(null);
             setApprovalUserAccount(null);
             loadPersons();
         } catch (err) {
             const msg = err?.response?.data?.error || err?.response?.data?.detail || t('persons.approvalError');
-            setApprovalError(msg);
+            showError(msg);
         } finally {
             setApprovalSubmitting(false);
         }
@@ -936,6 +943,7 @@ const PersonsPage = () => {
 
                         <form onSubmit={handleSubmit}>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <div className="form-row">
                                     <div className="form-group">
                                         <TranslatableInput
@@ -1039,6 +1047,7 @@ const PersonsPage = () => {
 
                         <form onSubmit={handleAccountSubmit}>
                             <div className="modal-body">
+                                <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                 <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
                                     {t('persons.creatingAccountFor')} <strong>{selectedPersonForAccount?.first_name} {selectedPersonForAccount?.last_name}</strong>
                                 </p>
@@ -1166,6 +1175,7 @@ const PersonsPage = () => {
                         ) : (
                             <form onSubmit={handleApprovalSubmit}>
                                 <div className="modal-body" style={{ padding: 'var(--space-5)' }}>
+                                    <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                                     {approvalError && (
                                         <div style={{
                                             padding: 'var(--space-3) var(--space-4)',
@@ -1481,8 +1491,6 @@ const PersonsPage = () => {
                                 {/* Footer */}
                                 <div className="modal-footer" style={{
                                     padding: 'var(--space-4) var(--space-5)',
-                                    borderTop: '1px solid var(--color-border)',
-                                    background: 'var(--color-bg-card)',
                                 }}>
                                     <button type="button" className="btn btn-secondary" onClick={() => setShowApprovalModal(false)}>
                                         {t('common.cancel')}
