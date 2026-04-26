@@ -142,6 +142,13 @@ const MyItemsPage = () => {
         { field: 'inventory', dir: 'desc', label: `${t('myItems.sortByInventory')} — ${t('myItems.descending')}` },
     ];
 
+    const getTabLabel = (tab) => {
+        if (tab === 'assets') return t('myItems.assets');
+        if (tab === 'stock_items') return t('myItems.stockItems');
+        if (tab === 'consumables') return t('myItems.consumables');
+        return tab;
+    };
+
     const hasActiveFilters = searchTerm.trim() || filterStatus;
 
     const clearAllFilters = () => {
@@ -319,18 +326,18 @@ const MyItemsPage = () => {
                     </div>
                     
                     <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
-                        {name || `${type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ')} #${id}`}
+                        {name || `${type === 'asset' ? t('myItems.assetLabel') : type === 'stock_item' ? t('myItems.stockItemLabel') : t('myItems.consumableLabel')} #${id}`}
                     </h3>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                             <Hash size={14} />
-                            <span>Inv: {inventory || 'N/A'}</span>
+                            <span>{t('myItems.inv')}: {inventory || t('common.na')}</span>
                         </div>
                         {serial && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                 <Tag size={14} />
-                                <span>SN: {serial}</span>
+                                <span>{t('myItems.sn')}: {serial}</span>
                             </div>
                         )}
                         <div style={{ marginTop: 'var(--space-2)' }}>
@@ -381,12 +388,12 @@ const MyItemsPage = () => {
                                 <tr key={r.assignment_id}>
                                     <td>
                                         <div style={{ fontWeight: '500' }}>{itemName}</div>
-                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>ID: #{itemId}</div>
+                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{t('myItems.idLabel')}: #{itemId}</div>
                                     </td>
                                     <td>{r.start_datetime ? new Date(r.start_datetime).toLocaleDateString() : '-'}</td>
                                     <td>{r.end_datetime ? new Date(r.end_datetime).toLocaleDateString() : t('myItems.present')}</td>
                                     <td>
-                                        <span className="badge badge-secondary">{r.condition_on_assignment || 'N/A'}</span>
+                                        <span className="badge badge-secondary">{r.condition_on_assignment || t('common.na')}</span>
                                     </td>
                                 </tr>
                             );
@@ -559,7 +566,7 @@ const MyItemsPage = () => {
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder={t('myItems.searchPlaceholder', { type: activeTab.replace('_', ' ') })}
+                            placeholder={t('myItems.searchPlaceholder', { type: getTabLabel(activeTab) })}
                             className="form-input"
                             style={{
                                 width: '100%',
@@ -616,10 +623,16 @@ const MyItemsPage = () => {
                             }}
                         >
                             <option value="">{t('myItems.allStatuses')}</option>
-                            <option value="active">{t('myItems.statusActive')}</option>
+                            <option value="not_delivered_to_company">{t('myItems.statusNotDelivered')}</option>
+                            <option value="in_stock">{t('myItems.statusInStock')}</option>
                             <option value="assigned">{t('myItems.statusAssigned')}</option>
-                            <option value="in_maintenance">{t('myItems.statusInMaintenance')}</option>
-                            <option value="retired">{t('myItems.statusRetired')}</option>
+                            <option value="maintenance">{t('myItems.statusMaintenance')}</option>
+                            <option value="failed">{t('myItems.statusFailed')}</option>
+                            <option value="lost">{t('myItems.statusLost')}</option>
+                            <option value="stolen">{t('myItems.statusStolen')}</option>
+                            <option value="irrecoverably_damaged">{t('myItems.statusIrrecoverablyDamaged')}</option>
+                            <option value="destroyed">{t('myItems.statusDestroyed')}</option>
+                            <option value="suggested_for_destruction">{t('myItems.statusSuggestedForDestruction')}</option>
                         </select>
                     </div>
                     )}
@@ -772,7 +785,7 @@ const MyItemsPage = () => {
                         </div>
                         <h3 className="empty-state-title">{t('myItems.noItemsFound')}</h3>
                         <p className="empty-state-text">
-                            {searchTerm ? t('myItems.noResultsFor', { searchTerm }) : t('myItems.noAssignedItems', { type: activeTab.replace('_', ' ') })}
+                            {searchTerm ? t('myItems.noResultsFor', { searchTerm }) : t('myItems.noAssignedItems', { type: getTabLabel(activeTab) })}
                         </p>
                     </div>
                 ) : (

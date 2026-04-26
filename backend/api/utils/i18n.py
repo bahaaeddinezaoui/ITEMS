@@ -426,10 +426,6 @@ STATUS_TRANSLATIONS = {
         'en': 'Reserved',
         'ar': 'محجوز',
     },
-    'expired': {
-        'en': 'Expired',
-        'ar': 'منتهي الصلاحية',
-    },
     'failed': {
         'en': 'Failed',
         'ar': 'معطل',
@@ -454,23 +450,10 @@ STATUS_TRANSLATIONS = {
         'en': 'Suggested for Destruction',
         'ar': 'مقترح للإتلاف',
     },
-    # Asset-specific statuses
-    'under_maintenance': {
-        'en': 'Under Maintenance',
-        'ar': 'قيد الصيانة',
-    },
-    'retired': {
-        'en': 'Retired',
-        'ar': 'متقاعد',
-    },
     # Additional statuses that may appear
     'active': {
         'en': 'Active',
         'ar': 'نشط',
-    },
-    'included_with_asset': {
-        'en': 'Included with Asset',
-        'ar': 'مضمّن مع الأصل',
     },
 }
 

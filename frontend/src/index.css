@@ -15,13 +15,13 @@
 }
 
 [dir="rtl"] .main-content {
-    margin-left: var(--space-3);
-    margin-right: calc(var(--sidebar-width) + var(--space-6));
-    transition: margin-right var(--transition-base);
+    left: var(--space-3);
+    right: calc(var(--sidebar-width) + var(--space-6));
+    transition: right var(--transition-base);
 }
 
 [dir="rtl"] .sidebar--collapsed ~ .main-content {
-    margin-right: calc(var(--sidebar-collapsed-width) + var(--space-6));
+    right: calc(var(--sidebar-collapsed-width) + var(--space-6));
 }
 
 [dir="rtl"] .nav-link svg {

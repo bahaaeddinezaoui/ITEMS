@@ -39,7 +39,6 @@ const StockConsumablesInventoryPage = () => {
         if (itemTypeFilter === 'stock_item') {
             return [
                 { value: 'in_stock', label: t('stockConsumablesInventory.inStock') },
-                { value: 'Included with Asset', label: t('stockConsumablesInventory.includedWithAsset') },
                 { value: 'not_delivered_to_company', label: t('stockConsumablesInventory.notDelivered') },
                 { value: 'suggested_for_destruction', label: t('stockConsumablesInventory.suggestedForDestruction') },
                 { value: 'destroyed', label: t('stockConsumablesInventory.destroyed') },
@@ -48,7 +47,6 @@ const StockConsumablesInventoryPage = () => {
         } else if (itemTypeFilter === 'consumable') {
             return [
                 { value: 'in_stock', label: t('stockConsumablesInventory.inStock') },
-                { value: 'Included with Asset', label: t('stockConsumablesInventory.includedWithAsset') },
                 { value: 'not_delivered_to_company', label: t('stockConsumablesInventory.notDelivered') },
                 { value: 'suggested_for_destruction', label: t('stockConsumablesInventory.suggestedForDestruction') },
                 { value: 'destroyed', label: t('stockConsumablesInventory.destroyed') },
@@ -142,7 +140,7 @@ const StockConsumablesInventoryPage = () => {
         if (s === 'in_stock') return 'badge-success';
         if (s === 'suggested_for_destruction') return 'badge-warning';
         if (s === 'destroyed' || s === 'failed') return 'badge-error';
-        if (s === 'not_delivered_to_company' || s === 'included with asset') return 'badge-info';
+        if (s === 'not_delivered_to_company') return 'badge-info';
         return 'badge-info';
     };
 

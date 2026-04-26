@@ -969,7 +969,6 @@ const AssetsPage = () => {
                                                 <option value="stolen">{t('assets.stolen')}</option>
                                                 <option value="irrecoverably_damaged">{t('assets.irrecoverablyDamaged')}</option>
                                                 <option value="destroyed">{t('assets.destroyed')}</option>
-                                                <option value="inactive">{t('assets.inactive')}</option>
                                             </select>
                                         </div>
                                     </div>
@@ -1015,7 +1014,6 @@ const AssetsPage = () => {
                                 <option value="lost">{t('assets.lost')}</option>
                                 <option value="stolen">{t('assets.stolen')}</option>
                                 <option value="destroyed">{t('assets.destroyed')}</option>
-                                <option value="inactive">{t('assets.inactive')}</option>
                             </select>
                             <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
                                 {filteredAssets.length}

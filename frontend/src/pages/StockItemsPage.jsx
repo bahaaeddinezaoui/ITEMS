@@ -1015,7 +1015,6 @@ const StockItemsPage = () => {
                                                 <option value="in_stock">{t('stockItems.statusInStock')}</option>
                                                 <option value="assigned">{t('stockItems.statusAssigned')}</option>
                                                 <option value="maintenance">{t('stockItems.statusMaintenance')}</option>
-                                                <option value="expired">{t('stockItems.statusExpired')}</option>
                                                 <option value="failed">{t('stockItems.statusFailed')}</option>
                                                 <option value="lost">{t('stockItems.statusLost')}</option>
                                                 <option value="stolen">{t('stockItems.statusStolen')}</option>
@@ -1060,7 +1059,6 @@ const StockItemsPage = () => {
                                 <option value="maintenance">{t('stockItems.statusMaintenance')}</option>
                                 <option value="failed">{t('stockItems.statusFailed')}</option>
                                 <option value="not_delivered_to_company">{t('stockItems.statusNotDelivered')}</option>
-                                <option value="expired">{t('stockItems.statusExpired')}</option>
                                 <option value="lost">{t('stockItems.statusLost')}</option>
                                 <option value="destroyed">{t('stockItems.statusDestroyed')}</option>
                             </select>
@@ -1864,7 +1862,6 @@ const StockItemsPage = () => {
                                                         <option value="in_stock">{t('stockItems.statusInStock')}</option>
                                                         <option value="in_use">{t('stockItems.statusInUse')}</option>
                                                         <option value="reserved">{t('stockItems.statusReserved')}</option>
-                                                        <option value="expired">{t('stockItems.statusExpired')}</option>
                                                         <option value="failed">{t('stockItems.statusFailed')}</option>
                                                         <option value="lost">{t('stockItems.statusLost')}</option>
                                                         <option value="stolen">{t('stockItems.statusStolen')}</option>

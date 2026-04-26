@@ -321,7 +321,6 @@ const ConsumableInstanceCreatePage = () => {
                                                     <option value="in_stock">{t('consumableInstanceCreate.inStock')}</option>
                                                     <option value="in_use">{t('consumableInstanceCreate.inUse')}</option>
                                                     <option value="reserved">{t('consumableInstanceCreate.reserved')}</option>
-                                                    <option value="expired">{t('consumableInstanceCreate.expired')}</option>
                                                     <option value="failed">{t('consumableInstanceCreate.failed')}</option>
                                                     <option value="lost">{t('consumableInstanceCreate.lost')}</option>
                                                     <option value="stolen">{t('consumableInstanceCreate.stolen')}</option>

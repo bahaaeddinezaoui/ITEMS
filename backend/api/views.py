@@ -6022,7 +6022,7 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     stock_item_model_id=stock_item_model_id,
                     stock_item_name=(inst_payload or {}).get('stock_item_name') or f"Stock item model {stock_item_model_id} (included with {asset})",
                     stock_item_inventory_number=(inst_payload or {}).get('stock_item_inventory_number') or None,
-                    stock_item_status='Included with Asset'
+                    stock_item_status='not_delivered_to_company'
                 )
 
                 AssetIsComposedOfStockItemHistory.objects.create(
@@ -6055,7 +6055,7 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     consumable_name=(inst_payload or {}).get('consumable_name') or f"Consumable model {consumable_model_id} (included with {asset})",
                     consumable_serial_number=(inst_payload or {}).get('consumable_serial_number') or None,
                     consumable_inventory_number=(inst_payload or {}).get('consumable_inventory_number') or None,
-                    consumable_status='Included with Asset'
+                    consumable_status='not_delivered_to_company'
                 )
 
                 AssetIsComposedOfConsumableHistory.objects.create(
@@ -6086,7 +6086,7 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     stock_item_id=next_si_id,
                     stock_item_model_id=default_item.stock_item_model_id,
                     stock_item_name=f"{default_item.stock_item_model} (included with {asset})",
-                    stock_item_status='Included with Asset'
+                    stock_item_status='not_delivered_to_company'
                 )
                 
                 # Record composition history
@@ -6114,7 +6114,7 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     consumable_id=next_cons_id,
                     consumable_model_id=default_item.consumable_model_id,
                     consumable_name=f"{default_item.consumable_model} (included with {asset})",
-                    consumable_status='Included with Asset'
+                    consumable_status='not_delivered_to_company'
                 )
                 
                 # Record composition history

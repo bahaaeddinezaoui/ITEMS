@@ -66,7 +66,7 @@ def setup_test_data():
     si = StockItem.objects.create(
         stock_item_id=next_si_id,
         stock_item_name="Composed Stock Item",
-        stock_item_status="Included with Asset",
+        stock_item_status="not_delivered_to_company",
         stock_item_model_id=1
     )
     AssetIsComposedOfStockItemHistory.objects.create(
@@ -81,7 +81,7 @@ def setup_test_data():
     con = Consumable.objects.create(
         consumable_id=next_con_id,
         consumable_name="Composed Consumable",
-        consumable_status="Included with Asset",
+        consumable_status="not_delivered_to_company",
         consumable_model_id=1
     )
     AssetIsComposedOfConsumableHistory.objects.create(
@@ -106,7 +106,7 @@ def verify_results(asset_id, stock_item_id, consumable_id, storage_loc_id):
     
     # Check Consumable (Recovered - NOT selected for destruction)
     con = Consumable.objects.get(consumable_id=consumable_id)
-    print(f"Consumable Status: {con.consumable_status} (Expected: Included with Asset / unchanged but unmapped)")
+    print(f"Consumable Status: {con.consumable_status} (Expected: not_delivered_to_company / unchanged but unmapped)")
     
     # Check Composition history for Consumable (should be ended)
     history = AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, consumable_id=consumable_id).first()

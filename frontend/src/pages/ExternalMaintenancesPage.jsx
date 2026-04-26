@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
     Send, PackageCheck, Truck, Warehouse, XCircle, RefreshCw,
     ChevronRight, Hash, Wrench, X, CheckCircle2, AlertTriangle,
-    MapPin, Building2,
+    MapPin, Building2, Search, SlidersHorizontal, ArrowUpDown, ChevronDown,
 } from 'lucide-react';
 import { externalMaintenanceProviderService, externalMaintenanceService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -70,7 +70,7 @@ const MsgAlert = ({ message, onDismiss }) => {
 
 const ExternalMaintenancesPage = () => {
     const { user, isSuperuser } = useAuth();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -101,6 +101,56 @@ const ExternalMaintenancesPage = () => {
     const [markFailedSubmitting, setMarkFailedSubmitting] = useState(false);
     const [markFailedMessage, setMarkFailedMessage] = useState(null);
     const [includeComposedOnFailed, setIncludeComposedOnFailed] = useState(false);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+    const [sortField, setSortField] = useState('id');
+    const [sortDirection, setSortDirection] = useState('desc');
+    const [showSortMenu, setShowSortMenu] = useState(false);
+
+    const sortOptions = [
+        { field: 'id', dir: 'desc', label: `${t('externalMaintenances.sortById')} — ${t('common.descending')}` },
+        { field: 'id', dir: 'asc', label: `${t('externalMaintenances.sortById')} — ${t('common.ascending')}` },
+        { field: 'name', dir: 'asc', label: `${t('externalMaintenances.sortByName')} — ${t('common.ascending')}` },
+        { field: 'name', dir: 'desc', label: `${t('externalMaintenances.sortByName')} — ${t('common.descending')}` },
+        { field: 'progress', dir: 'desc', label: `${t('externalMaintenances.sortByProgress')} — ${t('common.descending')}` },
+        { field: 'progress', dir: 'asc', label: `${t('externalMaintenances.sortByProgress')} — ${t('common.ascending')}` },
+    ];
+
+    const hasActiveFilters = searchTerm.trim() || filterStatus;
+
+    const clearAllFilters = () => {
+        setSearchTerm('');
+        setFilterStatus('');
+        setSortField('id');
+        setSortDirection('desc');
+    };
+
+    const filteredItems = useMemo(() => {
+        let result = items.filter((it) => {
+            const searchLower = searchTerm.toLowerCase();
+            const name = (it.maintenance_asset_name || '').toLowerCase();
+            const id = String(it.external_maintenance_id);
+            const maintenanceId = String(it.maintenance || '');
+            const matchesSearch = !searchLower || name.includes(searchLower) || id.includes(searchLower) || maintenanceId.includes(searchLower);
+            const matchesStatus = !filterStatus || it.external_maintenance_status === filterStatus;
+            return matchesSearch && matchesStatus;
+        });
+
+        result.sort((a, b) => {
+            let cmp = 0;
+            if (sortField === 'id') {
+                cmp = a.external_maintenance_id - b.external_maintenance_id;
+            } else if (sortField === 'name') {
+                cmp = (a.maintenance_asset_name || '').localeCompare(b.maintenance_asset_name || '', i18n.language === 'ar' ? 'ar' : undefined);
+            } else if (sortField === 'progress') {
+                cmp = getProgressStep(a) - getProgressStep(b);
+            }
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
+
+        return result;
+    }, [items, searchTerm, filterStatus, sortField, sortDirection, i18n.language]);
 
     const isAssetResponsible = useMemo(() => {
         if (isSuperuser) return true;
@@ -186,6 +236,13 @@ const ExternalMaintenancesPage = () => {
     useEffect(() => {
         load();
     }, []);
+
+    useEffect(() => {
+        if (!showSortMenu) return;
+        const handler = () => setShowSortMenu(false);
+        document.addEventListener('click', handler);
+        return () => document.removeEventListener('click', handler);
+    }, [showSortMenu]);
 
     const openDetails = (item) => {
         setSelectedItem(item);
@@ -378,6 +435,226 @@ const ExternalMaintenancesPage = () => {
                 <MsgAlert message={{ type: 'error', text: error }} onDismiss={() => setError('')} />
             )}
 
+            {/* Search / Filter / Sort Toolbar */}
+            {!loading && !error && items.length > 0 && (
+                <div style={{
+                    display: 'flex',
+                    gap: 'var(--space-3)',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    background: 'var(--glass-bg)',
+                    backdropFilter: 'var(--glass-backdrop)',
+                    WebkitBackdropFilter: 'var(--glass-backdrop)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: 'var(--radius-lg)',
+                    padding: 'var(--space-2) var(--space-4)',
+                    boxShadow: 'var(--glass-shadow)',
+                    marginBottom: 'var(--space-5)',
+                }}>
+                    {/* Search */}
+                    <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
+                        <Search size={18} style={{
+                            position: 'absolute',
+                            left: 'var(--space-3)',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'var(--color-text-muted)',
+                            pointerEvents: 'none',
+                        }} />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder={t('externalMaintenances.searchPlaceholder')}
+                            className="form-input"
+                            style={{
+                                width: '100%',
+                                height: '42px',
+                                paddingLeft: 'var(--space-10)',
+                                paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)',
+                            }}
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                style={{
+                                    position: 'absolute',
+                                    right: 'var(--space-3)',
+                                    top: '50%',
+                                    transform: 'translateY(-50%)',
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--color-text-muted)',
+                                    cursor: 'pointer',
+                                    padding: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter by Status */}
+                    <div style={{ position: 'relative', minWidth: '160px' }}>
+                        <SlidersHorizontal size={16} style={{
+                            position: 'absolute',
+                            left: 'var(--space-3)',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'var(--color-text-muted)',
+                            pointerEvents: 'none',
+                            zIndex: 1,
+                        }} />
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="form-input"
+                            style={{
+                                width: '100%',
+                                height: '42px',
+                                paddingLeft: 'var(--space-10)',
+                                appearance: 'none',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <option value="">{t('externalMaintenances.allStatuses')}</option>
+                            <option value="DRAFT">{t('externalMaintenances.statusDRAFT')}</option>
+                            <option value="RECEIVED_BY_PROVIDER">{t('externalMaintenances.statusRECEIVED_BY_PROVIDER')}</option>
+                            <option value="SENT_TO_COMPANY">{t('externalMaintenances.statusSENT_TO_COMPANY')}</option>
+                            <option value="RECEIVED_BY_COMPANY">{t('externalMaintenances.statusRECEIVED_BY_COMPANY')}</option>
+                            <option value="FAILED">{t('externalMaintenances.statusFAILED')}</option>
+                        </select>
+                    </div>
+
+                    {/* Sort */}
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowSortMenu(!showSortMenu);
+                            }}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-2)',
+                                padding: 'var(--space-2) var(--space-4)',
+                                height: '42px',
+                                border: '1px solid var(--color-border)',
+                                background: 'var(--glass-bg)',
+                                backdropFilter: 'var(--glass-backdrop)',
+                                WebkitBackdropFilter: 'var(--glass-backdrop)',
+                                color: 'var(--color-text-secondary)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                fontWeight: 500,
+                                fontSize: 'var(--font-size-sm)',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            <ArrowUpDown size={16} />
+                            <span>{sortField === 'name' ? t('externalMaintenances.sortByName') : sortField === 'progress' ? t('externalMaintenances.sortByProgress') : t('externalMaintenances.sortById')}</span>
+                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
+                                {sortDirection === 'asc' ? t('common.ascending') : t('common.descending')}
+                            </span>
+                            <ChevronDown size={14} style={{ transform: showSortMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                        </button>
+                        {showSortMenu && (
+                            <div
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                    position: 'absolute',
+                                    top: 'calc(100% + 4px)',
+                                    right: 0,
+                                    background: 'var(--glass-bg)',
+                                    backdropFilter: 'var(--glass-backdrop)',
+                                    WebkitBackdropFilter: 'var(--glass-backdrop)',
+                                    border: '1px solid var(--glass-border)',
+                                    borderRadius: 'var(--radius-md)',
+                                    boxShadow: 'var(--glass-shadow)',
+                                    padding: 'var(--space-2)',
+                                    zIndex: 100,
+                                    minWidth: '200px',
+                                }}
+                            >
+                                <div style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    {t('common.sortBy')}
+                                </div>
+                                {sortOptions.map((opt) => (
+                                    <button
+                                        key={`${opt.field}-${opt.dir}`}
+                                        onClick={() => {
+                                            setSortField(opt.field);
+                                            setSortDirection(opt.dir);
+                                            setShowSortMenu(false);
+                                        }}
+                                        style={{
+                                            display: 'block',
+                                            width: '100%',
+                                            textAlign: i18n.language === 'ar' ? 'right' : 'left',
+                                            padding: 'var(--space-2) var(--space-3)',
+                                            border: 'none',
+                                            borderRadius: 'var(--radius-sm)',
+                                            cursor: 'pointer',
+                                            fontSize: 'var(--font-size-sm)',
+                                            fontWeight: sortField === opt.field && sortDirection === opt.dir ? 600 : 400,
+                                            color: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-tertiary)' : 'var(--color-text-primary)',
+                                            background: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-glow)' : 'transparent',
+                                            transition: 'all var(--transition-fast)',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
+                                                e.currentTarget.style.background = 'var(--color-bg-card-hover)';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
+                                                e.currentTarget.style.background = 'transparent';
+                                            }
+                                        }}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Clear Filters */}
+                    {hasActiveFilters && (
+                        <button
+                            onClick={clearAllFilters}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-2)',
+                                padding: 'var(--space-2) var(--space-3)',
+                                height: '42px',
+                                border: '1px solid rgba(239, 68, 68, 0.3)',
+                                background: 'rgba(239, 68, 68, 0.08)',
+                                color: 'var(--color-error)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                fontSize: 'var(--font-size-sm)',
+                                fontWeight: 500,
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            <X size={14} />
+                            {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* Results count */}
+            {!loading && !error && items.length > 0 && (
+                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', fontWeight: 600 }}>
+                    {t('externalMaintenances.resultCount', { count: filteredItems.length })}
+                </div>
+            )}
+
             {/* Loading / Empty */}
             {loading ? (
                 <div style={{ padding: 'var(--space-12)' }}>
@@ -388,9 +665,14 @@ const ExternalMaintenancesPage = () => {
                     <Wrench size={48} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }} />
                     <p style={{ color: 'var(--color-text-secondary)' }}>{t('externalMaintenances.noRecords')}</p>
                 </div>
+            ) : filteredItems.length === 0 ? (
+                <div className="empty-state" style={{ padding: 'var(--space-16)' }}>
+                    <Wrench size={48} style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }} />
+                    <p style={{ color: 'var(--color-text-secondary)' }}>{t('externalMaintenances.noResultsFound')}</p>
+                </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 'var(--space-4)' }}>
-                    {items.map((it) => {
+                    {filteredItems.map((it) => {
                         const step = getProgressStep(it);
                         return (
                             <div key={it.external_maintenance_id} className="card" style={{ cursor: 'pointer', transition: 'all 0.2s ease' }} onClick={() => openDetails(it)}>

@@ -61,10 +61,9 @@ const LocationInventoryPage = () => {
             return commonOptions;
         }
         
-        // Stock Items and Consumables can also be 'Included with Asset'
+        // Stock Items and Consumables share the same statuses as assets
         return [
             ...commonOptions,
-            { value: 'Included with Asset', label: t('locationInventory.includedWithAsset') },
         ];
     }, [itemTypeFilter, t]);
 
@@ -77,7 +76,6 @@ const LocationInventoryPage = () => {
         'stolen': t('locationInventory.stolen'),
         'lost': t('locationInventory.lost'),
         'irrecoverably_damaged': t('locationInventory.irrecoverablyDamaged'),
-        'Included with Asset': t('locationInventory.includedWithAsset'),
     };
 
     const formatStatusLabel = (value) => {
@@ -91,7 +89,7 @@ const LocationInventoryPage = () => {
         if (s === 'in_stock') return 'badge-success';
         if (s === 'suggested_for_destruction') return 'badge-warning';
         if (s === 'destroyed' || s === 'failed' || s === 'stolen' || s === 'lost' || s === 'irrecoverably_damaged') return 'badge-error';
-        if (s === 'not_delivered_to_company' || s === 'included with asset') return 'badge-info';
+        if (s === 'not_delivered_to_company') return 'badge-info';
         return 'badge-info';
     };
 

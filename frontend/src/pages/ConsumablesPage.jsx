@@ -1113,7 +1113,6 @@ const ConsumablesPage = () => {
                                                 <option value="in_stock">{t('consumables.statusInStock', 'In Stock')}</option>
                                                 <option value="assigned">{t('consumables.statusAssigned', 'Assigned')}</option>
                                                 <option value="maintenance">{t('consumables.statusMaintenance', 'Maintenance')}</option>
-                                                <option value="expired">{t('consumables.statusExpired', 'Expired')}</option>
                                                 <option value="failed">{t('consumables.statusFailed', 'Failed')}</option>
                                                 <option value="lost">{t('consumables.statusLost', 'Lost')}</option>
                                                 <option value="stolen">{t('consumables.statusStolen', 'Stolen')}</option>
@@ -1158,7 +1157,6 @@ const ConsumablesPage = () => {
                                 <option value="maintenance">{t('consumables.statusMaintenance', 'Maintenance')}</option>
                                 <option value="failed">{t('consumables.statusFailed', 'Failed')}</option>
                                 <option value="not_delivered_to_company">{t('consumables.statusNotDelivered', 'Not Delivered')}</option>
-                                <option value="expired">{t('consumables.statusExpired', 'Expired')}</option>
                                 <option value="lost">{t('consumables.statusLost', 'Lost')}</option>
                                 <option value="destroyed">{t('consumables.statusDestroyed', 'Destroyed')}</option>
                             </select>
@@ -2158,7 +2156,6 @@ const ConsumablesPage = () => {
                                                         <option value="in_stock">In Stock</option>
                                                         <option value="in_use">In Use</option>
                                                         <option value="reserved">Reserved</option>
-                                                        <option value="expired">Expired</option>
                                                         <option value="failed">Failed</option>
                                                         <option value="lost">Lost</option>
                                                         <option value="stolen">Stolen</option>

@@ -321,7 +321,6 @@ const StockItemInstanceCreatePage = () => {
                                                     <option value="in_stock">{t('stockItemInstanceCreate.inStock')}</option>
                                                     <option value="in_use">{t('stockItemInstanceCreate.inUse')}</option>
                                                     <option value="reserved">{t('stockItemInstanceCreate.reserved')}</option>
-                                                    <option value="expired">{t('stockItemInstanceCreate.expired')}</option>
                                                     <option value="failed">{t('stockItemInstanceCreate.failed')}</option>
                                                     <option value="lost">{t('stockItemInstanceCreate.lost')}</option>
                                                     <option value="stolen">{t('stockItemInstanceCreate.stolen')}</option>
