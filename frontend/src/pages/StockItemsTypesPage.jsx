@@ -305,7 +305,7 @@ const StockItemsTypesPage = () => {
                         onClick={goToBrands}
                         style={{ padding: 'var(--space-3) var(--space-4)' }}
                     >
-                        <TagIcon size={18} />
+                        <Tag size={18} />
                         <span>{t('stockItemTypes.brands', 'Brands')}</span>
                     </button>
                     <button 

@@ -34,9 +34,16 @@ api.interceptors.request.use(
 // Handle token refresh on 401
 api.interceptors.response.use(
     (response) => {
-        // Unwrap DRF paginated responses: { count, results, ... } → results
+        // Unwrap *standard* DRF paginated responses: { count, next, previous, results } → results
+        // Some endpoints in this app return custom payloads that also include a `results` array
+        // (e.g. assignments: { results, stats, positions, ... }). Those must NOT be unwrapped.
         if (response.data && !Array.isArray(response.data) && Array.isArray(response.data.results)) {
-            response.data = response.data.results;
+            const keys = Object.keys(response.data);
+            const allowedKeys = new Set(['count', 'next', 'previous', 'results']);
+            const isStandardPaginated = keys.length > 0 && keys.every(k => allowedKeys.has(k));
+            if (isStandardPaginated) {
+                response.data = response.data.results;
+            }
         }
         return response;
     },
@@ -1865,6 +1872,26 @@ export const consumableAssignmentService = {
 
     discharge: async (id) => {
         const response = await api.post(`consumable-assignments/${id}/discharge/`);
+        return response.data;
+    },
+};
+
+// Unified Assignments service
+export const assignmentsService = {
+    getAll: async (params) => {
+        const response = await api.get('assignments/', { params });
+        return response.data;
+    },
+    bulkDischarge: async (items) => {
+        const response = await api.post('assignments/', { action: 'bulk_discharge', items });
+        return response.data;
+    },
+    itemHistory: async (itemType, itemId) => {
+        const response = await api.post('assignments/', { action: 'item_history', item_type: itemType, item_id: itemId });
+        return response.data;
+    },
+    quickReassign: async (data) => {
+        const response = await api.post('assignments/', { action: 'quick_reassign', ...data });
         return response.data;
     },
 };

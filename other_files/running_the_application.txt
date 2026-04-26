@@ -1,0 +1,69 @@
+Production server configuration (offline Windows 11) — Summary
+1) Copy the project to the server
+Prefer a final stable path (don’t rename/move later), e.g. G:\ITEMS\
+You need at least:
+[d:\Mine\Equipment Management System/backend/](cci:4://file://d:\Mine\Equipment Management System/backend/:0:0-0:0)
+frontend/dist/
+offline_assets/python/
+requirements.txt
+project_iguana.sql
+2) Install prerequisites (offline installers)
+Python 3.13.5
+PostgreSQL
+Nginx 1.30.0 (Windows build)
+3) Create a fresh virtual environment (important)
+In G:\ITEMS\backend:
+
+Create and activate venv:
+python -m venv venv
+.\venv\Scripts\activate
+Install dependencies offline:
+python -m pip install --no-index --find-links=..\offline_assets\python -r ..\requirements.txt
+python -m pip install --no-index --find-links=..\offline_assets\python waitress
+Important rule: if you move/rename the project folder, recreate the venv. Always prefer python -m pip and python -m waitress (avoids broken .exe launchers).
+
+4) Configure database
+Create DB + import:
+psql -U postgres -c "CREATE DATABASE project_iguana;"
+psql -U postgres -d project_iguana -f project_iguana.sql
+5) Configure Django settings
+Edit backend/ems/settings.py:
+
+Set a real SECRET_KEY
+Set DEBUG = False
+Set ALLOWED_HOSTS to include the server IP / hostname
+Set correct DB password (and ideally don’t hardcode it long-term)
+6) Prepare Django static files
+In G:\ITEMS\backend (venv activated):
+
+python manage.py collectstatic --noinput
+python manage.py migrate
+(If DB imported from SQL, “no migrations to apply” is OK.)
+7) Run backend (Waitress)
+python -m waitress --port=8000 ems.wsgi:application
+8) Configure Nginx (single entry point on port 80)
+Nginx serves:
+
+/ → frontend/dist
+/api/ and /admin/ → proxy to http://127.0.0.1:8000
+/static/ → [d:\Mine\Equipment Management System/backend/staticfiles](cci:4://file://d:\Mine\Equipment Management System/backend/staticfiles:0:0-0:0)
+/media/ → [d:\Mine\Equipment Management System/backend/media](cci:4://file://d:\Mine\Equipment Management System/backend/media:0:0-0:0)
+Start / reload:
+
+nginx -t
+start nginx
+nginx -s reload
+Tip: If multiple nginx folders exist, stop old nginx (taskkill /f /im nginx.exe) then start the correct one.
+
+9) Open firewall + verify
+Allow TCP 80 inbound
+Verify:
+http://server-ip/ (frontend)
+Login should call /api/... and succeed (no 502)
+10) Optional: make it permanent (services)
+Use NSSM to run:
+Nginx as a service
+Waitress (Python -m waitress ...) as a service
+Key troubleshooting rules
+502 Bad Gateway = backend not reachable → start backend, verify proxy_pass, ensure correct nginx instance.
+If you see “Fatal error in launcher … cannot find file” → venv path mismatch → delete & recreate venv at the final folder path.

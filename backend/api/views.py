@@ -12793,3 +12793,491 @@ class PendingUserAccountsView(APIView):
             })
 
         return Response(data, status=status.HTTP_200_OK)
+
+
+class AssignmentsListView(APIView):
+    """Unified assignments list view aggregating asset, stock item, and consumable assignments.
+
+    Role-based access:
+    - asset_responsible: can only see asset assignments
+    - stock_consumable_responsible: can only see stock item and consumable assignments
+    - exploitation_chief, it_bureau_chief, superuser: can see all assignment types
+
+    Query params:
+    - item_type: 'asset' | 'stock_item' | 'consumable' (optional, filtered by role if omitted)
+    - is_active: 'true' | 'false' (optional)
+    - date_from: ISO date string (filters start_datetime >= date_from)
+    - date_to: ISO date string (filters start_datetime <= date_to)
+    - condition: condition_on_assignment value (optional)
+    - confirmed: 'true' | 'false' (whether confirmed by exploitation chief)
+    - assigned_by: person_id of the assigner (optional)
+    - person: person_id of the assignee (optional)
+    - search: search term for item name, inventory number, serial number, person name
+    - sort: field to sort by (start_datetime, end_datetime, assignment_id). Default: -start_datetime
+    - page: page number (default 1)
+    - page_size: items per page (default 50)
+    """
+    permission_classes = [IsAuthenticated]
+
+    ASSIGNMENT_TYPE_MAP = {
+        'asset': {
+            'model': AssetIsAssignedToPerson,
+            'item_fk': 'asset',
+            'serializer': AssetIsAssignedToPersonSerializer,
+        },
+        'stock_item': {
+            'model': StockItemIsAssignedToPerson,
+            'item_fk': 'stock_item',
+            'serializer': StockItemIsAssignedToPersonSerializer,
+        },
+        'consumable': {
+            'model': ConsumableIsAssignedToPerson,
+            'item_fk': 'consumable',
+            'serializer': ConsumableIsAssignedToPersonSerializer,
+        },
+    }
+
+    def _get_user_account(self, request):
+        if hasattr(request, 'user') and request.user and getattr(request.user, 'is_authenticated', False):
+            if isinstance(request.user, UserAccount):
+                return request.user
+        try:
+            if hasattr(request, 'auth') and request.auth is not None:
+                user_id = request.auth.get("user_id")
+                if user_id:
+                    return UserAccount.objects.get(user_id=user_id)
+        except Exception:
+            pass
+        return None
+
+    def _get_allowed_types(self, role_codes, is_superuser):
+        if is_superuser or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes:
+            return ['asset', 'stock_item', 'consumable']
+        types = []
+        if 'asset_responsible' in role_codes:
+            types.append('asset')
+        if 'stock_consumable_responsible' in role_codes:
+            types.extend(['stock_item', 'consumable'])
+        return types
+
+    def _build_queryset(self, item_type, params):
+        cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
+        model = cfg['model']
+        item_fk = cfg['item_fk']
+        qs = model.objects.select_related('person', 'assigned_by_person', 'is_confirmed_by_exploitation_chief', item_fk).all()
+
+        # is_active filter
+        is_active = params.get('is_active')
+        if is_active in ('true', 'false'):
+            qs = qs.filter(is_active=(is_active == 'true'))
+
+        # date range filter
+        date_from = params.get('date_from')
+        if date_from:
+            try:
+                qs = qs.filter(start_datetime__gte=date_from)
+            except (ValueError, TypeError):
+                pass
+        date_to = params.get('date_to')
+        if date_to:
+            try:
+                qs = qs.filter(start_datetime__lte=date_to)
+            except (ValueError, TypeError):
+                pass
+
+        # condition filter
+        condition = params.get('condition')
+        if condition:
+            qs = qs.filter(condition_on_assignment=condition)
+
+        # confirmed filter
+        confirmed = params.get('confirmed')
+        if confirmed == 'true':
+            qs = qs.filter(is_confirmed_by_exploitation_chief__isnull=False)
+        elif confirmed == 'false':
+            qs = qs.filter(is_confirmed_by_exploitation_chief__isnull=True)
+
+        # assigned_by filter
+        assigned_by = params.get('assigned_by')
+        if assigned_by:
+            try:
+                qs = qs.filter(assigned_by_person_id=int(assigned_by))
+            except (TypeError, ValueError):
+                pass
+
+        # person (assignee) filter
+        person_id = params.get('person')
+        if person_id:
+            try:
+                qs = qs.filter(person_id=int(person_id))
+            except (TypeError, ValueError):
+                pass
+
+        # position/department filter
+        position_id = params.get('position')
+        if position_id:
+            try:
+                person_ids = PersonAssignment.objects.filter(
+                    position_id=int(position_id)
+                ).values_list('person_id', flat=True)
+                qs = qs.filter(person_id__in=person_ids)
+            except (TypeError, ValueError):
+                pass
+
+        # search filter
+        search = params.get('search', '').strip()
+        if search:
+            search_conditions = Q()
+            if item_type == 'asset':
+                search_conditions |= Q(asset__asset_name__icontains=search)
+                search_conditions |= Q(asset__asset_inventory_number__icontains=search)
+                search_conditions |= Q(asset__asset_serial_number__icontains=search)
+            elif item_type == 'stock_item':
+                search_conditions |= Q(stock_item__stock_item_name__icontains=search)
+                search_conditions |= Q(stock_item__stock_item_inventory_number__icontains=search)
+            elif item_type == 'consumable':
+                search_conditions |= Q(consumable__consumable_name__icontains=search)
+                search_conditions |= Q(consumable__consumable_inventory_number__icontains=search)
+                search_conditions |= Q(consumable__consumable_serial_number__icontains=search)
+            search_conditions |= Q(person__first_name__icontains=search)
+            search_conditions |= Q(person__last_name__icontains=search)
+            search_conditions |= Q(assigned_by_person__first_name__icontains=search)
+            search_conditions |= Q(assigned_by_person__last_name__icontains=search)
+            qs = qs.filter(search_conditions)
+
+        return qs
+
+    def get(self, request):
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = getattr(user_account, 'person', None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+        is_superuser = user_account.is_superuser()
+        allowed_types = self._get_allowed_types(role_codes, is_superuser)
+
+        if not allowed_types:
+            return Response(
+                {"error": "You do not have permission to view assignments"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        params = request.query_params
+        requested_type = params.get('item_type', '')
+
+        # Determine which types to query
+        if requested_type:
+            if requested_type not in allowed_types:
+                return Response(
+                    {"error": f"You do not have permission to view {requested_type} assignments"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            types_to_query = [requested_type]
+        else:
+            types_to_query = allowed_types
+
+        # Sort
+        sort_field = params.get('sort', '-start_datetime')
+        allowed_sorts = ['start_datetime', '-start_datetime', 'end_datetime', '-end_datetime', 'assignment_id', '-assignment_id']
+        if sort_field not in allowed_sorts:
+            sort_field = '-start_datetime'
+
+        # Pagination
+        try:
+            page = max(1, int(params.get('page', 1)))
+        except (TypeError, ValueError):
+            page = 1
+        try:
+            page_size = min(200, max(1, int(params.get('page_size', 50))))
+        except (TypeError, ValueError):
+            page_size = 50
+
+        all_results = []
+        for item_type in types_to_query:
+            qs = self._build_queryset(item_type, params)
+            qs = qs.order_by(sort_field)
+            for assignment in qs:
+                cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
+                try:
+                    serialized = cfg['serializer'](assignment).data
+                except Exception:
+                    continue
+                serialized['item_type'] = item_type
+                # Enrich with person position info
+                person_obj = assignment.person
+                if person_obj:
+                    pa = PersonAssignment.objects.filter(person=person_obj).select_related('position').first()
+                    if pa and pa.position:
+                        serialized['person_position'] = {
+                            'position_id': pa.position.position_id,
+                            'position_label': pa.position.position_label,
+                        }
+                    else:
+                        serialized['person_position'] = None
+                else:
+                    serialized['person_position'] = None
+                all_results.append(serialized)
+
+        # Re-sort combined results
+        sort_key_map = {
+            'start_datetime': lambda x: x.get('start_datetime') or '',
+            '-start_datetime': lambda x: x.get('start_datetime') or '',
+            'end_datetime': lambda x: x.get('end_datetime') or '',
+            '-end_datetime': lambda x: x.get('end_datetime') or '',
+            'assignment_id': lambda x: x.get('assignment_id', 0),
+            '-assignment_id': lambda x: x.get('assignment_id', 0),
+        }
+        sort_key = sort_key_map.get(sort_field, lambda x: x.get('start_datetime') or '')
+        reverse = sort_field.startswith('-')
+        all_results.sort(key=sort_key, reverse=reverse)
+
+        # Pagination
+        total = len(all_results)
+        start = (page - 1) * page_size
+        end = start + page_size
+        paginated = all_results[start:end]
+
+        # Stats
+        stats = {
+            'total': total,
+            'active': sum(1 for r in all_results if r.get('is_active')),
+            'inactive': sum(1 for r in all_results if not r.get('is_active')),
+            'by_type': {},
+        }
+        for it in types_to_query:
+            type_items = [r for r in all_results if r.get('item_type') == it]
+            stats['by_type'][it] = {
+                'total': len(type_items),
+                'active': sum(1 for r in type_items if r.get('is_active')),
+                'inactive': sum(1 for r in type_items if not r.get('is_active')),
+            }
+
+        # Positions for filter dropdown
+        positions = list(Position.objects.all().order_by('position_label').values('position_id', 'position_label'))
+
+        return Response({
+            'results': paginated,
+            'count': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': max(1, (total + page_size - 1) // page_size),
+            'stats': stats,
+            'allowed_types': allowed_types,
+            'positions': positions,
+        }, status=status.HTTP_200_OK)
+
+    def _check_discharge_permission(self, user_account, item_type):
+        """Check if user can discharge assignments of the given item type."""
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        is_superuser = user_account.is_superuser()
+        if is_superuser:
+            return True
+        if item_type == 'asset':
+            return 'asset_responsible' in role_codes or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes
+        return 'stock_consumable_responsible' in role_codes or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes
+
+    def post(self, request):
+        """Handle bulk discharge, item history, and quick reassign actions.
+
+        Request body must include 'action' field:
+        - 'bulk_discharge': discharge multiple assignments. Body: {action, items: [{assignment_id, item_type}, ...]}
+        - 'item_history': get full assignment history for an item. Body: {action, item_type, item_id}
+        - 'quick_reassign': discharge current and create new assignment. Body: {action, assignment_id, item_type, new_person_id, start_datetime, condition_on_assignment}
+        """
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        person = getattr(user_account, 'person', None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        action = request.data.get('action', '')
+
+        if action == 'bulk_discharge':
+            return self._bulk_discharge(request, user_account, person)
+        elif action == 'item_history':
+            return self._item_history(request, user_account)
+        elif action == 'quick_reassign':
+            return self._quick_reassign(request, user_account, person)
+        else:
+            return Response({"error": "Invalid action. Use 'bulk_discharge', 'item_history', or 'quick_reassign'"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def _bulk_discharge(self, request, user_account, person):
+        """Discharge multiple assignments at once."""
+        items = request.data.get('items', [])
+        if not items or not isinstance(items, list):
+            return Response({"error": "items must be a non-empty list of {assignment_id, item_type}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check permissions per item type
+        item_types_in_batch = set(item.get('item_type') for item in items if item.get('item_type'))
+        for it in item_types_in_batch:
+            if not self._check_discharge_permission(user_account, it):
+                return Response({"error": f"You do not have permission to discharge {it} assignments"}, status=status.HTTP_403_FORBIDDEN)
+
+        discharged = []
+        errors = []
+        now = timezone.now()
+
+        for item in items:
+            assignment_id = item.get('assignment_id')
+            item_type = item.get('item_type')
+            if not assignment_id or not item_type or item_type not in self.ASSIGNMENT_TYPE_MAP:
+                errors.append({"assignment_id": assignment_id, "error": "Invalid assignment_id or item_type"})
+                continue
+
+            model = self.ASSIGNMENT_TYPE_MAP[item_type]['model']
+            try:
+                assignment = model.objects.get(assignment_id=assignment_id)
+            except model.DoesNotExist:
+                errors.append({"assignment_id": assignment_id, "error": "Not found"})
+                continue
+
+            if not assignment.is_active:
+                errors.append({"assignment_id": assignment_id, "error": "Already inactive"})
+                continue
+
+            assignment.end_datetime = now
+            assignment.is_active = False
+            assignment.save()
+            discharged.append(assignment_id)
+
+        return Response({
+            "discharged": discharged,
+            "errors": errors,
+            "discharged_count": len(discharged),
+        }, status=status.HTTP_200_OK)
+
+    def _item_history(self, request, user_account):
+        """Get full assignment history for a specific item."""
+        item_type = request.data.get('item_type')
+        item_id = request.data.get('item_id')
+
+        if not item_type or not item_id:
+            return Response({"error": "item_type and item_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if item_type not in self.ASSIGNMENT_TYPE_MAP:
+            return Response({"error": "Invalid item_type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check read permission
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        allowed = self._get_allowed_types(role_codes, user_account.is_superuser())
+        if item_type not in allowed:
+            return Response({"error": f"You do not have permission to view {item_type} assignments"}, status=status.HTTP_403_FORBIDDEN)
+
+        cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
+        model = cfg['model']
+        item_fk = cfg['item_fk']
+
+        qs = model.objects.filter(**{f'{item_fk}_id': item_id}).select_related(
+            'person', 'assigned_by_person', 'is_confirmed_by_exploitation_chief'
+        ).order_by('-start_datetime')
+
+        history = []
+        for assignment in qs:
+            serialized = cfg['serializer'](assignment).data
+            serialized['item_type'] = item_type
+            # Enrich with position
+            person_obj = assignment.person
+            if person_obj:
+                pa = PersonAssignment.objects.filter(person=person_obj).select_related('position').first()
+                if pa and pa.position:
+                    serialized['person_position'] = {
+                        'position_id': pa.position.position_id,
+                        'position_label': pa.position.position_label,
+                    }
+                else:
+                    serialized['person_position'] = None
+            else:
+                serialized['person_position'] = None
+            history.append(serialized)
+
+        return Response({"history": history, "count": len(history)}, status=status.HTTP_200_OK)
+
+    def _quick_reassign(self, request, user_account, person):
+        """Discharge current assignment and create a new one for the same item to a different person."""
+        assignment_id = request.data.get('assignment_id')
+        item_type = request.data.get('item_type')
+        new_person_id = request.data.get('new_person_id')
+        start_datetime = request.data.get('start_datetime')
+        condition_on_assignment = request.data.get('condition_on_assignment', 'good')
+
+        if not all([assignment_id, item_type, new_person_id, start_datetime]):
+            return Response({"error": "assignment_id, item_type, new_person_id, and start_datetime are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if item_type not in self.ASSIGNMENT_TYPE_MAP:
+            return Response({"error": "Invalid item_type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not self._check_discharge_permission(user_account, item_type):
+            return Response({"error": f"You do not have permission to reassign {item_type}"}, status=status.HTTP_403_FORBIDDEN)
+
+        # Check assign permission
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        is_superuser = user_account.is_superuser()
+        if item_type == 'asset':
+            can_assign = is_superuser or 'asset_responsible' in role_codes or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes
+        else:
+            can_assign = is_superuser or 'stock_consumable_responsible' in role_codes or 'exploitation_chief' in role_codes
+        if not can_assign:
+            return Response({"error": f"You do not have permission to assign {item_type}"}, status=status.HTTP_403_FORBIDDEN)
+
+        model = self.ASSIGNMENT_TYPE_MAP[item_type]['model']
+        item_fk = self.ASSIGNMENT_TYPE_MAP[item_type]['item_fk']
+
+        try:
+            old_assignment = model.objects.get(assignment_id=assignment_id)
+        except model.DoesNotExist:
+            return Response({"error": "Assignment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not old_assignment.is_active:
+            return Response({"error": "Cannot reassign an inactive assignment"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify new person exists
+        try:
+            new_person = Person.objects.get(person_id=int(new_person_id))
+        except Person.DoesNotExist:
+            return Response({"error": "New person not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check item isn't already assigned to new person actively
+        item_id = getattr(old_assignment, f'{item_fk}_id')
+        active_check = model.objects.filter(**{f'{item_fk}_id': item_id, 'is_active': True}).exclude(assignment_id=assignment_id).exists()
+        if active_check:
+            return Response({"error": "Item has another active assignment"}, status=status.HTTP_400_BAD_REQUEST)
+
+        with transaction.atomic():
+            # Discharge old
+            now = timezone.now()
+            old_assignment.end_datetime = now
+            old_assignment.is_active = False
+            old_assignment.save()
+
+            # Create new
+            last_item = model.objects.order_by("-assignment_id").first()
+            next_id = (last_item.assignment_id + 1) if last_item else 1
+
+            new_assignment = model.objects.create(
+                assignment_id=next_id,
+                person=new_person,
+                assigned_by_person=person,
+                **{f'{item_fk}_id': item_id},
+                start_datetime=start_datetime,
+                condition_on_assignment=condition_on_assignment,
+                is_active=True,
+            )
+
+        cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
+        serialized = cfg['serializer'](new_assignment).data
+        serialized['item_type'] = item_type
+        return Response({"assignment": serialized, "discharged_id": assignment_id}, status=status.HTTP_201_CREATED)

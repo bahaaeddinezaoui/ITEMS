@@ -1389,6 +1389,13 @@ class AssetIsAssignedToPersonSerializer(serializers.ModelSerializer):
         # Nest the asset details in the response
         if instance.asset:
             representation['asset'] = AssetSerializer(instance.asset).data
+        # Nest person details
+        if instance.person:
+            representation['person'] = PersonSerializer(instance.person).data
+        if instance.assigned_by_person:
+            representation['assigned_by_person'] = PersonSerializer(instance.assigned_by_person).data
+        if instance.is_confirmed_by_exploitation_chief:
+            representation['is_confirmed_by_exploitation_chief'] = PersonSerializer(instance.is_confirmed_by_exploitation_chief).data
         return representation
 
 
@@ -1824,6 +1831,13 @@ class StockItemIsAssignedToPersonSerializer(serializers.ModelSerializer):
         # Nest the stock item details in the response
         if instance.stock_item:
             representation['stock_item'] = StockItemSerializer(instance.stock_item).data
+        # Nest person details
+        if instance.person:
+            representation['person'] = PersonSerializer(instance.person).data
+        if instance.assigned_by_person:
+            representation['assigned_by_person'] = PersonSerializer(instance.assigned_by_person).data
+        if instance.is_confirmed_by_exploitation_chief:
+            representation['is_confirmed_by_exploitation_chief'] = PersonSerializer(instance.is_confirmed_by_exploitation_chief).data
         return representation
 
 
@@ -1965,6 +1979,13 @@ class ConsumableIsAssignedToPersonSerializer(serializers.ModelSerializer):
         # Nest the consumable details in the response
         if instance.consumable:
             representation['consumable'] = ConsumableSerializer(instance.consumable).data
+        # Nest person details
+        if instance.person:
+            representation['person'] = PersonSerializer(instance.person).data
+        if instance.assigned_by_person:
+            representation['assigned_by_person'] = PersonSerializer(instance.assigned_by_person).data
+        if instance.is_confirmed_by_exploitation_chief:
+            representation['is_confirmed_by_exploitation_chief'] = PersonSerializer(instance.is_confirmed_by_exploitation_chief).data
         return representation
 
 

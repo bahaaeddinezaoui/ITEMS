@@ -887,7 +887,7 @@ const MaintenancesPage = () => {
                 </div>
 
                     {createPortal(
-                        <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                        <div style={{ position: 'fixed', bottom: '2.5rem', right: '3rem', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
                             {showFilters && (
                                 <div style={{
                                     display: 'flex',
