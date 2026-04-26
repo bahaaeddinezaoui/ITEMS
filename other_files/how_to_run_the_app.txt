@@ -1,8 +1,191 @@
+============================================================
+  EMS - Offline Production Deployment Guide
+  Windows 11 / Python 3.13.5 / Nginx 1.30.0
+============================================================
+
+--- DEVELOPMENT MODE (local testing only) ---
+
 Backend:
-cd backend
-.\venv\Scripts\activate
-python manage.py runserver
+    cd backend
+    .\venv\Scripts\activate
+    python manage.py runserver
 
 Frontend:
-cd frontend
-npm run dev
+    cd frontend
+    npm run dev
+
+
+--- PRODUCTION MODE (offline server) ---
+
+PREREQUISITES (pre-download on a connected machine):
+    - Python 3.13.5 Windows installer
+    - PostgreSQL Windows installer
+    - Nginx 1.30.0 Windows zip (from nginx.org)
+    - NSSM (Non-Sucking Service Manager) Windows binary
+    - The entire project folder (including offline_assets/, frontend/dist/, project_iguana.sql)
+
+============================================================
+STEP 1 — Install Python & Create Virtual Environment
+============================================================
+
+    python -m venv venv
+    .\venv\Scripts\activate
+
+============================================================
+STEP 2 — Install Python Dependencies (Offline)
+============================================================
+
+    pip install --no-index --find-links=offline_assets\python -r requirements.txt
+    pip install --no-index --find-links=offline_assets\python waitress
+
+    NOTE: All 10 .whl files in offline_assets/python/ cover the full
+    dependency tree (Django 6.0.4, DRF, psycopg2-binary, waitress, etc.)
+
+============================================================
+STEP 3 — Set Up PostgreSQL & Import Database
+============================================================
+
+    psql -U postgres -c "CREATE DATABASE project_iguana;"
+    psql -U postgres -d project_iguana -f project_iguana.sql
+
+============================================================
+STEP 4 — Configure Django for Production
+============================================================
+
+Edit backend/ems/settings.py:
+    - SECRET_KEY: generate with: python -c "import secrets; print(secrets.token_urlsafe(50))"
+    - DEBUG: False (already set)
+    - ALLOWED_HOSTS: ['your-server-ip', 'localhost', '127.0.0.1']
+    - DATABASES > PASSWORD: your actual PostgreSQL password
+
+Then collect static files:
+    cd backend
+    python manage.py collectstatic --noinput
+    python manage.py migrate
+
+============================================================
+STEP 5 — Prepare the Frontend
+============================================================
+
+Option A — Pre-built dist/ (RECOMMENDED, no Node.js needed on server):
+    1. On a connected machine, edit frontend/.env:
+        VITE_API_BASE_URL=/api/
+    2. Rebuild:
+        cd frontend
+        npm install
+        npm run build
+    3. Copy only frontend/dist/ to the server
+
+Option B — Build on the offline server (requires Node.js):
+    1. Copy the ENTIRE frontend/ folder (including node_modules/)
+       to the server. Do NOT rely on offline_assets/node/ tgz files
+       alone — npm pack fails for ~30% of packages.
+    2. On the server:
+        cd frontend
+        npx vite build
+
+============================================================
+STEP 6 — Start the Backend with Waitress
+============================================================
+
+    cd backend
+    .\venv\Scripts\activate
+    waitress-serve --port=8000 ems.wsgi:application
+
+To run as a Windows service (auto-start on boot):
+    nssm install EMSBackend "C:\path\to\venv\Scripts\python.exe" "-m waitress --port=8000 ems.wsgi:application"
+    nssm set EMSBackend AppDirectory "C:\path\to\project\backend"
+    nssm set EMSBackend AppEnvironmentExtra "VIRTUAL=C:\path\to\venv\Scripts\activate.bat"
+    nssm start EMSBackend
+
+============================================================
+STEP 7 — Install & Configure Nginx 1.30.0
+============================================================
+
+1. Extract nginx zip to C:\nginx
+
+2. Edit C:\nginx\conf\nginx.conf — replace the server block inside http {}:
+
+   server {
+       listen 80;
+       server_name your-server-ip;
+
+       # Frontend (React SPA)
+       location / {
+           root C:/path/to/project/frontend/dist;
+           index index.html;
+           try_files $uri /index.html;
+       }
+
+       # Backend API
+       location /api/ {
+           proxy_pass http://127.0.0.1:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+
+       # Django Admin
+       location /admin/ {
+           proxy_pass http://127.0.0.1:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+       }
+
+       # Django Static Files
+       location /static/ {
+           alias C:/path/to/project/backend/staticfiles/;
+       }
+
+       # Media Uploads
+       location /media/ {
+           alias C:/path/to/project/backend/media/;
+       }
+   }
+
+   IMPORTANT: Use forward slashes (/) in Nginx paths on Windows!
+
+3. Test and start Nginx:
+    cd C:\nginx
+    nginx -t           # test configuration
+    start nginx        # start
+    nginx -s reload    # reload after config changes
+    nginx -s quit      # graceful stop
+
+4. To run as a Windows service (auto-start on boot):
+    nssm install Nginx "C:\nginx\nginx.exe"
+    nssm start Nginx
+
+============================================================
+STEP 8 — Windows Firewall
+============================================================
+
+    New-NetFirewallRule -DisplayName "Nginx HTTP" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow
+
+============================================================
+STEP 9 — Verify
+============================================================
+
+    http://your-server-ip/          -> React SPA
+    http://your-server-ip/api/      -> API (proxied to Waitress)
+    http://your-server-ip/admin/    -> Django admin
+    http://your-server-ip/media/    -> Uploaded files
+
+============================================================
+NOTES
+============================================================
+
+- offline_assets/python/ contains 10 .whl files covering ALL Python
+  dependencies (direct + transitive). pip --find-links works perfectly.
+
+- offline_assets/node/ contains 266 .tgz files but is INCOMPLETE
+  (390 packages needed, npm pack fails for ~30%). Do NOT rely on
+  these alone for npm install --offline. Instead, copy the entire
+  node_modules/ folder to the server if you need to build there.
+
+- The recommended approach is Option A (pre-build on a connected
+  machine, copy only dist/ to the server). No Node.js needed.
+
+- Backend runs on 127.0.0.1:8000 (Waitress) — no direct external
+  access needed. Nginx is the single entry point on port 80.
