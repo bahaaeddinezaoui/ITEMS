@@ -1743,6 +1743,16 @@ export const maintenanceStepService = {
         return response.data;
     },
 
+    updateStockItemCondition: async (id, data) => {
+        const response = await api.post(`maintenance-steps/${id}/update-stock-item-condition/`, data);
+        return response.data;
+    },
+
+    updateConsumableCondition: async (id, data) => {
+        const response = await api.post(`maintenance-steps/${id}/update-consumable-condition/`, data);
+        return response.data;
+    },
+
     addAttributeChanges: async (id, changes) => {
         const payload = Array.isArray(changes) ? changes : { changes };
         const response = await api.post(`maintenance-steps/${id}/attribute-changes/`, payload);

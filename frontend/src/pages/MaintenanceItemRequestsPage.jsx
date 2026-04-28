@@ -7,9 +7,33 @@ import { maintenanceStepItemRequestService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { SkeletonCardList } from '../components/SkeletonCard';
 
+const STATUS_KEY_MAP = {
+    pending: 'maintenanceItemRequests.statusPending',
+    fulfilled: 'maintenanceItemRequests.statusFulfilled',
+    rejected: 'maintenanceItemRequests.statusRejected',
+};
+
+const REQUEST_TYPE_KEY_MAP = {
+    stock_item: 'maintenanceItemRequests.typeStockItem',
+    consumable: 'maintenanceItemRequests.typeConsumable',
+};
+
+const MAINTENANCE_STATUS_KEY_MAP = {
+    pending: 'maintenanceItemRequests.maintenanceStatusPending',
+    started: 'maintenanceItemRequests.maintenanceStatusStarted',
+    in_progress: 'maintenanceItemRequests.maintenanceStatusInProgress',
+    completed: 'maintenanceItemRequests.maintenanceStatusCompleted',
+    failed: 'maintenanceItemRequests.maintenanceStatusFailed',
+};
+
+const translateEnum = (t, value, keyMap) => {
+    const key = keyMap[value];
+    return key ? t(key, value) : value;
+};
+
 const MaintenanceItemRequestsPage = () => {
     const { user, isSuperuser } = useAuth();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
 
     const canView = useMemo(() => {
@@ -26,6 +50,7 @@ const MaintenanceItemRequestsPage = () => {
     const [statusFilter, setStatusFilter] = useState('');
     const [typeFilter, setTypeFilter] = useState('');
     const [maintenanceStatusFilter, setMaintenanceStatusFilter] = useState('');
+    const [maintenanceStepStatusFilter, setMaintenanceStepStatusFilter] = useState('');
     const [sortKey, setSortKey] = useState('created_at');
     const [sortDir, setSortDir] = useState('desc');
 
@@ -60,6 +85,7 @@ const MaintenanceItemRequestsPage = () => {
             if (sf && String(x.status || '').toLowerCase() !== sf) return false;
             if (tf && String(x.request_type || '').toLowerCase() !== tf) return false;
             if (msf && String(x.maintenance_status || '').toLowerCase() !== msf) return false;
+            if (maintenanceStepStatusFilter && String(x.maintenance_step_status_code || x.maintenance_step_status || '').toLowerCase() !== maintenanceStepStatusFilter.toLowerCase()) return false;
 
             if (!q) return true;
 
@@ -113,7 +139,7 @@ const MaintenanceItemRequestsPage = () => {
         });
 
         return sorted;
-    }, [items, searchTerm, statusFilter, typeFilter, maintenanceStatusFilter, sortKey, sortDir]);
+    }, [items, searchTerm, statusFilter, typeFilter, maintenanceStatusFilter, maintenanceStepStatusFilter, sortKey, sortDir]);
 
     const statusOptions = useMemo(() => {
         const s = new Set((items || []).map((x) => String(x.status || '').trim()).filter(Boolean));
@@ -129,6 +155,20 @@ const MaintenanceItemRequestsPage = () => {
         const s = new Set((items || []).map((x) => String(x.maintenance_status || '').trim()).filter(Boolean));
         return Array.from(s).sort((a, b) => a.localeCompare(b));
     }, [items]);
+
+    const stepStatusOptions = useMemo(() => {
+        const lang = i18n.language || 'en';
+        const labelKey = lang === 'ar' ? 'maintenance_step_status_label_ar' : 'maintenance_step_status_label_en';
+        const map = new Map();
+        (items || []).forEach((x) => {
+            const code = x.maintenance_step_status_code || x.maintenance_step_status;
+            if (code) {
+                const label = x[labelKey] || code;
+                if (!map.has(code)) map.set(code, label);
+            }
+        });
+        return Array.from(map.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+    }, [items, i18n.language]);
 
     if (!canView) {
         return <Navigate to="/dashboard" replace />;
@@ -196,7 +236,7 @@ const MaintenanceItemRequestsPage = () => {
                             <option value="">{t('common.all', 'All')}</option>
                             {statusOptions.map((s) => (
                                 <option key={s} value={s}>
-                                    {s}
+                                    {translateEnum(t, s, STATUS_KEY_MAP)}
                                 </option>
                             ))}
                         </select>
@@ -208,7 +248,7 @@ const MaintenanceItemRequestsPage = () => {
                             <option value="">{t('common.all', 'All')}</option>
                             {typeOptions.map((s) => (
                                 <option key={s} value={s}>
-                                    {s}
+                                    {translateEnum(t, s, REQUEST_TYPE_KEY_MAP)}
                                 </option>
                             ))}
                         </select>
@@ -220,7 +260,19 @@ const MaintenanceItemRequestsPage = () => {
                             <option value="">{t('common.all', 'All')}</option>
                             {maintenanceStatusOptions.map((s) => (
                                 <option key={s} value={s}>
-                                    {s}
+                                    {translateEnum(t, s, MAINTENANCE_STATUS_KEY_MAP)}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group" style={{ marginBottom: 0, minWidth: 240 }}>
+                        <label className="form-label" htmlFor="mir-step-status">{t('maintenanceItemRequests.stepStatus', 'Step status')}</label>
+                        <select id="mir-step-status" className="form-input" value={maintenanceStepStatusFilter} onChange={(e) => setMaintenanceStepStatusFilter(e.target.value)}>
+                            <option value="">{t('common.all', 'All')}</option>
+                            {stepStatusOptions.map(([code, label]) => (
+                                <option key={code} value={code}>
+                                    {label}
                                 </option>
                             ))}
                         </select>
@@ -253,6 +305,7 @@ const MaintenanceItemRequestsPage = () => {
                                 setStatusFilter('');
                                 setTypeFilter('');
                                 setMaintenanceStatusFilter('');
+                                setMaintenanceStepStatusFilter('');
                                 setSortKey('created_at');
                                 setSortDir('desc');
                             }}
@@ -274,99 +327,68 @@ const MaintenanceItemRequestsPage = () => {
                     {filtered.length === 0 ? (
                         <div style={{ opacity: 0.8 }}>{t('maintenanceItemRequests.noResults', 'No requests found')}</div>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                        <div className="sci-item-grid">
                             {filtered.map((req) => {
                                 const requestedModelId =
                                     req.request_type === 'stock_item'
                                         ? req.requested_stock_item_model
                                         : req.requested_consumable_model;
 
+                                const typeBadgeClass = req.request_type === 'stock_item' ? 'badge-info' : 'badge-warning';
+
+                                const statusBadgeClass = req.status === 'fulfilled' ? 'badge-success'
+                                    : req.status === 'rejected' ? 'badge-error'
+                                    : 'badge-warning';
+
+                                const maintStatusBadgeClass = req.maintenance_status === 'completed' ? 'badge-success'
+                                    : req.maintenance_status === 'failed' ? 'badge-error'
+                                    : req.maintenance_status === 'pending' ? 'badge-warning'
+                                    : 'badge-info';
+
+                                const stepStatusLabel = (i18n.language === 'ar' ? req.maintenance_step_status_label_ar : req.maintenance_step_status_label_en) || req.maintenance_step_status;
+
                                 return (
                                     <div
                                         key={req.maintenance_step_item_request_id}
-                                        className="card"
-                                        style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)' }}
+                                        className="sci-item-card"
+                                        style={{ cursor: req.maintenance_id ? 'pointer' : 'default' }}
+                                        onClick={() => req.maintenance_id && navigate(`/dashboard/maintenances/${req.maintenance_id}/steps`)}
                                     >
-                                        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-4)' }}>
-                                            <div>
-                                                <div className="card-title" style={{ marginBottom: 4 }}>
-                                                    {t('maintenanceItemRequests.request', 'Request')} #{req.maintenance_step_item_request_id}
-                                                </div>
-                                                <div style={{ fontSize: 12, opacity: 0.85 }}>
-                                                    {t('maintenanceItemRequests.type', 'Type')}: <b>{req.request_type}</b> | {t('maintenanceItemRequests.status', 'Status')}: <b>{req.status}</b> | {t('maintenanceItemRequests.requestedModelId', 'Requested model ID')}: <b>{requestedModelId || '-'}</b>
-                                                </div>
-                                            </div>
-
-                                            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
-                                                {req.maintenance_id ? (
-                                                    <button
-                                                        className="btn btn-secondary"
-                                                        onClick={() => navigate(`/dashboard/maintenances/${req.maintenance_id}/steps`)}
-                                                    >
-                                                        {t('maintenanceItemRequests.openMaintenance', 'Open maintenance')} #{req.maintenance_id}
-                                                    </button>
-                                                ) : null}
-                                            </div>
+                                        <div className="sci-item-card-head">
+                                            <span className={`badge ${typeBadgeClass}`}>{translateEnum(t, req.request_type, REQUEST_TYPE_KEY_MAP)}</span>
+                                            <span className={`badge ${statusBadgeClass}`}>{translateEnum(t, req.status, STATUS_KEY_MAP)}</span>
+                                            {req.maintenance_status && (
+                                                <span className={`badge ${maintStatusBadgeClass}`}>{translateEnum(t, req.maintenance_status, MAINTENANCE_STATUS_KEY_MAP)}</span>
+                                            )}
+                                            {stepStatusLabel && (
+                                                <span className="badge badge-info">{stepStatusLabel}</span>
+                                            )}
                                         </div>
 
-                                        <div className="card-body">
-                                            <div
-                                                style={{
-                                                    display: 'grid',
-                                                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                                                    gap: 'var(--space-4)',
-                                                }}
-                                            >
-                                                <div>
-                                                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>
-                                                        {t('maintenanceItemRequests.maintenance', 'Maintenance')}
-                                                    </div>
-                                                    <div style={{ fontWeight: 600 }}>
-                                                        {req.maintenance_id ? `#${req.maintenance_id}` : '-'}
-                                                    </div>
-                                                    <div style={{ fontSize: 12, opacity: 0.8, marginTop: 6 }}>
-                                                        {t('maintenanceItemRequests.maintenanceStatus', 'Maintenance status')}: <b>{req.maintenance_status || '-'}</b>
-                                                    </div>
-                                                </div>
+                                        <div className="sci-item-card-body">
+                                            <div className="sci-item-card-name">
+                                                <strong>#{req.maintenance_step_item_request_id} — {req.asset_name || (req.asset_id ? `Asset #${req.asset_id}` : '-')}</strong>
+                                                <span className="sci-item-card-serial">
+                                                    M#{req.maintenance_id || '—'} • S#{req.maintenance_step || '—'}
+                                                </span>
+                                            </div>
 
-                                                <div>
-                                                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>
-                                                        {t('maintenanceItemRequests.asset', 'Asset')}
-                                                    </div>
-                                                    <div style={{ fontWeight: 600 }}>
-                                                        {req.asset_name || (req.asset_id ? `#${req.asset_id}` : '-')}
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>
-                                                        {t('maintenanceItemRequests.step', 'Step')}
-                                                    </div>
-                                                    <div style={{ fontWeight: 600 }}>
-                                                        {req.maintenance_step ? `#${req.maintenance_step}` : '-'}
-                                                    </div>
-                                                    <div style={{ fontSize: 12, opacity: 0.8, marginTop: 6 }}>
-                                                        {t('maintenanceItemRequests.stepStatus', 'Step status')}: <b>{req.maintenance_step_status || '-'}</b>
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>
-                                                        {t('maintenanceItemRequests.createdAt', 'Created at')}
-                                                    </div>
-                                                    <div style={{ fontWeight: 600 }}>
-                                                        {req.created_at ? new Date(req.created_at).toLocaleString() : '-'}
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>
-                                                        {t('maintenanceItemRequests.note', 'Note')}
-                                                    </div>
-                                                    <div style={{ fontWeight: 600, wordBreak: 'break-word' }}>
-                                                        {req.note || '-'}
-                                                    </div>
-                                                </div>
+                                            <div className="sci-item-card-details">
+                                                {requestedModelId && (
+                                                    <span className="sci-item-card-tag sci-item-card-mono">
+                                                        #{requestedModelId}
+                                                    </span>
+                                                )}
+                                                {req.created_at && (
+                                                    <span className="sci-item-card-tag">
+                                                        {new Date(req.created_at).toLocaleDateString()}
+                                                    </span>
+                                                )}
+                                                {req.note && (
+                                                    <span className="sci-item-card-tag" style={{ whiteSpace: 'normal', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                                                        {req.note}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

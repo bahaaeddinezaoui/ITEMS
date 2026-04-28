@@ -84,27 +84,27 @@ describe('MaintenanceItemRequestsPage', () => {
         });
 
         expect(screen.getByText('Requests')).toBeInTheDocument();
-        expect(screen.getByText('Request #1')).toBeInTheDocument();
-        expect(screen.getByText('Request #2')).toBeInTheDocument();
+        expect(screen.getByText('#1 — Printer HP')).toBeInTheDocument();
+        expect(screen.getByText('#2 — Laptop Dell')).toBeInTheDocument();
 
         // Search
         const search = screen.getByLabelText('Search');
         fireEvent.change(search, { target: { value: 'printer' } });
-        expect(await screen.findByText('Request #1')).toBeInTheDocument();
-        expect(screen.queryByText('Request #2')).not.toBeInTheDocument();
+        expect(await screen.findByText('#1 — Printer HP')).toBeInTheDocument();
+        expect(screen.queryByText('#2 — Laptop Dell')).not.toBeInTheDocument();
 
         // Reset
         fireEvent.click(screen.getByText('Reset'));
-        expect(await screen.findByText('Request #2')).toBeInTheDocument();
+        expect(await screen.findByText('#2 — Laptop Dell')).toBeInTheDocument();
 
         // Filter by type
         fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'consumable' } });
-        expect(await screen.findByText('Request #2')).toBeInTheDocument();
-        expect(screen.queryByText('Request #1')).not.toBeInTheDocument();
+        expect(await screen.findByText('#2 — Laptop Dell')).toBeInTheDocument();
+        expect(screen.queryByText('#1 — Printer HP')).not.toBeInTheDocument();
 
         // Sort by status asc (still one item, but ensures control exists)
         fireEvent.change(screen.getByLabelText('Sort by'), { target: { value: 'status' } });
         fireEvent.change(screen.getByLabelText('Direction'), { target: { value: 'asc' } });
-        expect(screen.getByText('Request #2')).toBeInTheDocument();
+        expect(screen.getByText('#2 — Laptop Dell')).toBeInTheDocument();
     });
 });

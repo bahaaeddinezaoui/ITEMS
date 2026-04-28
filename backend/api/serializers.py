@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, LocationRelation, Position, PositionRoleMapping, OrganizationalStructureType, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable, AuthenticationLog, UserSession
-from .translations import LocationTranslation, LocationTypeTranslation, OrganizationalStructureTypeTranslation, OrganizationalStructureTranslation, PositionTranslation, RoleTranslation, AssetTypeTranslation, StockItemTypeTranslation, ConsumableTypeTranslation, AssetBrandTranslation, StockItemBrandTranslation, ConsumableBrandTranslation, PersonTranslation, AssetAttributeDefinitionTranslation, ConsumableAttributeDefinitionTranslation, StockItemAttributeDefinitionTranslation, AssetTranslation, StockItemTranslation, ConsumableTranslation, AssetModelTranslation, StockItemModelTranslation, ConsumableModelTranslation
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, LocationRelation, Position, PositionRoleMapping, OrganizationalStructureType, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, MaintenanceStepStatus, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable, AuthenticationLog, UserSession
+from .translations import LocationTranslation, LocationTypeTranslation, OrganizationalStructureTypeTranslation, OrganizationalStructureTranslation, PositionTranslation, RoleTranslation, AssetTypeTranslation, StockItemTypeTranslation, ConsumableTypeTranslation, AssetBrandTranslation, StockItemBrandTranslation, ConsumableBrandTranslation, PersonTranslation, AssetAttributeDefinitionTranslation, ConsumableAttributeDefinitionTranslation, StockItemAttributeDefinitionTranslation, AssetTranslation, StockItemTranslation, ConsumableTranslation, AssetModelTranslation, StockItemModelTranslation, ConsumableModelTranslation, MaintenanceStepStatusTranslation
 
 
 class PersonSerializer(serializers.ModelSerializer):
@@ -121,6 +121,30 @@ class PhysicalConditionSerializer(serializers.ModelSerializer):
 
     def get_condition_label_en(self, obj):
         return self._get_translated_label(obj, 'en')
+
+
+class MaintenanceStepStatusSerializer(serializers.ModelSerializer):
+    maintenance_step_status_label_en = serializers.SerializerMethodField()
+    maintenance_step_status_label_ar = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MaintenanceStepStatus
+        fields = ['id', 'code', 'sort_order', 'maintenance_step_status_label_en', 'maintenance_step_status_label_ar']
+
+    def _get_translated_label(self, obj, lang_code):
+        try:
+            translation = MaintenanceStepStatusTranslation.objects.get(
+                maintenance_step_status=obj, language_code=lang_code
+            )
+            return translation.maintenance_step_status_label or None
+        except Exception:
+            return None
+
+    def get_maintenance_step_status_label_en(self, obj):
+        return self._get_translated_label(obj, 'en')
+
+    def get_maintenance_step_status_label_ar(self, obj):
+        return self._get_translated_label(obj, 'ar')
 
 
 class LoginSerializer(serializers.Serializer):
@@ -731,6 +755,9 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
     asset_name = serializers.SerializerMethodField()
     maintenance_status = serializers.SerializerMethodField()
     maintenance_step_status = serializers.SerializerMethodField()
+    maintenance_step_status_code = serializers.SerializerMethodField()
+    maintenance_step_status_label_en = serializers.SerializerMethodField()
+    maintenance_step_status_label_ar = serializers.SerializerMethodField()
 
     def get_maintenance_id(self, obj):
         try:
@@ -758,9 +785,39 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
 
     def get_maintenance_step_status(self, obj):
         try:
-            return obj.maintenance_step.maintenance_step_status
+            step = obj.maintenance_step
+            if step.status:
+                return step.status.code
+            return step.maintenance_step_status
         except Exception:
             return None
+
+    def get_maintenance_step_status_code(self, obj):
+        try:
+            step = obj.maintenance_step
+            if step.status:
+                return step.status.code
+            return None
+        except Exception:
+            return None
+
+    def _get_step_status_label(self, obj, lang_code):
+        try:
+            step = obj.maintenance_step
+            if step.status:
+                translation = MaintenanceStepStatusTranslation.objects.get(
+                    maintenance_step_status=step.status, language_code=lang_code
+                )
+                return translation.maintenance_step_status_label or None
+            return None
+        except Exception:
+            return None
+
+    def get_maintenance_step_status_label_en(self, obj):
+        return self._get_step_status_label(obj, 'en')
+
+    def get_maintenance_step_status_label_ar(self, obj):
+        return self._get_step_status_label(obj, 'ar')
 
     class Meta:
         model = MaintenanceStepItemRequest
@@ -787,6 +844,9 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
             'asset_name',
             'maintenance_status',
             'maintenance_step_status',
+            'maintenance_step_status_code',
+            'maintenance_step_status_label_en',
+            'maintenance_step_status_label_ar',
         ]
 
 
@@ -2155,6 +2215,29 @@ class MaintenanceStepSerializer(serializers.ModelSerializer):
         queryset=MaintenanceTypicalStep.objects.all(), source='maintenance_typical_step', write_only=True
     )
     maintenance_typical_step = MaintenanceTypicalStepSerializer(read_only=True)
+    status_id = serializers.PrimaryKeyRelatedField(
+        queryset=MaintenanceStepStatus.objects.all(), source='status', write_only=True, required=False, allow_null=True
+    )
+    status = MaintenanceStepStatusSerializer(read_only=True)
+    maintenance_step_status_label_en = serializers.SerializerMethodField()
+    maintenance_step_status_label_ar = serializers.SerializerMethodField()
+
+    def _get_status_label(self, obj, lang_code):
+        if obj.status:
+            try:
+                translation = MaintenanceStepStatusTranslation.objects.get(
+                    maintenance_step_status=obj.status, language_code=lang_code
+                )
+                return translation.maintenance_step_status_label or None
+            except Exception:
+                return None
+        return None
+
+    def get_maintenance_step_status_label_en(self, obj):
+        return self._get_status_label(obj, 'en')
+
+    def get_maintenance_step_status_label_ar(self, obj):
+        return self._get_status_label(obj, 'ar')
 
     def validate(self, attrs):
         status_value = attrs.get("maintenance_step_status")
@@ -2208,7 +2291,9 @@ class MaintenanceStepSerializer(serializers.ModelSerializer):
         fields = [
             'maintenance_step_id', 'maintenance', 'maintenance_typical_step', 'maintenance_typical_step_id',
             'person', 'person_id',
-            'maintenance_step_status', 'note',
+            'maintenance_step_status', 'status', 'status_id',
+            'maintenance_step_status_label_en', 'maintenance_step_status_label_ar',
+            'note',
             'asset_condition_history', 'stock_item_condition_history', 'consumable_condition_history',
             'start_datetime', 'end_datetime', 'is_successful'
         ]

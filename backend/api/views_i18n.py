@@ -20,6 +20,7 @@ from api.translations import (
     LocationTypeTranslation,
     OrganizationalStructureTypeTranslation,
     PhysicalConditionTranslation,
+    MaintenanceStepStatusTranslation,
     RoleTranslation,
     PositionTranslation,
     AssetAttributeDefinitionTranslation,
@@ -164,6 +165,11 @@ class OrganizationalStructureTypeTranslationViewSet(BaseTranslationViewSet):
 class PhysicalConditionTranslationViewSet(BaseTranslationViewSet):
     """ViewSet for PhysicalCondition translations."""
     queryset = PhysicalConditionTranslation.objects.all()
+
+
+class MaintenanceStepStatusTranslationViewSet(BaseTranslationViewSet):
+    """ViewSet for MaintenanceStepStatus translations."""
+    queryset = MaintenanceStepStatusTranslation.objects.all()
 
 
 class RoleTranslationViewSet(BaseTranslationViewSet):

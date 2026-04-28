@@ -134,6 +134,19 @@ class PhysicalConditionTranslation(models.Model):
         unique_together = ['physical_condition', 'language_code']
 
 
+class MaintenanceStepStatusTranslation(models.Model):
+    id = models.AutoField(primary_key=True, db_column='id')
+    maintenance_step_status = models.ForeignKey('MaintenanceStepStatus', on_delete=models.CASCADE, db_column='maintenance_step_status_id')
+    language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
+    maintenance_step_status_label = models.CharField(max_length=100, db_column='maintenance_step_status_label')
+    created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
+    updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
+    class Meta:
+        managed = False
+        db_table = 'maintenance_step_status_translation'
+        unique_together = ['maintenance_step_status', 'language_code']
+
+
 class RoleTranslation(models.Model):
     id = models.AutoField(primary_key=True, db_column='id')
     role = models.ForeignKey('Role', on_delete=models.CASCADE, db_column='role_id')

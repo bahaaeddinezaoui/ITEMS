@@ -34,6 +34,8 @@ import {
     Pencil,
     ListChecks,
     Lightbulb,
+    Cpu,
+    Droplets,
     Trash2,
     User,
     Clock,
@@ -120,6 +122,30 @@ const MaintenanceSteps = ({
     const [assetConditionFunctionalIssues, setAssetConditionFunctionalIssues] = useState('');
     const [assetConditionRecommendation, setAssetConditionRecommendation] = useState('');
     const [assetConditionSubmitting, setAssetConditionSubmitting] = useState(false);
+
+    const [stockItemConditionEditorOpen, setStockItemConditionEditorOpen] = useState(false);
+    const [stockItemConditionEditorStep, setStockItemConditionEditorStep] = useState(null);
+    const [stockItemConditionComponents, setStockItemConditionComponents] = useState([]);
+    const [stockItemConditionSelectedId, setStockItemConditionSelectedId] = useState('');
+    const [stockItemConditionId, setStockItemConditionId] = useState('');
+    const [stockItemConditionNotes, setStockItemConditionNotes] = useState('');
+    const [stockItemConditionCosmeticIssues, setStockItemConditionCosmeticIssues] = useState('');
+    const [stockItemConditionFunctionalIssues, setStockItemConditionFunctionalIssues] = useState('');
+    const [stockItemConditionRecommendation, setStockItemConditionRecommendation] = useState('');
+    const [stockItemConditionSubmitting, setStockItemConditionSubmitting] = useState(false);
+    const [stockItemConditionLoading, setStockItemConditionLoading] = useState(false);
+
+    const [consumableConditionEditorOpen, setConsumableConditionEditorOpen] = useState(false);
+    const [consumableConditionEditorStep, setConsumableConditionEditorStep] = useState(null);
+    const [consumableConditionComponents, setConsumableConditionComponents] = useState([]);
+    const [consumableConditionSelectedId, setConsumableConditionSelectedId] = useState('');
+    const [consumableConditionId, setConsumableConditionId] = useState('');
+    const [consumableConditionNotes, setConsumableConditionNotes] = useState('');
+    const [consumableConditionCosmeticIssues, setConsumableConditionCosmeticIssues] = useState('');
+    const [consumableConditionFunctionalIssues, setConsumableConditionFunctionalIssues] = useState('');
+    const [consumableConditionRecommendation, setConsumableConditionRecommendation] = useState('');
+    const [consumableConditionSubmitting, setConsumableConditionSubmitting] = useState(false);
+    const [consumableConditionLoading, setConsumableConditionLoading] = useState(false);
 
     const [attributeEditorOpen, setAttributeEditorOpen] = useState(false);
     const [attributeEditorStep, setAttributeEditorStep] = useState(null);
@@ -427,6 +453,8 @@ const MaintenanceSteps = ({
         closeRequestEditor();
         closeRemoveEditor();
         closeAssetConditionEditor();
+        closeStockItemConditionEditor();
+        closeConsumableConditionEditor();
         closeAttributeEditor();
         closeReturnEditor();
     }, [maintenanceEnded]);
@@ -1037,6 +1065,150 @@ const MaintenanceSteps = ({
             setError(err.response?.data?.error || t('mSteps.updateConditionError'));
         } finally {
             setAssetConditionSubmitting(false);
+        }
+    };
+
+    const closeStockItemConditionEditor = () => {
+        setStockItemConditionEditorOpen(false);
+        setStockItemConditionEditorStep(null);
+        setStockItemConditionComponents([]);
+        setStockItemConditionSelectedId('');
+        setStockItemConditionId('');
+        setStockItemConditionNotes('');
+        setStockItemConditionCosmeticIssues('');
+        setStockItemConditionFunctionalIssues('');
+        setStockItemConditionRecommendation('');
+        setStockItemConditionSubmitting(false);
+        setStockItemConditionLoading(false);
+    };
+
+    const openStockItemConditionEditor = async (step) => {
+        if (maintenanceEnded) {
+            setError(t('mSteps.maintenanceEnded'));
+            return;
+        }
+        setStockItemConditionEditorOpen(true);
+        setStockItemConditionEditorStep(step);
+        setStockItemConditionComponents([]);
+        setStockItemConditionSelectedId('');
+        setStockItemConditionId('');
+        setStockItemConditionNotes('');
+        setStockItemConditionCosmeticIssues('');
+        setStockItemConditionFunctionalIssues('');
+        setStockItemConditionRecommendation('');
+        setStockItemConditionSubmitting(false);
+        setStockItemConditionLoading(true);
+        try {
+            const data = await maintenanceStepService.getComponents(step.maintenance_step_id);
+            setStockItemConditionComponents(Array.isArray(data?.stock_items) ? data.stock_items : []);
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || t('mSteps.loadComponentsError'));
+            closeStockItemConditionEditor();
+        } finally {
+            setStockItemConditionLoading(false);
+        }
+    };
+
+    const submitStockItemConditionEditor = async () => {
+        if (!stockItemConditionEditorStep) return;
+        if (!stockItemConditionSelectedId) {
+            setError(t('mSteps.selectStockItem'));
+            return;
+        }
+        if (!stockItemConditionId) {
+            setError(t('mSteps.selectCondition'));
+            return;
+        }
+        try {
+            setStockItemConditionSubmitting(true);
+            await maintenanceStepService.updateStockItemCondition(stockItemConditionEditorStep.maintenance_step_id, {
+                stock_item_id: Number(stockItemConditionSelectedId),
+                condition_id: Number(stockItemConditionId),
+                notes: stockItemConditionNotes || null,
+                cosmetic_issues: stockItemConditionCosmeticIssues || null,
+                functional_issues: stockItemConditionFunctionalIssues || null,
+                recommendation: stockItemConditionRecommendation || null,
+            });
+            await loadData();
+            closeStockItemConditionEditor();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || t('mSteps.updateStockItemConditionError'));
+        } finally {
+            setStockItemConditionSubmitting(false);
+        }
+    };
+
+    const closeConsumableConditionEditor = () => {
+        setConsumableConditionEditorOpen(false);
+        setConsumableConditionEditorStep(null);
+        setConsumableConditionComponents([]);
+        setConsumableConditionSelectedId('');
+        setConsumableConditionId('');
+        setConsumableConditionNotes('');
+        setConsumableConditionCosmeticIssues('');
+        setConsumableConditionFunctionalIssues('');
+        setConsumableConditionRecommendation('');
+        setConsumableConditionSubmitting(false);
+        setConsumableConditionLoading(false);
+    };
+
+    const openConsumableConditionEditor = async (step) => {
+        if (maintenanceEnded) {
+            setError(t('mSteps.maintenanceEnded'));
+            return;
+        }
+        setConsumableConditionEditorOpen(true);
+        setConsumableConditionEditorStep(step);
+        setConsumableConditionComponents([]);
+        setConsumableConditionSelectedId('');
+        setConsumableConditionId('');
+        setConsumableConditionNotes('');
+        setConsumableConditionCosmeticIssues('');
+        setConsumableConditionFunctionalIssues('');
+        setConsumableConditionRecommendation('');
+        setConsumableConditionSubmitting(false);
+        setConsumableConditionLoading(true);
+        try {
+            const data = await maintenanceStepService.getComponents(step.maintenance_step_id);
+            setConsumableConditionComponents(Array.isArray(data?.consumables) ? data.consumables : []);
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || t('mSteps.loadComponentsError'));
+            closeConsumableConditionEditor();
+        } finally {
+            setConsumableConditionLoading(false);
+        }
+    };
+
+    const submitConsumableConditionEditor = async () => {
+        if (!consumableConditionEditorStep) return;
+        if (!consumableConditionSelectedId) {
+            setError(t('mSteps.selectConsumable'));
+            return;
+        }
+        if (!consumableConditionId) {
+            setError(t('mSteps.selectCondition'));
+            return;
+        }
+        try {
+            setConsumableConditionSubmitting(true);
+            await maintenanceStepService.updateConsumableCondition(consumableConditionEditorStep.maintenance_step_id, {
+                consumable_id: Number(consumableConditionSelectedId),
+                condition_id: Number(consumableConditionId),
+                notes: consumableConditionNotes || null,
+                cosmetic_issues: consumableConditionCosmeticIssues || null,
+                functional_issues: consumableConditionFunctionalIssues || null,
+                recommendation: consumableConditionRecommendation || null,
+            });
+            await loadData();
+            closeConsumableConditionEditor();
+        } catch (err) {
+            console.error(err);
+            setError(err.response?.data?.error || t('mSteps.updateConsumableConditionError'));
+        } finally {
+            setConsumableConditionSubmitting(false);
         }
     };
 
@@ -1752,6 +1924,24 @@ const MaintenanceSteps = ({
                                                         >
                                                             <Lightbulb size={15} />
                                                         </button>
+                                                        <button
+                                                            className="btn btn-xs btn-secondary"
+                                                            style={{ padding: '0.3rem', border: 'none', background: 'transparent', color: 'var(--color-text-secondary)' }}
+                                                            onClick={() => openStockItemConditionEditor(step)}
+                                                            title={t('mSteps.updateStockItemCondition')}
+                                                            aria-label={t('mSteps.updateStockItemCondition')}
+                                                        >
+                                                            <Cpu size={15} />
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-xs btn-secondary"
+                                                            style={{ padding: '0.3rem', border: 'none', background: 'transparent', color: 'var(--color-text-secondary)' }}
+                                                            onClick={() => openConsumableConditionEditor(step)}
+                                                            title={t('mSteps.updateConsumableCondition')}
+                                                            aria-label={t('mSteps.updateConsumableCondition')}
+                                                        >
+                                                            <Droplets size={15} />
+                                                        </button>
                                                     </>
                                                 )}
                                                 {step.maintenance_step_status !== 'done' && step.maintenance_typical_step?.operation_type === 'remove' && (
@@ -2417,6 +2607,290 @@ const MaintenanceSteps = ({
                                     disabled={assetConditionSubmitting || !selectedConditionId}
                                 >
                                     {assetConditionSubmitting ? t('mSteps.saving') : t('mSteps.save')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
+
+            {stockItemConditionEditorOpen && stockItemConditionEditorStep && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => closeStockItemConditionEditor()}>
+                        <div
+                            className="modal"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                maxHeight: '95vh',
+                                width: '90%',
+                                maxWidth: '600px',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('mSteps.updateStockItemCondition')}</h3>
+                                <button className="modal-close" onClick={() => closeStockItemConditionEditor()} disabled={stockItemConditionSubmitting}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
+                                <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                                    {t('mSteps.step')}: <b>{stockItemConditionEditorStep.maintenance_step_id}</b>
+                                </div>
+
+                                {stockItemConditionLoading && (
+                                    <div style={{ opacity: 0.6, marginBottom: 10 }}>{t('mSteps.loading')}</div>
+                                )}
+
+                                {!stockItemConditionLoading && stockItemConditionComponents.length === 0 && (
+                                    <div style={{ opacity: 0.6, marginBottom: 10 }}>{t('mSteps.noStockItems')}</div>
+                                )}
+
+                                {!stockItemConditionLoading && stockItemConditionComponents.length > 0 && (
+                                    <>
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.stockItem')}</label>
+                                            <select
+                                                className="form-input"
+                                                value={stockItemConditionSelectedId}
+                                                onChange={(e) => setStockItemConditionSelectedId(e.target.value)}
+                                                disabled={stockItemConditionSubmitting}
+                                            >
+                                                <option value="">{t('mSteps.selectStockItem')}</option>
+                                                {stockItemConditionComponents.map((si) => (
+                                                    <option key={si.stock_item_id} value={si.stock_item_id}>
+                                                        {si.stock_item_name || si.stock_item_inventory_number || `#${si.stock_item_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.condition')}</label>
+                                            <select
+                                                className="form-input"
+                                                value={stockItemConditionId}
+                                                onChange={(e) => setStockItemConditionId(e.target.value)}
+                                                disabled={stockItemConditionSubmitting}
+                                            >
+                                                <option value="">{t('mSteps.selectCondition')}</option>
+                                                {physicalConditions
+                                                    .filter((c) => {
+                                                        const code = String(c?.condition_code || '').trim().toLowerCase();
+                                                        const label = String(c?.condition_label || '').trim().toLowerCase();
+                                                        return code !== 'failed' && label !== 'failed';
+                                                    })
+                                                    .map((c) => (
+                                                    <option key={c.condition_id} value={c.condition_id}>
+                                                        {getLocalizedField(c, 'condition_label') || c.condition_code || c.condition_id}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.notes')}</label>
+                                            <textarea
+                                                className="form-input"
+                                                rows={3}
+                                                value={stockItemConditionNotes}
+                                                onChange={(e) => setStockItemConditionNotes(e.target.value)}
+                                                disabled={stockItemConditionSubmitting}
+                                            />
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.cosmeticIssues')}</label>
+                                            <input
+                                                className="form-input"
+                                                value={stockItemConditionCosmeticIssues}
+                                                onChange={(e) => setStockItemConditionCosmeticIssues(e.target.value)}
+                                                disabled={stockItemConditionSubmitting}
+                                            />
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.functionalIssues')}</label>
+                                            <input
+                                                className="form-input"
+                                                value={stockItemConditionFunctionalIssues}
+                                                onChange={(e) => setStockItemConditionFunctionalIssues(e.target.value)}
+                                                disabled={stockItemConditionSubmitting}
+                                            />
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.recommendation')}</label>
+                                            <input
+                                                className="form-input"
+                                                value={stockItemConditionRecommendation}
+                                                onChange={(e) => setStockItemConditionRecommendation(e.target.value)}
+                                                disabled={stockItemConditionSubmitting}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={closeStockItemConditionEditor} disabled={stockItemConditionSubmitting}>
+                                    {t('mSteps.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={submitStockItemConditionEditor}
+                                    disabled={stockItemConditionSubmitting || !stockItemConditionSelectedId || !stockItemConditionId}
+                                >
+                                    {stockItemConditionSubmitting ? t('mSteps.saving') : t('mSteps.save')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
+
+            {consumableConditionEditorOpen && consumableConditionEditorStep && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => closeConsumableConditionEditor()}>
+                        <div
+                            className="modal"
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                                maxHeight: '95vh',
+                                width: '90%',
+                                maxWidth: '600px',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                            }}
+                        >
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('mSteps.updateConsumableCondition')}</h3>
+                                <button className="modal-close" onClick={() => closeConsumableConditionEditor()} disabled={consumableConditionSubmitting}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="modal-body" style={{ overflowY: 'auto', flex: 1 }}>
+                                <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                                    {t('mSteps.step')}: <b>{consumableConditionEditorStep.maintenance_step_id}</b>
+                                </div>
+
+                                {consumableConditionLoading && (
+                                    <div style={{ opacity: 0.6, marginBottom: 10 }}>{t('mSteps.loading')}</div>
+                                )}
+
+                                {!consumableConditionLoading && consumableConditionComponents.length === 0 && (
+                                    <div style={{ opacity: 0.6, marginBottom: 10 }}>{t('mSteps.noConsumables')}</div>
+                                )}
+
+                                {!consumableConditionLoading && consumableConditionComponents.length > 0 && (
+                                    <>
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.consumable')}</label>
+                                            <select
+                                                className="form-input"
+                                                value={consumableConditionSelectedId}
+                                                onChange={(e) => setConsumableConditionSelectedId(e.target.value)}
+                                                disabled={consumableConditionSubmitting}
+                                            >
+                                                <option value="">{t('mSteps.selectConsumable')}</option>
+                                                {consumableConditionComponents.map((c) => (
+                                                    <option key={c.consumable_id} value={c.consumable_id}>
+                                                        {c.consumable_name || c.consumable_inventory_number || `#${c.consumable_id}`}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.condition')}</label>
+                                            <select
+                                                className="form-input"
+                                                value={consumableConditionId}
+                                                onChange={(e) => setConsumableConditionId(e.target.value)}
+                                                disabled={consumableConditionSubmitting}
+                                            >
+                                                <option value="">{t('mSteps.selectCondition')}</option>
+                                                {physicalConditions
+                                                    .filter((pc) => {
+                                                        const code = String(pc?.condition_code || '').trim().toLowerCase();
+                                                        const label = String(pc?.condition_label || '').trim().toLowerCase();
+                                                        return code !== 'failed' && label !== 'failed';
+                                                    })
+                                                    .map((pc) => (
+                                                    <option key={pc.condition_id} value={pc.condition_id}>
+                                                        {getLocalizedField(pc, 'condition_label') || pc.condition_code || pc.condition_id}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.notes')}</label>
+                                            <textarea
+                                                className="form-input"
+                                                rows={3}
+                                                value={consumableConditionNotes}
+                                                onChange={(e) => setConsumableConditionNotes(e.target.value)}
+                                                disabled={consumableConditionSubmitting}
+                                            />
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.cosmeticIssues')}</label>
+                                            <input
+                                                className="form-input"
+                                                value={consumableConditionCosmeticIssues}
+                                                onChange={(e) => setConsumableConditionCosmeticIssues(e.target.value)}
+                                                disabled={consumableConditionSubmitting}
+                                            />
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.functionalIssues')}</label>
+                                            <input
+                                                className="form-input"
+                                                value={consumableConditionFunctionalIssues}
+                                                onChange={(e) => setConsumableConditionFunctionalIssues(e.target.value)}
+                                                disabled={consumableConditionSubmitting}
+                                            />
+                                        </div>
+
+                                        <div className="form-group" style={{ marginBottom: 10 }}>
+                                            <label className="form-label">{t('mSteps.recommendation')}</label>
+                                            <input
+                                                className="form-input"
+                                                value={consumableConditionRecommendation}
+                                                onChange={(e) => setConsumableConditionRecommendation(e.target.value)}
+                                                disabled={consumableConditionSubmitting}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={closeConsumableConditionEditor} disabled={consumableConditionSubmitting}>
+                                    {t('mSteps.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={submitConsumableConditionEditor}
+                                    disabled={consumableConditionSubmitting || !consumableConditionSelectedId || !consumableConditionId}
+                                >
+                                    {consumableConditionSubmitting ? t('mSteps.saving') : t('mSteps.save')}
                                 </button>
                             </div>
                         </div>

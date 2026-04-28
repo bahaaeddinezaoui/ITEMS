@@ -13,6 +13,7 @@ from api.views_i18n import (
     LocationTypeTranslationViewSet,
     OrganizationalStructureTypeTranslationViewSet,
     PhysicalConditionTranslationViewSet,
+    MaintenanceStepStatusTranslationViewSet,
     RoleTranslationViewSet,
     PositionTranslationViewSet,
     AssetAttributeDefinitionTranslationViewSet,
@@ -64,6 +65,7 @@ router.register(r'translations/stock-item-types', StockItemTypeTranslationViewSe
 router.register(r'translations/location-types', LocationTypeTranslationViewSet, basename='locationtype-translation')
 router.register(r'translations/org-structure-types', OrganizationalStructureTypeTranslationViewSet, basename='orgstructuretype-translation')
 router.register(r'translations/physical-conditions', PhysicalConditionTranslationViewSet, basename='physicalcondition-translation')
+router.register(r'translations/maintenance-step-statuses', MaintenanceStepStatusTranslationViewSet, basename='maintenancestepstatus-translation')
 router.register(r'translations/roles', RoleTranslationViewSet, basename='role-translation')
 router.register(r'translations/positions', PositionTranslationViewSet, basename='position-translation')
 router.register(r'translations/asset-attr-defs', AssetAttributeDefinitionTranslationViewSet, basename='assetattrdef-translation')

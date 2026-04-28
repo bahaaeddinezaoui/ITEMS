@@ -45,6 +45,7 @@ from .models import (
     ExternalMaintenance,
     Maintenance,
     MaintenanceStep,
+    MaintenanceStepStatus,
     MaintenanceTypicalStep,
     OrganizationalStructureType,
     OrganizationalStructure,
@@ -101,6 +102,8 @@ from .models import (
     AssetMovement,
     PhysicalCondition,
     AssetConditionHistory,
+    StockItemConditionHistory,
+    ConsumableConditionHistory,
     ExternalMaintenanceProvider,
     ExternalMaintenance,
     ExternalMaintenanceStep,
@@ -669,6 +672,7 @@ from .serializers import (
     ConsumableTypeSerializer,
     LoginSerializer,
     MaintenanceStepSerializer,
+    MaintenanceStepStatusSerializer,
     MaintenanceSerializer,
     MaintenanceTypicalStepSerializer,
     MaintenanceTypicalStepSerializer,
@@ -2667,6 +2671,148 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
         MaintenanceStep.objects.filter(maintenance_step_id=step.maintenance_step_id).update(asset_condition_history=next_id)
 
         return Response({"asset_condition_history_id": next_id}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="update-stock-item-condition")
+    def update_stock_item_condition(self, request, pk=None):
+        step = self.get_object()
+        _, denial = self._require_can_act_on_step(request, step)
+        if denial:
+            return denial
+
+        if getattr(step, "maintenance_step_status", None) in self._TERMINAL_STEP_STATUSES:
+            return Response({"error": "Step is done"}, status=status.HTTP_400_BAD_REQUEST)
+
+        stock_item_id = request.data.get("stock_item_id")
+        condition_id = request.data.get("condition_id")
+        notes = request.data.get("notes")
+        cosmetic_issues = request.data.get("cosmetic_issues")
+        functional_issues = request.data.get("functional_issues")
+        recommendation = request.data.get("recommendation")
+        if not stock_item_id or not condition_id:
+            return Response({"error": "stock_item_id and condition_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        maintenance = getattr(step, "maintenance", None)
+        asset = getattr(maintenance, "asset", None) if maintenance else None
+        if not asset:
+            return Response({"error": "Maintenance asset not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify the stock item is currently composed in the asset
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM public.asset_is_composed_of_stock_item_history h
+                WHERE h.asset_id = %s AND h.stock_item_id = %s AND h.end_datetime IS NULL
+                """,
+                [asset.asset_id, stock_item_id],
+            )
+            if not cursor.fetchone():
+                return Response({"error": "Stock item is not a current component of this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+        stock_item = StockItem.objects.filter(stock_item_id=stock_item_id).first()
+        if not stock_item:
+            return Response({"error": "Invalid stock_item_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        condition = PhysicalCondition.objects.filter(condition_id=condition_id).first()
+        if not condition:
+            return Response({"error": "Invalid condition_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        condition_code = (getattr(condition, "condition_code", None) or "").strip().lower()
+        condition_label = (getattr(condition, "condition_label", None) or "").strip().lower()
+        if condition_code == "failed" or condition_label == "failed":
+            return Response(
+                {"error": "Stock item physical condition can only be set to failed during external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        last_item = StockItemConditionHistory.objects.order_by("-stock_item_condition_history_id").first()
+        next_id = (last_item.stock_item_condition_history_id + 1) if last_item else 1
+
+        StockItemConditionHistory.objects.create(
+            stock_item_condition_history_id=next_id,
+            stock_item=stock_item,
+            condition=condition,
+            notes=notes,
+            cosmetic_issues=cosmetic_issues,
+            functional_issues=functional_issues,
+            recommendation=recommendation,
+            created_at=timezone.now(),
+        )
+
+        MaintenanceStep.objects.filter(maintenance_step_id=step.maintenance_step_id).update(stock_item_condition_history=next_id)
+
+        return Response({"stock_item_condition_history_id": next_id}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="update-consumable-condition")
+    def update_consumable_condition(self, request, pk=None):
+        step = self.get_object()
+        _, denial = self._require_can_act_on_step(request, step)
+        if denial:
+            return denial
+
+        if getattr(step, "maintenance_step_status", None) in self._TERMINAL_STEP_STATUSES:
+            return Response({"error": "Step is done"}, status=status.HTTP_400_BAD_REQUEST)
+
+        consumable_id = request.data.get("consumable_id")
+        condition_id = request.data.get("condition_id")
+        notes = request.data.get("notes")
+        cosmetic_issues = request.data.get("cosmetic_issues")
+        functional_issues = request.data.get("functional_issues")
+        recommendation = request.data.get("recommendation")
+        if not consumable_id or not condition_id:
+            return Response({"error": "consumable_id and condition_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        maintenance = getattr(step, "maintenance", None)
+        asset = getattr(maintenance, "asset", None) if maintenance else None
+        if not asset:
+            return Response({"error": "Maintenance asset not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verify the consumable is currently composed in the asset
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM public.asset_is_composed_of_consumable_history h
+                WHERE h.asset_id = %s AND h.consumable_id = %s AND h.end_datetime IS NULL
+                """,
+                [asset.asset_id, consumable_id],
+            )
+            if not cursor.fetchone():
+                return Response({"error": "Consumable is not a current component of this asset"}, status=status.HTTP_400_BAD_REQUEST)
+
+        consumable = Consumable.objects.filter(consumable_id=consumable_id).first()
+        if not consumable:
+            return Response({"error": "Invalid consumable_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        condition = PhysicalCondition.objects.filter(condition_id=condition_id).first()
+        if not condition:
+            return Response({"error": "Invalid condition_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+        condition_code = (getattr(condition, "condition_code", None) or "").strip().lower()
+        condition_label = (getattr(condition, "condition_label", None) or "").strip().lower()
+        if condition_code == "failed" or condition_label == "failed":
+            return Response(
+                {"error": "Consumable physical condition can only be set to failed during external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        last_item = ConsumableConditionHistory.objects.order_by("-consumable_condition_history_id").first()
+        next_id = (last_item.consumable_condition_history_id + 1) if last_item else 1
+
+        ConsumableConditionHistory.objects.create(
+            consumable_condition_history_id=next_id,
+            consumable=consumable,
+            condition=condition,
+            notes=notes,
+            cosmetic_issues=cosmetic_issues,
+            functional_issues=functional_issues,
+            recommendation=recommendation,
+            created_at=timezone.now(),
+        )
+
+        MaintenanceStep.objects.filter(maintenance_step_id=step.maintenance_step_id).update(consumable_condition_history=next_id)
+
+        return Response({"consumable_condition_history_id": next_id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["get"], url_path="components")
     def components(self, request, pk=None):
@@ -8848,6 +8994,12 @@ class LocationRelationViewSet(viewsets.ModelViewSet):
 class PhysicalConditionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = PhysicalCondition.objects.all().order_by("condition_id")
     serializer_class = PhysicalConditionSerializer
+    permission_classes = [IsAuthenticated]
+
+
+class MaintenanceStepStatusViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = MaintenanceStepStatus.objects.all().order_by("sort_order", "id")
+    serializer_class = MaintenanceStepStatusSerializer
     permission_classes = [IsAuthenticated]
 
 

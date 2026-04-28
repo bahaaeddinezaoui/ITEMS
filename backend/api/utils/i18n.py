@@ -157,6 +157,7 @@ TRANSLATION_MODEL_MAP = {
     'LocationType': 'api.translations.LocationTypeTranslation',
     'OrganizationalStructureType': 'api.translations.OrganizationalStructureTypeTranslation',
     'PhysicalCondition': 'api.translations.PhysicalConditionTranslation',
+    'MaintenanceStepStatus': 'api.translations.MaintenanceStepStatusTranslation',
     'Role': 'api.translations.RoleTranslation',
     'Position': 'api.translations.PositionTranslation',
     'AssetAttributeDefinition': 'api.translations.AssetAttributeDefinitionTranslation',
@@ -454,6 +455,39 @@ STATUS_TRANSLATIONS = {
     'active': {
         'en': 'Active',
         'ar': 'نشط',
+    },
+    # Maintenance step statuses
+    'pending': {
+        'en': 'Pending',
+        'ar': 'قيد الانتظار',
+    },
+    'started': {
+        'en': 'Started',
+        'ar': 'بدأت',
+    },
+    'pending_stock_item': {
+        'en': 'Pending (waiting for stock item)',
+        'ar': 'قيد الانتظار (في انتظار عنصر المخزون)',
+    },
+    'pending_consumable': {
+        'en': 'Pending (waiting for consumable)',
+        'ar': 'قيد الانتظار (في انتظار المستهلك)',
+    },
+    'in_progress': {
+        'en': 'In Progress',
+        'ar': 'قيد التنفيذ',
+    },
+    'done': {
+        'en': 'Done',
+        'ar': 'منتهية',
+    },
+    'failed_higher_level': {
+        'en': 'Failed (to be sent to a higher level)',
+        'ar': 'فشلت (يجب إرسالها إلى مستوى أعلى)',
+    },
+    'cancelled': {
+        'en': 'Cancelled',
+        'ar': 'ملغاة',
     },
 }
 

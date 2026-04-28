@@ -933,6 +933,20 @@ class Maintenance(models.Model):
         return f'Maintenance {self.maintenance_id} on asset {self.asset_id}'
 
 
+class MaintenanceStepStatus(models.Model):
+    """Maps to maintenance_step_status lookup table"""
+    id = models.AutoField(primary_key=True, db_column='id')
+    code = models.CharField(max_length=60, unique=True, db_column='code')
+    sort_order = models.IntegerField(default=0, db_column='sort_order')
+
+    class Meta:
+        managed = False
+        db_table = 'maintenance_step_status'
+
+    def __str__(self):
+        return self.code
+
+
 class MaintenanceStep(models.Model):
     """Maps to maintenance_step table"""
     maintenance_step_id = models.IntegerField(primary_key=True, db_column='maintenance_step_id')
@@ -943,6 +957,7 @@ class MaintenanceStep(models.Model):
     start_datetime = models.DateTimeField(blank=True, null=True, db_column='start_datetime')
     end_datetime = models.DateTimeField(blank=True, null=True, db_column='end_datetime')
     maintenance_step_status = models.CharField(max_length=60, blank=True, null=True, db_column='maintenance_step_status')
+    status = models.ForeignKey(MaintenanceStepStatus, on_delete=models.SET_NULL, blank=True, null=True, db_column='status_id', related_name='steps')
     note = models.CharField(max_length=1024, blank=True, null=True, db_column='note')
     asset_condition_history = models.IntegerField(blank=True, null=True, db_column='asset_condition_history_id')
     stock_item_condition_history = models.IntegerField(blank=True, null=True, db_column='stock_item_condition_history_id')
@@ -1219,6 +1234,7 @@ class AssetConditionHistory(models.Model):
 class ConsumableConditionHistory(models.Model):
     consumable_condition_history_id = models.IntegerField(primary_key=True, db_column='consumable_condition_history_id')
     consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', related_name='+')
+    condition = models.ForeignKey(PhysicalCondition, on_delete=models.CASCADE, db_column='condition_id', related_name='+')
     notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
     cosmetic_issues = models.CharField(max_length=128, blank=True, null=True, db_column='cosmetic_issues')
     functional_issues = models.CharField(max_length=128, blank=True, null=True, db_column='functional_issues')
