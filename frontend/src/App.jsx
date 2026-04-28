@@ -60,6 +60,7 @@ import AssetMaintenanceTimelinePage from './pages/AssetMaintenanceTimelinePage';
 import IncludedItemMovementsApprovalPage from './pages/IncludedItemMovementsApprovalPage';
 import AssetMovementsApprovalPage from './pages/AssetMovementsApprovalPage';
 import AssetMaintenanceHistoryPage from './pages/AssetMaintenanceHistoryPage';
+import MaintenanceItemRequestsPage from './pages/MaintenanceItemRequestsPage';
 import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import PurchaseOrderCreatePage from './pages/PurchaseOrderCreatePage';
 import PurchaseOrderDetailsPage from './pages/PurchaseOrderDetailsPage';
@@ -600,6 +601,15 @@ function App() {
                             element={
                                 <RoleProtectedRoute allowedRoles={['maintenance_chief', 'it_bureau_chief']}>
                                     <MaintenanceStatsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+
+                        <Route
+                            path="maintenance-item-requests"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['maintenance_chief', 'it_bureau_chief']}>
+                                    <MaintenanceItemRequestsPage />
                                 </RoleProtectedRoute>
                             }
                         />

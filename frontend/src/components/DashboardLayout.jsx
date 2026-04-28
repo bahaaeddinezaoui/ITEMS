@@ -484,6 +484,19 @@ const DashboardLayout = () => {
                                 </svg>
                                 {!isSidebarCollapsed && t('nav.maintenances')}
                             </NavLink>
+                            {(isSuperuser || isMaintenanceChief || isItBureauChief) && (
+                                <NavLink to="/dashboard/maintenance-item-requests" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('maintenanceItemRequests.title', 'Maintenance requested items') : undefined}>
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M8 6h13" />
+                                        <path d="M8 12h13" />
+                                        <path d="M8 18h13" />
+                                        <path d="M3 6h.01" />
+                                        <path d="M3 12h.01" />
+                                        <path d="M3 18h.01" />
+                                    </svg>
+                                    {!isSidebarCollapsed && t('maintenanceItemRequests.title', 'Maintenance requested items')}
+                                </NavLink>
+                            )}
                             {(isMaintenanceTechnician || isNetworkMaintenanceTechnician) && (
                                 <NavLink to="/dashboard/my-maintenance-stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('nav.myMaintenanceStats') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

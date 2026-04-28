@@ -1194,6 +1194,9 @@ const MaintenanceSteps = ({
                 return [...prev, stepId];
             });
             await loadData();
+            setTimeout(() => {
+                closeRequestEditor();
+            }, 1500);
         } catch (err) {
             console.error(err);
             setRequestMessage({ type: 'error', text: err.response?.data?.error || t('mSteps.createRequestError') });
@@ -1774,114 +1777,111 @@ const MaintenanceSteps = ({
             </div>
 
             {requestEditorOpen && requestEditorStep && (
-                <div
-                    className="card"
-                    style={{
-                        position: 'fixed',
-                        insetInlineEnd: 20,
-                        bottom: 20,
-                        zIndex: 50,
-                        width: 420,
-                        padding: 'var(--space-4)',
-                        border: '1px solid var(--glass-border)',
-                        background: 'var(--glass-bg)',
-                        backdropFilter: 'var(--glass-backdrop)',
-                        WebkitBackdropFilter: 'var(--glass-backdrop)',
-                        boxShadow: 'var(--glass-shadow)',
-                    }}
-                >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                        <div style={{ fontWeight: 700 }}>
-                            {requestEditorType === 'stock_item' ? t('mSteps.requestStockItem') : t('mSteps.requestConsumable')}
-                        </div>
-                        <button
-                            className="btn btn-xs btn-secondary"
-                            style={{ padding: '0.2rem 0.45rem', fontSize: 12 }}
-                            onClick={closeRequestEditor}
-                            disabled={requestSubmitting}
-                        >
-                            {t('mSteps.close')}
-                        </button>
-                    </div>
-
-                    <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
-                        {t('mSteps.step')}: <b>{requestEditorStep.maintenance_step_id}</b>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">{t('mSteps.type')}</label>
-                        <select
-                            className="form-input"
-                            value={requestTypeId}
-                            onChange={async (e) => {
-                                const value = e.target.value;
-                                setRequestTypeId(value);
-                                setRequestModelId('');
-                                setRequestMessage(null);
-                                await loadModelsForRequestType(requestEditorType, value);
-                            }}
-                            disabled={requestSubmitting}
-                        >
-                            <option value="">{t('mSteps.selectType')}</option>
-                            {(requestEditorType === 'stock_item' ? stockItemTypes : consumableTypes).map((t) => (
-                                <option
-                                    key={requestEditorType === 'stock_item' ? t.stock_item_type_id : t.consumable_type_id}
-                                    value={requestEditorType === 'stock_item' ? t.stock_item_type_id : t.consumable_type_id}
-                                >
-                                    {requestEditorType === 'stock_item' ? getLocalizedField(t, 'stock_item_type_label') : getLocalizedField(t, 'consumable_type_label')}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 10 }}>
-                        <label className="form-label">{t('mSteps.model')}</label>
-                        <select
-                            className="form-input"
-                            value={requestModelId}
-                            onChange={(e) => {
-                                setRequestModelId(e.target.value);
-                                setRequestMessage(null);
-                            }}
-                            disabled={requestSubmitting || !requestTypeId}
-                        >
-                            <option value="">{t('mSteps.selectModelPlaceholder')}</option>
-                            {requestModels.map((m) => (
-                                <option
-                                    key={requestEditorType === 'stock_item' ? m.stock_item_model_id : m.consumable_model_id}
-                                    value={requestEditorType === 'stock_item' ? m.stock_item_model_id : m.consumable_model_id}
-                                >
-                                    {m.model_name}{m.model_code ? ` (${m.model_code})` : ''}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {requestMessage && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => closeRequestEditor()}>
                         <div
-                            className={requestMessage.type === 'success' ? 'badge badge-success' : 'badge badge-danger'}
+                            className="modal"
+                            onClick={(e) => e.stopPropagation()}
                             style={{
-                                padding: 'var(--space-3)',
-                                width: '100%',
-                                marginBottom: 10,
-                                borderRadius: 'var(--radius-md)',
-                                display: 'block',
+                                maxWidth: 480,
+                                overflow: 'hidden',
                             }}
                         >
-                            {requestMessage.text}
-                        </div>
-                    )}
+                            <div className="modal-header">
+                                <h3 className="modal-title">
+                                    {requestEditorType === 'stock_item' ? t('mSteps.requestStockItem') : t('mSteps.requestConsumable')}
+                                </h3>
+                                <button className="modal-close" onClick={closeRequestEditor} disabled={requestSubmitting}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 10 }}>
-                        <button
-                            className="btn btn-primary btn-sm"
-                            onClick={submitRequestEditor}
-                            disabled={requestSubmitting || !requestModelId}
-                        >
-                            {requestSubmitting ? t('mSteps.requesting') : t('mSteps.submitRequest')}
-                        </button>
+                            <div className="modal-body">
+                                <div style={{ fontSize: 12, opacity: 0.85, marginBottom: 12 }}>
+                                    {t('mSteps.step')}: <b>{requestEditorStep.maintenance_step_id}</b>
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">{t('mSteps.type')}</label>
+                                    <select
+                                        className="form-input"
+                                        value={requestTypeId}
+                                        onChange={async (e) => {
+                                            const value = e.target.value;
+                                            setRequestTypeId(value);
+                                            setRequestModelId('');
+                                            setRequestMessage(null);
+                                            await loadModelsForRequestType(requestEditorType, value);
+                                        }}
+                                        disabled={requestSubmitting}
+                                    >
+                                        <option value="">{t('mSteps.selectType')}</option>
+                                        {(requestEditorType === 'stock_item' ? stockItemTypes : consumableTypes).map((t) => (
+                                            <option
+                                                key={requestEditorType === 'stock_item' ? t.stock_item_type_id : t.consumable_type_id}
+                                                value={requestEditorType === 'stock_item' ? t.stock_item_type_id : t.consumable_type_id}
+                                            >
+                                                {requestEditorType === 'stock_item' ? getLocalizedField(t, 'stock_item_type_label') : getLocalizedField(t, 'consumable_type_label')}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: 10 }}>
+                                    <label className="form-label">{t('mSteps.model')}</label>
+                                    <select
+                                        className="form-input"
+                                        value={requestModelId}
+                                        onChange={(e) => {
+                                            setRequestModelId(e.target.value);
+                                            setRequestMessage(null);
+                                        }}
+                                        disabled={requestSubmitting || !requestTypeId}
+                                    >
+                                        <option value="">{t('mSteps.selectModelPlaceholder')}</option>
+                                        {requestModels.map((m) => (
+                                            <option
+                                                key={requestEditorType === 'stock_item' ? m.stock_item_model_id : m.consumable_model_id}
+                                                value={requestEditorType === 'stock_item' ? m.stock_item_model_id : m.consumable_model_id}
+                                            >
+                                                {m.model_name}{m.model_code ? ` (${m.model_code})` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {requestMessage && (
+                                    <div
+                                        className={requestMessage.type === 'success' ? 'badge badge-success' : 'badge badge-danger'}
+                                        style={{
+                                            padding: 'var(--space-3)',
+                                            width: '100%',
+                                            marginBottom: 10,
+                                            borderRadius: 'var(--radius-md)',
+                                            display: 'block',
+                                        }}
+                                    >
+                                        {requestMessage.text}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={submitRequestEditor}
+                                    disabled={requestSubmitting || !requestModelId}
+                                >
+                                    {requestSubmitting ? t('mSteps.requesting') : t('mSteps.submitRequest')}
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </ModalPortal>
             )}
 
             {statusEditorStepId && (

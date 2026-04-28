@@ -3061,7 +3061,15 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = MaintenanceStepItemRequest.objects.all().order_by("-created_at")
+        qs = (
+            MaintenanceStepItemRequest.objects.all()
+            .select_related(
+                "maintenance_step",
+                "maintenance_step__maintenance",
+                "maintenance_step__maintenance__asset",
+            )
+            .order_by("-created_at")
+        )
         user_account = SuperuserWriteMixin()._get_user_account(self.request)
         if not user_account or not user_account.person:
             return MaintenanceStepItemRequest.objects.none()
@@ -3070,6 +3078,9 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
         if user_account.is_superuser() or ("stock_consumable_responsible" in role_codes) or ("exploitation_chief" in role_codes):
+            return qs
+
+        if ("maintenance_chief" in role_codes) or ("it_bureau_chief" in role_codes):
             return qs
 
         return MaintenanceStepItemRequest.objects.none()

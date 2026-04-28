@@ -726,6 +726,42 @@ class LocationRelationSerializer(serializers.ModelSerializer):
 
 
 class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
+    maintenance_id = serializers.SerializerMethodField()
+    asset_id = serializers.SerializerMethodField()
+    asset_name = serializers.SerializerMethodField()
+    maintenance_status = serializers.SerializerMethodField()
+    maintenance_step_status = serializers.SerializerMethodField()
+
+    def get_maintenance_id(self, obj):
+        try:
+            return obj.maintenance_step.maintenance_id
+        except Exception:
+            return None
+
+    def get_asset_id(self, obj):
+        try:
+            return obj.maintenance_step.maintenance.asset_id
+        except Exception:
+            return None
+
+    def get_asset_name(self, obj):
+        try:
+            return obj.maintenance_step.maintenance.asset.asset_name
+        except Exception:
+            return None
+
+    def get_maintenance_status(self, obj):
+        try:
+            return obj.maintenance_step.maintenance.maintenance_status
+        except Exception:
+            return None
+
+    def get_maintenance_step_status(self, obj):
+        try:
+            return obj.maintenance_step.maintenance_step_status
+        except Exception:
+            return None
+
     class Meta:
         model = MaintenanceStepItemRequest
         fields = [
@@ -746,6 +782,11 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
             'source_location',
             'destination_location',
             'note',
+            'maintenance_id',
+            'asset_id',
+            'asset_name',
+            'maintenance_status',
+            'maintenance_step_status',
         ]
 
 
