@@ -39,7 +39,7 @@ const labelStyle = {
     display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600',
     color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px'
 };
-const focusBorder = (e) => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.15)'; };
+const focusBorder = (e) => { e.target.style.borderColor = 'var(--color-accent-primary)'; e.target.style.boxShadow = `0 0 0 3px var(--color-accent-glow)`; };
 const blurBorder = (e) => { e.target.style.borderColor = 'rgba(71, 85, 105, 0.5)'; e.target.style.boxShadow = 'none'; };
 
 const PositionRoleMappingsPage = () => {
@@ -412,7 +412,7 @@ const PositionRoleMappingsPage = () => {
                 <div className="modal-overlay" onClick={handleCloseModal}>
                     <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px', width: '90%' }}>
                         {/* Modal Header */}
-                        <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white' }}>
+                        <div style={{ background: 'var(--gradient-primary)', padding: '24px 28px', color: 'white' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                                     <div style={{ width: '44px', height: '44px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
@@ -485,14 +485,14 @@ const PositionRoleMappingsPage = () => {
                                         type="submit"
                                         disabled={saving}
                                         style={{
-                                            flex: 1, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                            flex: 1, background: 'var(--gradient-primary)',
                                             border: 'none', borderRadius: '10px', padding: '14px 24px',
                                             color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer',
-                                            transition: 'all 0.2s ease', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)',
+                                            transition: 'all 0.2s ease', boxShadow: 'var(--shadow-glow)',
                                             opacity: saving ? 0.6 : 1
                                         }}
-                                        onMouseEnter={(e) => { if (!saving) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.5)'; } }}
-                                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(99, 102, 241, 0.4)'; }}
+                                        onMouseEnter={(e) => { if (!saving) { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px var(--color-accent-glow)'; } }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)'; }}
                                     >
                                         {saving ? <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><span className="loading-spinner" style={{ width: '16px', height: '16px' }}></span>{t('common.saving')}</span> : <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><Plus size={18} />{t('common.add')}</span>}
                                     </button>

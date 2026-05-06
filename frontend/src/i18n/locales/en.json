@@ -1666,7 +1666,13 @@
     "powerSaveMode": "Power Save Mode",
     "powerSaveModeDesc": "Disable animations and transitions to reduce energy consumption and improve performance.",
     "powerSaveOn": "On",
-    "powerSaveOff": "Off"
+    "powerSaveOff": "Off",
+    "colorPalette": "Color Palette",
+    "colorPaletteDesc": "Choose the accent color palette used throughout the application.",
+    "palettePurple": "Purple",
+    "paletteRed": "Red",
+    "paletteOrange": "Orange",
+    "paletteGreen": "Green"
   },
   "maintenanceStats": {
     "title": "Performance Analytics",

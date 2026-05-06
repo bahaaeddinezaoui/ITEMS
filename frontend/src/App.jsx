@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { ColorPaletteProvider } from './context/ColorPaletteContext';
 import { PowerSaveProvider } from './context/PowerSaveContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -134,6 +135,7 @@ const PublicRoute = ({ children }) => {
 function App() {
     return (
         <ThemeProvider>
+        <ColorPaletteProvider>
         <PowerSaveProvider>
         <AuthProvider>
             <BrowserRouter>
@@ -826,6 +828,7 @@ function App() {
             </BrowserRouter>
         </AuthProvider>
         </PowerSaveProvider>
+        </ColorPaletteProvider>
         </ThemeProvider>
     );
 }

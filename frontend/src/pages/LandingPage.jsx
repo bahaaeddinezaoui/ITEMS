@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import DarkVeil from '../components/DarkVeil';
 import ThemeToggle from '../components/ThemeToggle';
 import PowerSaveButton from '../components/PowerSaveButton';
+import { useColorPalette } from '../context/useColorPalette';
 
 export default function LandingPage() {
     const { t } = useTranslation();
+    const { isRed, isOrange, isGreen } = useColorPalette();
 
     const highlights = [
         {
@@ -111,7 +113,7 @@ export default function LandingPage() {
     return (
         <div className="landing-page">
             <div className="landing-bg" aria-hidden="true">
-                <DarkVeil speed={0.3} />
+                <DarkVeil speed={0.3} hueShift={isRed ? -110 : isOrange ? -150 : isGreen ? 120 : 0} />
             </div>
 
             <header className="landing-header">

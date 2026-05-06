@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import BackButton from '../components/BackButton';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import DarkVeil from '../components/DarkVeil';
 import PowerSaveButton from '../components/PowerSaveButton';
+import { useColorPalette } from '../context/useColorPalette';
 
 const LoginPage = () => {
+    const { isRed, isOrange, isGreen } = useColorPalette();
     const { t } = useTranslation();
 
     const features = [
@@ -259,7 +261,7 @@ const LoginPage = () => {
             {/* Right Side - Feature Carousel */}
             <div className="login-right">
                 <div className="login-right-bg">
-                    <DarkVeil />
+                    <DarkVeil hueShift={isRed ? -110 : isOrange ? -150 : isGreen ? 120 : 0} />
                 </div>
                 <div className="feature-carousel">
                     <div className="feature-header">

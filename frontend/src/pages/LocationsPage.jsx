@@ -71,7 +71,7 @@ const LocationHierarchyModal = ({
             }} onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div style={{
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    background: 'var(--gradient-primary)',
                     padding: '24px 28px',
                     color: 'white',
                     position: 'relative'
@@ -266,7 +266,7 @@ const LocationHierarchyModal = ({
                                 <div style={{
                                     width: '36px',
                                     height: '36px',
-                                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                    background: 'var(--gradient-primary)',
                                     borderRadius: '10px',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -331,8 +331,8 @@ const LocationHierarchyModal = ({
                                             paddingRight: '44px'
                                         }}
                                         onFocus={(e) => {
-                                            e.target.style.borderColor = '#6366f1';
-                                            e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.15)';
+                                            e.target.style.borderColor = 'var(--color-accent-primary)';
+                                            e.target.style.boxShadow = '0 0 0 3px var(--color-accent-glow)';
                                         }}
                                         onBlur={(e) => {
                                             e.target.style.borderColor = 'rgba(71, 85, 105, 0.5)';
@@ -361,7 +361,7 @@ const LocationHierarchyModal = ({
                                         type="submit" 
                                         style={{
                                             flex: 1,
-                                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                            background: 'var(--gradient-primary)',
                                             border: 'none',
                                             borderRadius: '10px',
                                             padding: '14px 24px',
@@ -370,15 +370,15 @@ const LocationHierarchyModal = ({
                                             fontWeight: '600',
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease',
-                                            boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)'
+                                            boxShadow: 'var(--shadow-glow)'
                                         }}
                                         onMouseEnter={(e) => {
                                             e.target.style.transform = 'translateY(-1px)';
-                                            e.target.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.5)';
+                                            e.target.style.boxShadow = '0 6px 20px var(--color-accent-glow)';
                                         }}
                                         onMouseLeave={(e) => {
                                             e.target.style.transform = 'translateY(0)';
-                                            e.target.style.boxShadow = '0 4px 14px rgba(99, 102, 241, 0.4)';
+                                            e.target.style.boxShadow = 'var(--shadow-glow)';
                                         }}
                                     >
                                         {editingRelation?.parent_location ? t('locations.updateConnection') : t('locations.createConnection')}
@@ -514,7 +514,7 @@ const LocationTreeNode = ({ location, childrenLocations, allLocations, allRelati
                             transition: 'all var(--transition-fast)'
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)';
+                            e.currentTarget.style.borderColor = 'var(--color-accent-glow)';
                             e.currentTarget.style.background = 'var(--color-accent-glow)';
                             e.currentTarget.style.color = 'var(--color-accent-primary)';
                         }}
@@ -543,7 +543,7 @@ const LocationTreeNode = ({ location, childrenLocations, allLocations, allRelati
                             transition: 'all var(--transition-fast)'
                         }}
                         onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = 'rgba(99, 102, 241, 0.5)';
+                            e.currentTarget.style.borderColor = 'var(--color-accent-glow)';
                             e.currentTarget.style.background = 'var(--color-accent-glow)';
                             e.currentTarget.style.color = 'var(--color-accent-primary)';
                         }}
@@ -593,13 +593,13 @@ const LocationTreeNode = ({ location, childrenLocations, allLocations, allRelati
                         marginRight: 'var(--space-8)',
                         borderRight: '2px solid var(--color-accent-primary)',
                         paddingRight: 'var(--space-4)',
-                        background: 'linear-gradient(270deg, rgba(99, 102, 241, 0.04) 0%, transparent 100%)',
+                        background: 'linear-gradient(270deg, var(--color-accent-glow) 0%, transparent 100%)',
                         borderRadius: 'var(--radius-md) 0 0 var(--radius-md)'
                     } : {
                         marginLeft: 'var(--space-8)',
                         borderLeft: '2px solid var(--color-accent-primary)',
                         paddingLeft: 'var(--space-4)',
-                        background: 'linear-gradient(90deg, rgba(99, 102, 241, 0.04) 0%, transparent 100%)',
+                        background: 'linear-gradient(90deg, var(--color-accent-glow) 0%, transparent 100%)',
                         borderRadius: '0 var(--radius-md) var(--radius-md) 0'
                     })
                 }}>

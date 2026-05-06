@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { authService, movementApprovalService, userSessionService, authenticationLogService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { usePowerSave } from '../context/usePowerSave';
+import { useColorPalette } from '../context/useColorPalette';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Smartphone, Globe, XCircle, Clock, Shield, AlertCircle, CheckCircle2, Lock, Settings, Zap, ZapOff } from 'lucide-react';
+import { Monitor, Smartphone, Globe, XCircle, Clock, Shield, AlertCircle, CheckCircle2, Lock, Settings, Zap, ZapOff, Palette } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ModalPortal from '../components/ModalPortal';
 import useModalFeedback from '../components/useModalFeedback';
@@ -14,6 +15,7 @@ const INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY = 'incidentReportCompositionStat
 const OptionsPage = () => {
     const { user, isSuperuser } = useAuth();
     const { enabled: powerSaveEnabled, setEnabled: setPowerSaveEnabled } = usePowerSave();
+    const { palette, setPalette } = useColorPalette();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const isMaintenanceTech = useMemo(() => {
@@ -878,6 +880,62 @@ const OptionsPage = () => {
 
                         {activeSection === 'appearance' && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 }}>
+                                {/* Color Palette */}
+                                <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
+                                    <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        <Palette size={18} style={{ color: 'var(--color-accent-primary)' }} />
+                                        {t('options.colorPalette')}
+                                    </h3>
+                                    <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
+                                        {t('options.colorPaletteDesc')}
+                                    </p>
+                                    <div style={{ display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-4)' }}>
+                                        {[
+                                            { value: 'purple', color: '#6366f1', label: t('options.palettePurple') },
+                                            { value: 'red', color: '#ef4444', label: t('options.paletteRed') },
+                                            { value: 'orange', color: '#f97316', label: t('options.paletteOrange') },
+                                            { value: 'green', color: '#22c55e', label: t('options.paletteGreen') },
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.value}
+                                                type="button"
+                                                onClick={() => setPalette(opt.value)}
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    gap: 'var(--space-2)',
+                                                    padding: 'var(--space-4) var(--space-5)',
+                                                    border: palette === opt.value ? `2px solid ${opt.color}` : '2px solid var(--color-border)',
+                                                    borderRadius: 'var(--radius-md)',
+                                                    background: palette === opt.value ? `rgba(${opt.value === 'purple' ? '99, 102, 241' : '239, 68, 68'}, 0.08)` : 'var(--color-bg-primary)',
+                                                    cursor: 'pointer',
+                                                    transition: 'all var(--transition-fast)',
+                                                    minWidth: 100,
+                                                }}
+                                            >
+                                                <span style={{
+                                                    width: 36,
+                                                    height: 36,
+                                                    borderRadius: '50%',
+                                                    background: opt.color,
+                                                    display: 'block',
+                                                    boxShadow: palette === opt.value ? `0 0 12px ${opt.color}40` : 'none',
+                                                    transition: 'box-shadow var(--transition-fast)',
+                                                }} />
+                                                <span style={{
+                                                    fontSize: 'var(--font-size-sm)',
+                                                    fontWeight: palette === opt.value ? 600 : 400,
+                                                    color: palette === opt.value ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                                                }}>
+                                                    {opt.label}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Power Save Mode */}
                                 <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div>

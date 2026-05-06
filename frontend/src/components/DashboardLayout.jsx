@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/useTheme';
 import { usePowerSave } from '../context/usePowerSave';
+import { useColorPalette } from '../context/useColorPalette';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import PageTransition from './PageTransition';
@@ -31,6 +32,7 @@ const DashboardLayout = () => {
     const { user, logout, isSuperuser } = useAuth();
     const { preference, setPreference, isDark } = useTheme();
     const { enabled: powerSaveEnabled, setEnabled: setPowerSaveEnabled } = usePowerSave();
+    const { isRed, isOrange, isGreen } = useColorPalette();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -127,7 +129,7 @@ const DashboardLayout = () => {
         <div className="dashboard-layout">
             <div className="dashboard-iridescence-bg" aria-hidden="true">
                 <Iridescence
-                    color={isDark ? [0.05, 0, 0.08] : [1, 1, 1]}
+                    color={isDark ? (isRed ? [0.08, 0.02, 0.02] : isOrange ? [0.08, 0.05, 0.02] : isGreen ? [0.02, 0.08, 0.04] : [0.05, 0, 0.08]) : (isRed ? [1, 0.4, 0.4] : isOrange ? [1, 0.55, 0.3] : isGreen ? [0.4, 1, 0.5] : [0.6, 0.5, 1])}
                     mouseReact={false}
                     amplitude={0.1}
                     speed={1.0}

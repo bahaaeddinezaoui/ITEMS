@@ -51,6 +51,9 @@ export default function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude 
   const { enabled: powerSave } = usePowerSave();
   const ctnDom = useRef(null);
   const mousePos = useRef({ x: 0.5, y: 0.5 });
+  const programRef = useRef(null);
+  const colorRef = useRef(color);
+  colorRef.current = color;
 
   useEffect(() => {
     if (!ctnDom.current) return;
@@ -81,7 +84,7 @@ export default function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude 
       fragment: fragmentShader,
       uniforms: {
         uTime: { value: 0 },
-        uColor: { value: new Color(...color) },
+        uColor: { value: new Color(...colorRef.current) },
         uResolution: {
           value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height)
         },
@@ -90,6 +93,7 @@ export default function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude 
         uSpeed: { value: speed }
       }
     });
+    programRef.current = program;
 
     const mesh = new Mesh(gl, { geometry, program });
     let animateId;
@@ -123,7 +127,16 @@ export default function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude 
       ctn.removeChild(gl.canvas);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, [color, speed, amplitude, mouseReact]);
+  }, [speed, amplitude, mouseReact]);
+
+  useEffect(() => {
+    if (programRef.current) {
+      const c = programRef.current.uniforms.uColor.value;
+      c[0] = color[0];
+      c[1] = color[1];
+      c[2] = color[2];
+    }
+  }, [color]);
 
   if (powerSave) return <div className="iridescence-container" {...rest} />;
   return <div ref={ctnDom} className="iridescence-container" {...rest} />;

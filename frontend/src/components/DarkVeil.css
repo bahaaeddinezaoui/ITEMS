@@ -6,7 +6,8 @@
 }
 
 [data-theme="light"] .darkveil-canvas {
-  opacity: 0;
+  opacity: 0.25;
+  mix-blend-mode: soft-light;
 }
 
 .darkveil-canvas--static {

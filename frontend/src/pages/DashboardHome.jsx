@@ -2,11 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useColorPalette } from '../context/useColorPalette';
+import { useTheme } from '../context/useTheme';
 import { dashboardService } from '../services/api';
 import LiquidEther from '../components/LiquidEther';
 
 const DashboardHome = () => {
     const { user, isSuperuser } = useAuth();
+    const { isRed, isOrange, isGreen } = useColorPalette();
+    const { isDark } = useTheme();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
 
@@ -346,7 +350,7 @@ const DashboardHome = () => {
             <div className="dashboard-hero">
                 <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
                     <LiquidEther
-                        colors={['#5227FF', '#FF9FFC', '#B497CF']}
+                        colors={isDark ? (isRed ? ['#FF2727', '#FF9F9F', '#CF7B7B'] : isOrange ? ['#FF8C27', '#FFCF9F', '#CF9B5B'] : isGreen ? ['#22C55E', '#86EFAC', '#6EE7B7'] : ['#5227FF', '#FF9FFC', '#B497CF']) : (isRed ? ['#F87171', '#FECACA', '#FCA5A5'] : isOrange ? ['#FB923C', '#FED7AA', '#FDBA74'] : isGreen ? ['#4ADE80', '#BBF7D0', '#86EFAC'] : ['#A78BFA', '#DDD6FE', '#C4B5FD'])}
                         mouseForce={20}
                         cursorSize={100}
                         isViscous={false}

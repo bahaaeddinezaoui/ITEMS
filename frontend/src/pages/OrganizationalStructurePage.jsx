@@ -38,7 +38,7 @@ const labelStyle = {
     display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: '600',
     color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px'
 };
-const focusBorder = (e) => { e.target.style.borderColor = '#6366f1'; e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.15)'; };
+const focusBorder = (e) => { e.target.style.borderColor = 'var(--color-accent-primary)'; e.target.style.boxShadow = `0 0 0 3px var(--color-accent-glow)`; };
 const blurBorder = (e) => { e.target.style.borderColor = 'rgba(71, 85, 105, 0.5)'; e.target.style.boxShadow = 'none'; };
 
 // Modal for Add/Edit Structure
@@ -50,7 +50,7 @@ const StructureFormModal = ({ isOpen, onClose, editingId, formData, handleFormCh
         <ModalPortal>
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" style={{ maxWidth: '520px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
-                <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white' }}>
+                <div style={{ background: 'var(--gradient-primary)', padding: '24px 28px', color: 'white' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                             <div style={{ width: '44px', height: '44px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
@@ -105,7 +105,7 @@ const StructureFormModal = ({ isOpen, onClose, editingId, formData, handleFormCh
                             <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#64748b' }}>{t('organizationalStructure.inactiveHint')}</span>
                         </div>
                         <div style={{ display: 'flex', gap: '12px' }}>
-                            <button type="submit" disabled={saving} style={{ flex: 1, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', border: 'none', borderRadius: '10px', padding: '14px 24px', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.5)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(99, 102, 241, 0.4)'; }}>
+                            <button type="submit" disabled={saving} style={{ flex: 1, background: 'var(--gradient-primary)', border: 'none', borderRadius: '10px', padding: '14px 24px', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: 'var(--shadow-glow)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px var(--color-accent-glow)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)'; }}>
                                 {saving ? <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}><span className="loading-spinner" style={{ width: '16px', height: '16px' }}></span>{t('common.saving')}</span> : <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>{editingId ? <Pencil size={18} /> : <Plus size={18} />}{editingId ? t('common.saveChanges') : t('organizationalStructure.createStructure')}</span>}
                             </button>
                             <button type="button" onClick={onClose} style={{ padding: '14px 24px', background: 'rgba(71, 85, 105, 0.3)', border: '1px solid rgba(71, 85, 105, 0.5)', borderRadius: '10px', color: '#cbd5e1', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(71, 85, 105, 0.5)'; e.currentTarget.style.color = '#f1f5f9'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(71, 85, 105, 0.3)'; e.currentTarget.style.color = '#cbd5e1'; }}>
@@ -135,7 +135,7 @@ const HierarchyModal = ({
         <ModalPortal>
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal" style={{ maxWidth: '520px', width: '90%' }} onClick={(e) => e.stopPropagation()}>
-                <div style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', padding: '24px 28px', color: 'white', position: 'relative' }}>
+                <div style={{ background: 'var(--gradient-primary)', padding: '24px 28px', color: 'white', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                             <div style={{ width: '44px', height: '44px', background: 'rgba(255,255,255,0.2)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
@@ -186,7 +186,7 @@ const HierarchyModal = ({
                     {(editingRelation || !hasRelation) && (
                         <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(71, 85, 105, 0.4)', borderRadius: '14px', padding: '24px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                                <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div style={{ width: '36px', height: '36px', background: 'var(--gradient-primary)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     {editingRelation?.parent_organizational_structure ? <Pencil size={18} color="white" /> : <Plus size={18} color="white" />}
                                 </div>
                                 <span style={{ fontWeight: '700', color: '#f8fafc', fontSize: '16px' }}>
@@ -206,7 +206,7 @@ const HierarchyModal = ({
                                     </select>
                                 </div>
                                 <div style={{ display: 'flex', gap: '12px' }}>
-                                    <button type="submit" style={{ flex: 1, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', border: 'none', borderRadius: '10px', padding: '14px 24px', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: '0 4px 14px rgba(99, 102, 241, 0.4)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(99, 102, 241, 0.5)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(99, 102, 241, 0.4)'; }}>
+                                    <button type="submit" style={{ flex: 1, background: 'var(--gradient-primary)', border: 'none', borderRadius: '10px', padding: '14px 24px', color: 'white', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: 'var(--shadow-glow)' }} onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px var(--color-accent-glow)'; }} onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-glow)'; }}>
                                         {editingRelation?.parent_organizational_structure ? t('organizationalStructure.updateConnection') : t('organizationalStructure.saveConnection')}
                                     </button>
                                     <button type="button" onClick={handleCancelRelation} style={{ padding: '14px 24px', background: 'rgba(71, 85, 105, 0.3)', border: '1px solid rgba(71, 85, 105, 0.5)', borderRadius: '10px', color: '#cbd5e1', fontSize: '14px', fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s ease' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(71, 85, 105, 0.5)'; e.currentTarget.style.color = '#f1f5f9'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(71, 85, 105, 0.3)'; e.currentTarget.style.color = '#cbd5e1'; }}>

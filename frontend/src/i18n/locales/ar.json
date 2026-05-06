@@ -1665,7 +1665,13 @@
     "powerSaveMode": "وضع توفير الطاقة",
     "powerSaveModeDesc": "تعطيل الرسوم المتحركة والانتقالات لتقليل استهلاك الطاقة وتحسين الأداء.",
     "powerSaveOn": "مفعّل",
-    "powerSaveOff": "معطّل"
+    "powerSaveOff": "معطّل",
+    "colorPalette": "لوحة الألوان",
+    "colorPaletteDesc": "اختر لوحة الألوان المميزة المستخدمة في التطبيق.",
+    "palettePurple": "بنفسجي",
+    "paletteRed": "أحمر",
+    "paletteOrange": "برتقالي",
+    "paletteGreen": "أخضر"
   },
   "maintenanceStats": {
     "title": "تحليلات الأداء",
