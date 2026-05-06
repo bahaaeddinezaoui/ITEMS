@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+venv/
+env/
+.env
+!.env.example
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Tool config
+.kilocode/
+.qodo/
+.windsurf/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Offline / cached packages
+offline_assets/
+
+# Credentials (NEVER commit)
+pwd.txt
+accounts.txt
+
+# Temporary / scratch files
+temp_*.py
+lint_output.txt
+
+# Dev-only reference files at root
+I18N_*.md
+apply_*.py
+check_translation_status.py
+translations_template.json
+package-lock.json
+
+# Conception / design files (not source code)
+conception/
+
+# SQL dumps (project-level, not Django migrations)
+project_*.sql
+ems*.sql
