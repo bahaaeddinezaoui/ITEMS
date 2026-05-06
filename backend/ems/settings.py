@@ -64,7 +64,7 @@ WSGI_APPLICATION = 'ems.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'project_iguana',
+        'NAME': 'ITEMS',
         'USER': 'postgres',
         'PASSWORD': '08212001',
         'HOST': 'localhost',

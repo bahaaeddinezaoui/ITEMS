@@ -1,7 +1,7 @@
 import psycopg2
 
 try:
-    conn = psycopg2.connect('dbname=ems user=postgres password=postgres host=localhost')
+    conn = psycopg2.connect('dbname=ITEMS user=postgres password=postgres host=localhost')
     cur = conn.cursor()
     
     # Check if room_type table exists
