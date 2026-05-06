@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { assetService, personService, problemReportService, locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { SkeletonCardList } from '../components/SkeletonCard';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, Search, X } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import ModalPortal from '../components/ModalPortal';
 import useModalFeedback from '../components/useModalFeedback';
 import ModalFeedback from '../components/ModalFeedback';
@@ -120,6 +121,31 @@ const ReportsPage = () => {
             color: c.text,
             fontWeight: 600,
         };
+    };
+
+    const statusKeyMap = {
+        not_delivered_to_company: 'statusNotDelivered',
+        in_stock: 'statusInStock',
+        assigned: 'statusAssigned',
+        under_internal_maintenance: 'statusUnderInternalMaintenance',
+        sent_to_external_maintenance: 'statusSentToExternalMaintenance',
+        received_by_maintenance_provider: 'statusReceivedByMaintenanceProvider',
+        sent_to_company_after_external_maintenance: 'statusSentToCompanyAfterExternalMaintenance',
+        received_by_company_after_external_maintenance: 'statusReceivedByCompanyAfterExternalMaintenance',
+        failed: 'statusFailed',
+        lost: 'statusLost',
+        stolen: 'statusStolen',
+        irrecoverably_damaged: 'statusIrrecoverablyDamaged',
+        destroyed: 'statusDestroyed',
+        suggested_for_destruction: 'statusSuggestedForDestruction',
+        operational: 'statusOperational',
+        out_of_service: 'statusOutOfService',
+    };
+
+    const translateStatus = (status) => {
+        if (!status) return '';
+        const key = statusKeyMap[status];
+        return key ? t(`reports.${key}`) : status.split('_').map((p) => p ? p[0].toUpperCase() + p.slice(1) : p).join(' ');
     };
 
     const getTypeAccentColor = (type) => {
@@ -295,7 +321,7 @@ const ReportsPage = () => {
                     : (selectedMaintenanceLocationId ? Number(selectedMaintenanceLocationId) : null),
             });
             setShowCreateMaintenanceModal(false);
-            showSuccess(t('reports.createMaintenanceSuccess', 'Maintenance created successfully'));
+            showSuccess(t('reports.createMaintenanceSuccess'));
             setSelectedReport(null);
             setSelectedTechnician('');
             setMaintenanceDescription('');
@@ -351,31 +377,10 @@ const ReportsPage = () => {
                         <h2 style={{ margin: 0, fontSize: 'var(--font-size-lg)' }}>{t('reports.allReports')}</h2>
                         <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                             {t('reports.shown', { count: filteredReports.length })}
-                            {typeFilter ? ` • ${typeFilter.replace('_', ' ')}` : ''}
-                            {query.trim() ? ` • ${t('reports.searchApplied')}` : ''}
                         </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <input
-                            className="form-input"
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder={t('reports.searchPlaceholder')}
-                            style={{ width: 320, maxWidth: '100%' }}
-                        />
-                        <select
-                            className="form-input"
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value)}
-                            style={{ width: 180 }}
-                            aria-label={t('reports.filterByType')}
-                        >
-                            <option value="">{t('reports.allTypes')}</option>
-                            <option value="asset">{t('reports.asset')}</option>
-                            <option value="stock_item">{t('reports.stockItem')}</option>
-                            <option value="consumable">{t('reports.consumable')}</option>
-                        </select>
                         <button className="btn btn-secondary" onClick={loadReports} disabled={loading}>
                             {t('common.refresh')}
                         </button>
@@ -401,7 +406,7 @@ const ReportsPage = () => {
                             }}
                         >
                             {filteredReports.map((r) => {
-                                const typeLabel = (r?.item_type || '').replace('_', ' ');
+                                const typeLabel = t(`reports.${({ asset: 'asset', stock_item: 'stockItem', consumable: 'consumable' }[r?.item_type] || 'item')}`);
                                 const rel = formatRelativeTime(r?.report_datetime);
                                 const abs = r?.report_datetime ? new Date(r.report_datetime).toLocaleString() : '-';
                                 const who = r?.person_name || r?.person_id || '—';
@@ -445,7 +450,7 @@ const ReportsPage = () => {
                                                     <span style={typeChipStyle(r?.item_type)}>
                                                         {typeLabel || t('reports.item')}
                                                     </span>
-                                                    <span style={chipStyle}>Report #{r?.report_id}</span>
+                                                    <span style={chipStyle}>{t('reports.report')} #{r?.report_id}</span>
                                                 </div>
                                                 <div style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', whiteSpace: 'nowrap', fontWeight: 500 }} title={abs}>
                                                     {rel || abs}
@@ -507,21 +512,21 @@ const ReportsPage = () => {
                                                     flexWrap: 'wrap',
                                                 }}>
                                                     <span style={{ ...chipStyle, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                        {r?.item_type === 'asset' ? 'Asset' : typeLabel} #{r?.item_id}
+                                                        {typeLabel} #{r?.item_id}
                                                     </span>
                                                     {itemInventory && (
                                                         <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
-                                                            Inv: {itemInventory}
+                                                            {t('reports.inv')}: {itemInventory}
                                                         </span>
                                                     )}
                                                     {itemSerial && (
                                                         <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
-                                                            SN: {itemSerial}
+                                                            {t('reports.sn')}: {itemSerial}
                                                         </span>
                                                     )}
                                                     {itemServiceTag && (
                                                         <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
-                                                            Tag: {itemServiceTag}
+                                                            {t('reports.tag')}: {itemServiceTag}
                                                         </span>
                                                     )}
                                                     {itemStatus && (
@@ -531,7 +536,7 @@ const ReportsPage = () => {
                                                             border: `1px solid ${accentColor}40`,
                                                             color: accentColor,
                                                         }}>
-                                                            {itemStatus}
+                                                            {translateStatus(itemStatus)}
                                                         </span>
                                                     )}
                                                 </div>
@@ -773,7 +778,7 @@ const ReportsPage = () => {
                                             fontSize: '0.85rem',
                                         }}
                                     >
-                                        {selectedAsset.asset_status}
+                                        {translateStatus(selectedAsset.asset_status)}
                                     </span>
                                 )}
                             </div>
@@ -841,6 +846,31 @@ const ReportsPage = () => {
                 </div>
                 </ModalPortal>
             )}
+            <FilterSortFAB hasActiveFilters={!!query.trim() || !!typeFilter}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t('reports.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: query ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {query && (
+                            <button onClick={() => setQuery('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('reports.filterByType')}</label>
+                        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('reports.allTypes')}</option>
+                            <option value="asset">{t('reports.asset')}</option>
+                            <option value="stock_item">{t('reports.stockItem')}</option>
+                            <option value="consumable">{t('reports.consumable')}</option>
+                        </select>
+                    </div>
+                    {(query.trim() || typeFilter) && (
+                        <button onClick={() => { setQuery(''); setTypeFilter(''); }} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </>
     );
 };

@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
 import { consumableAttributeDefinitionService, consumableTypeAttributeService, consumableTypeService } from '../services/api';
+import BackButton from '../components/BackButton';
 
 const ConsumablesTypeAttributesPage = () => {
     const { t } = useTranslation();
@@ -113,16 +114,7 @@ const ConsumablesTypeAttributesPage = () => {
                     <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><SlidersHorizontal size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumablesTypeAttributes.title')}</h1>
                     <p className="page-subtitle">{consumableType ? consumableType.consumable_type_label : t('common.type')} • {t('consumablesTypeAttributes.manageAttributes')}</p>
                 </div>
-                <button
-                    onClick={() => navigate('/dashboard/consumables/types')}
-                    style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                    title={t('consumablesTypeAttributes.backToTypes')}
-                    aria-label={t('consumablesTypeAttributes.backToTypes')}
-                >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
+                <BackButton onClick={() => navigate('/dashboard/consumables/types')} label={t('consumablesTypeAttributes.backToTypes')} />
             </div>
 
             {error && (

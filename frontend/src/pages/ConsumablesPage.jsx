@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Wrench, Hash, Droplets, UserPlus } from 'lucide-react';
+import { Search, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Wrench, Hash, Droplets, UserPlus, Clock, ChevronUp, ChevronDown } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
+import BackButton from '../components/BackButton';
 import TranslatableInput from '../components/TranslatableInput';
 import {
     authService,
@@ -77,6 +79,8 @@ const ConsumablesPage = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [sortField, setSortField] = useState('consumable_name');
+    const [sortDirection, setSortDirection] = useState('asc');
     const [showSplitModal, setShowSplitModal] = useState(false);
     const [splittingConsumable, setSplittingConsumable] = useState(null);
     const [splitAttributeOptions, setSplitAttributeOptions] = useState([]);
@@ -148,14 +152,12 @@ const ConsumablesPage = () => {
         discontinued_year: '',
         is_active: true,
         notes: '',
-        warranty_expiry_in_months: '',
     });
     const [formTranslations, setFormTranslations] = useState({});
     const [consumableFormData, setConsumableFormData] = useState({
         consumable_name: '',
         consumable_inventory_number: '',
         consumable_status: 'in_stock',
-        consumable_name_in_administrative_certificate: '',
         destruction_certificate_id: '',
         maintenance_step_id: null
     });
@@ -192,7 +194,6 @@ const ConsumablesPage = () => {
             consumable_name: '',
             consumable_inventory_number: '',
             consumable_status: 'in_stock',
-            consumable_name_in_administrative_certificate: '',
             destruction_certificate_id: 0,
             maintenance_step_id: null
         });
@@ -655,7 +656,6 @@ const ConsumablesPage = () => {
                 notes: modelFormData.notes || '',
                 release_year: modelFormData.release_year ? parseInt(modelFormData.release_year) : null,
                 discontinued_year: modelFormData.discontinued_year ? parseInt(modelFormData.discontinued_year) : null,
-                warranty_expiry_in_months: modelFormData.warranty_expiry_in_months ? parseInt(modelFormData.warranty_expiry_in_months) : null,
             };
             await consumableModelService.create(dataToSubmit);
             setModelFormData({
@@ -667,7 +667,6 @@ const ConsumablesPage = () => {
                 discontinued_year: '',
                 is_active: true,
                 notes: '',
-                warranty_expiry_in_months: '',
             });
             setShowModelForm(false);
             showSuccess(t('consumables.createModelSuccess', 'Consumable model created successfully'));
@@ -715,7 +714,6 @@ const ConsumablesPage = () => {
                 consumable_name: '',
                 consumable_inventory_number: '',
                 consumable_status: 'in_stock',
-                consumable_name_in_administrative_certificate: '',
                 destruction_certificate_id: '',
                 maintenance_step_id: null
             });
@@ -740,7 +738,6 @@ const ConsumablesPage = () => {
             consumable_name: item.consumable_name || '',
             consumable_inventory_number: item.consumable_inventory_number || '',
             consumable_status: item.consumable_status || 'active',
-            consumable_name_in_administrative_certificate: item.consumable_name_in_administrative_certificate || '',
             destruction_certificate_id: item.destruction_certificate_id ?? '',
             maintenance_step_id: item.maintenance_step_id || null
         });
@@ -1004,7 +1001,7 @@ const ConsumablesPage = () => {
     };
 
     const filteredConsumables = useMemo(() => {
-        let result = consumables;
+        let result = [...consumables];
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             result = result.filter(item =>
@@ -1015,8 +1012,19 @@ const ConsumablesPage = () => {
         if (statusFilter) {
             result = result.filter(item => item.consumable_status === statusFilter);
         }
+        result.sort((a, b) => {
+            let aVal, bVal;
+            switch (sortField) {
+                case 'consumable_name': aVal = (a.consumable_name || '').toLowerCase(); bVal = (b.consumable_name || '').toLowerCase(); break;
+                case 'consumable_inventory_number': aVal = (a.consumable_inventory_number || '').toLowerCase(); bVal = (b.consumable_inventory_number || '').toLowerCase(); break;
+                case 'consumable_status': aVal = a.consumable_status || ''; bVal = b.consumable_status || ''; break;
+                default: aVal = (a.consumable_name || '').toLowerCase(); bVal = (b.consumable_name || '').toLowerCase();
+            }
+            const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
         return result;
-    }, [consumables, searchTerm, statusFilter]);
+    }, [consumables, searchTerm, statusFilter, sortField, sortDirection]);
 
     const formatStatus = (value, item) => {
         if (!value) return '';
@@ -1037,15 +1045,13 @@ const ConsumablesPage = () => {
                 {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                        <button className="btn btn-secondary" onClick={() => {
+                        <BackButton onClick={() => {
                             if (typeIdParam) {
                                 navigate(`/dashboard/consumables/models?typeId=${typeIdParam}`);
                             } else {
                                 navigate('/dashboard/consumables/types');
                             }
-                        }} style={{ padding: 'var(--space-2) var(--space-3)' }}>
-                            <ArrowLeft size={18} />
-                        </button>
+                        }} />
                         <div>
                             <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Droplets size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumables.title')}</h1>
                             <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -1061,7 +1067,6 @@ const ConsumablesPage = () => {
                             consumable_name: '',
                             consumable_inventory_number: '',
                             consumable_status: 'not_delivered_to_company',
-                            consumable_name_in_administrative_certificate: '',
                             destruction_certificate_id: 0,
                             maintenance_step_id: null
                         });
@@ -1142,7 +1147,7 @@ const ConsumablesPage = () => {
                                                 <option value="not_delivered_to_company">{t('consumables.statusNotDelivered', 'Not Delivered')}</option>
                                                 <option value="in_stock">{t('consumables.statusInStock', 'In Stock')}</option>
                                                 <option value="assigned">{t('consumables.statusAssigned', 'Assigned')}</option>
-                                                <option value="maintenance">{t('consumables.statusMaintenance', 'Maintenance')}</option>
+                                                <option value="under_internal_maintenance">{t('consumables.statusUnderInternalMaintenance', 'Under Internal Maintenance')}</option>
                                                 <option value="failed">{t('consumables.statusFailed', 'Failed')}</option>
                                                 <option value="lost">{t('consumables.statusLost', 'Lost')}</option>
                                                 <option value="stolen">{t('consumables.statusStolen', 'Stolen')}</option>
@@ -1175,27 +1180,6 @@ const ConsumablesPage = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
                     {/* Consumables Panel */}
                     <div className="card" style={{ overflow: 'hidden' }}>
-                        {/* Toolbar */}
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                            <div style={{ position: 'relative', flex: '0 1 320px', minWidth: '180px' }}>
-                                <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                                <input type="text" placeholder={t('consumables.searchPlaceholder', 'Search consumables...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
-                            </div>
-                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '44px', minWidth: '130px' }}>
-                                <option value="">{t('consumables.allStatuses', 'All Statuses')}</option>
-                                <option value="in_stock">{t('consumables.statusInStock', 'In Stock')}</option>
-                                <option value="assigned">{t('consumables.statusAssigned', 'Assigned')}</option>
-                                <option value="maintenance">{t('consumables.statusMaintenance', 'Maintenance')}</option>
-                                <option value="failed">{t('consumables.statusFailed', 'Failed')}</option>
-                                <option value="not_delivered_to_company">{t('consumables.statusNotDelivered', 'Not Delivered')}</option>
-                                <option value="lost">{t('consumables.statusLost', 'Lost')}</option>
-                                <option value="destroyed">{t('consumables.statusDestroyed', 'Destroyed')}</option>
-                            </select>
-                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
-                                {filteredConsumables.length}
-                            </span>
-                        </div>
-
                         {/* Consumable List */}
                         <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
                             {loading ? (
@@ -1222,7 +1206,7 @@ const ConsumablesPage = () => {
                                             cursor: 'pointer',
                                             transition: 'background 0.15s ease'
                                         }}
-                                        onClick={() => openConsumableDetailsModal(item)}
+                                        onClick={() => navigate(`/dashboard/consumables/instances/${item.consumable_id}?typeId=${typeIdParam || ''}&modelId=${modelIdParam || ''}`)}
                                         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                                     >
@@ -1261,7 +1245,7 @@ const ConsumablesPage = () => {
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', flexShrink: 0 }}>
-                                            <button onClick={(e) => { e.stopPropagation(); openConsumableDetailsModal(item); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('consumables.attributes', 'Attributes')}>
+                                            <button onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/consumables/instances/${item.consumable_id}?typeId=${typeIdParam || ''}&modelId=${modelIdParam || ''}`); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('consumables.attributes', 'Attributes')}>
                                                 <Sliders size={14} />
                                             </button>
                                             <button onClick={(e) => { e.stopPropagation(); handleEditConsumable(item); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('common.edit')}>
@@ -1444,6 +1428,18 @@ const ConsumablesPage = () => {
                                             );
                                         })
                                     )}
+                                </div>
+
+                                {/* Composition History Link */}
+                                <div style={{ marginTop: 'var(--space-4)' }}>
+                                    <button
+                                        onClick={() => navigate(`/dashboard/consumables/instances/${selectedConsumable.consumable_id}/composition-history`)}
+                                        className="btn btn-secondary"
+                                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}
+                                    >
+                                        <Clock size={16} />
+                                        {t('consumables.compositionHistory')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1917,16 +1913,10 @@ const ConsumablesPage = () => {
                                             <input type="text" name="model_code" value={modelFormData.model_code} onChange={handleModelInputChange} required style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
                                         </div>
                                     </div>
-                                    {/* Year & Warranty */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Release Year</label>
-                                            <input type="number" name="release_year" value={modelFormData.release_year} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Warranty (Months)</label>
-                                            <input type="number" name="warranty_expiry_in_months" value={modelFormData.warranty_expiry_in_months} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
-                                        </div>
+                                    {/* Year */}
+                                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                                        <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Release Year</label>
+                                        <input type="number" name="release_year" value={modelFormData.release_year} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
                                     </div>
                                     {/* Notes */}
                                     <div style={{ marginBottom: 'var(--space-4)' }}>
@@ -1971,7 +1961,6 @@ const ConsumablesPage = () => {
                                             consumable_name: '',
                                             consumable_inventory_number: '',
                                             consumable_status: 'not_delivered_to_company',
-                                            consumable_name_in_administrative_certificate: '',
                                             destruction_certificate_id: 0,
                                             maintenance_step_id: null
                                         });
@@ -2203,8 +2192,6 @@ const ConsumablesPage = () => {
                                                     <select name="consumable_status" value={consumableFormData.consumable_status} onChange={handleConsumableInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}>
                                                         <option value="not_delivered_to_company">Not Delivered to Company</option>
                                                         <option value="in_stock">In Stock</option>
-                                                        <option value="in_use">In Use</option>
-                                                        <option value="reserved">Reserved</option>
                                                         <option value="failed">Failed</option>
                                                         <option value="lost">Lost</option>
                                                         <option value="stolen">Stolen</option>
@@ -2956,6 +2943,44 @@ const ConsumablesPage = () => {
                     </div>
                 </div>
             )}
+            <FilterSortFAB hasActiveFilters={!!searchTerm || !!statusFilter || sortField !== 'consumable_name' || sortDirection !== 'asc'}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                        <input type="text" placeholder={t('consumables.searchPlaceholder', 'Search consumables...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('consumables.allStatuses', 'All Statuses')}</label>
+                        <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('consumables.allStatuses', 'All Statuses')}</option>
+                            <option value="in_stock">{t('consumables.statusInStock', 'In Stock')}</option>
+                            <option value="assigned">{t('consumables.statusAssigned', 'Assigned')}</option>
+                            <option value="under_internal_maintenance">{t('consumables.statusUnderInternalMaintenance', 'Under Internal Maintenance')}</option>
+                            <option value="sent_to_external_maintenance">{t('consumables.statusSentToExternalMaintenance', 'Sent to External Maintenance')}</option>
+                            <option value="received_by_maintenance_provider">{t('consumables.statusReceivedByMaintenanceProvider', 'Received by Maintenance Provider')}</option>
+                            <option value="sent_to_company_after_external_maintenance">{t('consumables.statusSentToCompanyAfterExternalMaintenance', 'Sent to Company After External Maintenance')}</option>
+                            <option value="received_by_company_after_external_maintenance">{t('consumables.statusReceivedByCompanyAfterExternalMaintenance', 'Received by Company After External Maintenance')}</option>
+                            <option value="failed">{t('consumables.statusFailed', 'Failed')}</option>
+                            <option value="not_delivered_to_company">{t('consumables.statusNotDelivered', 'Not Delivered')}</option>
+                            <option value="lost">{t('consumables.statusLost', 'Lost')}</option>
+                            <option value="destroyed">{t('consumables.statusDestroyed', 'Destroyed')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy', 'Sort by')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="consumable_name">{t('consumables.sortByName', 'Name')}</option>
+                                <option value="consumable_inventory_number">{t('consumables.sortByInventoryNumber', 'Inventory Number')}</option>
+                                <option value="consumable_status">{t('consumables.sortByStatus', 'Status')}</option>
+                            </select>
+                            <button className="btn btn-secondary" onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
+                                {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

@@ -4,6 +4,7 @@ import { assetMaintenanceTimelineService } from '../services/api';
 import MaintenanceTimeline from '../components/MaintenanceTimeline';
 import { useTranslation } from 'react-i18next';
 import { GitBranch } from 'lucide-react';
+import BackButton from '../components/BackButton';
 
 const AssetMaintenanceTimelinePage = () => {
     const { assetId } = useParams();
@@ -66,16 +67,7 @@ const AssetMaintenanceTimelinePage = () => {
                         </p>
                     </div>
                     <div className="d-flex" style={{ gap: '0.5rem' }}>
-                        <button
-                            className="btn btn-secondary"
-                            onClick={() => navigate('/dashboard/my-items')}
-                            title={t('assetMaintenanceTimeline.backToMyItems')}
-                            aria-label={t('assetMaintenanceTimeline.backToMyItems')}
-                        >
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M15 18l-6-6 6-6" />
-                            </svg>
-                        </button>
+                        <BackButton onClick={() => navigate('/dashboard/my-items')} label={t('assetMaintenanceTimeline.backToMyItems')} />
                     </div>
                 </div>
             </div>

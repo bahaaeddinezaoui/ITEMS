@@ -4,6 +4,7 @@ import {
     ChevronRight, Hash, Wrench, X, CheckCircle2, AlertTriangle,
     MapPin, Building2, Search, SlidersHorizontal, ArrowUpDown, ChevronDown,
 } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { externalMaintenanceProviderService, externalMaintenanceService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -131,10 +132,13 @@ const ExternalMaintenancesPage = () => {
         setSortDirection('desc');
     };
 
+    const getItemName = (it) => it.maintenance_asset_name || it.maintenance_stock_item_name || it.maintenance_consumable_name || '';
+    const getItemId = (it) => it.maintenance_asset_id || it.maintenance_stock_item_id || it.maintenance_consumable_id || '';
+
     const filteredItems = useMemo(() => {
         let result = items.filter((it) => {
             const searchLower = searchTerm.toLowerCase();
-            const name = (it.maintenance_asset_name || '').toLowerCase();
+            const name = getItemName(it).toLowerCase();
             const id = String(it.external_maintenance_id);
             const maintenanceId = String(it.maintenance || '');
             const matchesSearch = !searchLower || name.includes(searchLower) || id.includes(searchLower) || maintenanceId.includes(searchLower);
@@ -147,7 +151,7 @@ const ExternalMaintenancesPage = () => {
             if (sortField === 'id') {
                 cmp = a.external_maintenance_id - b.external_maintenance_id;
             } else if (sortField === 'name') {
-                cmp = (a.maintenance_asset_name || '').localeCompare(b.maintenance_asset_name || '', i18n.language === 'ar' ? 'ar' : undefined);
+                cmp = getItemName(a).localeCompare(getItemName(b), i18n.language === 'ar' ? 'ar' : undefined);
             } else if (sortField === 'progress') {
                 cmp = getProgressStep(a) - getProgressStep(b);
             }
@@ -450,219 +454,6 @@ const ExternalMaintenancesPage = () => {
                 <MsgAlert message={{ type: 'error', text: error }} onDismiss={() => setError('')} />
             )}
 
-            {/* Search / Filter / Sort Toolbar */}
-            {!loading && !error && items.length > 0 && (
-                <div style={{
-                    display: 'flex',
-                    gap: 'var(--space-3)',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    background: 'var(--glass-bg)',
-                    backdropFilter: 'var(--glass-backdrop)',
-                    WebkitBackdropFilter: 'var(--glass-backdrop)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: 'var(--radius-lg)',
-                    padding: 'var(--space-2) var(--space-4)',
-                    boxShadow: 'var(--glass-shadow)',
-                    marginBottom: 'var(--space-5)',
-                }}>
-                    {/* Search */}
-                    <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
-                        <Search size={18} style={{
-                            position: 'absolute',
-                            left: 'var(--space-3)',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'var(--color-text-muted)',
-                            pointerEvents: 'none',
-                        }} />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder={t('externalMaintenances.searchPlaceholder')}
-                            className="form-input"
-                            style={{
-                                width: '100%',
-                                height: '42px',
-                                paddingLeft: 'var(--space-10)',
-                                paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)',
-                            }}
-                        />
-                        {searchTerm && (
-                            <button
-                                onClick={() => setSearchTerm('')}
-                                style={{
-                                    position: 'absolute',
-                                    right: 'var(--space-3)',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--color-text-muted)',
-                                    cursor: 'pointer',
-                                    padding: 2,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Filter by Status */}
-                    <div style={{ position: 'relative', minWidth: '160px' }}>
-                        <SlidersHorizontal size={16} style={{
-                            position: 'absolute',
-                            left: 'var(--space-3)',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'var(--color-text-muted)',
-                            pointerEvents: 'none',
-                            zIndex: 1,
-                        }} />
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="form-input"
-                            style={{
-                                width: '100%',
-                                height: '42px',
-                                paddingLeft: 'var(--space-10)',
-                                appearance: 'none',
-                                cursor: 'pointer',
-                            }}
-                        >
-                            <option value="">{t('externalMaintenances.allStatuses')}</option>
-                            <option value="DRAFT">{t('externalMaintenances.statusDRAFT')}</option>
-                            <option value="RECEIVED_BY_PROVIDER">{t('externalMaintenances.statusRECEIVED_BY_PROVIDER')}</option>
-                            <option value="SENT_TO_COMPANY">{t('externalMaintenances.statusSENT_TO_COMPANY')}</option>
-                            <option value="RECEIVED_BY_COMPANY">{t('externalMaintenances.statusRECEIVED_BY_COMPANY')}</option>
-                            <option value="FAILED">{t('externalMaintenances.statusFAILED')}</option>
-                        </select>
-                    </div>
-
-                    {/* Sort */}
-                    <div style={{ position: 'relative' }}>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowSortMenu(!showSortMenu);
-                            }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 'var(--space-2)',
-                                padding: 'var(--space-2) var(--space-4)',
-                                height: '42px',
-                                border: '1px solid var(--color-border)',
-                                background: 'var(--glass-bg)',
-                                backdropFilter: 'var(--glass-backdrop)',
-                                WebkitBackdropFilter: 'var(--glass-backdrop)',
-                                color: 'var(--color-text-secondary)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                fontWeight: 500,
-                                fontSize: 'var(--font-size-sm)',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            <ArrowUpDown size={16} />
-                            <span>{sortField === 'name' ? t('externalMaintenances.sortByName') : sortField === 'progress' ? t('externalMaintenances.sortByProgress') : t('externalMaintenances.sortById')}</span>
-                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                {sortDirection === 'asc' ? t('common.ascending') : t('common.descending')}
-                            </span>
-                            <ChevronDown size={14} style={{ transform: showSortMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-                        </button>
-                        {showSortMenu && (
-                            <div
-                                onClick={(e) => e.stopPropagation()}
-                                style={{
-                                    position: 'absolute',
-                                    top: 'calc(100% + 4px)',
-                                    right: 0,
-                                    background: 'var(--glass-bg)',
-                                    backdropFilter: 'var(--glass-backdrop)',
-                                    WebkitBackdropFilter: 'var(--glass-backdrop)',
-                                    border: '1px solid var(--glass-border)',
-                                    borderRadius: 'var(--radius-md)',
-                                    boxShadow: 'var(--glass-shadow)',
-                                    padding: 'var(--space-2)',
-                                    zIndex: 100,
-                                    minWidth: '200px',
-                                }}
-                            >
-                                <div style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    {t('common.sortBy')}
-                                </div>
-                                {sortOptions.map((opt) => (
-                                    <button
-                                        key={`${opt.field}-${opt.dir}`}
-                                        onClick={() => {
-                                            setSortField(opt.field);
-                                            setSortDirection(opt.dir);
-                                            setShowSortMenu(false);
-                                        }}
-                                        style={{
-                                            display: 'block',
-                                            width: '100%',
-                                            textAlign: i18n.language === 'ar' ? 'right' : 'left',
-                                            padding: 'var(--space-2) var(--space-3)',
-                                            border: 'none',
-                                            borderRadius: 'var(--radius-sm)',
-                                            cursor: 'pointer',
-                                            fontSize: 'var(--font-size-sm)',
-                                            fontWeight: sortField === opt.field && sortDirection === opt.dir ? 600 : 400,
-                                            color: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-tertiary)' : 'var(--color-text-primary)',
-                                            background: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-glow)' : 'transparent',
-                                            transition: 'all var(--transition-fast)',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
-                                                e.currentTarget.style.background = 'var(--color-bg-card-hover)';
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
-                                                e.currentTarget.style.background = 'transparent';
-                                            }
-                                        }}
-                                    >
-                                        {opt.label}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Clear Filters */}
-                    {hasActiveFilters && (
-                        <button
-                            onClick={clearAllFilters}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 'var(--space-2)',
-                                padding: 'var(--space-2) var(--space-3)',
-                                height: '42px',
-                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                background: 'rgba(239, 68, 68, 0.08)',
-                                color: 'var(--color-error)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                fontSize: 'var(--font-size-sm)',
-                                fontWeight: 500,
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            <X size={14} />
-                            {t('common.clearFilters')}
-                        </button>
-                    )}
-                </div>
-            )}
-
             {/* Results count */}
             {!loading && !error && items.length > 0 && (
                 <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', fontWeight: 600 }}>
@@ -705,9 +496,17 @@ const ExternalMaintenancesPage = () => {
                                         <StatusBadge status={it.external_maintenance_status} />
                                     </div>
 
-                                    {/* Asset name */}
-                                    <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600, marginBottom: 'var(--space-2)' }}>
-                                        {it.maintenance_asset_name || it.maintenance_asset_id || '-'}
+                                    {/* Item name + type badge */}
+                                    <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 600, marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        {getItemName(it) || getItemId(it) || '-'}
+                                        <span style={{
+                                            fontSize: 'var(--font-size-xs)', fontWeight: 600,
+                                            padding: '0.1rem 0.4rem', borderRadius: 'var(--radius-sm)',
+                                            background: it.maintenance_item_type === 'stock_item' ? 'rgba(139,92,246,0.1)' : it.maintenance_item_type === 'consumable' ? 'rgba(245,158,11,0.1)' : 'rgba(var(--color-primary-rgb,59,130,246),0.08)',
+                                            color: it.maintenance_item_type === 'stock_item' ? '#8b5cf6' : it.maintenance_item_type === 'consumable' ? '#f59e0b' : 'var(--color-primary)',
+                                        }}>
+                                            {it.maintenance_item_type === 'stock_item' ? t('stockItems.stockItem', 'Stock Item') : it.maintenance_item_type === 'consumable' ? t('consumables.consumable', 'Consumable') : t('assets.asset', 'Asset')}
+                                        </span>
                                     </h3>
 
                                     {/* IDs row */}
@@ -758,7 +557,7 @@ const ExternalMaintenancesPage = () => {
                                     <Wrench size={18} />
                                 </div>
                                 <div>
-                                    <h3 className="modal-title" style={{ marginBottom: 0 }}>{selectedItem.maintenance_asset_name || selectedItem.maintenance_asset_id || '-'}</h3>
+                                    <h3 className="modal-title" style={{ marginBottom: 0 }}>{getItemName(selectedItem) || getItemId(selectedItem) || '-'}</h3>
                                     <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>EM #{selectedItem.external_maintenance_id}</span>
                                 </div>
                             </div>
@@ -996,6 +795,47 @@ const ExternalMaintenancesPage = () => {
                 </div>
                 </ModalPortal>
             )}
+            <FilterSortFAB hasActiveFilters={hasActiveFilters}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('externalMaintenances.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchTerm && (
+                            <button onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('externalMaintenances.allStatuses')}</label>
+                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('externalMaintenances.allStatuses')}</option>
+                            <option value="DRAFT">{t('externalMaintenances.statusDRAFT')}</option>
+                            <option value="RECEIVED_BY_PROVIDER">{t('externalMaintenances.statusRECEIVED_BY_PROVIDER')}</option>
+                            <option value="SENT_TO_COMPANY">{t('externalMaintenances.statusSENT_TO_COMPANY')}</option>
+                            <option value="RECEIVED_BY_COMPANY">{t('externalMaintenances.statusRECEIVED_BY_COMPANY')}</option>
+                            <option value="FAILED">{t('externalMaintenances.statusFAILED')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="name">{t('externalMaintenances.sortByName')}</option>
+                                <option value="progress">{t('externalMaintenances.sortByProgress')}</option>
+                                <option value="id">{t('externalMaintenances.sortById')}</option>
+                            </select>
+                            <select className="form-input" value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} style={{ height: '40px', width: '100px' }}>
+                                <option value="asc">↑ {t('common.ascending')}</option>
+                                <option value="desc">↓ {t('common.descending')}</option>
+                            </select>
+                        </div>
+                    </div>
+                    {hasActiveFilters && (
+                        <button onClick={clearAllFilters} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

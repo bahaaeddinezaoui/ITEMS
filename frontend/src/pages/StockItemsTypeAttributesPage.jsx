@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from 'lucide-react';
 import { stockItemAttributeDefinitionService, stockItemTypeAttributeService, stockItemTypeService } from '../services/api';
+import BackButton from '../components/BackButton';
 
 const StockItemsTypeAttributesPage = () => {
     const navigate = useNavigate();
@@ -122,16 +123,7 @@ const StockItemsTypeAttributesPage = () => {
                     <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><SlidersHorizontal size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItemTypeAttributes.title')}</h1>
                     <p className="page-subtitle">{stockItemType ? stockItemType.stock_item_type_label : t('stockItemTypeAttributes.type')} • {t('stockItemTypeAttributes.manageAttributes')}</p>
                 </div>
-                <button
-                    onClick={() => navigate('/dashboard/stock-items/types')}
-                    style={{ padding: 'var(--space-2) var(--space-3)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
-                    title={t('stockItemTypeAttributes.backToTypes')}
-                    aria-label={t('stockItemTypeAttributes.backToTypes')}
-                >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
+                <BackButton onClick={() => navigate('/dashboard/stock-items/types')} label={t('stockItemTypeAttributes.backToTypes')} />
             </div>
 
             {error && (

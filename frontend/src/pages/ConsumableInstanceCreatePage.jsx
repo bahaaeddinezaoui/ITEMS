@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-    ArrowLeft,
     Wrench,
     AlertCircle,
     CheckCircle2,
@@ -14,6 +13,7 @@ import {
     Box,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import BackButton from '../components/BackButton';
 import { SkeletonCard } from '../components/SkeletonCard';
 import { consumableModelService, consumableService } from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -80,8 +80,6 @@ const ConsumableInstanceCreatePage = () => {
                     consumable_name: '',
                     consumable_inventory_number: '',
                     consumable_status: 'not_delivered_to_company',
-                    consumable_warranty_expiry_in_months: '',
-                    consumable_name_in_administrative_certificate: '',
                 });
             }
             return next;
@@ -117,8 +115,6 @@ const ConsumableInstanceCreatePage = () => {
                     consumable_name: l.consumable_name || '',
                     consumable_inventory_number: l.consumable_inventory_number || '',
                     consumable_status: l.consumable_status || 'not_delivered_to_company',
-                    consumable_warranty_expiry_in_months: l.consumable_warranty_expiry_in_months === '' ? '' : Number(l.consumable_warranty_expiry_in_months),
-                    consumable_name_in_administrative_certificate: l.consumable_name_in_administrative_certificate || '',
                     destruction_certificate_id: null,
                     maintenance_step_id: null,
                 };
@@ -145,8 +141,6 @@ const ConsumableInstanceCreatePage = () => {
                 consumable_name: '',
                 consumable_inventory_number: '',
                 consumable_status: 'in_stock',
-                consumable_warranty_expiry_in_months: '',
-                consumable_name_in_administrative_certificate: '',
             })));
 
             if (lineIndexParam !== null && lineTypeParam === 'consumable') {
@@ -166,22 +160,7 @@ const ConsumableInstanceCreatePage = () => {
             {/* Page Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/dashboard/purchase-orders/create')}
-                        disabled={submitting}
-                        style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)',
-                            background: 'transparent', border: 'none', color: 'var(--color-text-muted)',
-                            cursor: 'pointer', padding: 0, fontSize: 'var(--font-size-sm)', fontWeight: 500,
-                            transition: 'color var(--transition-fast)',
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-primary)'}
-                        onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
-                    >
-                        <ArrowLeft size={16} />
-                        {t('common.back')}
-                    </button>
+                    <BackButton onClick={() => navigate('/dashboard/purchase-orders/create')} />
                     <div>
                         <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Wrench size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('consumableInstanceCreate.title')}</h1>
                         <p className="page-subtitle" style={{ fontSize: 'var(--font-size-base)' }}>
@@ -292,7 +271,7 @@ const ConsumableInstanceCreatePage = () => {
                                         </div>
 
                                         {/* Line Fields */}
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 1fr 0.8fr', gap: 'var(--space-4)', alignItems: 'end', flex: 1 }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 1fr', gap: 'var(--space-4)', alignItems: 'end', flex: 1 }}>
                                             <div className="form-group" style={{ marginBottom: 0 }}>
                                                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                                                     <Tag size={12} style={{ color: 'var(--color-text-muted)' }} />
@@ -319,8 +298,6 @@ const ConsumableInstanceCreatePage = () => {
                                                 >
                                                     <option value="not_delivered_to_company">{t('consumableInstanceCreate.notDeliveredToCompany')}</option>
                                                     <option value="in_stock">{t('consumableInstanceCreate.inStock')}</option>
-                                                    <option value="in_use">{t('consumableInstanceCreate.inUse')}</option>
-                                                    <option value="reserved">{t('consumableInstanceCreate.reserved')}</option>
                                                     <option value="failed">{t('consumableInstanceCreate.failed')}</option>
                                                     <option value="lost">{t('consumableInstanceCreate.lost')}</option>
                                                     <option value="stolen">{t('consumableInstanceCreate.stolen')}</option>
@@ -342,39 +319,9 @@ const ConsumableInstanceCreatePage = () => {
                                                 />
                                             </div>
 
-                                            <div className="form-group" style={{ marginBottom: 0 }}>
-                                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                                    <Shield size={12} style={{ color: 'var(--color-text-muted)' }} />
-                                                    {t('consumableInstanceCreate.warrantyMonths')}
-                                                </label>
-                                                <input
-                                                    className="form-input"
-                                                    type="number"
-                                                    min="0"
-                                                    value={l.consumable_warranty_expiry_in_months}
-                                                    onChange={(e) => updateLine(idx, { consumable_warranty_expiry_in_months: e.target.value })}
-                                                    disabled={submitting}
-                                                />
-                                            </div>
                                         </div>
                                     </div>
 
-                                    {/* Admin cert field - same card, full width below */}
-                                    <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'end', marginTop: 'var(--space-3)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)' }}>
-                                        <div style={{ width: 28, flexShrink: 0 }} />
-                                        <div className="form-group" style={{ marginBottom: 0, flex: 1 }}>
-                                            <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                                <FileText size={12} style={{ color: 'var(--color-text-muted)' }} />
-                                                {t('consumableInstanceCreate.nameInAdminCert')}
-                                            </label>
-                                            <input
-                                                className="form-input"
-                                                value={l.consumable_name_in_administrative_certificate}
-                                                onChange={(e) => updateLine(idx, { consumable_name_in_administrative_certificate: e.target.value })}
-                                                disabled={submitting}
-                                            />
-                                        </div>
-                                    </div>
                                 </div>
                             ))}
                         </div>

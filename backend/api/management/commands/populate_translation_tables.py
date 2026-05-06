@@ -263,37 +263,37 @@ class Command(BaseCommand):
             # Asset
             ('Asset', 'AssetTranslation', [
                 ('asset_name', 'asset_name'),
-                ('asset_name_in_the_administrative_certificate', 'asset_name_in_the_administrative_certificate'),
             ]),
             
             # Consumable
             ('Consumable', 'ConsumableTranslation', [
                 ('consumable_name', 'consumable_name'),
-                ('consumable_name_in_administrative_certificate', 'consumable_name_in_administrative_certificate'),
             ]),
             
             # StockItem
             ('StockItem', 'StockItemTranslation', [
                 ('stock_item_name', 'stock_item_name'),
-                ('stock_item_name_in_administrative_certificate', 'stock_item_name_in_administrative_certificate'),
             ]),
             
             # AssetModel
             ('AssetModel', 'AssetModelTranslation', [
                 ('model_name', 'model_name'),
                 ('notes', 'notes'),
+                ('asset_model_name_in_administrative_certificate', 'asset_model_name_in_administrative_certificate'),
             ]),
             
             # ConsumableModel
             ('ConsumableModel', 'ConsumableModelTranslation', [
                 ('model_name', 'model_name'),
                 ('notes', 'notes'),
+                ('consumable_model_name_in_administrative_certificate', 'consumable_model_name_in_administrative_certificate'),
             ]),
             
             # StockItemModel
             ('StockItemModel', 'StockItemModelTranslation', [
                 ('model_name', 'model_name'),
                 ('notes', 'notes'),
+                ('stock_item_model_name_in_administrative_certificate', 'stock_item_model_name_in_administrative_certificate'),
             ]),
             
             # AdministrativeCertificate

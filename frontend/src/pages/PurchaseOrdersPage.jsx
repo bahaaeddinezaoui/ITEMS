@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { 
-    Plus, 
-    RefreshCw, 
-    Eye, 
-    Package, 
-    History, 
-    FileText, 
-    Receipt, 
-    ClipboardCheck, 
+import {
+    Plus,
+    RefreshCw,
+    Eye,
+    Package,
+    History,
+    FileText,
+    Receipt,
+    ClipboardCheck,
     X,
     Calendar,
     Hash,
@@ -33,6 +33,7 @@ import {
     FileBadge,
     ShoppingCart
 } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { purchaseOrderService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -478,7 +479,7 @@ const PurchaseOrdersPage = () => {
                 </div>
             </div>
 
-            {/* Stats + Search Row */}
+            {/* Stats Row */}
             <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', alignItems: 'stretch' }}>
                 {[
                     { key: 'total', value: stats.total, icon: Package, color: 'var(--color-accent-primary)' },
@@ -486,26 +487,8 @@ const PurchaseOrdersPage = () => {
                     { key: 'partial', value: stats.partial, icon: History, color: statusConfig.partial.color },
                     { key: 'received', value: stats.received, icon: CheckCircle2, color: statusConfig.received.color },
                 ].map(s => (
-                    <div
-                        key={s.key}
-                        style={{
-                            flex: 1,
-                            padding: 'var(--space-3) var(--space-4)',
-                            background: 'var(--color-bg-card)',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: 'var(--radius-lg)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'var(--space-3)',
-                        }}
-                    >
-                        <div style={{
-                            width: '32px', height: '32px', borderRadius: 'var(--radius-md)',
-                            background: `${s.color}18`, border: `1px solid ${s.color}35`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                        }}>
-                            <s.icon size={16} style={{ color: s.color }} />
-                        </div>
+                    <div key={s.key} style={{ flex: 1, background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border)', padding: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <s.icon size={20} style={{ color: s.color }} />
                         <div>
                             <div style={{ fontSize: 'var(--font-size-lg)', fontWeight: '800', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
                                 {s.value}
@@ -516,26 +499,6 @@ const PurchaseOrdersPage = () => {
                         </div>
                     </div>
                 ))}
-                <div style={{ position: 'relative', flex: 1.5 }}>
-                    <Search
-                        size={16}
-                        style={{
-                            position: 'absolute',
-                            left: 'var(--space-3)',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'var(--color-text-muted)',
-                        }}
-                    />
-                    <input
-                        type="text"
-                        placeholder={t('poOrders.searchPlaceholder')}
-                        className="form-input"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ paddingLeft: 'var(--space-10)', height: '100%', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-lg)' }}
-                    />
-                </div>
             </div>
 
             {/* Pipeline Flow Indicator */}
@@ -1316,6 +1279,22 @@ const PurchaseOrdersPage = () => {
                 </div>
                 </ModalPortal>
             )}
+            <FilterSortFAB hasActiveFilters={!!searchTerm}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('poOrders.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchTerm && (
+                            <button onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    {searchTerm && (
+                        <button onClick={() => setSearchTerm('')} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

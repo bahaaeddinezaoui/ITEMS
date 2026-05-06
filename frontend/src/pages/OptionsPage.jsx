@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { authService, movementApprovalService, userSessionService, authenticationLogService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { usePowerSave } from '../context/usePowerSave';
 import { useTranslation } from 'react-i18next';
-import { Monitor, Smartphone, Globe, XCircle, Clock, Shield, AlertCircle, CheckCircle2, Lock, Settings } from 'lucide-react';
+import { Monitor, Smartphone, Globe, XCircle, Clock, Shield, AlertCircle, CheckCircle2, Lock, Settings, Zap, ZapOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ModalPortal from '../components/ModalPortal';
 import useModalFeedback from '../components/useModalFeedback';
@@ -12,6 +13,7 @@ const INCIDENT_COMPOSITION_STRATEGY_STORAGE_KEY = 'incidentReportCompositionStat
 
 const OptionsPage = () => {
     const { user, isSuperuser } = useAuth();
+    const { enabled: powerSaveEnabled, setEnabled: setPowerSaveEnabled } = usePowerSave();
     const { t } = useTranslation();
     const navigate = useNavigate();
     const isMaintenanceTech = useMemo(() => {
@@ -31,6 +33,10 @@ const OptionsPage = () => {
     const { feedbackType, feedbackMessage, showSuccess, showError, clearFeedback } = useModalFeedback();
 
     const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [terminateSessionId, setTerminateSessionId] = useState(null);
+    const [showTerminateConfirm, setShowTerminateConfirm] = useState(false);
+    const [showTerminateAllConfirm, setShowTerminateAllConfirm] = useState(false);
+    const [terminateAllLoading, setTerminateAllLoading] = useState(false);
     const [formData, setFormData] = useState({
         oldPassword: '',
         newPassword: '',
@@ -98,16 +104,39 @@ const OptionsPage = () => {
         }
     }, [activeSection]);
 
-    const handleTerminate = async (sessionId) => {
+    const handleTerminate = (sessionId) => {
+        setTerminateSessionId(sessionId);
+        setShowTerminateConfirm(true);
+    };
+
+    const handleConfirmTerminate = async () => {
         try {
-            if (!window.confirm(t('options.confirmTerminateSession'))) return;
-            await userSessionService.terminate(sessionId);
+            await userSessionService.terminate(terminateSessionId);
             setMessage({ type: 'success', text: t('options.sessionTerminated') });
             setTimeout(() => setMessage({ type: '', text: '' }), 3000);
             fetchSessions();
         } catch (error) {
             console.error('Error terminating session:', error);
             setMessage({ type: 'error', text: t('options.terminateError') });
+        } finally {
+            setShowTerminateConfirm(false);
+            setTerminateSessionId(null);
+        }
+    };
+
+    const handleConfirmTerminateAll = async () => {
+        try {
+            setTerminateAllLoading(true);
+            const result = await userSessionService.terminateAll();
+            setMessage({ type: 'success', text: t('options.allSessionsTerminated', { count: result.count || 0 }) });
+            setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+            fetchSessions();
+        } catch (error) {
+            console.error('Error terminating all sessions:', error);
+            setMessage({ type: 'error', text: t('options.terminateAllError') });
+        } finally {
+            setTerminateAllLoading(false);
+            setShowTerminateAllConfirm(false);
         }
     };
 
@@ -222,100 +251,109 @@ const OptionsPage = () => {
                     <div className="card-body">
                         {activeSection === 'security' && (
                             <div style={{ width: '100%' }}>
-                                {!showPasswordForm ? (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
-                                            <div>
-                                                <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600' }}>{t('options.password')}</h3>
-                                                <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>{t('options.passwordDesc')}</p>
-                                            </div>
-                                            <button 
-                                                className="btn btn-secondary"
-                                                onClick={() => {
-                                                    setShowPasswordForm(true);
-                                                    setMessage({ type: '', text: '' });
-                                                }}
-                                            >
-                                                {t('options.changePassword')}
-                                            </button>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-4)', background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                                        <div>
+                                            <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600' }}>{t('options.password')}</h3>
+                                            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>{t('options.passwordDesc')}</p>
                                         </div>
-                                        {message.text && message.type === 'success' && (
-                                            <div className="success-message" style={{ maxWidth: '600px' }}>
-                                                {message.text}
-                                            </div>
-                                        )}
+                                        <button 
+                                            className="btn btn-secondary"
+                                            onClick={() => {
+                                                setShowPasswordForm(true);
+                                                setMessage({ type: '', text: '' });
+                                            }}
+                                        >
+                                            {t('options.changePassword')}
+                                        </button>
                                     </div>
-                                ) : (
-                                    <div style={{ maxWidth: '600px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
-                                            <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: '600' }}>
-                                                {t('options.changePassword')}
-                                            </h3>
-                                            <button 
-                                                className="btn btn-secondary" 
-                                                onClick={() => setShowPasswordForm(false)}
-                                                style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
-                                            >
-                                                {t('common.cancel')}
-                                            </button>
+                                    {message.text && message.type === 'success' && !showPasswordForm && (
+                                        <div className="success-message" style={{ maxWidth: '600px' }}>
+                                            {message.text}
                                         </div>
-                                        
-                                        {message.text && (
-                                            <div className={message.type === 'error' ? 'error-message' : 'success-message'}>
-                                                {message.text}
-                                            </div>
-                                        )}
+                                    )}
+                                </div>
 
-                                        <form className="form" onSubmit={handleSubmitPassword}>
-                                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
-                                            <div className="form-group">
-                                                <label className="form-label">{t('options.oldPassword')}</label>
-                                                <input
-                                                    type="password"
-                                                    name="oldPassword"
-                                                    className="form-input"
-                                                    value={formData.oldPassword}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
-                                            </div>
+                                {showPasswordForm && (
+                                    <ModalPortal>
+                                        <div className="modal-overlay" onClick={() => !loading && setShowPasswordForm(false)}>
+                                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                                <div className="modal-header">
+                                                    <h3 className="modal-title">{t('options.changePassword')}</h3>
+                                                    <button className="modal-close" onClick={() => !loading && setShowPasswordForm(false)}>
+                                                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                                            <line x1="18" y1="6" x2="6" y2="18" />
+                                                            <line x1="6" y1="6" x2="18" y2="18" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <div className="modal-body">
+                                                    <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
+                                                    {message.text && message.type === 'error' && (
+                                                        <div className="error-message">
+                                                            {message.text}
+                                                        </div>
+                                                    )}
+                                                    <form className="form" onSubmit={handleSubmitPassword}>
+                                                        <div className="form-group">
+                                                            <label className="form-label">{t('options.oldPassword')}</label>
+                                                            <input
+                                                                type="password"
+                                                                name="oldPassword"
+                                                                className="form-input"
+                                                                value={formData.oldPassword}
+                                                                onChange={handleChange}
+                                                                required
+                                                            />
+                                                        </div>
 
-                                            <div className="form-group">
-                                                <label className="form-label">{t('options.newPassword')}</label>
-                                                <input
-                                                    type="password"
-                                                    name="newPassword"
-                                                    className="form-input"
-                                                    value={formData.newPassword}
-                                                    onChange={handleChange}
-                                                    required
-                                                    minLength={8}
-                                                />
-                                            </div>
+                                                        <div className="form-group">
+                                                            <label className="form-label">{t('options.newPassword')}</label>
+                                                            <input
+                                                                type="password"
+                                                                name="newPassword"
+                                                                className="form-input"
+                                                                value={formData.newPassword}
+                                                                onChange={handleChange}
+                                                                required
+                                                                minLength={8}
+                                                            />
+                                                        </div>
 
-                                            <div className="form-group">
-                                                <label className="form-label">{t('options.confirmNewPassword')}</label>
-                                                <input
-                                                    type="password"
-                                                    name="confirmPassword"
-                                                    className="form-input"
-                                                    value={formData.confirmPassword}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
+                                                        <div className="form-group">
+                                                            <label className="form-label">{t('options.confirmNewPassword')}</label>
+                                                            <input
+                                                                type="password"
+                                                                name="confirmPassword"
+                                                                className="form-input"
+                                                                value={formData.confirmPassword}
+                                                                onChange={handleChange}
+                                                                required
+                                                            />
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div className="modal-footer">
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        onClick={() => setShowPasswordForm(false)}
+                                                        disabled={loading}
+                                                    >
+                                                        {t('common.cancel')}
+                                                    </button>
+                                                    <button
+                                                        type="submit"
+                                                        className="btn btn-primary"
+                                                        onClick={handleSubmitPassword}
+                                                        disabled={loading}
+                                                    >
+                                                        {loading ? t('options.updating') : t('options.updatePassword')}
+                                                    </button>
+                                                </div>
                                             </div>
-
-                                            <div className="form-actions" style={{ marginTop: 'var(--space-6)' }}>
-                                                <button 
-                                                    type="submit" 
-                                                    className="btn btn-primary"
-                                                    disabled={loading}
-                                                >
-                                                    {loading ? t('options.updating') : t('options.updatePassword')}
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
+                                        </div>
+                                    </ModalPortal>
                                 )}
 
                                 {/* Sessions & Logs Section */}
@@ -327,16 +365,28 @@ const OptionsPage = () => {
                                                 <Monitor size={18} style={{ color: 'var(--color-accent-primary)' }} />
                                                 {t('options.activeSessions')}
                                             </h3>
-                                            <span style={{ 
-                                                fontSize: 'var(--font-size-xs)', 
-                                                fontWeight: '700', 
-                                                padding: 'var(--space-1) var(--space-3)', 
-                                                background: 'var(--color-accent-glow)', 
-                                                color: 'var(--color-accent-tertiary)', 
-                                                borderRadius: 'var(--radius-full)' 
-                                            }}>
-                                                {sessions.length} {t('options.devices')}
-                                            </span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                                {sessions.length > 1 && (
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        onClick={() => setShowTerminateAllConfirm(true)}
+                                                        style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
+                                                    >
+                                                        {t('options.logOutAllSessions')}
+                                                    </button>
+                                                )}
+                                                <span style={{ 
+                                                    fontSize: 'var(--font-size-xs)', 
+                                                    fontWeight: '700', 
+                                                    padding: 'var(--space-1) var(--space-3)', 
+                                                    background: 'var(--color-accent-glow)', 
+                                                    color: 'var(--color-accent-tertiary)', 
+                                                    borderRadius: 'var(--radius-full)' 
+                                                }}>
+                                                    {sessions.length} {t('options.devices')}
+                                                </span>
+                                            </div>
                                         </div>
 
                                         <div style={{ 
@@ -347,13 +397,13 @@ const OptionsPage = () => {
                                         }}>
                                             {sessionsLoading ? (
                                                 <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>{t('options.loadingSessions')}</div>
-                                            ) : sessions.map((session, idx) => (
+                                            ) : sessions.slice(0, 3).map((session, idx, arr) => (
                                                 <div key={session.session_id} style={{ 
                                                     padding: 'var(--space-4)', 
                                                     display: 'flex', 
                                                     alignItems: 'center', 
                                                     justifyContent: 'space-between',
-                                                    borderBottom: idx === sessions.length - 1 ? 'none' : '1px solid var(--color-border)',
+                                                    borderBottom: idx === arr.length - 1 && sessions.length <= 3 ? 'none' : '1px solid var(--color-border)',
                                                     transition: 'background var(--transition-fast)'
                                                 }} className="hover-bg">
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
@@ -425,6 +475,18 @@ const OptionsPage = () => {
                                             {sessions.length === 0 && !sessionsLoading && (
                                                 <div style={{ padding: 'var(--space-10)', textAlign: 'center', color: 'var(--color-text-secondary)', fontStyle: 'italic' }}>{t('options.noOtherSessions')}</div>
                                             )}
+                                            {sessions.length > 3 && (
+                                                <div style={{ padding: 'var(--space-3) var(--space-4)', display: 'flex', justifyContent: 'center', borderTop: '1px solid var(--color-border)' }}>
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-secondary"
+                                                        onClick={() => navigate('/dashboard/options/sessions')}
+                                                        style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
+                                                    >
+                                                        {t('options.showAllSessions')}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </section>
 
@@ -441,7 +503,7 @@ const OptionsPage = () => {
                                                 onClick={() => navigate('/dashboard/options/access-history')}
                                                 style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)' }}
                                             >
-                                                View all
+                                                {t('options.showAllSessions')}
                                             </button>
                                         </div>
                                         <div style={{ 
@@ -450,7 +512,7 @@ const OptionsPage = () => {
                                             border: '1px solid var(--color-border)', 
                                             overflow: 'hidden'
                                         }}>
-                                            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                            <div>
                                                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--font-size-sm)' }}>
                                                     <thead style={{ position: 'sticky', top: 0, background: 'var(--color-bg-primary)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontSize: '10px', fontWeight: '800', letterSpacing: '0.05em', borderBottom: '1px solid var(--color-border)' }}>
                                                         <tr>
@@ -459,9 +521,9 @@ const OptionsPage = () => {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {logs.slice(0, 10).map((log, idx) => (
+                                                        {logs.slice(0, 3).map((log, idx, arr) => (
                                                             <tr key={log.log_id} style={{ 
-                                                                borderBottom: idx === Math.min(logs.length, 10) - 1 ? 'none' : '1px solid var(--color-border)'
+                                                                borderBottom: idx === arr.length - 1 && logs.length <= 3 ? 'none' : '1px solid var(--color-border)'
                                                             }} className="hover-bg">
                                                                 <td style={{ padding: 'var(--space-3) var(--space-5)' }}>
                                                                     <div style={{ fontWeight: '600', color: 'var(--color-text-primary)' }}>
@@ -815,13 +877,136 @@ const OptionsPage = () => {
                         )}
 
                         {activeSection === 'appearance' && (
-                            <div className="empty-state">
-                                <p className="empty-state-text">{t('options.appearance')}...</p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', maxWidth: 700 }}>
+                                <div style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-5)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <h3 style={{ margin: 0, fontSize: 'var(--font-size-base)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                {powerSaveEnabled ? <ZapOff size={18} style={{ color: 'var(--color-warning)' }} /> : <Zap size={18} style={{ color: 'var(--color-success)' }} />}
+                                                {t('options.powerSaveMode')}
+                                            </h3>
+                                            <p style={{ marginTop: 'var(--space-2)', color: 'var(--color-text-secondary)' }}>
+                                                {t('options.powerSaveModeDesc')}
+                                            </p>
+                                        </div>
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', cursor: 'pointer' }}>
+                                            <span style={{ fontSize: 'var(--font-size-sm)', color: powerSaveEnabled ? 'var(--color-text-primary)' : 'var(--color-text-secondary)', fontWeight: powerSaveEnabled ? 600 : 400 }}>
+                                                {powerSaveEnabled ? t('options.powerSaveOn') : t('options.powerSaveOff')}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                role="switch"
+                                                aria-checked={powerSaveEnabled}
+                                                onClick={() => setPowerSaveEnabled(!powerSaveEnabled)}
+                                                style={{
+                                                    width: 44,
+                                                    height: 24,
+                                                    borderRadius: 12,
+                                                    border: 'none',
+                                                    padding: 0,
+                                                    cursor: 'pointer',
+                                                    position: 'relative',
+                                                    background: powerSaveEnabled ? 'var(--color-accent-primary)' : 'var(--color-border)',
+                                                    transition: 'background var(--transition-fast)',
+                                                }}
+                                            >
+                                                <span style={{
+                                                    position: 'absolute',
+                                                    top: 2,
+                                                    left: powerSaveEnabled ? 22 : 2,
+                                                    width: 20,
+                                                    height: 20,
+                                                    borderRadius: '50%',
+                                                    background: 'white',
+                                                    transition: 'left var(--transition-fast)',
+                                                }} />
+                                            </button>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+
+            {showTerminateConfirm && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => setShowTerminateConfirm(false)}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('options.terminateSession')}</h3>
+                                <button className="modal-close" onClick={() => setShowTerminateConfirm(false)}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                <p>{t('options.confirmTerminateSession')}</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowTerminateConfirm(false)}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={handleConfirmTerminate}
+                                    style={{ background: 'var(--color-danger)' }}
+                                >
+                                    {t('options.terminateSession')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
+
+            {showTerminateAllConfirm && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => !terminateAllLoading && setShowTerminateAllConfirm(false)}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('options.logOutAllSessions')}</h3>
+                                <button className="modal-close" onClick={() => !terminateAllLoading && setShowTerminateAllConfirm(false)}>
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <line x1="18" y1="6" x2="6" y2="18" />
+                                        <line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div className="modal-body">
+                                <p>{t('options.confirmTerminateAllSessions')}</p>
+                            </div>
+                            <div className="modal-footer">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowTerminateAllConfirm(false)}
+                                    disabled={terminateAllLoading}
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={handleConfirmTerminateAll}
+                                    disabled={terminateAllLoading}
+                                    style={{ background: 'var(--color-danger)' }}
+                                >
+                                    {terminateAllLoading ? t('options.updating') : t('options.logOutAllSessions')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
         </div>
     );
 };

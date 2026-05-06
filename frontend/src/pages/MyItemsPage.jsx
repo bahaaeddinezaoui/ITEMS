@@ -18,10 +18,11 @@ import {
     ArrowUpDown,
     ChevronDown
 } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { useAuth } from '../context/AuthContext';
 import { myItemsService, problemReportService, locationService } from '../services/api';
 import { useTranslation } from 'react-i18next';
-import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
+import { SkeletonCardList } from '../components/SkeletonCard';
 import ModalPortal from '../components/ModalPortal';
 import useModalFeedback from '../components/useModalFeedback';
 import ModalFeedback from '../components/ModalFeedback';
@@ -120,16 +121,16 @@ const MyItemsPage = () => {
         result.sort((a, b) => {
             let cmp = 0;
             if (sortField === 'name') {
-                const nameA = (activeTab === 'assets' ? a.asset_name : activeTab === 'stock_items' ? a.stock_item_name : a.consumable_name || '').toLowerCase();
-                const nameB = (activeTab === 'assets' ? b.asset_name : activeTab === 'stock_items' ? b.stock_item_name : b.consumable_name || '').toLowerCase();
+                const nameA = ((activeTab === 'assets' ? a.asset_name : activeTab === 'stock_items' ? a.stock_item_name : a.consumable_name) || '').toLowerCase();
+                const nameB = ((activeTab === 'assets' ? b.asset_name : activeTab === 'stock_items' ? b.stock_item_name : b.consumable_name) || '').toLowerCase();
                 cmp = nameA.localeCompare(nameB, i18n.language === 'ar' ? 'ar' : undefined);
             } else if (sortField === 'id') {
                 const idA = activeTab === 'assets' ? a.asset_id : activeTab === 'stock_items' ? a.stock_item_id : a.consumable_id;
                 const idB = activeTab === 'assets' ? b.asset_id : activeTab === 'stock_items' ? b.stock_item_id : b.consumable_id;
                 cmp = idA - idB;
             } else if (sortField === 'inventory') {
-                const invA = (activeTab === 'assets' ? a.asset_inventory_number : activeTab === 'stock_items' ? a.stock_item_inventory_number : a.consumable_inventory_number || '').toLowerCase();
-                const invB = (activeTab === 'assets' ? b.asset_inventory_number : activeTab === 'stock_items' ? b.stock_item_inventory_number : b.consumable_inventory_number || '').toLowerCase();
+                const invA = ((activeTab === 'assets' ? a.asset_inventory_number : activeTab === 'stock_items' ? a.stock_item_inventory_number : a.consumable_inventory_number) || '').toLowerCase();
+                const invB = ((activeTab === 'assets' ? b.asset_inventory_number : activeTab === 'stock_items' ? b.stock_item_inventory_number : b.consumable_inventory_number) || '').toLowerCase();
                 cmp = invA.localeCompare(invB);
             }
             return sortDirection === 'asc' ? cmp : -cmp;
@@ -276,6 +277,28 @@ const MyItemsPage = () => {
         }
     };
 
+    const ITEM_TYPE_COLORS = {
+        asset: { accent: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)', border: 'rgba(99, 102, 241, 0.4)', text: '#818cf8' },
+        stock_item: { accent: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.12)', border: 'rgba(14, 165, 233, 0.4)', text: '#38bdf8' },
+        consumable: { accent: '#a855f7', bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.4)', text: '#c084fc' },
+    };
+
+    const chipStyle = {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        padding: '0.35rem 0.75rem',
+        borderRadius: '999px',
+        border: '1px solid var(--glass-border)',
+        background: 'rgba(255, 255, 255, 0.06)',
+        color: 'var(--color-text-secondary)',
+        fontSize: '0.75rem',
+        fontWeight: 500,
+        lineHeight: 1.4,
+        whiteSpace: 'nowrap',
+        backdropFilter: 'blur(8px)',
+    };
+
     const renderItemCard = (item, type) => {
         const id = type === 'asset' ? item.asset_id : type === 'stock_item' ? item.stock_item_id : item.consumable_id;
         const name = type === 'asset' ? item.asset_name : type === 'stock_item' ? item.stock_item_name : item.consumable_name;
@@ -292,23 +315,39 @@ const MyItemsPage = () => {
             if (statusEn && statusAr && statusEn !== statusAr) return `${statusEn} (${statusAr})`;
             return statusEn || statusAr || status;
         })();
-        const serial = type === 'asset' ? item.asset_serial_number : type === 'consumable' ? item.consumable_serial_number : null;
+        const serial = type === 'asset' ? item.asset_serial_number : type === 'stock_item' ? item.stock_item_serial_number : item.consumable_serial_number;
+        const serviceTag = type === 'asset' ? item.asset_service_tag : type === 'consumable' ? item.consumable_service_tag : null;
+        const brandName = item.brand_name || null;
+        const modelName = item.model_name || null;
+        const typeLabel = item.type_label || null;
+        const purchaseOrderId = item.purchase_order_id || null;
+        const stockItemComposition = type === 'asset' ? (item.stock_item_composition || []) : [];
+        const consumableComposition = type === 'asset' ? (item.consumable_composition || []) : type === 'stock_item' ? (item.consumable_composition || []) : [];
+        const hasComposition = stockItemComposition.length > 0 || consumableComposition.length > 0;
+        const typeColor = ITEM_TYPE_COLORS[type] || ITEM_TYPE_COLORS.asset;
 
         return (
-            <div key={`${type}-${id}`} className="card" style={{ transition: 'all 0.2s ease' }}>
-                <div className="card-body" style={{ padding: 'var(--space-5)' }}>
+            <div key={`${type}-${id}`} className="card" style={{ position: 'relative', overflow: 'hidden', borderLeft: `3px solid ${typeColor.accent}`, transition: 'all 0.2s ease' }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: `linear-gradient(135deg, ${typeColor.accent}08 0%, transparent 50%)`,
+                        pointerEvents: 'none',
+                    }}
+                />
+                <div className="card-body" style={{ padding: 'var(--space-5)', position: 'relative', zIndex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-4)' }}>
-                        <div style={{ 
-                            width: '40px', 
-                            height: '40px', 
-                            background: 'var(--glass-bg)', 
-                            borderRadius: 'var(--radius-md)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: 'var(--color-accent-primary)'
-                        }}>
-                            {type === 'asset' ? <Box size={20} /> : type === 'stock_item' ? <ShoppingCart size={20} /> : <Layers size={20} />}
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <span style={{ ...chipStyle, border: `1px solid ${typeColor.border}`, background: typeColor.bg, color: typeColor.text, fontWeight: 600 }}>
+                                {type === 'asset' ? 'Asset' : type === 'stock_item' ? 'Stock Item' : 'Consumable'}
+                            </span>
+                            <span style={chipStyle}>#{id}</span>
+                            {typeLabel && (
+                                <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                    {typeLabel}
+                                </span>
+                            )}
                         </div>
                         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                             {type === 'asset' && (
@@ -332,33 +371,116 @@ const MyItemsPage = () => {
                         </div>
                     </div>
                     
-                    <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', marginBottom: 'var(--space-1)' }}>
+                    <h3 style={{ fontSize: 'var(--font-size-lg)', fontWeight: 700, marginBottom: 'var(--space-2)', color: 'var(--color-text-primary)', lineHeight: 1.3 }}>
                         {name || `${type === 'asset' ? t('myItems.assetLabel') : type === 'stock_item' ? t('myItems.stockItemLabel') : t('myItems.consumableLabel')} #${id}`}
                     </h3>
+
+                    {(brandName || modelName) && (
+                        <div style={{
+                            display: 'flex',
+                            gap: '0.75rem',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            marginBottom: 'var(--space-3)',
+                        }}>
+                            {brandName && (
+                                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                                    {brandName}
+                                </span>
+                            )}
+                            {brandName && modelName && (
+                                <span style={{ color: 'var(--color-text-muted)' }}>•</span>
+                            )}
+                            {modelName && (
+                                <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                                    {modelName}
+                                </span>
+                            )}
+                        </div>
+                    )}
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                            <Hash size={14} />
-                            <span>{t('myItems.inv')}: {inventory || t('common.na')}</span>
-                        </div>
-                        {serial && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                <Tag size={14} />
-                                <span>{t('myItems.sn')}: {serial}</span>
-                            </div>
-                        )}
-                        <div style={{ marginTop: 'var(--space-2)' }}>
-                            <span className={`badge badge-${status?.toLowerCase() === 'active' || status?.toLowerCase() === 'assigned' ? 'success' : 'warning'}`}>
-                                {displayStatus}
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: 'var(--space-3)' }}>
+                        {inventory && (
+                            <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                <Hash size={10} />{t('myItems.inv')}: {inventory}
                             </span>
-                        </div>
+                        )}
+                        {serial && (
+                            <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                <Tag size={10} />{t('myItems.sn')}: {serial}
+                            </span>
+                        )}
+                        {serviceTag && (
+                            <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                Tag: {serviceTag}
+                            </span>
+                        )}
+                        {purchaseOrderId && (
+                            <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                <ShoppingCart size={10} />{t('myItems.purchaseOrder')}: #{purchaseOrderId}
+                            </span>
+                        )}
                     </div>
+
+                    <div style={{ marginBottom: hasComposition ? 'var(--space-3)' : 0 }}>
+                        <span className={`badge badge-${status?.toLowerCase() === 'active' || status?.toLowerCase() === 'assigned' || status?.toLowerCase() === 'in_stock' || status?.toLowerCase() === 'received_by_company_after_external_maintenance' ? 'success' : status?.toLowerCase() === 'failed' || status?.toLowerCase() === 'destroyed' || status?.toLowerCase() === 'lost' || status?.toLowerCase() === 'stolen' ? 'error' : 'warning'}`}>
+                            {displayStatus}
+                        </span>
+                    </div>
+
+                    {hasComposition && (
+                        <div style={{
+                            marginTop: 'var(--space-3)',
+                            paddingTop: 'var(--space-3)',
+                            borderTop: '1px solid var(--glass-border)',
+                        }}>
+                            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>
+                                {t('myItems.includedItems')}
+                            </div>
+                            {stockItemComposition.length > 0 && (
+                                <div style={{ marginBottom: consumableComposition.length > 0 ? 'var(--space-2)' : 0 }}>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', fontWeight: 500, marginBottom: '0.25rem' }}>
+                                        {t('myItems.stockItemComposition')} ({stockItemComposition.length})
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                        {stockItemComposition.map(si => (
+                                            <span key={si.stock_item_id} style={{ ...chipStyle, fontSize: '0.65rem', border: `1px solid ${ITEM_TYPE_COLORS.stock_item.border}`, background: ITEM_TYPE_COLORS.stock_item.bg, color: ITEM_TYPE_COLORS.stock_item.text }}>
+                                                {si.stock_item_name || `#${si.stock_item_id}`}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {consumableComposition.length > 0 && (
+                                <div>
+                                    <div style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', fontWeight: 500, marginBottom: '0.25rem' }}>
+                                        {t('myItems.consumableComposition')} ({consumableComposition.length})
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                        {consumableComposition.map(c => (
+                                            <span key={c.consumable_id} style={{ ...chipStyle, fontSize: '0.65rem', border: `1px solid ${ITEM_TYPE_COLORS.consumable.border}`, background: ITEM_TYPE_COLORS.consumable.bg, color: ITEM_TYPE_COLORS.consumable.text }}>
+                                                {c.consumable_name || `#${c.consumable_id}`}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         );
     };
 
+    const HISTORY_TYPE_COLORS = {
+        assets: { accent: '#6366f1', bg: 'rgba(99, 102, 241, 0.12)', border: 'rgba(99, 102, 241, 0.4)', text: '#818cf8' },
+        stock_items: { accent: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.12)', border: 'rgba(14, 165, 233, 0.4)', text: '#38bdf8' },
+        consumables: { accent: '#a855f7', bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.4)', text: '#c084fc' },
+    };
+
     const renderHistoryTable = (rows, type) => {
+        const typeColor = HISTORY_TYPE_COLORS[type] || HISTORY_TYPE_COLORS.assets;
+
         if (!rows || rows.length === 0) {
             return (
                 <div className="empty-state" style={{ padding: 'var(--space-12)' }}>
@@ -372,37 +494,205 @@ const MyItemsPage = () => {
         }
 
         return (
-            <div className="table-container">
-                <table className="data-table">
-                    <thead>
-                        <tr>
-                            <th>{t('myItems.itemName')}</th>
-                            <th>{t('myItems.startDate')}</th>
-                            <th>{t('myItems.endDate')}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.map((r) => {
-                            const itemName = type === 'assets' ? r.asset?.asset_name : 
-                                           type === 'stock_items' ? r.stock_item?.stock_item_name : 
-                                           r.consumable?.consumable_name;
-                            const itemId = type === 'assets' ? r.asset?.asset_id : 
-                                         type === 'stock_items' ? r.stock_item?.stock_item_id : 
-                                         r.consumable?.consumable_id;
-                            
-                            return (
-                                <tr key={r.assignment_id}>
-                                    <td>
-                                        <div style={{ fontWeight: '500' }}>{itemName}</div>
-                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{t('myItems.idLabel')}: #{itemId}</div>
-                                    </td>
-                                    <td>{r.start_datetime ? new Date(r.start_datetime).toLocaleDateString() : '-'}</td>
-                                    <td>{r.end_datetime ? new Date(r.end_datetime).toLocaleDateString() : t('myItems.present')}</td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+                {rows.map((r) => {
+                    const itemObj = type === 'assets' ? r.asset : type === 'stock_items' ? r.stock_item : r.consumable;
+                    const itemName = itemObj?.asset_name || itemObj?.stock_item_name || itemObj?.consumable_name;
+                    const itemId = itemObj?.asset_id || itemObj?.stock_item_id || itemObj?.consumable_id;
+                    const itemInventory = itemObj?.asset_inventory_number || itemObj?.stock_item_inventory_number || itemObj?.consumable_inventory_number;
+                    const itemSerial = itemObj?.asset_serial_number || itemObj?.stock_item_serial_number || itemObj?.consumable_serial_number;
+                    const itemServiceTag = itemObj?.asset_service_tag || itemObj?.consumable_service_tag || null;
+                    const itemStatus = itemObj?.asset_status || itemObj?.stock_item_status || itemObj?.consumable_status;
+                    const itemBrand = itemObj?.brand_name || null;
+                    const itemModel = itemObj?.model_name || null;
+                    const itemTypeLabel = itemObj?.type_label || null;
+                    const itemPurchaseOrderId = itemObj?.purchase_order_id || null;
+                    const singularType = type === 'assets' ? 'asset' : type === 'stock_items' ? 'stock_item' : 'consumable';
+                    const itemStockItemComposition = singularType === 'asset' ? (itemObj?.stock_item_composition || []) : [];
+                    const itemConsumableComposition = singularType === 'asset' ? (itemObj?.consumable_composition || []) : singularType === 'stock_item' ? (itemObj?.consumable_composition || []) : [];
+                    const itemHasComposition = itemStockItemComposition.length > 0 || itemConsumableComposition.length > 0;
+                    const isPresent = !r.end_datetime;
+                    const startDate = r.start_datetime ? new Date(r.start_datetime).toLocaleDateString() : '-';
+                    const endDate = r.end_datetime ? new Date(r.end_datetime).toLocaleDateString() : t('myItems.present');
+
+                    return (
+                        <div
+                            key={r.assignment_id}
+                            className="card"
+                            style={{ position: 'relative', overflow: 'hidden', borderLeft: `3px solid ${typeColor.accent}` }}
+                        >
+                            <div
+                                style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    background: `linear-gradient(135deg, ${typeColor.accent}08 0%, transparent 50%)`,
+                                    pointerEvents: 'none',
+                                }}
+                            />
+                            <div className="card-body" style={{ position: 'relative', zIndex: 1 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
+                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <span style={{
+                                            ...chipStyle,
+                                            border: `1px solid ${typeColor.border}`,
+                                            background: typeColor.bg,
+                                            color: typeColor.text,
+                                            fontWeight: 600,
+                                        }}>
+                                            {type === 'assets' ? 'Asset' : type === 'stock_items' ? 'Stock Item' : 'Consumable'}
+                                        </span>
+                                        <span style={chipStyle}>#{itemId}</span>
+                                        {itemTypeLabel && (
+                                            <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                                {itemTypeLabel}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {isPresent && (
+                                        <span className="badge badge-success" style={{ fontSize: '0.7rem' }}>
+                                            {t('myItems.present')}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div style={{ marginTop: 'var(--space-4)', fontSize: 'var(--font-size-lg)', fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1.3 }}>
+                                    {itemName || `${type === 'assets' ? t('myItems.assetLabel') : type === 'stock_items' ? t('myItems.stockItemLabel') : t('myItems.consumableLabel')} #${itemId}`}
+                                </div>
+
+                                {(itemBrand || itemModel) && (
+                                    <div style={{
+                                        marginTop: 'var(--space-2)',
+                                        display: 'flex',
+                                        gap: '0.75rem',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                    }}>
+                                        {itemBrand && (
+                                            <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                                                {itemBrand}
+                                            </span>
+                                        )}
+                                        {itemBrand && itemModel && (
+                                            <span style={{ color: 'var(--color-text-muted)' }}>•</span>
+                                        )}
+                                        {itemModel && (
+                                            <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                                                {itemModel}
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div style={{ marginTop: 'var(--space-3)', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                    {itemInventory && (
+                                        <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                            <Hash size={10} />{t('myItems.inv')}: {itemInventory}
+                                        </span>
+                                    )}
+                                    {itemSerial && (
+                                        <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                            <Tag size={10} />{t('myItems.sn')}: {itemSerial}
+                                        </span>
+                                    )}
+                                    {itemServiceTag && (
+                                        <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                            Tag: {itemServiceTag}
+                                        </span>
+                                    )}
+                                    {itemStatus && (
+                                        <span style={{
+                                            ...chipStyle,
+                                            fontSize: '0.7rem',
+                                            border: `1px solid ${typeColor.accent}40`,
+                                            color: typeColor.accent,
+                                        }}>
+                                            {itemStatus}
+                                        </span>
+                                    )}
+                                    {itemPurchaseOrderId && (
+                                        <span style={{ ...chipStyle, fontSize: '0.7rem' }}>
+                                            <ShoppingCart size={10} />{t('myItems.purchaseOrder')}: #{itemPurchaseOrderId}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {itemHasComposition && (
+                                    <div style={{
+                                        marginTop: 'var(--space-3)',
+                                        paddingTop: 'var(--space-3)',
+                                        borderTop: '1px solid var(--glass-border)',
+                                    }}>
+                                        <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-2)' }}>
+                                            {t('myItems.includedItems')}
+                                        </div>
+                                        {itemStockItemComposition.length > 0 && (
+                                            <div style={{ marginBottom: itemConsumableComposition.length > 0 ? 'var(--space-2)' : 0 }}>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', fontWeight: 500, marginBottom: '0.25rem' }}>
+                                                    {t('myItems.stockItemComposition')} ({itemStockItemComposition.length})
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                                    {itemStockItemComposition.map(si => (
+                                                        <span key={si.stock_item_id} style={{ ...chipStyle, fontSize: '0.65rem', border: `1px solid ${ITEM_TYPE_COLORS.stock_item.border}`, background: ITEM_TYPE_COLORS.stock_item.bg, color: ITEM_TYPE_COLORS.stock_item.text }}>
+                                                            {si.stock_item_name || `#${si.stock_item_id}`}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {itemConsumableComposition.length > 0 && (
+                                            <div>
+                                                <div style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', fontWeight: 500, marginBottom: '0.25rem' }}>
+                                                    {t('myItems.consumableComposition')} ({itemConsumableComposition.length})
+                                                </div>
+                                                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                                    {itemConsumableComposition.map(c => (
+                                                        <span key={c.consumable_id} style={{ ...chipStyle, fontSize: '0.65rem', border: `1px solid ${ITEM_TYPE_COLORS.consumable.border}`, background: ITEM_TYPE_COLORS.consumable.bg, color: ITEM_TYPE_COLORS.consumable.text }}>
+                                                            {c.consumable_name || `#${c.consumable_id}`}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div style={{
+                                    marginTop: 'var(--space-4)',
+                                    paddingTop: 'var(--space-4)',
+                                    borderTop: '1px solid var(--glass-border)',
+                                    display: 'flex',
+                                    gap: 'var(--space-4)',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        <Clock size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                {t('myItems.startDate')}
+                                            </div>
+                                            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-primary)', fontWeight: 500 }}>
+                                                {startDate}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ width: '1px', height: '28px', background: 'var(--glass-border)', flexShrink: 0 }} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        <History size={14} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                                        <div>
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                {t('myItems.endDate')}
+                                            </div>
+                                            <div style={{ fontSize: '0.85rem', color: isPresent ? 'var(--color-success)' : 'var(--color-text-primary)', fontWeight: 500 }}>
+                                                {endDate}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         );
     };
@@ -554,220 +844,14 @@ const MyItemsPage = () => {
                     {/* Divider */}
                     <div style={{ width: '1px', height: '28px', background: 'var(--glass-border)', flexShrink: 0 }} />
 
-                    {/* Search */}
+                    {/* Results count */}
                     {!loading && !error && myItems && (
-                    <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
-                        <Search size={18} style={{
-                            position: 'absolute',
-                            left: 'var(--space-3)',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'var(--color-text-muted)',
-                            pointerEvents: 'none'
-                        }} />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder={t('myItems.searchPlaceholder', { type: getTabLabel(activeTab) })}
-                            className="form-input"
-                            style={{
-                                width: '100%',
-                                height: '42px',
-                                paddingLeft: 'var(--space-10)',
-                                paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)'
-                            }}
-                        />
-                        {searchTerm && (
-                            <button
-                                onClick={() => setSearchTerm('')}
-                                style={{
-                                    position: 'absolute',
-                                    right: 'var(--space-3)',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--color-text-muted)',
-                                    cursor: 'pointer',
-                                    padding: '2px',
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
-                    </div>
-                    )}
-
-                    {/* Filter by Status */}
-                    {!loading && !error && myItems && (
-                    <div style={{ position: 'relative', minWidth: '160px' }}>
-                        <SlidersHorizontal size={16} style={{
-                            position: 'absolute',
-                            left: 'var(--space-3)',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'var(--color-text-muted)',
-                            pointerEvents: 'none',
-                            zIndex: 1
-                        }} />
-                        <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="form-input"
-                            style={{
-                                width: '100%',
-                                height: '42px',
-                                paddingLeft: 'var(--space-10)',
-                                appearance: 'none',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <option value="">{t('myItems.allStatuses')}</option>
-                            <option value="not_delivered_to_company">{t('myItems.statusNotDelivered')}</option>
-                            <option value="in_stock">{t('myItems.statusInStock')}</option>
-                            <option value="assigned">{t('myItems.statusAssigned')}</option>
-                            <option value="maintenance">{t('myItems.statusMaintenance')}</option>
-                            <option value="failed">{t('myItems.statusFailed')}</option>
-                            <option value="lost">{t('myItems.statusLost')}</option>
-                            <option value="stolen">{t('myItems.statusStolen')}</option>
-                            <option value="irrecoverably_damaged">{t('myItems.statusIrrecoverablyDamaged')}</option>
-                            <option value="destroyed">{t('myItems.statusDestroyed')}</option>
-                            <option value="suggested_for_destruction">{t('myItems.statusSuggestedForDestruction')}</option>
-                        </select>
-                    </div>
-                    )}
-
-                    {/* Sort */}
-                    {!loading && !error && myItems && (
-                    <div style={{ position: 'relative' }}>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowSortMenu(!showSortMenu);
-                            }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 'var(--space-2)',
-                                padding: 'var(--space-2) var(--space-4)',
-                                height: '42px',
-                                border: '1px solid var(--color-border)',
-                                background: 'var(--glass-bg)',
-                                backdropFilter: 'var(--glass-backdrop)',
-                                WebkitBackdropFilter: 'var(--glass-backdrop)',
-                                color: 'var(--color-text-secondary)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                fontWeight: '500',
-                                fontSize: 'var(--font-size-sm)',
-                                whiteSpace: 'nowrap'
-                            }}
-                        >
-                            <ArrowUpDown size={16} />
-                            <span>{sortField === 'name' ? t('myItems.sortByName') : sortField === 'inventory' ? t('myItems.sortByInventory') : 'ID'}</span>
-                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                {sortDirection === 'asc' ? t('myItems.ascending') : t('myItems.descending')}
-                            </span>
-                            <ChevronDown size={14} style={{ transform: showSortMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-                        </button>
-                        {showSortMenu && (
-                            <div
-                                onClick={(e) => e.stopPropagation()}
-                                style={{
-                                    position: 'absolute',
-                                    top: 'calc(100% + 4px)',
-                                    right: 0,
-                                    background: 'var(--glass-bg)',
-                                    backdropFilter: 'var(--glass-backdrop)',
-                                    WebkitBackdropFilter: 'var(--glass-backdrop)',
-                                    border: '1px solid var(--glass-border)',
-                                    borderRadius: 'var(--radius-md)',
-                                    boxShadow: 'var(--glass-shadow)',
-                                    padding: 'var(--space-2)',
-                                    zIndex: 100,
-                                    minWidth: '200px'
-                                }}
-                            >
-                                <div style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    {t('common.sortBy')}
-                                </div>
-                                {sortOptions.map(opt => (
-                                    <button
-                                        key={`${opt.field}-${opt.dir}`}
-                                        onClick={() => {
-                                            setSortField(opt.field);
-                                            setSortDirection(opt.dir);
-                                            setShowSortMenu(false);
-                                        }}
-                                        style={{
-                                            display: 'block',
-                                            width: '100%',
-                                            textAlign: i18n.language === 'ar' ? 'right' : 'left',
-                                            padding: 'var(--space-2) var(--space-3)',
-                                            border: 'none',
-                                            borderRadius: 'var(--radius-sm)',
-                                            cursor: 'pointer',
-                                            fontSize: 'var(--font-size-sm)',
-                                            fontWeight: sortField === opt.field && sortDirection === opt.dir ? '600' : '400',
-                                            color: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-tertiary)' : 'var(--color-text-primary)',
-                                            background: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-glow)' : 'transparent',
-                                            transition: 'all var(--transition-fast)'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
-                                                e.currentTarget.style.background = 'var(--color-bg-card-hover)';
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
-                                                e.currentTarget.style.background = 'transparent';
-                                            }
-                                        }}
-                                    >
-                                        {opt.label}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                    )}
-
-                    {/* Clear Filters */}
-                    {hasActiveFilters && (!loading && !error && myItems) && (
-                        <button
-                            onClick={clearAllFilters}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 'var(--space-2)',
-                                padding: 'var(--space-2) var(--space-3)',
-                                height: '42px',
-                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                background: 'rgba(239, 68, 68, 0.08)',
-                                color: 'var(--color-error)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                fontSize: 'var(--font-size-sm)',
-                                fontWeight: '500',
-                                whiteSpace: 'nowrap'
-                            }}
-                        >
-                            <X size={14} />
-                            {t('myItems.clearFilters')}
-                        </button>
+                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', fontWeight: '600' }}>
+                            {t('myItems.resultCount', { count: filteredCurrentItems.length })}
+                        </div>
                     )}
                 </div>
             </div>
-
-            {/* Results count */}
-            {!loading && !error && myItems && (
-                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', fontWeight: '600' }}>
-                    {t('myItems.resultCount', { count: filteredCurrentItems.length })}
-                </div>
-            )}
 
             <div style={{ marginBottom: 'var(--space-12)' }}>
                 <h2 style={{ fontSize: 'var(--font-size-xl)', fontWeight: '600', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -803,10 +887,9 @@ const MyItemsPage = () => {
                     <History size={20} className="text-accent" />
                     {t('myItems.ownershipHistory')}
                 </h2>
-                <div className="card" style={{ overflow: 'hidden' }}>
                     {loading ? (
-                        <div style={{ padding: 'var(--space-8)' }}>
-                            <SkeletonListRows count={6} />
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
+                            <SkeletonCardList count={4} cardLines={3} gap="var(--space-4)" bodyPadding="var(--space-6)" style={{ display: 'contents' }} />
                         </div>
                     ) : (
                         renderHistoryTable(
@@ -816,7 +899,6 @@ const MyItemsPage = () => {
                             activeTab
                         )
                     )}
-                </div>
             </div>
 
             {showReportModal && (
@@ -1032,6 +1114,56 @@ const MyItemsPage = () => {
                 </div>
                 </ModalPortal>
             )}
+            <FilterSortFAB hasActiveFilters={hasActiveFilters}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('myItems.searchPlaceholder', { type: getTabLabel(activeTab) })} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchTerm && (
+                            <button onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('myItems.allStatuses')}</label>
+                        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('myItems.allStatuses')}</option>
+                            <option value="not_delivered_to_company">{t('myItems.statusNotDelivered')}</option>
+                            <option value="in_stock">{t('myItems.statusInStock')}</option>
+                            <option value="assigned">{t('myItems.statusAssigned')}</option>
+                            <option value="under_internal_maintenance">{t('myItems.statusUnderInternalMaintenance')}</option>
+                            <option value="sent_to_external_maintenance">{t('myItems.statusSentToExternalMaintenance')}</option>
+                            <option value="received_by_maintenance_provider">{t('myItems.statusReceivedByMaintenanceProvider')}</option>
+                            <option value="sent_to_company_after_external_maintenance">{t('myItems.statusSentToCompanyAfterExternalMaintenance')}</option>
+                            <option value="received_by_company_after_external_maintenance">{t('myItems.statusReceivedByCompanyAfterExternalMaintenance')}</option>
+                            <option value="failed">{t('myItems.statusFailed')}</option>
+                            <option value="lost">{t('myItems.statusLost')}</option>
+                            <option value="stolen">{t('myItems.statusStolen')}</option>
+                            <option value="irrecoverably_damaged">{t('myItems.statusIrrecoverablyDamaged')}</option>
+                            <option value="destroyed">{t('myItems.statusDestroyed')}</option>
+                            <option value="suggested_for_destruction">{t('myItems.statusSuggestedForDestruction')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="name">{t('myItems.sortByName')}</option>
+                                <option value="inventory">{t('myItems.sortByInventory')}</option>
+                                <option value="id">{t('myItems.sortById')}</option>
+                            </select>
+                            <select className="form-input" value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} style={{ height: '40px', width: '100px' }}>
+                                <option value="asc">↑ {t('myItems.ascending')}</option>
+                                <option value="desc">↓ {t('myItems.descending')}</option>
+                            </select>
+                        </div>
+                    </div>
+                    {hasActiveFilters && (
+                        <button onClick={clearAllFilters} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('myItems.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

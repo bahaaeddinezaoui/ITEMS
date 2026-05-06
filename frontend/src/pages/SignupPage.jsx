@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { authService } from '../services/api';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import PowerSaveButton from '../components/PowerSaveButton';
 import { SkeletonCardList } from '../components/SkeletonCard';
 import {
     Eye, EyeOff, Check, X, UserPlus,
@@ -503,7 +504,8 @@ const SignupPage = () => {
 
     return (
         <div className="signup-page">
-            <div className="login-lang-switcher">
+            <div className="login-lang-switcher" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                <PowerSaveButton />
                 <LanguageSwitcher />
             </div>
 

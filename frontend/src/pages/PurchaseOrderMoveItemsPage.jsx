@@ -3,8 +3,11 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { purchaseOrderService, locationService, stockItemService, consumableService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, RefreshCw, Package, Droplets, MapPin, ArrowRightLeft, Loader2, AlertCircle, CheckCircle2, Send } from 'lucide-react';
+import { RefreshCw, Package, Droplets, MapPin, ArrowRightLeft, Loader2, AlertCircle, CheckCircle2, Send, Save, Edit3, Hash, Tag, FileText, Cpu, Layers, Award } from 'lucide-react';
+
 import { SkeletonListRows } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import BackButton from '../components/BackButton';
 
 const getBilingualItemName = (item, kind, lang) => {
     const name = kind === 'stock_item' ? item.stock_item_name : item.consumable_name;
@@ -18,16 +21,45 @@ const getBilingualItemName = (item, kind, lang) => {
     return nameEn || nameAr || name || '';
 };
 
-const getBilingualStatus = (item, kind, lang) => {
+const STATUS_KEY_MAP = {
+    'not_delivered_to_company': 'statusNotDelivered',
+    'in_stock': 'statusInStock',
+    'assigned': 'statusAssigned',
+    'under_internal_maintenance': 'statusUnderInternalMaintenance',
+    'sent_to_external_maintenance': 'statusSentToExternalMaintenance',
+    'received_by_maintenance_provider': 'statusReceivedByMaintenanceProvider',
+    'sent_to_company_after_external_maintenance': 'statusSentToCompanyAfterExternalMaintenance',
+    'received_by_company_after_external_maintenance': 'statusReceivedByCompanyAfterExternalMaintenance',
+    'failed': 'statusFailed',
+    'lost': 'statusLost',
+    'stolen': 'statusStolen',
+    'irrecoverably_damaged': 'statusIrrecoverablyDamaged',
+    'destroyed': 'statusDestroyed',
+    'suggested_for_destruction': 'statusSuggestedForDestruction',
+    'operational': 'statusOperational',
+    'out_of_service': 'statusOutOfService',
+};
+
+const translateStatus = (rawStatus, t) => {
+    if (!rawStatus) return '';
+    const key = STATUS_KEY_MAP[rawStatus.toLowerCase().trim()];
+    return key ? t(`poMoveItems.${key}`) : rawStatus;
+};
+
+const getBilingualStatus = (item, kind, lang, t) => {
     const statusAr = kind === 'stock_item' ? item.stock_item_status_ar : (kind === 'consumable' ? item.consumable_status_ar : item.asset_status_ar);
     const statusEn = kind === 'stock_item' ? item.stock_item_status_en : (kind === 'consumable' ? item.consumable_status_en : item.asset_status_en);
     const rawStatus = kind === 'stock_item' ? item.stock_item_status : (kind === 'consumable' ? item.consumable_status : item.asset_status);
     if (lang === 'ar') {
         if (statusAr && statusEn && statusAr !== statusEn) return `${statusAr} (${statusEn})`;
-        return statusAr || statusEn || rawStatus || '';
+        if (statusAr) return statusAr;
+        if (statusEn) return statusEn;
+        return translateStatus(rawStatus, t);
     }
     if (statusEn && statusAr && statusEn !== statusAr) return `${statusEn} (${statusAr})`;
-    return statusEn || statusAr || rawStatus || '';
+    if (statusEn) return statusEn;
+    if (statusAr) return statusAr;
+    return translateStatus(rawStatus, t);
 };
 
 const getBilingualLocationName = (loc, lang) => {
@@ -49,27 +81,76 @@ const getLocationName = (locations, locId, lang) => {
     return found ? getBilingualLocationName(found, lang) : `#${locId}`;
 };
 
+const getBilingualField = (valueAr, valueEn, fallbackValue, lang) => {
+    if (lang === 'ar') {
+        if (valueAr && valueEn && valueAr !== valueEn) return `${valueAr} (${valueEn})`;
+        return valueAr || valueEn || fallbackValue || '';
+    }
+    if (valueEn && valueAr && valueEn !== valueAr) return `${valueEn} (${valueAr})`;
+    return valueEn || valueAr || fallbackValue || '';
+};
+
+const getItemModelInfo = (item, kind, lang) => {
+    const modelName = kind === 'stock_item' ? item.model_name : item.model_name;
+    const modelNameAr = kind === 'stock_item' ? item.model_name_ar : item.model_name_ar;
+    const modelNameEn = kind === 'stock_item' ? item.model_name_en : item.model_name_en;
+    const typeLabel = kind === 'stock_item' ? item.type_label : item.type_label;
+    const typeLabelAr = kind === 'stock_item' ? item.type_label_ar : item.type_label_ar;
+    const typeLabelEn = kind === 'stock_item' ? item.type_label_en : item.type_label_en;
+    const brandName = kind === 'stock_item' ? item.brand_name : item.brand_name;
+    const brandNameAr = kind === 'stock_item' ? item.brand_name_ar : item.brand_name_ar;
+    const brandNameEn = kind === 'stock_item' ? item.brand_name_en : item.brand_name_en;
+    return {
+        model: getBilingualField(modelNameAr, modelNameEn, modelName, lang),
+        type: getBilingualField(typeLabelAr, typeLabelEn, typeLabel, lang),
+        brand: getBilingualField(brandNameAr, brandNameEn, brandName, lang),
+    };
+};
+
 const StatusBadge = ({ status, displayStatus }) => {
     if (!status && !displayStatus) return null;
     const s = (status || '').toLowerCase();
     let cls = 'badge badge-info';
-    if (s.includes('operational') || s.includes('active') || s.includes('good') || s.includes('functional') || s.includes('available') || s.includes('in_stock')) cls = 'badge badge-success';
+    if (s.includes('operational') || s.includes('active') || s.includes('good') || s.includes('functional') || s.includes('in_stock') || s.includes('received_by_company_after_external_maintenance')) cls = 'badge badge-success';
     else if (s.includes('out_of_service') || s.includes('damaged') || s.includes('broken') || s.includes('lost') || s.includes('destroyed')) cls = 'badge badge-error';
     else if (s.includes('maintenance') || s.includes('repair') || s.includes('pending') || s.includes('waiting') || s.includes('not_delivered')) cls = 'badge badge-warning';
     return <span className={cls}>{displayStatus || status}</span>;
 };
 
-const ItemCard = ({ item, kind, locations, allLocationOptions, destination, onSetDestination, onMove, submitting, disabled, t, lang }) => {
+const ItemCard = ({ item, kind, locations, allLocationOptions, destination, onSetDestination, onMove, submitting, disabled, t, lang, onSaveDetails, savingDetails }) => {
     const id = kind === 'stock_item' ? item.stock_item_id : item.consumable_id;
     const displayName = getBilingualItemName(item, kind, lang) || `#${id}`;
     const status = kind === 'stock_item' ? item.stock_item_status : item.consumable_status;
-    const displayStatus = getBilingualStatus(item, kind, lang);
+    const displayStatus = getBilingualStatus(item, kind, lang, t);
     const key = `${kind}:${id}`;
     const isSubmitting = submitting === key;
+    const isSavingDetails = savingDetails === key;
     const Icon = kind === 'stock_item' ? Package : Droplets;
     const currentLocName = item.current_location
         ? getBilingualLocationName(item.current_location, lang)
         : getLocationName(locations, item.current_location_id, lang);
+    const modelInfo = getItemModelInfo(item, kind, lang);
+
+    const [editOpen, setEditOpen] = useState(false);
+    const [editForm, setEditForm] = useState(() => {
+        if (kind === 'stock_item') {
+            return {
+                stock_item_name: item.stock_item_name || '',
+                stock_item_serial_number: item.stock_item_serial_number || '',
+                stock_item_inventory_number: item.stock_item_inventory_number || '',
+            };
+        }
+        return {
+            consumable_name: item.consumable_name || '',
+            consumable_serial_number: item.consumable_serial_number || '',
+            consumable_inventory_number: item.consumable_inventory_number || '',
+            consumable_service_tag: item.consumable_service_tag || '',
+        };
+    });
+
+    const handleSaveDetails = async () => {
+        await onSaveDetails(kind, id, editForm);
+    };
 
     return (
         <div className="move-item-card">
@@ -84,6 +165,71 @@ const ItemCard = ({ item, kind, locations, allLocationOptions, destination, onSe
                         <StatusBadge status={status} displayStatus={displayStatus} />
                     </div>
                 </div>
+            </div>
+            <div className="move-item-card-details">
+                {modelInfo.type && (
+                    <div className="move-item-card-detail-row">
+                        <Layers size={13} />
+                        <span className="move-item-card-detail-label">{t('poMoveItems.type')}</span>
+                        <span className="move-item-card-detail-value">{modelInfo.type}</span>
+                    </div>
+                )}
+                {modelInfo.brand && (
+                    <div className="move-item-card-detail-row">
+                        <Award size={13} />
+                        <span className="move-item-card-detail-label">{t('poMoveItems.brand')}</span>
+                        <span className="move-item-card-detail-value">{modelInfo.brand}</span>
+                    </div>
+                )}
+                {modelInfo.model && (
+                    <div className="move-item-card-detail-row">
+                        <Cpu size={13} />
+                        <span className="move-item-card-detail-label">{t('poMoveItems.model')}</span>
+                        <span className="move-item-card-detail-value">{modelInfo.model}</span>
+                    </div>
+                )}
+                {kind === 'stock_item' ? (
+                    <>
+                        {item.stock_item_serial_number && (
+                            <div className="move-item-card-detail-row">
+                                <Hash size={13} />
+                                <span className="move-item-card-detail-label">{t('poMoveItems.serialNumber')}</span>
+                                <span className="move-item-card-detail-value">{item.stock_item_serial_number}</span>
+                            </div>
+                        )}
+                        {item.stock_item_inventory_number && (
+                            <div className="move-item-card-detail-row">
+                                <FileText size={13} />
+                                <span className="move-item-card-detail-label">{t('poMoveItems.inventoryNumber')}</span>
+                                <span className="move-item-card-detail-value">{item.stock_item_inventory_number}</span>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <>
+                        {item.consumable_serial_number && (
+                            <div className="move-item-card-detail-row">
+                                <Hash size={13} />
+                                <span className="move-item-card-detail-label">{t('poMoveItems.serialNumber')}</span>
+                                <span className="move-item-card-detail-value">{item.consumable_serial_number}</span>
+                            </div>
+                        )}
+                        {item.consumable_inventory_number && (
+                            <div className="move-item-card-detail-row">
+                                <FileText size={13} />
+                                <span className="move-item-card-detail-label">{t('poMoveItems.inventoryNumber')}</span>
+                                <span className="move-item-card-detail-value">{item.consumable_inventory_number}</span>
+                            </div>
+                        )}
+                        {item.consumable_service_tag && (
+                            <div className="move-item-card-detail-row">
+                                <Tag size={13} />
+                                <span className="move-item-card-detail-label">{t('poMoveItems.serviceTag')}</span>
+                                <span className="move-item-card-detail-value">{item.consumable_service_tag}</span>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
             <div className="move-item-card-body">
                 <div className="move-item-card-location">
@@ -106,15 +252,83 @@ const ItemCard = ({ item, kind, locations, allLocationOptions, destination, onSe
                     </select>
                 </div>
             </div>
-            <button
-                type="button"
-                className="btn btn-primary move-item-card-btn"
-                disabled={disabled || isSubmitting || !destination}
-                onClick={() => onMove({ kind, id })}
-            >
-                {isSubmitting ? <Loader2 size={16} className="spin-icon" /> : <Send size={16} />}
-                <span>{isSubmitting ? t('poMoveItems.moving') : t('poMoveItems.move')}</span>
-            </button>
+            {editOpen && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={() => setEditOpen(false)}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">{t('common.edit')} — {displayName}</h3>
+                                <button className="modal-close" onClick={() => setEditOpen(false)}>&times;</button>
+                            </div>
+                            <div className="modal-body">
+                                {kind === 'stock_item' ? (
+                                    <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                                        <div style={{ flex: 1, minWidth: 140 }}>
+                                            <label className="form-label" style={{ fontWeight: 600, marginBottom: 'var(--space-1)', display: 'block' }}>{t('poMoveItems.itemName')}</label>
+                                            <input className="form-input" type="text" value={editForm.stock_item_name} onChange={(e) => setEditForm((f) => ({ ...f, stock_item_name: e.target.value }))} placeholder={t('poMoveItems.itemName')} style={{ width: '100%' }} />
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 140 }}>
+                                            <label className="form-label" style={{ fontWeight: 600, marginBottom: 'var(--space-1)', display: 'block' }}>{t('poMoveItems.serialNumber')}</label>
+                                            <input className="form-input" type="text" value={editForm.stock_item_serial_number} onChange={(e) => setEditForm((f) => ({ ...f, stock_item_serial_number: e.target.value }))} placeholder={t('poMoveItems.serialNumber')} style={{ width: '100%' }} />
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 140 }}>
+                                            <label className="form-label" style={{ fontWeight: 600, marginBottom: 'var(--space-1)', display: 'block' }}>{t('poMoveItems.inventoryNumber')}</label>
+                                            <input className="form-input" type="text" value={editForm.stock_item_inventory_number} onChange={(e) => setEditForm((f) => ({ ...f, stock_item_inventory_number: e.target.value }))} placeholder={t('poMoveItems.inventoryNumber')} style={{ width: '100%' }} />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                                        <div style={{ flex: 1, minWidth: 140 }}>
+                                            <label className="form-label" style={{ fontWeight: 600, marginBottom: 'var(--space-1)', display: 'block' }}>{t('poMoveItems.itemName')}</label>
+                                            <input className="form-input" type="text" value={editForm.consumable_name} onChange={(e) => setEditForm((f) => ({ ...f, consumable_name: e.target.value }))} placeholder={t('poMoveItems.itemName')} style={{ width: '100%' }} />
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 140 }}>
+                                            <label className="form-label" style={{ fontWeight: 600, marginBottom: 'var(--space-1)', display: 'block' }}>{t('poMoveItems.serialNumber')}</label>
+                                            <input className="form-input" type="text" value={editForm.consumable_serial_number} onChange={(e) => setEditForm((f) => ({ ...f, consumable_serial_number: e.target.value }))} placeholder={t('poMoveItems.serialNumber')} style={{ width: '100%' }} />
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 140 }}>
+                                            <label className="form-label" style={{ fontWeight: 600, marginBottom: 'var(--space-1)', display: 'block' }}>{t('poMoveItems.inventoryNumber')}</label>
+                                            <input className="form-input" type="text" value={editForm.consumable_inventory_number} onChange={(e) => setEditForm((f) => ({ ...f, consumable_inventory_number: e.target.value }))} placeholder={t('poMoveItems.inventoryNumber')} style={{ width: '100%' }} />
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 140 }}>
+                                            <label className="form-label" style={{ fontWeight: 600, marginBottom: 'var(--space-1)', display: 'block' }}>{t('poMoveItems.serviceTag')}</label>
+                                            <input className="form-input" type="text" value={editForm.consumable_service_tag} onChange={(e) => setEditForm((f) => ({ ...f, consumable_service_tag: e.target.value }))} placeholder={t('poMoveItems.serviceTag')} style={{ width: '100%' }} />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={() => setEditOpen(false)} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                                    {t('common.cancel')}
+                                </button>
+                                <button type="button" className="btn btn-primary" onClick={handleSaveDetails} disabled={isSavingDetails} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                                    {isSavingDetails ? <Loader2 size={14} className="spin-icon" /> : <Save size={14} />}
+                                    {isSavingDetails ? t('common.saving') : t('common.save')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
+            )}
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <button
+                    type="button"
+                    className="btn btn-primary move-item-card-btn"
+                    disabled={disabled || isSubmitting || !destination}
+                    onClick={() => onMove({ kind, id })}
+                >
+                    {isSubmitting ? <Loader2 size={16} className="spin-icon" /> : <Send size={16} />}
+                    <span>{isSubmitting ? t('poMoveItems.moving') : t('poMoveItems.move')}</span>
+                </button>
+                <button
+                    type="button"
+                    className="btn btn-secondary move-item-card-btn"
+                    onClick={() => setEditOpen((v) => !v)}
+                >
+                    <Edit3 size={16} />
+                    <span>{t('common.edit')}</span>
+                </button>
+            </div>
         </div>
     );
 };
@@ -140,6 +354,7 @@ const PurchaseOrderMoveItemsPage = () => {
 
     const [destinationsByKey, setDestinationsByKey] = useState({});
     const [submittingKey, setSubmittingKey] = useState(null);
+    const [savingDetailsKey, setSavingDetailsKey] = useState(null);
 
     const [bulkDestinationId, setBulkDestinationId] = useState('');
     const [bulkSubmitting, setBulkSubmitting] = useState(false);
@@ -288,7 +503,8 @@ const PurchaseOrderMoveItemsPage = () => {
                     }
                 } catch (e) {
                     const msg = e?.response?.data?.error || t('common.failed');
-                    setBulkErrors((prev) => [...prev, `${it.kind} #${it.id}: ${msg}`]);
+                    const kindLabel = it.kind === 'stock_item' ? t('poMoveItems.kindStockItem') : t('poMoveItems.kindConsumable');
+                    setBulkErrors((prev) => [...prev, `${kindLabel} #${it.id}: ${msg}`]);
                 } finally {
                     setBulkProgress({ done: i + 1, total: items.length });
                 }
@@ -333,11 +549,53 @@ const PurchaseOrderMoveItemsPage = () => {
                 await consumableService.move(id, { destination_location_id });
             }
 
-            setSuccess(t('poMoveItems.itemMoved', { kind, id }));
+            const kindLabel = kind === 'stock_item' ? t('poMoveItems.kindStockItem') : t('poMoveItems.kindConsumable');
+            setSuccess(t('poMoveItems.itemMoved', { kind: kindLabel, id }));
         } catch (e) {
             setError(e?.response?.data?.error || t('poMoveItems.moveError'));
         } finally {
             setSubmittingKey(null);
+        }
+    };
+
+    const handleSaveDetails = async (kind, id, formData) => {
+        const key = `${kind}:${id}`;
+        setSavingDetailsKey(key);
+        setError('');
+        setSuccess('');
+        try {
+            if (kind === 'stock_item') {
+                const existing = stockItems.find((s) => s.stock_item_id === id) || {};
+                await stockItemService.update(id, {
+                    stock_item_model: existing.stock_item_model,
+                    stock_item_name: formData.stock_item_name || null,
+                    stock_item_serial_number: formData.stock_item_serial_number || null,
+                    stock_item_inventory_number: formData.stock_item_inventory_number || null,
+                    stock_item_status: existing.stock_item_status || 'not_delivered_to_company',
+                });
+                setStockItems((prev) => prev.map((s) =>
+                    s.stock_item_id === id ? { ...s, ...formData } : s
+                ));
+            } else {
+                const existing = consumables.find((c) => c.consumable_id === id) || {};
+                await consumableService.update(id, {
+                    consumable_model: existing.consumable_model,
+                    consumable_name: formData.consumable_name || null,
+                    consumable_serial_number: formData.consumable_serial_number || null,
+                    consumable_inventory_number: formData.consumable_inventory_number || null,
+                    consumable_service_tag: formData.consumable_service_tag || null,
+                    consumable_status: existing.consumable_status || 'not_delivered_to_company',
+                });
+                setConsumables((prev) => prev.map((c) =>
+                    c.consumable_id === id ? { ...c, ...formData } : c
+                ));
+            }
+            const kindLabel = kind === 'stock_item' ? t('poMoveItems.kindStockItem') : t('poMoveItems.kindConsumable');
+            setSuccess(t('poMoveItems.detailsSaved', { kind: kindLabel, id }));
+        } catch (e) {
+            setError(e?.response?.data?.error || t('poMoveItems.saveDetailsError'));
+        } finally {
+            setSavingDetailsKey(null);
         }
     };
 
@@ -355,10 +613,7 @@ const PurchaseOrderMoveItemsPage = () => {
                         <RefreshCw size={16} />
                         <span>{t('common.refresh')}</span>
                     </button>
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        <ArrowLeft size={16} />
-                        <span>{t('poMoveItems.backToPurchaseOrders')}</span>
-                    </button>
+                    <BackButton onClick={() => navigate('/dashboard/purchase-orders')} label={t('poMoveItems.backToPurchaseOrders')} />
                 </div>
             </div>
         );
@@ -370,10 +625,7 @@ const PurchaseOrderMoveItemsPage = () => {
                 <div className="move-items-blocked">
                     <AlertCircle size={40} />
                     <div className="move-items-blocked-text">{t('poMoveItems.signatoriesRequired')}</div>
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        <ArrowLeft size={16} />
-                        <span>{t('poMoveItems.backToPurchaseOrders')}</span>
-                    </button>
+                    <BackButton onClick={() => navigate('/dashboard/purchase-orders')} label={t('poMoveItems.backToPurchaseOrders')} />
                 </div>
             </div>
         );
@@ -413,10 +665,7 @@ const PurchaseOrderMoveItemsPage = () => {
                     </div>
                 </div>
                 <div className="move-items-hero-actions">
-                    <button type="button" className="dashboard-quick-btn" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        <ArrowLeft size={16} />
-                        <span>{t('common.back')}</span>
-                    </button>
+                    <BackButton onClick={() => navigate('/dashboard/purchase-orders')} />
                     <button type="button" className="dashboard-quick-btn" onClick={loadAll}>
                         <RefreshCw size={16} />
                         <span>{t('common.refresh')}</span>
@@ -513,6 +762,8 @@ const PurchaseOrderMoveItemsPage = () => {
                                             disabled={!isFullySigned}
                                             t={t}
                                             lang={lang}
+                                            onSaveDetails={handleSaveDetails}
+                                            savingDetails={savingDetailsKey}
                                         />
                                     );
                                 })}
@@ -546,6 +797,8 @@ const PurchaseOrderMoveItemsPage = () => {
                                             disabled={!isFullySigned}
                                             t={t}
                                             lang={lang}
+                                            onSaveDetails={handleSaveDetails}
+                                            savingDetails={savingDetailsKey}
                                         />
                                     );
                                 })}

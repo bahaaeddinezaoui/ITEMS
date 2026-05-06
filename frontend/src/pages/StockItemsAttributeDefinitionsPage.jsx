@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Trash2, X, XCircle, Settings2, Tag, Hash, Database, CheckCircle2, Calendar, ArrowLeft, Pencil } from 'lucide-react';
+import { Plus, Trash2, X, XCircle, Settings2, Tag, Hash, Database, CheckCircle2, Calendar, Pencil } from 'lucide-react';
 import { stockItemAttributeDefinitionService } from '../services/api';
 import TranslatableInput from '../components/TranslatableInput';
 import { SkeletonListRows } from '../components/SkeletonCard';
 import useModalFeedback from '../components/useModalFeedback';
 import ModalFeedback from '../components/ModalFeedback';
+import BackButton from '../components/BackButton';
 
 const dataTypeKeyMap = { string: 'string', number: 'number', bool: 'boolean', date: 'date' };
 
@@ -149,24 +151,7 @@ const StockItemsAttributeDefinitionsPage = () => {
             {/* Page Header */}
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                    <button
-                        onClick={() => navigate(-1)}
-                        style={{
-                            padding: 'var(--space-2) var(--space-3)',
-                            border: '1px solid var(--color-border)',
-                            background: 'var(--color-bg-tertiary)',
-                            color: 'var(--color-text)',
-                            borderRadius: 'var(--radius-sm)',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 'var(--space-2)'
-                        }}
-                        title={t('common.back')}
-                        aria-label={t('common.back')}
-                    >
-                        <ArrowLeft size={18} />
-                    </button>
+                    <BackButton onClick={() => navigate(-1)} />
                     <div>
                         <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Settings2 size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItemAttributes.title')}</h1>
                         <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-lg)' }}>
@@ -188,7 +173,7 @@ const StockItemsAttributeDefinitionsPage = () => {
             )}
 
             {/* Add New Definition Button */}
-            <div style={{ marginBottom: 'var(--space-6)' }}>
+            <div style={{ marginBottom: 'var(--space-6)', display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                     onClick={() => { setEditingId(null); setForm({ description: '', data_type: '', unit: '' }); setFormTranslations({}); setShowForm(true); }}
                     className="btn btn-primary"
@@ -196,16 +181,18 @@ const StockItemsAttributeDefinitionsPage = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 'var(--space-2)',
-                        padding: 'var(--space-3) var(--space-5)'
+                        padding: 'var(--space-3) var(--space-4)',
+                        fontSize: 'var(--font-size-sm)',
+                        width: 'auto'
                     }}
                 >
-                    <Plus size={20} />
+                    <Plus size={16} />
                     <span>{t('stockItemAttributes.addDefinition')}</span>
                 </button>
             </div>
 
             {/* Modal */}
-            {showForm && (
+            {showForm && createPortal(
                 <div
                     style={{
                         position: 'fixed',
@@ -370,7 +357,8 @@ const StockItemsAttributeDefinitionsPage = () => {
                             </form>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Definitions List */}

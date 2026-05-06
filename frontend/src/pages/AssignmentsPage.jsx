@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { assignmentsService, assetAssignmentService, stockItemAssignmentService, consumableAssignmentService, personService } from '../services/api';
-import { ChevronLeft, ChevronRight, UserCheck, UserX, Filter, X, History, ArrowRightLeft, CheckSquare, Box, ShoppingCart, Layers, Hash, Calendar, User, ShieldCheck } from 'lucide-react';
+import { assignmentsService, assetAssignmentService, stockItemAssignmentService, consumableAssignmentService, assetOrgAssignmentService, stockItemOrgAssignmentService, consumableOrgAssignmentService, personService, organizationalStructureService, assetService, stockItemService, consumableService } from '../services/api';
+import { ChevronLeft, ChevronRight, UserCheck, UserX, Filter, X, History, ArrowRightLeft, CheckSquare, Box, ShoppingCart, Layers, Hash, Calendar, User, ShieldCheck, PlusCircle, Search, Building2 } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
 import ModalPortal from '../components/ModalPortal';
 
@@ -30,6 +31,23 @@ const getPersonName = (person, lang) => {
     );
 };
 
+const getBilingualStructureName = (item, currentLang) => {
+    if (!item) return '-';
+    const nameAr = item.structure_name_ar;
+    const nameEn = item.structure_name_en;
+    if (currentLang === 'ar') {
+        if (nameAr && nameEn && nameAr !== nameEn) return `${nameAr} (${nameEn})`;
+        return nameAr || nameEn || item.structure_name;
+    }
+    if (nameEn && nameAr && nameEn !== nameAr) return `${nameEn} (${nameAr})`;
+    return nameEn || nameAr || item.structure_name;
+};
+
+const getStructureName = (org, lang) => {
+    if (!org) return '-';
+    return getBilingualStructureName(org, lang);
+};
+
 const getItemName = (assignment, lang) => {
     const item = assignment.asset || assignment.stock_item || assignment.consumable;
     if (!item) return '-';
@@ -52,6 +70,9 @@ const ITEM_TYPE_BADGE = {
     asset: 'badge-primary',
     stock_item: 'badge-info',
     consumable: 'badge-warning',
+    asset_org: 'badge-primary',
+    stock_item_org: 'badge-info',
+    consumable_org: 'badge-warning',
 };
 
 const AssignmentsPage = () => {
@@ -103,16 +124,32 @@ const AssignmentsPage = () => {
     const [reassignPersons, setReassignPersons] = useState([]);
     const [reassignSelectedPerson, setReassignSelectedPerson] = useState(null);
     const [reassignStartDate, setReassignStartDate] = useState('');
+
+    // Assign modal
+    const [assignModal, setAssignModal] = useState({ open: false, loading: false, error: '' });
+    const [assignItemType, setAssignItemType] = useState('');
+    const [assignTab, setAssignTab] = useState('person'); // 'person' or 'org'
+    const [assignItemSearch, setAssignItemSearch] = useState('');
+    const [assignItems, setAssignItems] = useState([]);
+    const [assignSelectedItem, setAssignSelectedItem] = useState(null);
+    const [assignPersonSearch, setAssignPersonSearch] = useState('');
+    const [assignPersons, setAssignPersons] = useState([]);
+    const [assignSelectedPerson, setAssignSelectedPerson] = useState(null);
+    const [assignOrgSearch, setAssignOrgSearch] = useState('');
+    const [assignOrgs, setAssignOrgs] = useState([]);
+    const [assignSelectedOrg, setAssignSelectedOrg] = useState(null);
+    const [assignStartDate, setAssignStartDate] = useState('');
+
     const roleCodes = useMemo(() => {
         return Array.isArray(user?.roles) ? user.roles.map(r => r.role_code).filter(Boolean) : [];
     }, [user]);
 
     const allowedTypes = useMemo(() => {
-        if (isSuperuser) return ['asset', 'stock_item', 'consumable'];
+        if (isSuperuser) return ['asset', 'stock_item', 'consumable', 'asset_org', 'stock_item_org', 'consumable_org'];
         const types = [];
-        if (roleCodes.includes('asset_responsible')) types.push('asset');
-        if (roleCodes.includes('stock_consumable_responsible')) { types.push('stock_item'); types.push('consumable'); }
-        if (roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief')) return ['asset', 'stock_item', 'consumable'];
+        if (roleCodes.includes('asset_responsible')) { types.push('asset'); types.push('asset_org'); }
+        if (roleCodes.includes('stock_consumable_responsible')) { types.push('stock_item'); types.push('consumable'); types.push('stock_item_org'); types.push('consumable_org'); }
+        if (roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief')) return ['asset', 'stock_item', 'consumable', 'asset_org', 'stock_item_org', 'consumable_org'];
         return types;
     }, [isSuperuser, roleCodes]);
 
@@ -122,8 +159,19 @@ const AssignmentsPage = () => {
 
     const canDischarge = useCallback((itemType) => {
         if (isSuperuser) return true;
-        if (itemType === 'asset') return roleCodes.includes('asset_responsible') || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
+        if (itemType === 'asset' || itemType === 'asset_org') return roleCodes.includes('asset_responsible') || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
         return roleCodes.includes('stock_consumable_responsible') || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
+    }, [isSuperuser, roleCodes]);
+
+    const canAssign = useCallback((itemType) => {
+        if (isSuperuser) return true;
+        if (itemType === 'asset' || itemType === 'asset_org') return roleCodes.includes('asset_responsible') || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
+        return roleCodes.includes('stock_consumable_responsible') || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
+    }, [isSuperuser, roleCodes]);
+
+    const canAssignAny = useMemo(() => {
+        if (isSuperuser) return true;
+        return roleCodes.includes('asset_responsible') || roleCodes.includes('stock_consumable_responsible') || roleCodes.includes('exploitation_chief') || roleCodes.includes('it_bureau_chief');
     }, [isSuperuser, roleCodes]);
 
     const fetchAssignments = useCallback(async () => {
@@ -164,8 +212,14 @@ const AssignmentsPage = () => {
                 await assetAssignmentService.discharge(assignmentId);
             } else if (itemType === 'stock_item') {
                 await stockItemAssignmentService.discharge(assignmentId);
-            } else {
+            } else if (itemType === 'consumable') {
                 await consumableAssignmentService.discharge(assignmentId);
+            } else if (itemType === 'asset_org') {
+                await assetOrgAssignmentService.discharge(assignmentId);
+            } else if (itemType === 'stock_item_org') {
+                await stockItemOrgAssignmentService.discharge(assignmentId);
+            } else if (itemType === 'consumable_org') {
+                await consumableOrgAssignmentService.discharge(assignmentId);
             }
             await fetchAssignments();
         } catch (err) {
@@ -176,10 +230,22 @@ const AssignmentsPage = () => {
         }
     };
 
-    const handleConfirm = async (assignmentId) => {
+    const handleConfirm = async (assignmentId, itemType) => {
         setConfirmingId(assignmentId);
         try {
-            await assetAssignmentService.confirm(assignmentId);
+            if (itemType === 'asset') {
+                await assetAssignmentService.confirm(assignmentId);
+            } else if (itemType === 'stock_item') {
+                await stockItemAssignmentService.confirm(assignmentId);
+            } else if (itemType === 'consumable') {
+                await consumableAssignmentService.confirm(assignmentId);
+            } else if (itemType === 'asset_org') {
+                await assetOrgAssignmentService.confirm(assignmentId);
+            } else if (itemType === 'stock_item_org') {
+                await stockItemOrgAssignmentService.confirm(assignmentId);
+            } else if (itemType === 'consumable_org') {
+                await consumableOrgAssignmentService.confirm(assignmentId);
+            }
             await fetchAssignments();
         } catch (err) {
             setError(t('assignments.confirmError'));
@@ -297,6 +363,101 @@ const AssignmentsPage = () => {
         }
     };
 
+    // Assign item
+    const openAssignModal = () => {
+        const now = new Date();
+        const startDate = now.toISOString().slice(0, 16);
+        setAssignModal({ open: true, loading: false, error: '' });
+        setAssignItemType(allowedTypes.includes('asset') ? 'asset' : allowedTypes[0] || '');
+        setAssignTab('person');
+        setAssignItemSearch('');
+        setAssignItems([]);
+        setAssignSelectedItem(null);
+        setAssignPersonSearch('');
+        setAssignPersons([]);
+        setAssignSelectedPerson(null);
+        setAssignOrgSearch('');
+        setAssignOrgs([]);
+        setAssignSelectedOrg(null);
+        setAssignStartDate(startDate);
+    };
+
+    const searchAssignItems = async (query, itemType) => {
+        setAssignItemSearch(query);
+        if (query.trim().length < 2) { setAssignItems([]); return; }
+        try {
+            const service = itemType === 'asset' ? assetService : itemType === 'stock_item' ? stockItemService : consumableService;
+            const result = await service.getAll({ search: query.trim(), page_size: 20, exclude_status: 'assigned,destroyed,suggested_for_destruction' });
+            const items = Array.isArray(result) ? result : result.results || [];
+            setAssignItems(items);
+        } catch { setAssignItems([]); }
+    };
+
+    const searchAssignPersons = async (query) => {
+        setAssignPersonSearch(query);
+        if (query.trim().length < 2) { setAssignPersons([]); return; }
+        try {
+            const result = await personService.getAll({ search: query.trim(), is_approved: 'true', page_size: 20 });
+            setAssignPersons(Array.isArray(result) ? result : result.results || []);
+        } catch { setAssignPersons([]); }
+    };
+
+    const searchAssignOrgs = async (query) => {
+        setAssignOrgSearch(query);
+        if (query.trim().length < 2) { setAssignOrgs([]); return; }
+        try {
+            const result = await organizationalStructureService.getAll({ search: query.trim(), page_size: 20 });
+            const orgs = Array.isArray(result) ? result : result.results || [];
+            setAssignOrgs(orgs.filter(s => s.is_active));
+        } catch { setAssignOrgs([]); }
+    };
+
+    const getAssignItemName = (item, itemType) => {
+        if (!item) return '-';
+        const nameField = itemType === 'asset' ? 'asset_name' : itemType === 'stock_item' ? 'stock_item_name' : 'consumable_name';
+        const nameArField = nameField + '_ar';
+        const nameEnField = nameField + '_en';
+        return getBilingualName(item[nameArField], item[nameEnField], item[nameField], lang);
+    };
+
+    const getAssignItemIdentifier = (item, itemType) => {
+        if (!item) return '-';
+        const invField = itemType === 'asset' ? 'asset_inventory_number' : itemType === 'stock_item' ? 'stock_item_inventory_number' : 'consumable_inventory_number';
+        return item[invField] || '-';
+    };
+
+    const handleAssign = async () => {
+        if (!assignSelectedItem || !assignItemType) return;
+        if (assignTab === 'person' && !assignSelectedPerson) return;
+        if (assignTab === 'org' && !assignSelectedOrg) return;
+        setAssignModal(prev => ({ ...prev, loading: true, error: '' }));
+        try {
+            const baseItemType = assignItemType.replace('_org', '');
+            const idField = baseItemType === 'asset' ? 'asset_id' : baseItemType === 'stock_item' ? 'stock_item_id' : 'consumable_id';
+            if (assignTab === 'org') {
+                const orgItemType = baseItemType + '_org';
+                await assignmentsService.assign({
+                    item_type: orgItemType,
+                    item_id: assignSelectedItem[idField],
+                    organizational_structure_id: assignSelectedOrg.organizational_structure_id,
+                    start_datetime: assignStartDate,
+                });
+            } else {
+                await assignmentsService.assign({
+                    item_type: assignItemType,
+                    item_id: assignSelectedItem[idField],
+                    person_id: assignSelectedPerson.person_id,
+                    start_datetime: assignStartDate,
+                });
+            }
+            setAssignModal({ open: false, loading: false, error: '' });
+            await fetchAssignments();
+        } catch (err) {
+            const msg = err?.response?.data?.error || t('assignments.assignError');
+            setAssignModal(prev => ({ ...prev, loading: false, error: msg }));
+        }
+    };
+
     const formatDatetime = (dt) => {
         if (!dt) return '-';
         try {
@@ -312,6 +473,9 @@ const AssignmentsPage = () => {
         if (type === 'asset') return t('assignments.asset');
         if (type === 'stock_item') return t('assignments.stockItem');
         if (type === 'consumable') return t('assignments.consumable');
+        if (type === 'asset_org') return t('assignments.assetOrg');
+        if (type === 'stock_item_org') return t('assignments.stockItemOrg');
+        if (type === 'consumable_org') return t('assignments.consumableOrg');
         return type;
     };
 
@@ -339,12 +503,24 @@ const AssignmentsPage = () => {
 
     return (
         <>
-            <div className="page-header">
-                <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                    <UserCheck size={22} style={{ color: 'var(--color-accent-primary)' }} />
-                    {t('assignments.title')}
-                </h1>
-                <p className="page-subtitle">{t('assignments.subtitle')}</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+                <div>
+                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                        <UserCheck size={22} style={{ color: 'var(--color-accent-primary)' }} />
+                        {t('assignments.title')}
+                    </h1>
+                    <p className="page-subtitle">{t('assignments.subtitle')}</p>
+                </div>
+                {canAssignAny && (
+                    <button
+                        className="btn btn-primary"
+                        style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', width: 'fit-content' }}
+                        onClick={openAssignModal}
+                    >
+                        <PlusCircle size={18} />
+                        {t('assignments.assignItem')}
+                    </button>
+                )}
             </div>
 
             {/* Stats */}
@@ -371,139 +547,6 @@ const AssignmentsPage = () => {
                 </div>
             )}
 
-            {/* Search + Filters Bar */}
-            <div className="filters-bar">
-                <div className="filter-item" style={{ maxWidth: 520 }}>
-                    <label className="form-label">{t('assignments.search')}</label>
-                    <input
-                        className="form-input"
-                        type="text"
-                        placeholder={t('assignments.searchPlaceholder')}
-                        value={searchQuery}
-                        onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                    />
-                </div>
-
-                <div className="filter-item" style={{ maxWidth: 200 }}>
-                    <label className="form-label">{t('assignments.itemType')}</label>
-                    <select
-                        className="form-input"
-                        value={itemTypeFilter}
-                        onChange={(e) => { setItemTypeFilter(e.target.value); setPage(1); }}
-                    >
-                        <option value="">{t('common.all')}</option>
-                        {allowedTypes.includes('asset') && <option value="asset">{t('assignments.asset')}</option>}
-                        {allowedTypes.includes('stock_item') && <option value="stock_item">{t('assignments.stockItem')}</option>}
-                        {allowedTypes.includes('consumable') && <option value="consumable">{t('assignments.consumable')}</option>}
-                    </select>
-                </div>
-
-                <div className="filter-item" style={{ maxWidth: 180 }}>
-                    <label className="form-label">{t('assignments.status')}</label>
-                    <select
-                        className="form-input"
-                        value={isActiveFilter}
-                        onChange={(e) => { setIsActiveFilter(e.target.value); setPage(1); }}
-                    >
-                        <option value="">{t('common.all')}</option>
-                        <option value="true">{t('assignments.active')}</option>
-                        <option value="false">{t('assignments.inactive')}</option>
-                    </select>
-                </div>
-
-                <button
-                    className="btn btn-outline"
-                    style={{ alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
-                    onClick={() => setShowFilters(!showFilters)}
-                >
-                    <Filter size={16} />
-                    {t('assignments.moreFilters')}
-                    {hasActiveFilters && <span className="badge badge-primary" style={{ fontSize: 10, padding: '2px 6px' }}>!</span>}
-                </button>
-
-                {hasActiveFilters && (
-                    <button
-                        className="btn btn-outline"
-                        style={{ alignSelf: 'flex-end', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
-                        onClick={resetFilters}
-                    >
-                        <X size={16} />
-                        {t('assignments.clearFilters')}
-                    </button>
-                )}
-            </div>
-
-            {/* Extended Filters Panel */}
-            {showFilters && (
-                <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-                    <div className="card-body">
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
-                            <div className="filter-item">
-                                <label className="form-label">{t('assignments.dateFrom')}</label>
-                                <input
-                                    className="form-input"
-                                    type="date"
-                                    value={dateFrom}
-                                    onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
-                                />
-                            </div>
-
-                            <div className="filter-item">
-                                <label className="form-label">{t('assignments.dateTo')}</label>
-                                <input
-                                    className="form-input"
-                                    type="date"
-                                    value={dateTo}
-                                    onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
-                                />
-                            </div>
-
-                            <div className="filter-item">
-                                <label className="form-label">{t('assignments.confirmed')}</label>
-                                <select
-                                    className="form-input"
-                                    value={confirmedFilter}
-                                    onChange={(e) => { setConfirmedFilter(e.target.value); setPage(1); }}
-                                >
-                                    <option value="">{t('common.all')}</option>
-                                    <option value="true">{t('assignments.confirmedYes')}</option>
-                                    <option value="false">{t('assignments.confirmedNo')}</option>
-                                </select>
-                            </div>
-
-                            <div className="filter-item">
-                                <label className="form-label">{t('assignments.sortBy')}</label>
-                                <select
-                                    className="form-input"
-                                    value={sortField}
-                                    onChange={(e) => { setSortField(e.target.value); setPage(1); }}
-                                >
-                                    <option value="-start_datetime">{t('assignments.sortNewestFirst')}</option>
-                                    <option value="start_datetime">{t('assignments.sortOldestFirst')}</option>
-                                    <option value="-end_datetime">{t('assignments.sortEndNewest')}</option>
-                                    <option value="end_datetime">{t('assignments.sortEndOldest')}</option>
-                                    <option value="-assignment_id">{t('assignments.sortIdDesc')}</option>
-                                    <option value="assignment_id">{t('assignments.sortIdAsc')}</option>
-                                </select>
-                            </div>
-
-                            <div className="filter-item">
-                                <label className="form-label">{t('assignments.position')}</label>
-                                <select
-                                    className="form-input"
-                                    value={positionFilter}
-                                    onChange={(e) => { setPositionFilter(e.target.value); setPage(1); }}
-                                >
-                                    <option value="">{t('assignments.allPositions')}</option>
-                                    {positions.map(p => (
-                                        <option key={p.position_id} value={p.position_id}>{p.position_label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Results Table */}
             <div className="card">
@@ -562,7 +605,7 @@ const AssignmentsPage = () => {
                                 const rowKey = `${itemType}-${assignment.assignment_id}`;
                                 const isSelected = selectedIds.has(rowKey);
 
-                                const typeIcon = itemType === 'asset' ? <Box size={18} /> : itemType === 'stock_item' ? <ShoppingCart size={18} /> : <Layers size={18} />;
+                                const typeIcon = (itemType === 'asset' || itemType === 'asset_org') ? <Box size={18} /> : (itemType === 'stock_item' || itemType === 'stock_item_org') ? <ShoppingCart size={18} /> : <Layers size={18} />;
 
                                 return (
                                     <div key={rowKey} className="card" style={{ transition: 'all 0.2s ease', ...(isSelected ? { borderColor: 'var(--color-accent-primary)', boxShadow: '0 0 0 1px var(--color-accent-primary)' } : {}) }}>
@@ -615,10 +658,19 @@ const AssignmentsPage = () => {
                                                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getItemIdentifier(assignment)}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                                                    <User size={14} style={{ flexShrink: 0 }} />
-                                                    <span>{getPersonName(assignment.person, lang)}</span>
-                                                    {assignment.person_position?.position_label && (
-                                                        <span style={{ fontSize: '0.85em', color: 'var(--color-text-muted)' }}>— {assignment.person_position.position_label}</span>
+                                                    {assignment.organizational_structure ? (
+                                                        <>
+                                                            <Building2 size={14} style={{ flexShrink: 0 }} />
+                                                            <span>{getStructureName(assignment.organizational_structure, lang)}</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <User size={14} style={{ flexShrink: 0 }} />
+                                                            <span>{getPersonName(assignment.person, lang)}</span>
+                                                            {assignment.person_position?.position_label && (
+                                                                <span style={{ fontSize: '0.85em', color: 'var(--color-text-muted)' }}>— {assignment.person_position.position_label}</span>
+                                                            )}
+                                                        </>
                                                     )}
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -675,12 +727,12 @@ const AssignmentsPage = () => {
                                                         <ArrowRightLeft size={14} />
                                                     </button>
                                                 )}
-                                                {isActive && !isConfirmed && canConfirm && itemType === 'asset' && (
+                                                {isActive && !isConfirmed && canConfirm && (
                                                     <button
                                                         className="btn btn-outline"
                                                         style={{ fontSize: '0.8em', padding: '4px 10px', color: 'var(--color-success)', borderColor: 'var(--color-success)' }}
                                                         disabled={isConfirming}
-                                                        onClick={() => handleConfirm(assignment.assignment_id)}
+                                                        onClick={() => handleConfirm(assignment.assignment_id, itemType)}
                                                         title={t('assignments.confirm')}
                                                     >
                                                         {isConfirming ? '...' : <><UserCheck size={14} /> {t('assignments.confirm')}</>}
@@ -840,6 +892,298 @@ const AssignmentsPage = () => {
                 </div>
                 </ModalPortal>
             )}
+
+            {/* Assign Item Modal */}
+            {assignModal.open && (
+                <ModalPortal>
+                <div className="modal-overlay am-modal-overlay" onClick={() => setAssignModal(prev => ({ ...prev, open: false }))}>
+                    <div className="am-modal" style={{ maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+                        <div className="am-modal-header">
+                            <div className="am-modal-header-left">
+                                <span className="am-modal-header-icon"><PlusCircle size={16} /></span>
+                                <div>
+                                    <h3 className="am-modal-title">{t('assignments.assignTitle')}</h3>
+                                </div>
+                            </div>
+                            <button className="am-modal-close" onClick={() => setAssignModal(prev => ({ ...prev, open: false }))}><X size={16} /></button>
+                        </div>
+
+                        <div className="am-modal-body">
+                            {assignModal.error && <div className="error-message" style={{ marginBottom: 'var(--space-3)' }}>{assignModal.error}</div>}
+
+                            {/* Item Type */}
+                            <div className="form-group">
+                                <label className="form-label">{t('assignments.itemType')}</label>
+                                <select
+                                    className="form-input"
+                                    value={assignItemType}
+                                    onChange={(e) => {
+                                        setAssignItemType(e.target.value);
+                                        setAssignItemSearch('');
+                                        setAssignItems([]);
+                                        setAssignSelectedItem(null);
+                                    }}
+                                >
+                                    {allowedTypes.includes('asset') && <option value="asset">{t('assignments.asset')}</option>}
+                                    {allowedTypes.includes('stock_item') && <option value="stock_item">{t('assignments.stockItem')}</option>}
+                                    {allowedTypes.includes('consumable') && <option value="consumable">{t('assignments.consumable')}</option>}
+                                </select>
+                            </div>
+
+                            {/* Item Search */}
+                            <div className="form-group">
+                                <label className="form-label">{t('assignments.selectItem')}</label>
+                                <div style={{ position: 'relative' }}>
+                                    <input
+                                        className="form-input"
+                                        type="text"
+                                        placeholder={t('assignments.searchItemPlaceholder')}
+                                        value={assignSelectedItem ? getAssignItemName(assignSelectedItem, assignItemType) : assignItemSearch}
+                                        onChange={(e) => {
+                                            if (assignSelectedItem) {
+                                                setAssignSelectedItem(null);
+                                                setAssignItemSearch(e.target.value);
+                                            }
+                                            searchAssignItems(e.target.value, assignItemType);
+                                        }}
+                                        onFocus={() => { if (assignSelectedItem) { setAssignSelectedItem(null); setAssignItemSearch(''); } }}
+                                        style={{ paddingLeft: 'var(--space-8)' }}
+                                    />
+                                    <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-secondary)' }} />
+                                </div>
+                                {assignItems.length > 0 && !assignSelectedItem && (
+                                    <div style={{ marginTop: 'var(--space-2)', maxHeight: 180, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-secondary)' }}>
+                                        {assignItems.map(item => {
+                                            const idField = assignItemType === 'asset' ? 'asset_id' : assignItemType === 'stock_item' ? 'stock_item_id' : 'consumable_id';
+                                            return (
+                                                <div
+                                                    key={item[idField]}
+                                                    style={{ padding: 'var(--space-2) var(--space-3)', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                                                    onClick={() => { setAssignSelectedItem(item); setAssignItems([]); setAssignItemSearch(''); }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-card)'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                                >
+                                                    <span>{getAssignItemName(item, assignItemType)}</span>
+                                                    <span style={{ fontSize: '0.8em', color: 'var(--color-text-secondary)' }}>{getAssignItemIdentifier(item, assignItemType)}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                {assignSelectedItem && (
+                                    <div style={{ marginTop: 'var(--space-2)', fontSize: '0.9em', color: 'var(--color-success)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                        ✓ {getAssignItemName(assignSelectedItem, assignItemType)}
+                                        <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85em' }}>({getAssignItemIdentifier(assignSelectedItem, assignItemType)})</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Assign To Tabs: Person / Org Structure */}
+                            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setAssignTab('person')}
+                                    style={{
+                                        flex: 1, padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)',
+                                        border: `1px solid ${assignTab === 'person' ? 'rgba(16, 185, 129, 0.5)' : 'var(--glass-border)'}`,
+                                        background: assignTab === 'person' ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
+                                        color: assignTab === 'person' ? '#10b981' : 'var(--color-text-secondary)',
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)',
+                                        fontWeight: 500, fontSize: '0.875rem', transition: 'all 0.15s ease',
+                                    }}
+                                >
+                                    <User size={16} /> {t('assignments.assignToPerson', 'Assign to Person')}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setAssignTab('org')}
+                                    style={{
+                                        flex: 1, padding: 'var(--space-2) var(--space-3)', borderRadius: 'var(--radius-md)',
+                                        border: `1px solid ${assignTab === 'org' ? 'rgba(16, 185, 129, 0.5)' : 'var(--glass-border)'}`,
+                                        background: assignTab === 'org' ? 'rgba(16, 185, 129, 0.12)' : 'transparent',
+                                        color: assignTab === 'org' ? '#10b981' : 'var(--color-text-secondary)',
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)',
+                                        fontWeight: 500, fontSize: '0.875rem', transition: 'all 0.15s ease',
+                                    }}
+                                >
+                                    <Building2 size={16} /> {t('assignments.assignToOrg', 'Assign to Org Structure')}
+                                </button>
+                            </div>
+
+                            {assignTab === 'person' ? (
+                                /* Person Search */
+                                <div className="form-group">
+                                    <label className="form-label">{t('assignments.assignTo')}</label>
+                                    <input
+                                        className="form-input"
+                                        type="text"
+                                        placeholder={t('assignments.searchPerson')}
+                                        value={assignSelectedPerson ? getPersonName(assignSelectedPerson, lang) : assignPersonSearch}
+                                        onChange={(e) => {
+                                            if (assignSelectedPerson) {
+                                                setAssignSelectedPerson(null);
+                                                setAssignPersonSearch(e.target.value);
+                                            }
+                                            searchAssignPersons(e.target.value);
+                                        }}
+                                        onFocus={() => { if (assignSelectedPerson) { setAssignSelectedPerson(null); setAssignPersonSearch(''); } }}
+                                    />
+                                    {assignPersons.length > 0 && !assignSelectedPerson && (
+                                        <div style={{ marginTop: 'var(--space-2)', maxHeight: 180, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-secondary)' }}>
+                                            {assignPersons.map(p => (
+                                                <div
+                                                    key={p.person_id}
+                                                    style={{ padding: 'var(--space-2) var(--space-3)', cursor: 'pointer' }}
+                                                    onClick={() => { setAssignSelectedPerson(p); setAssignPersons([]); setAssignPersonSearch(''); }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-card)'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                                >
+                                                    {getPersonName(p, lang)}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {assignSelectedPerson && (
+                                        <div style={{ marginTop: 'var(--space-2)', fontSize: '0.9em', color: 'var(--color-success)' }}>
+                                            ✓ {getPersonName(assignSelectedPerson, lang)}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                /* Org Structure Search */
+                                <div className="form-group">
+                                    <label className="form-label">{t('assignments.assignToOrg', 'Assign to Org Structure')}</label>
+                                    <input
+                                        className="form-input"
+                                        type="text"
+                                        placeholder={t('assignments.searchOrg', 'Search org structure...')}
+                                        value={assignSelectedOrg ? getStructureName(assignSelectedOrg, lang) : assignOrgSearch}
+                                        onChange={(e) => {
+                                            if (assignSelectedOrg) {
+                                                setAssignSelectedOrg(null);
+                                                setAssignOrgSearch(e.target.value);
+                                            }
+                                            searchAssignOrgs(e.target.value);
+                                        }}
+                                        onFocus={() => { if (assignSelectedOrg) { setAssignSelectedOrg(null); setAssignOrgSearch(''); } }}
+                                    />
+                                    {assignOrgs.length > 0 && !assignSelectedOrg && (
+                                        <div style={{ marginTop: 'var(--space-2)', maxHeight: 180, overflow: 'auto', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-secondary)' }}>
+                                            {assignOrgs.map(o => (
+                                                <div
+                                                    key={o.organizational_structure_id}
+                                                    style={{ padding: 'var(--space-2) var(--space-3)', cursor: 'pointer' }}
+                                                    onClick={() => { setAssignSelectedOrg(o); setAssignOrgs([]); setAssignOrgSearch(''); }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-bg-card)'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                                >
+                                                    {getStructureName(o, lang)}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {assignSelectedOrg && (
+                                        <div style={{ marginTop: 'var(--space-2)', fontSize: '0.9em', color: 'var(--color-success)' }}>
+                                            ✓ {getStructureName(assignSelectedOrg, lang)}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Start Date */}
+                            <div className="form-group">
+                                <label className="form-label">{t('assignments.startDate')}</label>
+                                <input
+                                    className="form-input"
+                                    type="datetime-local"
+                                    value={assignStartDate}
+                                    onChange={(e) => setAssignStartDate(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="am-modal-footer">
+                            <button className="am-btn-cancel" onClick={() => setAssignModal(prev => ({ ...prev, open: false }))}>
+                                {t('common.cancel', 'Cancel')}
+                            </button>
+                            <button
+                                className="am-btn-assign"
+                                disabled={!assignSelectedItem || !assignItemType || (assignTab === 'person' && !assignSelectedPerson) || (assignTab === 'org' && !assignSelectedOrg) || assignModal.loading}
+                                onClick={handleAssign}
+                            >
+                                {assignModal.loading ? '...' : <><UserCheck size={16} /> {t('assignments.assignAction')}</>}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                </ModalPortal>
+            )}
+            <FilterSortFAB hasActiveFilters={hasActiveFilters}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assignments.search')}</label>
+                        <input className="form-input" type="text" placeholder={t('assignments.searchPlaceholder')} value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }} style={{ height: '40px', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assignments.itemType')}</label>
+                        <select className="form-input" value={itemTypeFilter} onChange={(e) => { setItemTypeFilter(e.target.value); setPage(1); }} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all')}</option>
+                            {allowedTypes.includes('asset') && <option value="asset">{t('assignments.asset')}</option>}
+                            {allowedTypes.includes('stock_item') && <option value="stock_item">{t('assignments.stockItem')}</option>}
+                            {allowedTypes.includes('consumable') && <option value="consumable">{t('assignments.consumable')}</option>}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assignments.status')}</label>
+                        <select className="form-input" value={isActiveFilter} onChange={(e) => { setIsActiveFilter(e.target.value); setPage(1); }} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all')}</option>
+                            <option value="true">{t('assignments.active')}</option>
+                            <option value="false">{t('assignments.inactive')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assignments.dateFrom')}</label>
+                        <input className="form-input" type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setPage(1); }} style={{ height: '40px', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assignments.dateTo')}</label>
+                        <input className="form-input" type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setPage(1); }} style={{ height: '40px', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assignments.confirmed')}</label>
+                        <select className="form-input" value={confirmedFilter} onChange={(e) => { setConfirmedFilter(e.target.value); setPage(1); }} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all')}</option>
+                            <option value="true">{t('assignments.confirmedYes')}</option>
+                            <option value="false">{t('assignments.confirmedNo')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assignments.sortBy')}</label>
+                        <select className="form-input" value={sortField} onChange={(e) => { setSortField(e.target.value); setPage(1); }} style={{ height: '40px', width: '100%' }}>
+                            <option value="-start_datetime">{t('assignments.sortNewestFirst')}</option>
+                            <option value="start_datetime">{t('assignments.sortOldestFirst')}</option>
+                            <option value="-end_datetime">{t('assignments.sortEndNewest')}</option>
+                            <option value="end_datetime">{t('assignments.sortEndOldest')}</option>
+                            <option value="-assignment_id">{t('assignments.sortIdDesc')}</option>
+                            <option value="assignment_id">{t('assignments.sortIdAsc')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assignments.position')}</label>
+                        <select className="form-input" value={positionFilter} onChange={(e) => { setPositionFilter(e.target.value); setPage(1); }} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('assignments.allPositions')}</option>
+                            {positions.map(p => (
+                                <option key={p.position_id} value={p.position_id}>{p.position_label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    {hasActiveFilters && (
+                        <button onClick={resetFilters} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: '500', whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('assignments.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </>
     );
 };

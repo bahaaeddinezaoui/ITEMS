@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Layers, UserPlus } from 'lucide-react';
+import { Search, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Layers, UserPlus, Clock, ShoppingCart, AlertTriangle, ChevronUp, ChevronDown } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
+import BackButton from '../components/BackButton';
 import TranslatableInput from '../components/TranslatableInput';
 import {
     assetTypeService,
@@ -22,6 +24,30 @@ import ModalPortal from '../components/ModalPortal';
 import SearchableSelect from '../components/SearchableSelect';
 import useModalFeedback from '../components/useModalFeedback';
 import ModalFeedback from '../components/ModalFeedback';
+
+const getBilingualAttrDescription = (def, currentLang) => {
+    const descAr = def?.description_ar;
+    const descEn = def?.description_en || def?.description;
+    if (currentLang === 'ar') {
+        if (descAr && descEn && descAr !== descEn) return `${descAr} (${descEn})`;
+        return descAr || descEn || '';
+    } else {
+        if (descEn && descAr && descEn !== descAr) return `${descEn} (${descAr})`;
+        return descEn || descAr || '';
+    }
+};
+
+const getBilingualAttrUnit = (def, currentLang) => {
+    const unitAr = def?.unit_ar;
+    const unitEn = def?.unit_en || def?.unit;
+    if (currentLang === 'ar') {
+        if (unitAr && unitEn && unitAr !== unitEn) return `${unitAr} (${unitEn})`;
+        return unitAr || unitEn || '';
+    } else {
+        if (unitEn && unitAr && unitEn !== unitAr) return `${unitEn} (${unitAr})`;
+        return unitEn || unitAr || '';
+    }
+};
 
 const getBilingualPersonName = (person, currentLang) => {
     const firstEn = person.first_name_en || person.first_name || '';
@@ -71,9 +97,9 @@ const AssetsPage = () => {
     const [showAssetForm, setShowAssetForm] = useState(false);
     const [showTypeAttributeForm, setShowTypeAttributeForm] = useState(false);
     const [showModelAttributeForm, setShowModelAttributeForm] = useState(false);
-    const [showAssetAttributeForm, setShowAssetAttributeForm] = useState(false);
     const [showAssignForm, setShowAssignForm] = useState(false);
     const [showAssetDetailsModal, setShowAssetDetailsModal] = useState(false);
+    const [showAssetAttributeModal, setShowAssetAttributeModal] = useState(false);
 
     // Selection states
     const [selectedAssetType, setSelectedAssetType] = useState(null);
@@ -96,7 +122,6 @@ const AssetsPage = () => {
         discontinued_year: '',
         is_active: true,
         notes: '',
-        warranty_expiry_in_months: '',
     });
     const [formTranslations, setFormTranslations] = useState({});
     const [assetFormData, setAssetFormData] = useState({
@@ -149,6 +174,8 @@ const AssetsPage = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [sortField, setSortField] = useState('asset_name');
+    const [sortDirection, setSortDirection] = useState('asc');
 
     const formatStatusLabel = (value, asset) => {
         if (!value) return '';
@@ -252,6 +279,31 @@ const AssetsPage = () => {
         });
         return map;
     }, [attributeDefinitions]);
+
+    const assetAttributesByDefinitionId = useMemo(() => {
+        const map = new Map();
+        assetAttributes.forEach((attr) => {
+            map.set(Number(attr.asset_attribute_definition), attr);
+        });
+        return map;
+    }, [assetAttributes]);
+
+    const applicableAssetAttributeDefinitions = useMemo(() => {
+        const defIds = new Set();
+        assetTypeAttributes.forEach((a) => defIds.add(Number(a.asset_attribute_definition)));
+        assetModelAttributes.forEach((a) => defIds.add(Number(a.asset_attribute_definition)));
+
+        const defs = Array.from(defIds)
+            .map((id) => definitionLookup.get(id) || null)
+            .filter(Boolean);
+
+        defs.sort((a, b) => {
+            const aLabel = getBilingualAttrDescription(a, i18n.language) || '';
+            const bLabel = getBilingualAttrDescription(b, i18n.language) || '';
+            return aLabel.localeCompare(bLabel, undefined, { sensitivity: 'base' });
+        });
+        return defs;
+    }, [assetTypeAttributes, assetModelAttributes, definitionLookup, i18n.language]);
 
     const fetchAssetTypes = async () => {
         setLoading(true);
@@ -497,7 +549,6 @@ const AssetsPage = () => {
                 notes: modelFormData.notes || '',
                 release_year: modelFormData.release_year ? parseInt(modelFormData.release_year) : null,
                 discontinued_year: modelFormData.discontinued_year ? parseInt(modelFormData.discontinued_year) : null,
-                warranty_expiry_in_months: modelFormData.warranty_expiry_in_months ? parseInt(modelFormData.warranty_expiry_in_months) : null,
             };
             await assetModelService.create(dataToSubmit);
             setModelFormData({
@@ -509,7 +560,6 @@ const AssetsPage = () => {
                 discontinued_year: '',
                 is_active: true,
                 notes: '',
-                warranty_expiry_in_months: '',
             });
             setShowModelForm(false);
             showSuccess(t('assets.createModelSuccess', 'Asset model created successfully'));
@@ -536,7 +586,7 @@ const AssetsPage = () => {
             const dataToSubmit = {
                 ...assetFormData,
                 asset_model: selectedAssetModel.asset_model_id,
-                attribution_order_id: assetFormData.attribution_order_id ? Number(assetFormData.attribution_order_id) : null,
+                attribution_order: assetFormData.attribution_order_id ? Number(assetFormData.attribution_order_id) : null,
                 destruction_certificate_id: assetFormData.destruction_certificate_id ? Number(assetFormData.destruction_certificate_id) : null,
             };
             const translations = { ...formTranslations };
@@ -663,11 +713,7 @@ const AssetsPage = () => {
         try {
             const payload = {
                 asset: selectedAsset.asset_id,
-                asset_attribute_definition: Number(assetAttributeForm.asset_attribute_definition),
-                value_string: assetAttributeForm.value_string || null,
-                value_number: assetAttributeForm.value_number ? Number(assetAttributeForm.value_number) : null,
-                value_bool: assetAttributeForm.value_bool,
-                value_date: assetAttributeForm.value_date || null
+                ...assetAttributeForm
             };
             await assetAttributeValueService.create(payload);
             setAssetAttributeForm({
@@ -677,7 +723,7 @@ const AssetsPage = () => {
                 value_bool: false,
                 value_date: ''
             });
-            setShowAssetAttributeForm(false);
+            setShowAssetAttributeModal(false);
             showSuccess(t('assets.assetAttrSuccess', 'Asset attribute added successfully'));
             await fetchAssetAttributes(selectedAsset.asset_id);
         } catch (err) {
@@ -791,7 +837,7 @@ const AssetsPage = () => {
 
     const closeAssetDetailsModal = () => {
         setShowAssetDetailsModal(false);
-        setShowAssetAttributeForm(false);
+        setShowAssetAttributeModal(false);
     };
 
     const submitSuggestAssetForDestruction = async () => {
@@ -892,7 +938,7 @@ const AssetsPage = () => {
     const pendingConfirmations = assignments.filter(a => !a.is_confirmed_by_exploitation_chief && a.is_active);
 
     const filteredAssets = useMemo(() => {
-        let result = assets;
+        let result = [...assets];
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             result = result.filter(a =>
@@ -904,8 +950,20 @@ const AssetsPage = () => {
         if (statusFilter) {
             result = result.filter(a => a.asset_status === statusFilter);
         }
+        result.sort((a, b) => {
+            let aVal, bVal;
+            switch (sortField) {
+                case 'asset_name': aVal = (a.asset_name || '').toLowerCase(); bVal = (b.asset_name || '').toLowerCase(); break;
+                case 'asset_inventory_number': aVal = (a.asset_inventory_number || '').toLowerCase(); bVal = (b.asset_inventory_number || '').toLowerCase(); break;
+                case 'asset_serial_number': aVal = (a.asset_serial_number || '').toLowerCase(); bVal = (b.asset_serial_number || '').toLowerCase(); break;
+                case 'asset_status': aVal = a.asset_status || ''; bVal = b.asset_status || ''; break;
+                default: aVal = (a.asset_name || '').toLowerCase(); bVal = (b.asset_name || '').toLowerCase();
+            }
+            const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
         return result;
-    }, [assets, searchTerm, statusFilter]);
+    }, [assets, searchTerm, statusFilter, sortField, sortDirection]);
 
     if (isInstancesMode) {
         return (
@@ -913,15 +971,13 @@ const AssetsPage = () => {
                 {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                        <button className="btn btn-secondary" onClick={() => {
+                        <BackButton onClick={() => {
                             if (typeIdParam) {
                                 navigate(`/dashboard/assets/models?typeId=${typeIdParam}`);
                             } else {
                                 navigate('/dashboard/assets/types');
                             }
-                        }} style={{ padding: 'var(--space-2) var(--space-3)' }}>
-                            <ArrowLeft size={18} />
-                        </button>
+                        }} />
                         <div>
                             <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Box size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('nav.assets')}</h1>
                             <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -939,8 +995,6 @@ const AssetsPage = () => {
                             asset_inventory_number: '',
                             asset_service_tag: '',
                             asset_status: 'not_delivered_to_company',
-                            asset_name_in_administrative_certificate: '',
-                            asset_warranty_expiry_in_months: '',
                             asset_purchase_date: '',
                             asset_purchase_price: '',
                             administrative_certificate_id: '',
@@ -963,6 +1017,63 @@ const AssetsPage = () => {
                             <X size={18} />
                         </button>
                     </div>
+                )}
+
+                {/* Add Asset Attribute Value Modal */}
+                {showAssetAttributeModal && selectedAsset && (
+                    <ModalPortal>
+                        <div className="modal-overlay" onClick={() => setShowAssetAttributeModal(false)}>
+                            <div className="modal" style={{ maxWidth: '560px', width: '90vw' }} onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3 className="modal-title">{t('assets.addValue')}</h3>
+                                    <button className="modal-close" onClick={() => setShowAssetAttributeModal(false)}><X size={18} /></button>
+                                </div>
+                                <div className="modal-body">
+                                    <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
+                                    <form onSubmit={handleAssetAttributeSubmit}>
+                                        <select
+                                            name="asset_attribute_definition"
+                                            value={assetAttributeForm.asset_attribute_definition}
+                                            onChange={handleAssetAttributeInputChange}
+                                            required
+                                            className="form-input"
+                                            style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }}
+                                        >
+                                            <option value="">{t('assets.selectAttrDefPlaceholder')}</option>
+                                            {applicableAssetAttributeDefinitions.map((def) => (
+                                                <option key={def.asset_attribute_definition_id} value={def.asset_attribute_definition_id}>
+                                                    {getBilingualAttrDescription(def, i18n.language) || t('assets.attributeWithId', { id: def.asset_attribute_definition_id })}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {(() => {
+                                            const selectedDef = definitionLookup.get(Number(assetAttributeForm.asset_attribute_definition));
+                                            const dataType = selectedDef?.data_type?.toLowerCase();
+                                            if (dataType === 'number') {
+                                                return <input type="number" name="value_number" placeholder={t('assets.numberValue')} value={assetAttributeForm.value_number} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                            }
+                                            if (dataType === 'bool' || dataType === 'boolean') {
+                                                return (
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                        <input type="checkbox" name="value_bool" checked={assetAttributeForm.value_bool} onChange={handleAssetAttributeInputChange} />
+                                                        {t('assets.true')}
+                                                    </label>
+                                                );
+                                            }
+                                            if (dataType === 'date') {
+                                                return <input type="date" name="value_date" value={assetAttributeForm.value_date} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                            }
+                                            return <input type="text" name="value_string" placeholder={t('assets.stringValue')} value={assetAttributeForm.value_string} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
+                                        })()}
+                                        <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                                            <button type="button" onClick={() => setShowAssetAttributeModal(false)} className="btn btn-secondary">{t('assets.cancel')}</button>
+                                            <button type="submit" disabled={saving} className="btn btn-primary">{t('assets.save')}</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </ModalPortal>
                 )}
 
                 {/* Add/Edit Asset Modal */}
@@ -994,7 +1105,7 @@ const AssetsPage = () => {
                                                 <option value="not_delivered_to_company">{t('assets.notDelivered')}</option>
                                                 <option value="in_stock">{t('assets.inStock')}</option>
                                                 <option value="assigned">{t('assets.assigned')}</option>
-                                                <option value="maintenance">{t('assets.maintenance')}</option>
+                                                <option value="under_internal_maintenance">{t('assets.underInternalMaintenance')}</option>
                                                 <option value="failed">{t('assets.failed')}</option>
                                                 <option value="lost">{t('assets.lost')}</option>
                                                 <option value="stolen">{t('assets.stolen')}</option>
@@ -1030,28 +1141,6 @@ const AssetsPage = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
                     {/* Assets Panel */}
                     <div className="card" style={{ overflow: 'hidden' }}>
-                        {/* Toolbar */}
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                            <div style={{ position: 'relative', flex: '0 1 320px', minWidth: '180px' }}>
-                                <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                                <input type="text" placeholder={t('assets.searchPlaceholder', 'Search assets...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
-                            </div>
-                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '44px', minWidth: '130px' }}>
-                                <option value="">{t('assets.allStatuses', 'All Statuses')}</option>
-                                <option value="in_stock">{t('assets.inStock')}</option>
-                                <option value="assigned">{t('assets.assigned')}</option>
-                                <option value="maintenance">{t('assets.maintenance')}</option>
-                                <option value="failed">{t('assets.failed')}</option>
-                                <option value="not_delivered_to_company">{t('assets.notDelivered')}</option>
-                                <option value="lost">{t('assets.lost')}</option>
-                                <option value="stolen">{t('assets.stolen')}</option>
-                                <option value="destroyed">{t('assets.destroyed')}</option>
-                            </select>
-                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
-                                {filteredAssets.length}
-                            </span>
-                        </div>
-
                         {/* Asset List */}
                         <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
                             {loading ? (
@@ -1078,7 +1167,7 @@ const AssetsPage = () => {
                                             cursor: 'pointer',
                                             transition: 'background 0.15s ease'
                                         }}
-                                        onClick={() => openAssetDetailsModal(asset)}
+                                        onClick={() => navigate(`/dashboard/assets/instances/${asset.asset_id}?typeId=${typeIdParam || ''}&modelId=${modelIdParam || ''}`)}
                                         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                                     >
@@ -1122,7 +1211,7 @@ const AssetsPage = () => {
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', flexShrink: 0 }}>
-                                            <button onClick={(e) => { e.stopPropagation(); openAssetDetailsModal(asset); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('assets.attributes')}>
+                                            <button onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/assets/instances/${asset.asset_id}?typeId=${typeIdParam || ''}&modelId=${modelIdParam || ''}`); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('assets.attributes')}>
                                                 <Sliders size={14} />
                                             </button>
                                             <button onClick={(e) => { e.stopPropagation(); handleEditAsset(asset); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('common.edit')}>
@@ -1213,6 +1302,55 @@ const AssetsPage = () => {
                                             <input type="datetime-local" name="end_datetime" value={assignFormData.end_datetime} onChange={handleAssignInputChange} className="form-input" />
                                         </div>
                                     </div>
+                                    {/* Composition preview - items that will also be assigned */}
+                                    {(() => {
+                                        const siComp = assigningAsset.stock_item_composition || [];
+                                        const cComp = assigningAsset.consumable_composition || [];
+                                        const hasComp = siComp.length > 0 || cComp.length > 0;
+                                        return (
+                                            <div style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-md, 8px)', border: '1px solid var(--color-border)' }}>
+                                                {hasComp ? (
+                                                    <>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <AlertTriangle size={14} style={{ color: 'var(--color-warning)' }} />
+                                                            <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{t('assets.cascadeAssignNotice', 'The following items will also be assigned:')}</span>
+                                                        </div>
+                                                        {siComp.length > 0 && (
+                                                            <div style={{ marginBottom: cComp.length > 0 ? 'var(--space-2)' : 0 }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
+                                                                    <Box size={12} style={{ color: 'var(--color-info)' }} />
+                                                                    <span style={{ fontWeight: 500, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{t('assets.stockItems', 'Stock Items')} ({siComp.length})</span>
+                                                                </div>
+                                                                <ul style={{ margin: 0, paddingLeft: 'var(--space-5)', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                                                                    {siComp.map(si => (
+                                                                        <li key={si.stock_item_id}>{si.stock_item_name || `Stock Item ${si.stock_item_id}`}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                        {cComp.length > 0 && (
+                                                            <div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
+                                                                    <ShoppingCart size={12} style={{ color: 'var(--color-warning)' }} />
+                                                                    <span style={{ fontWeight: 500, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{t('assets.consumables', 'Consumables')} ({cComp.length})</span>
+                                                                </div>
+                                                                <ul style={{ margin: 0, paddingLeft: 'var(--space-5)', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                                                                    {cComp.map(c => (
+                                                                        <li key={c.consumable_id}>{c.consumable_name || `Consumable ${c.consumable_id}`}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                        <Layers size={14} style={{ color: 'var(--color-text-muted)' }} />
+                                                        <span style={{ fontWeight: 500, fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{t('assets.noComposition', 'No stock items or consumables are composing this asset.')}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                                 <div className="am-modal-footer">
                                     <button type="button" onClick={() => { setShowAssignForm(false); setAssigningAsset(null); }} className="am-btn-cancel">{t('common.cancel')}</button>
@@ -1285,76 +1423,55 @@ const AssetsPage = () => {
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
                                         <div style={{ fontWeight: '600' }}>{t('assets.assetAttributes')}</div>
                                         <button
-                                            onClick={() => setShowAssetAttributeForm(!showAssetAttributeForm)}
+                                            onClick={() => {
+                                                setAssetAttributeForm({ asset_attribute_definition: '', value_string: '', value_number: '', value_bool: false, value_date: '' });
+                                                setShowAssetAttributeModal(true);
+                                            }}
                                             style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
                                         >
                                             + {t('assets.addValue')}
                                         </button>
                                     </div>
-                                    {showAssetAttributeForm && (
-                                        <form onSubmit={handleAssetAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
-                                            <select
-                                                name="asset_attribute_definition"
-                                                value={assetAttributeForm.asset_attribute_definition}
-                                                onChange={handleAssetAttributeInputChange}
-                                                required
-                                                className="form-input"
-                                                style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }}
-                                            >
-                                                <option value="">{t('assets.selectAttrDefPlaceholder')}</option>
-                                                {attributeDefinitions.map((def) => (
-                                                    <option key={def.asset_attribute_definition_id} value={def.asset_attribute_definition_id}>
-                                                        {def.description || t('assets.attributeWithId', { id: def.asset_attribute_definition_id })}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {(() => {
-                                                const selectedDef = definitionLookup.get(Number(assetAttributeForm.asset_attribute_definition));
-                                                const dataType = selectedDef?.data_type?.toLowerCase();
-                                                if (dataType === 'number') {
-                                                    return <input type="number" name="value_number" placeholder={t('assets.numberValue')} value={assetAttributeForm.value_number} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
-                                                }
-                                                if (dataType === 'bool' || dataType === 'boolean') {
-                                                    return (
-                                                        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                                                            <input type="checkbox" name="value_bool" checked={assetAttributeForm.value_bool} onChange={handleAssetAttributeInputChange} />
-                                                            {t('assets.true')}
-                                                        </label>
-                                                    );
-                                                }
-                                                if (dataType === 'date') {
-                                                    return <input type="date" name="value_date" value={assetAttributeForm.value_date} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
-                                                }
-                                                return <input type="text" name="value_string" placeholder={t('assets.stringValue')} value={assetAttributeForm.value_string} onChange={handleAssetAttributeInputChange} className="form-input" style={{ width: '100%', marginBottom: 'var(--space-2)', height: '44px' }} />;
-                                            })()}
-                                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
-                                                <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1 }}>{t('assets.save')}</button>
-                                                <button type="button" onClick={() => setShowAssetAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1 }}>{t('assets.cancel')}</button>
-                                            </div>
-                                        </form>
-                                    )}
-                                    {assetAttributes.length === 0 ? (
+                                    {applicableAssetAttributeDefinitions.length === 0 ? (
                                         <div style={{ color: 'var(--color-text-secondary)' }}>{t('assets.noAttrValues')}</div>
                                     ) : (
-                                        assetAttributes.map((attr) => {
-                                            const definition = attr.definition || definitionLookup.get(attr.asset_attribute_definition);
-                                            const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                        applicableAssetAttributeDefinitions.map((definition) => {
+                                            const defId = Number(definition.asset_attribute_definition_id);
+                                            const attr = assetAttributesByDefinitionId.get(defId) || null;
+                                            const value = attr ? (attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '') : '';
+                                            const unitLabel = getBilingualAttrUnit(definition, i18n.language);
                                             return (
-                                                <div key={`${attr.asset}-${attr.asset_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                                <div key={defId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
                                                     <div>
-                                                        <div style={{ fontWeight: '500' }}>{definition?.description || t('assets.attributeWithId', { id: attr.asset_attribute_definition })}</div>
-                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? t('assets.noValue') : String(value)}</div>
+                                                        <div style={{ fontWeight: '500' }}>{getBilingualAttrDescription(definition, i18n.language) || t('assets.attributeWithId', { id: defId })}</div>
+                                                        <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? t('assets.noValue') : (unitLabel ? `${String(value)} ${unitLabel}` : String(value))}</div>
                                                     </div>
-                                                    <button
-                                                        onClick={() => handleDeleteAssetAttribute(attr.asset, attr.asset_attribute_definition)}
-                                                        style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
-                                                    >
-                                                        &times;
-                                                    </button>
+                                                    {attr ? (
+                                                        <button
+                                                            onClick={() => handleDeleteAssetAttribute(attr.asset, attr.asset_attribute_definition)}
+                                                            style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                        >
+                                                            &times;
+                                                        </button>
+                                                    ) : (
+                                                        <span style={{ width: 18 }} />
+                                                    )}
                                                 </div>
                                             );
                                         })
                                     )}
+                                </div>
+
+                                {/* Composition History Link */}
+                                <div style={{ marginTop: 'var(--space-4)' }}>
+                                    <button
+                                        onClick={() => navigate(`/dashboard/assets/instances/${selectedAsset.asset_id}/composition-history?typeId=${typeIdParam || ''}&modelId=${modelIdParam || ''}`)}
+                                        className="btn btn-secondary"
+                                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}
+                                    >
+                                        <Clock size={16} />
+                                        {t('assets.compositionHistory')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1698,16 +1815,10 @@ const AssetsPage = () => {
                                             <input type="text" name="model_code" value={modelFormData.model_code} onChange={handleModelInputChange} required style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
                                         </div>
                                     </div>
-                                    {/* Year & Warranty */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Release Year</label>
-                                            <input type="number" name="release_year" value={modelFormData.release_year} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Warranty (Months)</label>
-                                            <input type="number" name="warranty_expiry_in_months" value={modelFormData.warranty_expiry_in_months} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
-                                        </div>
+                                    {/* Year */}
+                                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                                        <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>Release Year</label>
+                                        <input type="number" name="release_year" value={modelFormData.release_year} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
                                     </div>
                                     {/* Notes */}
                                     <div style={{ marginBottom: 'var(--space-4)' }}>
@@ -1987,7 +2098,7 @@ const AssetsPage = () => {
                                                         <option value="not_delivered_to_company">Not Delivered to Company</option>
                                                         <option value="in_stock">In Stock</option>
                                                         <option value="assigned">Assigned</option>
-                                                        <option value="maintenance">Maintenance</option>
+                                                        <option value="under_internal_maintenance">Under Internal Maintenance</option>
                                                         <option value="failed">Failed</option>
                                                         <option value="lost">Lost</option>
                                                         <option value="stolen">Stolen</option>
@@ -2060,20 +2171,20 @@ const AssetsPage = () => {
                                                             onClick={(e) => { e.stopPropagation(); openAssetDetailsModal(asset); }}
                                                             style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontWeight: '500' }}
                                                         >
-                                                            Attributes
+                                                            {t('assets.attributes')}
                                                         </button>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); handleEditAsset(asset); }}
                                                             style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
                                                         >
-                                                            Edit
+                                                            {t('common.edit')}
                                                         </button>
                                                         {canMoveAssets && (
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); openMoveModal(asset); }}
                                                                 style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontWeight: '500' }}
                                                             >
-                                                                Move
+                                                                {t('assets.move')}
                                                             </button>
                                                         )}
                                                         {canAssignAssets && (
@@ -2084,7 +2195,7 @@ const AssetsPage = () => {
                                                                         onClick={(e) => { e.stopPropagation(); setDischargingAssignment(activeAssignment); }}
                                                                         style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: '500' }}
                                                                     >
-                                                                        Discharge
+                                                                        {t('assets.discharge')}
                                                                     </button>
                                                                 ) : (
                                                                     <button
@@ -2103,7 +2214,7 @@ const AssetsPage = () => {
                                                                         }}
                                                                         style={{ marginRight: 'var(--space-2)', background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontWeight: '500' }}
                                                                     >
-                                                                        Assign
+                                                                        {t('assets.assign')}
                                                                     </button>
                                                                 );
                                                             })()
@@ -2112,7 +2223,7 @@ const AssetsPage = () => {
                                                             onClick={(e) => { e.stopPropagation(); handleDeleteAsset(asset.asset_id); }}
                                                             style={{ background: 'none', border: 'none', color: '#c33', cursor: 'pointer', fontWeight: '500' }}
                                                         >
-                                                            Delete
+                                                            {t('common.delete')}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -2347,104 +2458,40 @@ const AssetsPage = () => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
                                 <div style={{ fontWeight: '600' }}>Asset Attributes</div>
                                 <button
-                                    onClick={() => setShowAssetAttributeForm(!showAssetAttributeForm)}
+                                    onClick={() => {
+                                        setAssetAttributeForm({ asset_attribute_definition: '', value_string: '', value_number: '', value_bool: false, value_date: '' });
+                                        setShowAssetAttributeModal(true);
+                                    }}
                                     style={{ border: 'none', background: 'none', color: 'var(--color-primary)', cursor: 'pointer' }}
                                 >
                                     + Add Value
                                 </button>
                             </div>
 
-                            {showAssetAttributeForm && (
-                                <form onSubmit={handleAssetAttributeSubmit} style={{ marginBottom: 'var(--space-4)' }}>
-                                    <select
-                                        name="asset_attribute_definition"
-                                        value={assetAttributeForm.asset_attribute_definition}
-                                        onChange={handleAssetAttributeInputChange}
-                                        required
-                                        style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                    >
-                                        <option value="">Select attribute definition...</option>
-                                        {attributeDefinitions.map((def) => (
-                                            <option key={def.asset_attribute_definition_id} value={def.asset_attribute_definition_id}>
-                                                {def.description || `Attribute ${def.asset_attribute_definition_id}`}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {(() => {
-                                        const selectedDef = definitionLookup.get(Number(assetAttributeForm.asset_attribute_definition));
-                                        const dataType = selectedDef?.data_type?.toLowerCase();
-                                        if (dataType === 'number') {
-                                            return (
-                                                <input
-                                                    type="number"
-                                                    name="value_number"
-                                                    placeholder="Number value"
-                                                    value={assetAttributeForm.value_number}
-                                                    onChange={handleAssetAttributeInputChange}
-                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                                />
-                                            );
-                                        }
-                                        if (dataType === 'bool' || dataType === 'boolean') {
-                                            return (
-                                                <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        name="value_bool"
-                                                        checked={assetAttributeForm.value_bool}
-                                                        onChange={handleAssetAttributeInputChange}
-                                                    />
-                                                    True
-                                                </label>
-                                            );
-                                        }
-                                        if (dataType === 'date') {
-                                            return (
-                                                <input
-                                                    type="date"
-                                                    name="value_date"
-                                                    value={assetAttributeForm.value_date}
-                                                    onChange={handleAssetAttributeInputChange}
-                                                    style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                                />
-                                            );
-                                        }
-                                        return (
-                                            <input
-                                                type="text"
-                                                name="value_string"
-                                                placeholder="String value"
-                                                value={assetAttributeForm.value_string}
-                                                onChange={handleAssetAttributeInputChange}
-                                                style={{ width: '100%', marginBottom: 'var(--space-2)', padding: 'var(--space-2)' }}
-                                            />
-                                        );
-                                    })()}
-                                    <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
-                                        <button type="submit" disabled={saving} style={{ flex: 1, padding: 'var(--space-1)', backgroundColor: 'var(--color-primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-sm)' }}>Save</button>
-                                        <button type="button" onClick={() => setShowAssetAttributeForm(false)} style={{ flex: 1, padding: 'var(--space-1)', border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)', color: 'var(--color-text)', borderRadius: 'var(--radius-sm)' }}>Cancel</button>
-                                    </div>
-                                </form>
-                            )}
-
-                            {assetAttributes.length === 0 ? (
-                                <div style={{ color: 'var(--color-text-secondary)' }}>No attribute values set for this asset.</div>
+                            {applicableAssetAttributeDefinitions.length === 0 ? (
+                                <div style={{ color: 'var(--color-text-secondary)' }}>{t('assets.noAttrValues')}</div>
                             ) : (
-                                assetAttributes.map((attr) => {
-                                    const definition = attr.definition || definitionLookup.get(attr.asset_attribute_definition);
-                                    const value = attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '';
+                                applicableAssetAttributeDefinitions.map((definition) => {
+                                    const defId = Number(definition.asset_attribute_definition_id);
+                                    const attr = assetAttributesByDefinitionId.get(defId) || null;
+                                    const value = attr ? (attr.value_string ?? attr.value_number ?? attr.value_bool ?? attr.value_date ?? '') : '';
+                                    const unitLabel = getBilingualAttrUnit(definition, i18n.language);
                                     return (
-                                        <div key={`${attr.asset}-${attr.asset_attribute_definition}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
+                                        <div key={defId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--space-2) 0', borderBottom: '1px solid var(--color-border)' }}>
                                             <div>
-                                                <div style={{ fontWeight: '500' }}>{definition?.description || `Attribute ${attr.asset_attribute_definition}`}</div>
-                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? 'No value' : String(value)}</div>
+                                                <div style={{ fontWeight: '500' }}>{getBilingualAttrDescription(definition, i18n.language) || t('assets.attributeWithId', { id: defId })}</div>
+                                                <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>{value === '' ? t('assets.noValue') : (unitLabel ? `${String(value)} ${unitLabel}` : String(value))}</div>
                                             </div>
-                                            <button
-                                                onClick={() => handleDeleteAssetAttribute(attr.asset, attr.asset_attribute_definition)}
-                                                style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
-                                            >
-                                                &times;
-                                            </button>
+                                            {attr ? (
+                                                <button
+                                                    onClick={() => handleDeleteAssetAttribute(attr.asset, attr.asset_attribute_definition)}
+                                                    style={{ border: 'none', background: 'none', color: '#c33', cursor: 'pointer' }}
+                                                >
+                                                    &times;
+                                                </button>
+                                            ) : (
+                                                <span style={{ width: 18 }} />
+                                            )}
                                         </div>
                                     );
                                 })
@@ -2628,6 +2675,46 @@ const AssetsPage = () => {
                     </div>
                 </div>
             )}
+            <FilterSortFAB hasActiveFilters={!!searchTerm || !!statusFilter || sortField !== 'asset_name' || sortDirection !== 'asc'}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                        <input type="text" placeholder={t('assets.searchPlaceholder', 'Search assets...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assets.allStatuses', 'All Statuses')}</label>
+                        <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('assets.allStatuses', 'All Statuses')}</option>
+                            <option value="in_stock">{t('assets.inStock')}</option>
+                            <option value="assigned">{t('assets.assigned')}</option>
+                            <option value="under_internal_maintenance">{t('assets.underInternalMaintenance')}</option>
+                            <option value="sent_to_external_maintenance">{t('assets.sentToExternalMaintenance', 'Sent to External Maintenance')}</option>
+                            <option value="received_by_maintenance_provider">{t('assets.receivedByMaintenanceProvider', 'Received by Maintenance Provider')}</option>
+                            <option value="sent_to_company_after_external_maintenance">{t('assets.sentToCompanyAfterExternalMaintenance', 'Sent to Company After External Maintenance')}</option>
+                            <option value="received_by_company_after_external_maintenance">{t('assets.receivedByCompanyAfterExternalMaintenance', 'Received by Company After External Maintenance')}</option>
+                            <option value="failed">{t('assets.failed')}</option>
+                            <option value="not_delivered_to_company">{t('assets.notDelivered')}</option>
+                            <option value="lost">{t('assets.lost')}</option>
+                            <option value="stolen">{t('assets.stolen')}</option>
+                            <option value="destroyed">{t('assets.destroyed')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy', 'Sort by')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="asset_name">{t('assets.sortByName', 'Name')}</option>
+                                <option value="asset_inventory_number">{t('assets.sortByInventoryNumber', 'Inventory Number')}</option>
+                                <option value="asset_serial_number">{t('assets.sortBySerialNumber', 'Serial Number')}</option>
+                                <option value="asset_status">{t('assets.sortByStatus', 'Status')}</option>
+                            </select>
+                            <button className="btn btn-secondary" onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
+                                {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

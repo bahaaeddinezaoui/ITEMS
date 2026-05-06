@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { SkeletonListRows } from '../components/SkeletonCard';
 import { useTranslation } from 'react-i18next';
 import { Plus, X, AlertTriangle, CheckCircle2, Search, FileText, ShieldCheck, Clock, Upload, ChevronRight } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { assetIncidentReportService, assetService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ModalPortal from '../components/ModalPortal';
@@ -871,58 +872,7 @@ const AssetIncidentReportsPage = () => {
                         <h2 className="card-title" style={{ margin: 0 }}>{t('assetIncidentReports.allIncidentReports')}</h2>
                         <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem' }}>
                             {filteredReports.length} {t('assetIncidentReports.shown')}
-                            {reasonFilter ? ` • ${(REASONS.find((r) => r.value === reasonFilter)?.label || reasonFilter)}` : ''}
-                            {statusFilter ? ` • ${getStatusLabel(statusFilter)}` : ''}
-                            {reportQuery.trim() ? ` • ${t('assetIncidentReports.searchApplied')}` : ''}
                         </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <input
-                            className="form-input"
-                            type="search"
-                            value={reportQuery}
-                            onChange={(e) => setReportQuery(e.target.value)}
-                            placeholder={t('assetIncidentReports.searchReportsPlaceholder')}
-                            style={{ width: 320, maxWidth: '100%' }}
-                            aria-label={t('assetIncidentReports.searchReportsPlaceholder')}
-                        />
-                        <select
-                            className="form-input"
-                            value={reasonFilter}
-                            onChange={(e) => setReasonFilter(e.target.value)}
-                            style={{ width: 190 }}
-                            aria-label={t('assetIncidentReports.filterByReason')}
-                        >
-                            <option value="">{t('assetIncidentReports.allReasons')}</option>
-                            {REASONS.map((r) => (
-                                <option key={r.value} value={r.value}>
-                                    {r.label}
-                                </option>
-                            ))}
-                        </select>
-                        <select
-                            className="form-input"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            style={{ width: 170 }}
-                            aria-label={t('assetIncidentReports.filterByStatus')}
-                        >
-                            <option value="">{t('assetIncidentReports.allStatus')}</option>
-                            {statusOptions.map((s) => {
-                                const label = getStatusLabel(s);
-                                return (
-                                    <option key={s} value={s}>
-                                        {label}
-                                    </option>
-                                );
-                            })}
-                        </select>
-                        {hasActiveReportFilters && (
-                            <button type="button" className="btn btn-secondary" onClick={clearReportFilters}>
-                                {t('common.clear')}
-                            </button>
-                        )}
                     </div>
                 </div>
 
@@ -1503,6 +1453,40 @@ const AssetIncidentReportsPage = () => {
                 </div>
                 </ModalPortal>
             )}
+            <FilterSortFAB hasActiveFilters={hasActiveReportFilters}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={reportQuery} onChange={(e) => setReportQuery(e.target.value)} placeholder={t('assetIncidentReports.searchReportsPlaceholder')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: reportQuery ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {reportQuery && (
+                            <button onClick={() => setReportQuery('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assetIncidentReports.filterByReason')}</label>
+                        <select value={reasonFilter} onChange={(e) => setReasonFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('assetIncidentReports.allReasons')}</option>
+                            {REASONS.map((r) => (
+                                <option key={r.value} value={r.value}>{r.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assetIncidentReports.filterByStatus')}</label>
+                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('assetIncidentReports.allStatus')}</option>
+                            {statusOptions.map((s) => (
+                                <option key={s} value={s}>{getStatusLabel(s)}</option>
+                            ))}
+                        </select>
+                    </div>
+                    {hasActiveReportFilters && (
+                        <button onClick={clearReportFilters} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

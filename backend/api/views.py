@@ -31,6 +31,7 @@ from .models import (
     AssetModelAttributeValue,
     AssetModelDefaultStockItem,
     AssetModelDefaultConsumable,
+    StockItemModelDefaultConsumable,
     AssetType,
     AssetTypeAttribute,
     Consumable,
@@ -69,6 +70,9 @@ from .models import (
     StockItemAttributeValue,
     StockItemBrand,
     StockItemIsAssignedToPerson,
+    AssetIsAssignedToOrgStructure,
+    StockItemIsAssignedToOrgStructure,
+    ConsumableIsAssignedToOrgStructure,
     StockItemModel,
     StockItemModelAttributeValue,
     StockItemType,
@@ -417,6 +421,288 @@ def _cascade_move_stock_item_consumables(
         next_consumable_move_id += 1
 
 
+def _cascade_assign_asset_composition(asset, person, assigned_by_person, start_datetime):
+    """When an asset is assigned to a person, also assign its composing stock items and consumables."""
+    stock_item_ids = list(
+        AssetIsComposedOfStockItemHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('stock_item_id', flat=True)
+    )
+    for si_id in stock_item_ids:
+        if StockItemIsAssignedToPerson.objects.filter(stock_item_id=si_id, is_active=True).exists():
+            continue
+        last_si_assign = StockItemIsAssignedToPerson.objects.order_by('-assignment_id').first()
+        next_si_assign_id = (last_si_assign.assignment_id + 1) if last_si_assign else 1
+        StockItemIsAssignedToPerson.objects.create(
+            assignment_id=next_si_assign_id,
+            person=person,
+            stock_item_id=si_id,
+            assigned_by_person=assigned_by_person,
+            start_datetime=start_datetime or timezone.now(),
+            is_active=True,
+        )
+
+    consumable_ids = list(
+        AssetIsComposedOfConsumableHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    for c_id in consumable_ids:
+        if ConsumableIsAssignedToPerson.objects.filter(consumable_id=c_id, is_active=True).exists():
+            continue
+        last_c_assign = ConsumableIsAssignedToPerson.objects.order_by('-assignment_id').first()
+        next_c_assign_id = (last_c_assign.assignment_id + 1) if last_c_assign else 1
+        ConsumableIsAssignedToPerson.objects.create(
+            assignment_id=next_c_assign_id,
+            person=person,
+            consumable_id=c_id,
+            assigned_by_person=assigned_by_person,
+            start_datetime=start_datetime or timezone.now(),
+            is_active=True,
+        )
+
+
+def _cascade_discharge_asset_composition(asset, person=None):
+    """When an asset assignment is discharged, also discharge its composing stock items and consumables."""
+    now = timezone.now()
+
+    stock_item_ids = list(
+        AssetIsComposedOfStockItemHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('stock_item_id', flat=True)
+    )
+    for si_id in stock_item_ids:
+        qs = StockItemIsAssignedToPerson.objects.filter(stock_item_id=si_id, is_active=True)
+        if person:
+            qs = qs.filter(person=person)
+        qs.update(end_datetime=now, is_active=False)
+
+    consumable_ids = list(
+        AssetIsComposedOfConsumableHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    for c_id in consumable_ids:
+        qs = ConsumableIsAssignedToPerson.objects.filter(consumable_id=c_id, is_active=True)
+        if person:
+            qs = qs.filter(person=person)
+        qs.update(end_datetime=now, is_active=False)
+
+
+def _cascade_assign_stock_item_consumables(stock_item, person, assigned_by_person, start_datetime):
+    """When a stock item is assigned to a person, also assign its consumables."""
+    consumable_ids = list(
+        ConsumableIsUsedInStockItemHistory.objects.filter(
+            stock_item=stock_item, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    for c_id in consumable_ids:
+        if ConsumableIsAssignedToPerson.objects.filter(consumable_id=c_id, is_active=True).exists():
+            continue
+        last_c_assign = ConsumableIsAssignedToPerson.objects.order_by('-assignment_id').first()
+        next_c_assign_id = (last_c_assign.assignment_id + 1) if last_c_assign else 1
+        ConsumableIsAssignedToPerson.objects.create(
+            assignment_id=next_c_assign_id,
+            person=person,
+            consumable_id=c_id,
+            assigned_by_person=assigned_by_person,
+            start_datetime=start_datetime or timezone.now(),
+            is_active=True,
+        )
+
+
+def _cascade_discharge_stock_item_consumables(stock_item, person=None):
+    """When a stock item assignment is discharged, also discharge its consumables."""
+    now = timezone.now()
+
+    consumable_ids = list(
+        ConsumableIsUsedInStockItemHistory.objects.filter(
+            stock_item=stock_item, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    for c_id in consumable_ids:
+        qs = ConsumableIsAssignedToPerson.objects.filter(consumable_id=c_id, is_active=True)
+        if person:
+            qs = qs.filter(person=person)
+        qs.update(end_datetime=now, is_active=False)
+
+
+def _cascade_confirm_asset_composition(asset, confirming_person):
+    """When an asset assignment is confirmed, also confirm its composing stock items and consumables."""
+    stock_item_ids = list(
+        AssetIsComposedOfStockItemHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('stock_item_id', flat=True)
+    )
+    StockItemIsAssignedToPerson.objects.filter(
+        stock_item_id__in=stock_item_ids, is_active=True, is_confirmed_by_exploitation_chief__isnull=True
+    ).update(is_confirmed_by_exploitation_chief=confirming_person)
+
+    consumable_ids = list(
+        AssetIsComposedOfConsumableHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    ConsumableIsAssignedToPerson.objects.filter(
+        consumable_id__in=consumable_ids, is_active=True, is_confirmed_by_exploitation_chief__isnull=True
+    ).update(is_confirmed_by_exploitation_chief=confirming_person)
+
+
+def _cascade_confirm_stock_item_consumables(stock_item, confirming_person):
+    """When a stock item assignment is confirmed, also confirm its consumables."""
+    consumable_ids = list(
+        ConsumableIsUsedInStockItemHistory.objects.filter(
+            stock_item=stock_item, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    ConsumableIsAssignedToPerson.objects.filter(
+        consumable_id__in=consumable_ids, is_active=True, is_confirmed_by_exploitation_chief__isnull=True
+    ).update(is_confirmed_by_exploitation_chief=confirming_person)
+
+
+def _cascade_confirm_asset_org_composition(asset, confirming_person):
+    """When an asset org assignment is confirmed, also confirm its composing stock item and consumable org assignments."""
+    stock_item_ids = list(
+        AssetIsComposedOfStockItemHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('stock_item_id', flat=True)
+    )
+    StockItemIsAssignedToOrgStructure.objects.filter(
+        stock_item_id__in=stock_item_ids, is_active=True, is_confirmed_by_exploitation_chief__isnull=True
+    ).update(is_confirmed_by_exploitation_chief=confirming_person)
+
+    consumable_ids = list(
+        AssetIsComposedOfConsumableHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    ConsumableIsAssignedToOrgStructure.objects.filter(
+        consumable_id__in=consumable_ids, is_active=True, is_confirmed_by_exploitation_chief__isnull=True
+    ).update(is_confirmed_by_exploitation_chief=confirming_person)
+
+
+def _cascade_confirm_stock_item_org_consumables(stock_item, confirming_person):
+    """When a stock item org assignment is confirmed, also confirm its consumable org assignments."""
+    consumable_ids = list(
+        ConsumableIsUsedInStockItemHistory.objects.filter(
+            stock_item=stock_item, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    ConsumableIsAssignedToOrgStructure.objects.filter(
+        consumable_id__in=consumable_ids, is_active=True, is_confirmed_by_exploitation_chief__isnull=True
+    ).update(is_confirmed_by_exploitation_chief=confirming_person)
+
+
+def _cascade_assign_asset_composition_to_org(asset, organizational_structure, assigned_by_person, start_datetime):
+    """When an asset is assigned to an org structure, also assign its composing stock items and consumables."""
+    stock_item_ids = list(
+        AssetIsComposedOfStockItemHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('stock_item_id', flat=True)
+    )
+    for si_id in stock_item_ids:
+        if StockItemIsAssignedToPerson.objects.filter(stock_item_id=si_id, is_active=True).exists():
+            continue
+        if StockItemIsAssignedToOrgStructure.objects.filter(stock_item_id=si_id, is_active=True).exists():
+            continue
+        last_si_assign = StockItemIsAssignedToOrgStructure.objects.order_by('-assignment_id').first()
+        next_si_assign_id = (last_si_assign.assignment_id + 1) if last_si_assign else 1
+        StockItemIsAssignedToOrgStructure.objects.create(
+            assignment_id=next_si_assign_id,
+            organizational_structure=organizational_structure,
+            stock_item_id=si_id,
+            assigned_by_person=assigned_by_person,
+            start_datetime=start_datetime or timezone.now(),
+            is_active=True,
+        )
+
+    consumable_ids = list(
+        AssetIsComposedOfConsumableHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    for c_id in consumable_ids:
+        if ConsumableIsAssignedToPerson.objects.filter(consumable_id=c_id, is_active=True).exists():
+            continue
+        if ConsumableIsAssignedToOrgStructure.objects.filter(consumable_id=c_id, is_active=True).exists():
+            continue
+        last_c_assign = ConsumableIsAssignedToOrgStructure.objects.order_by('-assignment_id').first()
+        next_c_assign_id = (last_c_assign.assignment_id + 1) if last_c_assign else 1
+        ConsumableIsAssignedToOrgStructure.objects.create(
+            assignment_id=next_c_assign_id,
+            organizational_structure=organizational_structure,
+            consumable_id=c_id,
+            assigned_by_person=assigned_by_person,
+            start_datetime=start_datetime or timezone.now(),
+            is_active=True,
+        )
+
+
+def _cascade_assign_stock_item_consumables_to_org(stock_item, organizational_structure, assigned_by_person, start_datetime):
+    """When a stock item is assigned to an org structure, also assign its consumables."""
+    consumable_ids = list(
+        ConsumableIsUsedInStockItemHistory.objects.filter(
+            stock_item=stock_item, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    for c_id in consumable_ids:
+        if ConsumableIsAssignedToPerson.objects.filter(consumable_id=c_id, is_active=True).exists():
+            continue
+        if ConsumableIsAssignedToOrgStructure.objects.filter(consumable_id=c_id, is_active=True).exists():
+            continue
+        last_c_assign = ConsumableIsAssignedToOrgStructure.objects.order_by('-assignment_id').first()
+        next_c_assign_id = (last_c_assign.assignment_id + 1) if last_c_assign else 1
+        ConsumableIsAssignedToOrgStructure.objects.create(
+            assignment_id=next_c_assign_id,
+            organizational_structure=organizational_structure,
+            consumable_id=c_id,
+            assigned_by_person=assigned_by_person,
+            start_datetime=start_datetime or timezone.now(),
+            is_active=True,
+        )
+
+
+def _cascade_discharge_asset_org_composition(asset, organizational_structure=None):
+    """When an asset assigned to an org structure is discharged, also discharge its composing stock items and consumables assigned to that org."""
+    now = timezone.now()
+    stock_item_ids = list(
+        AssetIsComposedOfStockItemHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('stock_item_id', flat=True)
+    )
+    for si_id in stock_item_ids:
+        qs = StockItemIsAssignedToOrgStructure.objects.filter(stock_item_id=si_id, is_active=True)
+        if organizational_structure:
+            qs = qs.filter(organizational_structure=organizational_structure)
+        qs.update(end_datetime=now, is_active=False)
+
+    consumable_ids = list(
+        AssetIsComposedOfConsumableHistory.objects.filter(
+            asset=asset, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    for c_id in consumable_ids:
+        qs = ConsumableIsAssignedToOrgStructure.objects.filter(consumable_id=c_id, is_active=True)
+        if organizational_structure:
+            qs = qs.filter(organizational_structure=organizational_structure)
+        qs.update(end_datetime=now, is_active=False)
+
+
+def _cascade_discharge_stock_item_org_consumables(stock_item, organizational_structure=None):
+    """When a stock item assigned to an org structure is discharged, also discharge its consumables assigned to that org."""
+    now = timezone.now()
+    consumable_ids = list(
+        ConsumableIsUsedInStockItemHistory.objects.filter(
+            stock_item=stock_item, end_datetime__isnull=True
+        ).values_list('consumable_id', flat=True)
+    )
+    for c_id in consumable_ids:
+        qs = ConsumableIsAssignedToOrgStructure.objects.filter(consumable_id=c_id, is_active=True)
+        if organizational_structure:
+            qs = qs.filter(organizational_structure=organizational_structure)
+        qs.update(end_datetime=now, is_active=False)
+
+
 def _sync_asset_model_attribute_values(asset_model: AssetModel) -> None:
     type_attrs = list(
         AssetTypeAttribute.objects.select_related("asset_attribute_definition")
@@ -614,6 +900,45 @@ def _sync_stock_item_attribute_values(stock_item: StockItem) -> None:
             instance.save(force_insert=True)
 
 
+def _create_stock_item_default_consumables(stock_item, attribution_order_id=None):
+    """Create consumables based on stock item model defaults and record usage history"""
+    now = timezone.now()
+    stock_item_model_id = stock_item.stock_item_model_id
+
+    default_consumables = StockItemModelDefaultConsumable.objects.filter(
+        stock_item_model_id=stock_item_model_id
+    ).select_related('consumable_model')
+
+    # Debug: log what we find
+    try:
+        with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+            _f.write(f"  [_create_stock_item_default_consumables] stock_item={stock_item} (model_id={stock_item_model_id}), defaults={default_consumables.count()}\n")
+    except Exception:
+        pass
+
+    for default_item in default_consumables:
+        for _ in range(default_item.quantity):
+            last_cons = Consumable.objects.order_by("-consumable_id").first()
+            next_cons_id = (last_cons.consumable_id + 1) if last_cons else 1
+
+            cons_name = f"{default_item.consumable_model} (included with {stock_item})"
+            consumable = Consumable.objects.create(
+                consumable_id=next_cons_id,
+                consumable_model_id=default_item.consumable_model_id,
+                consumable_name=cons_name[:48] if cons_name else None,
+                consumable_status='not_delivered_to_company'
+            )
+
+            ConsumableIsUsedInStockItemHistory.objects.create(
+                consumable=consumable,
+                stock_item=stock_item,
+                maintenance_step=None,
+                attribution_order_id=attribution_order_id,
+                start_datetime=now,
+                end_datetime=None
+            )
+
+
 def _sync_consumable_attribute_values(consumable: Consumable) -> None:
     model_defs = list(
         ConsumableModelAttributeValue.objects.filter(consumable_model_id=consumable.consumable_model_id).values(
@@ -657,6 +982,7 @@ from .serializers import (
     AssetModelAttributeValueSerializer,
     AssetModelDefaultStockItemSerializer,
     AssetModelDefaultConsumableSerializer,
+    StockItemModelDefaultConsumableSerializer,
     AssetModelSerializer,
     AssetSerializer,
     AssetTypeAttributeSerializer,
@@ -697,6 +1023,9 @@ from .serializers import (
     StockItemModelSerializer,
     StockItemSerializer,
     StockItemIsAssignedToPersonSerializer,
+    AssetIsAssignedToOrgStructureSerializer,
+    StockItemIsAssignedToOrgStructureSerializer,
+    ConsumableIsAssignedToOrgStructureSerializer,
     StockItemTypeAttributeSerializer,
     StockItemTypeSerializer,
     UserProfileSerializer,
@@ -1026,11 +1355,20 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 "asset",
                 "asset__asset_model__asset_brand",
                 "asset__asset_model__asset_type",
+                "stock_item",
+                "stock_item__stock_item_model__stock_item_brand",
+                "consumable",
+                "consumable__consumable_model__consumable_brand",
                 "performed_by_person",
             )
             .all()
             .order_by("-start_datetime", "-maintenance_id")
         )
+
+        # Support server-side filtering by asset
+        asset_param = self.request.query_params.get("asset")
+        if asset_param:
+            qs = qs.filter(asset_id=asset_param)
 
         user_account = self._get_user_account(self.request)
         if not user_account:
@@ -1242,6 +1580,190 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         }
 
         Maintenance.objects.filter(maintenance_id=maintenance.maintenance_id).update(**update_payload)
+
+        # Restore item status based on item type
+        # If there is an ongoing external maintenance, set status to reflect that instead of in_stock
+        from .models import ExternalMaintenance
+        has_ongoing_external = False
+        em_status_map = None
+        if maintenance.asset_id:
+            open_em = ExternalMaintenance.objects.filter(maintenance__asset_id=maintenance.asset_id).filter(
+                Q(external_maintenance_status__isnull=True, item_received_by_company_datetime__isnull=True)
+                | (Q(external_maintenance_status__isnull=False) & ~Q(external_maintenance_status="RECEIVED_BY_COMPANY"))
+            ).select_related("maintenance").first()
+            if open_em:
+                has_ongoing_external = True
+                if open_em.item_sent_to_external_maintenance_datetime and not open_em.item_received_by_maintenance_provider_datetime:
+                    em_status_map = 'sent_to_external_maintenance'
+                elif open_em.item_received_by_maintenance_provider_datetime and not open_em.item_sent_to_company_datetime:
+                    em_status_map = 'received_by_maintenance_provider'
+                elif open_em.item_sent_to_company_datetime and not open_em.item_received_by_company_datetime:
+                    em_status_map = 'sent_to_company_after_external_maintenance'
+        elif maintenance.stock_item_id:
+            open_em = ExternalMaintenance.objects.filter(maintenance__stock_item_id=maintenance.stock_item_id).filter(
+                Q(external_maintenance_status__isnull=True, item_received_by_company_datetime__isnull=True)
+                | (Q(external_maintenance_status__isnull=False) & ~Q(external_maintenance_status="RECEIVED_BY_COMPANY"))
+            ).first()
+            if open_em:
+                has_ongoing_external = True
+        elif maintenance.consumable_id:
+            open_em = ExternalMaintenance.objects.filter(maintenance__consumable_id=maintenance.consumable_id).filter(
+                Q(external_maintenance_status__isnull=True, item_received_by_company_datetime__isnull=True)
+                | (Q(external_maintenance_status__isnull=False) & ~Q(external_maintenance_status="RECEIVED_BY_COMPANY"))
+            ).first()
+            if open_em:
+                has_ongoing_external = True
+
+        from api.utils.i18n import bulk_sync_status_translations
+        if has_ongoing_external and em_status_map:
+            if maintenance.asset_id:
+                asset_id = maintenance.asset_id
+                bulk_sync_status_translations(Asset, {'asset_id': asset_id}, em_status_map)
+                # Cascade to composed items, accessories, and consumables-in-stock-items
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, em_status_map)
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, em_status_map)
+                if consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, em_status_map)
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, em_status_map)
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, em_status_map)
+                if accessory_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, em_status_map)
+            elif maintenance.stock_item_id:
+                bulk_sync_status_translations(StockItem, {'stock_item_id': maintenance.stock_item_id}, 'sent_to_external_maintenance')
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id=maintenance.stock_item_id, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'sent_to_external_maintenance')
+            elif maintenance.consumable_id:
+                bulk_sync_status_translations(Consumable, {'consumable_id': maintenance.consumable_id}, 'sent_to_external_maintenance')
+        elif has_ongoing_external:
+            if maintenance.asset_id:
+                asset_id = maintenance.asset_id
+                bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'sent_to_external_maintenance')
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'sent_to_external_maintenance')
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'sent_to_external_maintenance')
+                if consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'sent_to_external_maintenance')
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'sent_to_external_maintenance')
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'sent_to_external_maintenance')
+                if accessory_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'sent_to_external_maintenance')
+            elif maintenance.stock_item_id:
+                bulk_sync_status_translations(StockItem, {'stock_item_id': maintenance.stock_item_id}, 'sent_to_external_maintenance')
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id=maintenance.stock_item_id, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'sent_to_external_maintenance')
+            elif maintenance.consumable_id:
+                bulk_sync_status_translations(Consumable, {'consumable_id': maintenance.consumable_id}, 'sent_to_external_maintenance')
+        else:
+            if maintenance.asset_id:
+                asset_id = maintenance.asset_id
+                bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'in_stock')
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'in_stock')
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+                if consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'in_stock')
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'in_stock')
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'in_stock')
+                if accessory_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'in_stock')
+            elif maintenance.stock_item_id:
+                bulk_sync_status_translations(StockItem, {'stock_item_id': maintenance.stock_item_id}, 'in_stock')
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id=maintenance.stock_item_id, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+            elif maintenance.consumable_id:
+                bulk_sync_status_translations(Consumable, {'consumable_id': maintenance.consumable_id}, 'in_stock')
+
         maintenance.refresh_from_db()
         return Response(self.get_serializer(maintenance).data, status=status.HTTP_200_OK)
 
@@ -1278,8 +1800,10 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 return Response({"error": "Only the assigned technician can request return"}, status=status.HTTP_403_FORBIDDEN)
 
         asset = getattr(maintenance, "asset", None)
-        if not asset:
-            return Response({"error": "Maintenance asset not found"}, status=status.HTTP_404_NOT_FOUND)
+        stock_item = getattr(maintenance, "stock_item", None)
+        consumable = getattr(maintenance, "consumable", None)
+        if not asset and not stock_item and not consumable:
+            return Response({"error": "Maintenance item not found"}, status=status.HTTP_404_NOT_FOUND)
 
         destination_location_id = request.data.get("destination_location_id")
         if not destination_location_id:
@@ -1293,64 +1817,167 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         if not destination_location:
             return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        last_move = (
-            AssetMovement.objects.select_related("destination_location")
-            .filter(asset_id=asset.asset_id)
-            .order_by("-asset_movement_id")
-            .first()
-        )
-        if last_move and last_move.destination_location_id:
-            source_location = last_move.destination_location
-        else:
-            source_location = destination_location
-        if last_move and source_location.location_id == destination_location.location_id:
+        now_dt = timezone.now()
+
+        # --- Asset return ---
+        if asset:
+            last_move = (
+                AssetMovement.objects.select_related("destination_location")
+                .filter(asset_id=asset.asset_id)
+                .order_by("-asset_movement_id")
+                .first()
+            )
+            if last_move and last_move.destination_location_id:
+                source_location = last_move.destination_location
+            else:
+                source_location = destination_location
+            if last_move and source_location.location_id == destination_location.location_id:
+                return Response(
+                    {
+                        "asset_id": asset.asset_id,
+                        "source_location_id": source_location.location_id,
+                        "destination_location_id": destination_location.location_id,
+                        "status": "no_change",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+            last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+            next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+
+            _create_asset_movement_with_translations(
+                movement_reason_en="return_to_owner",
+                asset_movement_id=next_asset_move_id,
+                asset=asset,
+                source_location=source_location,
+                destination_location=destination_location,
+                maintenance_step=None,
+                external_maintenance_step_id=None,
+                movement_datetime=now_dt,
+                status="pending",
+            )
+
+            _cascade_move_composed_items(
+                asset_id=asset.asset_id,
+                source_location_id=source_location.location_id,
+                destination_location_id=destination_location.location_id,
+                movement_reason="return_to_owner",
+                movement_datetime=now_dt,
+                maintenance_step_id=None,
+                external_maintenance_step_id=None,
+                maintenance_id=None,
+            )
+
             return Response(
                 {
+                    "asset_movement_id": next_asset_move_id,
                     "asset_id": asset.asset_id,
                     "source_location_id": source_location.location_id,
                     "destination_location_id": destination_location.location_id,
-                    "status": "no_change",
+                    "status": "pending",
                 },
-                status=status.HTTP_200_OK,
+                status=status.HTTP_201_CREATED,
             )
 
-        last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
-        next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+        # --- Stock item return ---
+        if stock_item:
+            from .models import StockItemMovement
 
-        now_dt = timezone.now()
-        _create_asset_movement_with_translations(
-            movement_reason_en="return_to_owner",
-            asset_movement_id=next_asset_move_id,
-            asset=asset,
-            source_location=source_location,
-            destination_location=destination_location,
-            maintenance_step=None,
-            external_maintenance_step_id=None,
-            movement_datetime=now_dt,
-            status="pending",
-        )
+            last_move = (
+                StockItemMovement.objects.select_related("destination_location")
+                .filter(stock_item_id=stock_item.stock_item_id)
+                .order_by("-stock_item_movement_id")
+                .first()
+            )
+            if last_move and last_move.destination_location_id:
+                source_location = last_move.destination_location
+            else:
+                source_location = destination_location
+            if last_move and source_location.location_id == destination_location.location_id:
+                return Response(
+                    {
+                        "stock_item_id": stock_item.stock_item_id,
+                        "source_location_id": source_location.location_id,
+                        "destination_location_id": destination_location.location_id,
+                        "status": "no_change",
+                    },
+                    status=status.HTTP_200_OK,
+                )
 
-        _cascade_move_composed_items(
-            asset_id=asset.asset_id,
-            source_location_id=source_location.location_id,
-            destination_location_id=destination_location.location_id,
-            movement_reason="return_to_owner",
-            movement_datetime=now_dt,
-            maintenance_step_id=None,
-            external_maintenance_step_id=None,
-            maintenance_id=None,
-        )
+            last_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+            next_move_id = (last_global.stock_item_movement_id + 1) if last_global else 1
 
-        return Response(
-            {
-                "asset_movement_id": next_asset_move_id,
-                "asset_id": asset.asset_id,
-                "source_location_id": source_location.location_id,
-                "destination_location_id": destination_location.location_id,
-                "status": "pending",
-            },
-            status=status.HTTP_201_CREATED,
-        )
+            _create_stock_item_movement_with_translations(
+                movement_reason="return_to_owner",
+                stock_item_movement_id=next_move_id,
+                stock_item_id=stock_item.stock_item_id,
+                source_location=source_location,
+                destination_location=destination_location,
+                maintenance_step=None,
+                movement_datetime=now_dt,
+                status="pending",
+            )
+
+            return Response(
+                {
+                    "stock_item_movement_id": next_move_id,
+                    "stock_item_id": stock_item.stock_item_id,
+                    "source_location_id": source_location.location_id,
+                    "destination_location_id": destination_location.location_id,
+                    "status": "pending",
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        # --- Consumable return ---
+        if consumable:
+            from .models import ConsumableMovement
+
+            last_move = (
+                ConsumableMovement.objects.select_related("destination_location")
+                .filter(consumable_id=consumable.consumable_id)
+                .order_by("-consumable_movement_id")
+                .first()
+            )
+            if last_move and last_move.destination_location_id:
+                source_location = last_move.destination_location
+            else:
+                source_location = destination_location
+            if last_move and source_location.location_id == destination_location.location_id:
+                return Response(
+                    {
+                        "consumable_id": consumable.consumable_id,
+                        "source_location_id": source_location.location_id,
+                        "destination_location_id": destination_location.location_id,
+                        "status": "no_change",
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+            last_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+            next_move_id = (last_global.consumable_movement_id + 1) if last_global else 1
+
+            _create_consumable_movement_with_translations(
+                movement_reason="return_to_owner",
+                consumable_movement_id=next_move_id,
+                consumable_id=consumable.consumable_id,
+                source_location=source_location,
+                destination_location=destination_location,
+                maintenance_step=None,
+                movement_datetime=now_dt,
+                status="pending",
+            )
+
+            return Response(
+                {
+                    "consumable_movement_id": next_move_id,
+                    "consumable_id": consumable.consumable_id,
+                    "source_location_id": source_location.location_id,
+                    "destination_location_id": destination_location.location_id,
+                    "status": "pending",
+                },
+                status=status.HTTP_201_CREATED,
+            )
 
     @action(detail=True, methods=["get"], url_path="pending-return-to-owner-exists")
     def pending_return_to_owner_exists(self, request, pk=None):
@@ -1385,14 +2012,30 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 return Response({"error": "Only the assigned technician can access this"}, status=status.HTTP_403_FORBIDDEN)
 
         asset_id = getattr(maintenance, "asset_id", None)
-        if not asset_id:
-            return Response({"exists": False}, status=status.HTTP_200_OK)
+        stock_item_id = getattr(maintenance, "stock_item_id", None)
+        consumable_id = getattr(maintenance, "consumable_id", None)
 
-        exists = AssetMovement.objects.filter(
-            asset_id=asset_id,
-            status="pending",
-            movement_reason="return_to_owner",
-        ).exists()
+        exists = False
+        if asset_id:
+            exists = AssetMovement.objects.filter(
+                asset_id=asset_id,
+                status="pending",
+                movement_reason="return_to_owner",
+            ).exists()
+        elif stock_item_id:
+            from .models import StockItemMovement
+            exists = StockItemMovement.objects.filter(
+                stock_item_id=stock_item_id,
+                status="pending",
+                movement_reason="return_to_owner",
+            ).exists()
+        elif consumable_id:
+            from .models import ConsumableMovement
+            exists = ConsumableMovement.objects.filter(
+                consumable_id=consumable_id,
+                status="pending",
+                movement_reason="return_to_owner",
+            ).exists()
 
         return Response({"exists": bool(exists)}, status=status.HTTP_200_OK)
 
@@ -1429,18 +2072,42 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 return Response({"error": "Only the assigned technician can access this"}, status=status.HTTP_403_FORBIDDEN)
 
         asset_id = getattr(maintenance, "asset_id", None)
-        if not asset_id:
-            return Response({"destination_location_id": None}, status=status.HTTP_200_OK)
+        stock_item_id = getattr(maintenance, "stock_item_id", None)
+        consumable_id = getattr(maintenance, "consumable_id", None)
 
-        last_move = (
-            AssetMovement.objects.filter(asset_id=asset_id)
-            .order_by("-asset_movement_id")
-            .first()
-        )
-        if not last_move or not last_move.source_location_id:
-            return Response({"destination_location_id": None}, status=status.HTTP_200_OK)
+        if asset_id:
+            last_move = (
+                AssetMovement.objects.filter(asset_id=asset_id)
+                .order_by("-asset_movement_id")
+                .first()
+            )
+            if not last_move or not last_move.source_location_id:
+                return Response({"destination_location_id": None}, status=status.HTTP_200_OK)
+            return Response({"destination_location_id": int(last_move.source_location_id)}, status=status.HTTP_200_OK)
 
-        return Response({"destination_location_id": int(last_move.source_location_id)}, status=status.HTTP_200_OK)
+        elif stock_item_id:
+            from .models import StockItemMovement
+            last_move = (
+                StockItemMovement.objects.filter(stock_item_id=stock_item_id)
+                .order_by("-stock_item_movement_id")
+                .first()
+            )
+            if not last_move or not last_move.source_location_id:
+                return Response({"destination_location_id": None}, status=status.HTTP_200_OK)
+            return Response({"destination_location_id": int(last_move.source_location_id)}, status=status.HTTP_200_OK)
+
+        elif consumable_id:
+            from .models import ConsumableMovement
+            last_move = (
+                ConsumableMovement.objects.filter(consumable_id=consumable_id)
+                .order_by("-consumable_movement_id")
+                .first()
+            )
+            if not last_move or not last_move.source_location_id:
+                return Response({"destination_location_id": None}, status=status.HTTP_200_OK)
+            return Response({"destination_location_id": int(last_move.source_location_id)}, status=status.HTTP_200_OK)
+
+        return Response({"destination_location_id": None}, status=status.HTTP_200_OK)
 
 
     @action(detail=False, methods=["post"], url_path="create-direct")
@@ -1456,26 +2123,21 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             return Response({"error": "Only maintenance chiefs can create maintenance"}, status=status.HTTP_403_FORBIDDEN)
 
         asset_id = request.data.get("asset_id")
+        stock_item_id = request.data.get("stock_item_id")
+        consumable_id = request.data.get("consumable_id")
         technician_person_id = request.data.get("technician_person_id")
         description = request.data.get("description")
         destination_location_id = request.data.get("destination_location_id")
 
-        if not asset_id:
-            return Response({"error": "asset_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+        # Mutual exclusivity: exactly one of asset_id, stock_item_id, consumable_id
+        linked = [bool(asset_id), bool(stock_item_id), bool(consumable_id)]
+        if sum(linked) != 1:
+            return Response(
+                {"error": "Exactly one of asset_id, stock_item_id, or consumable_id is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if not technician_person_id:
             return Response({"error": "technician_person_id is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        asset = Asset.objects.filter(asset_id=asset_id).first()
-        if not asset:
-            return Response({"error": "Asset not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        last_move = (
-            AssetMovement.objects.select_related("destination_location", "destination_location__location_type")
-            .filter(asset_id=asset.asset_id)
-            .order_by("-asset_movement_id")
-            .first()
-        )
-        current_location = last_move.destination_location if last_move else None
 
         def _is_maintenance_location(location: Location | None) -> bool:
             if not location or not getattr(location, "location_type", None):
@@ -1486,45 +2148,234 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 return True
             return "maintenance" in label
 
-        if not current_location or not _is_maintenance_location(current_location):
-            if not destination_location_id:
+        # --- Asset-based maintenance ---
+        if asset_id:
+            asset = Asset.objects.filter(asset_id=asset_id).first()
+            if not asset:
+                return Response({"error": "Asset not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            # Block if asset has an ongoing maintenance
+            if Maintenance.objects.filter(asset_id=asset_id).exclude(maintenance_status__in=["completed", "failed", "cancelled"]).exists():
+                return Response({"error": "Asset already has an ongoing maintenance"}, status=status.HTTP_400_BAD_REQUEST)
+
+            last_move = (
+                AssetMovement.objects.select_related("destination_location", "destination_location__location_type")
+                .filter(asset_id=asset.asset_id)
+                .order_by("-asset_movement_id")
+                .first()
+            )
+            current_location = last_move.destination_location if last_move else None
+
+            if not current_location or not _is_maintenance_location(current_location):
+                if not destination_location_id:
+                    return Response(
+                        {
+                            "error": "Asset is not in a maintenance location. destination_location_id is required to move the asset before creating maintenance.",
+                            "current_location": LocationSerializer(current_location).data if current_location else None,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id).first()
+                if not destination_location:
+                    return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+                if not _is_maintenance_location(destination_location):
+                    return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+                source_location = current_location or destination_location
+
+                last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+                next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+                _create_asset_movement_with_translations(
+                    movement_reason_en="maintenance_create",
+                    asset_movement_id=next_asset_move_id,
+                    asset=asset,
+                    source_location=source_location,
+                    destination_location=destination_location,
+                    maintenance_step=None,
+                    external_maintenance_step_id=None,
+                    movement_datetime=timezone.now(),
+                )
+                _cascade_move_composed_items(
+                    asset_id=asset.asset_id,
+                    source_location_id=source_location.location_id,
+                    destination_location_id=destination_location.location_id,
+                    movement_reason="maintenance_create",
+                    movement_datetime=timezone.now(),
+                    maintenance_step_id=None,
+                    external_maintenance_step_id=None,
+                    maintenance_id=None,
+                )
+
+            # Update asset status
+            from api.utils.i18n import bulk_sync_status_translations
+            bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'under_internal_maintenance')
+            # Cascade to composed stock items, consumables, accessories, and consumables-in-stock-items
+            stock_item_ids = list(
+                AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+            )
+            consumable_ids = list(
+                AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+            )
+            if stock_item_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'under_internal_maintenance')
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'under_internal_maintenance')
+            if consumable_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'under_internal_maintenance')
+            accessory_si_ids = list(
+                AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+            )
+            accessory_c_ids = list(
+                AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+            )
+            if accessory_si_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'under_internal_maintenance')
+                consumable_in_acc_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_acc_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'under_internal_maintenance')
+            if accessory_c_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'under_internal_maintenance')
+
+        # --- Stock item-based maintenance ---
+        elif stock_item_id:
+            from .models import StockItem, StockItemMovement, AssetIsComposedOfStockItemHistory
+
+            stock_item = StockItem.objects.filter(stock_item_id=stock_item_id).first()
+            if not stock_item:
+                return Response({"error": "Stock item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            # Block if composed into an asset
+            if AssetIsComposedOfStockItemHistory.objects.filter(
+                stock_item_id=stock_item_id, end_datetime__isnull=True
+            ).exists():
                 return Response(
-                    {
-                        "error": "Asset is not in a maintenance location. destination_location_id is required to move the asset before creating maintenance.",
-                        "current_location": LocationSerializer(current_location).data if current_location else None,
-                    },
+                    {"error": "This stock item is currently composed into an asset. Remove it from the asset before creating independent maintenance."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id).first()
-            if not destination_location:
-                return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
-            if not _is_maintenance_location(destination_location):
-                return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
-            source_location = current_location or destination_location
+            # Block if stock item has an ongoing maintenance
+            if Maintenance.objects.filter(stock_item_id=stock_item_id).exclude(maintenance_status__in=["completed", "failed", "cancelled"]).exists():
+                return Response({"error": "Stock item already has an ongoing maintenance"}, status=status.HTTP_400_BAD_REQUEST)
 
-            last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
-            next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
-            _create_asset_movement_with_translations(
-                movement_reason_en="maintenance_create",
-                asset_movement_id=next_asset_move_id,
-                asset=asset,
-                source_location=source_location,
-                destination_location=destination_location,
-                maintenance_step=None,
-                external_maintenance_step_id=None,
-                movement_datetime=timezone.now(),
+            last_move = (
+                StockItemMovement.objects.select_related("destination_location", "destination_location__location_type")
+                .filter(stock_item_id=stock_item_id)
+                .order_by("-stock_item_movement_id")
+                .first()
             )
-            _cascade_move_composed_items(
-                asset_id=asset.asset_id,
-                source_location_id=source_location.location_id,
-                destination_location_id=destination_location.location_id,
-                movement_reason="maintenance_create",
-                movement_datetime=timezone.now(),
-                maintenance_step_id=None,
-                external_maintenance_step_id=None,
-                maintenance_id=None,
+            current_location = last_move.destination_location if last_move else None
+
+            if not current_location or not _is_maintenance_location(current_location):
+                if not destination_location_id:
+                    return Response(
+                        {
+                            "error": "Stock item is not in a maintenance location. destination_location_id is required to move it before creating maintenance.",
+                            "current_location": LocationSerializer(current_location).data if current_location else None,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id).first()
+                if not destination_location:
+                    return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+                if not _is_maintenance_location(destination_location):
+                    return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+                source_location = current_location or destination_location
+
+                last_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+                next_move_id = (last_global.stock_item_movement_id + 1) if last_global else 1
+                _create_stock_item_movement_with_translations(
+                    movement_reason="maintenance_create",
+                    stock_item_movement_id=next_move_id,
+                    stock_item_id=stock_item_id,
+                    source_location=source_location,
+                    destination_location=destination_location,
+                    maintenance_step=None,
+                    movement_datetime=timezone.now(),
+                )
+
+            # Update stock item status
+            from api.utils.i18n import bulk_sync_status_translations
+            bulk_sync_status_translations(StockItem, {'stock_item_id': stock_item_id}, 'under_internal_maintenance')
+            # Also update consumables used in this stock item
+            consumable_in_si_ids = list(
+                ConsumableIsUsedInStockItemHistory.objects.filter(
+                    stock_item_id=stock_item_id, end_datetime__isnull=True
+                ).values_list("consumable_id", flat=True)
             )
+            if consumable_in_si_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'under_internal_maintenance')
+
+        # --- Consumable-based maintenance ---
+        elif consumable_id:
+            from .models import Consumable, ConsumableMovement, AssetIsComposedOfConsumableHistory
+
+            consumable = Consumable.objects.filter(consumable_id=consumable_id).first()
+            if not consumable:
+                return Response({"error": "Consumable not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            # Block if composed into an asset
+            if AssetIsComposedOfConsumableHistory.objects.filter(
+                consumable_id=consumable_id, end_datetime__isnull=True
+            ).exists():
+                return Response(
+                    {"error": "This consumable is currently composed into an asset. Remove it from the asset before creating independent maintenance."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Block if consumable has an ongoing maintenance
+            if Maintenance.objects.filter(consumable_id=consumable_id).exclude(maintenance_status__in=["completed", "failed", "cancelled"]).exists():
+                return Response({"error": "Consumable already has an ongoing maintenance"}, status=status.HTTP_400_BAD_REQUEST)
+
+            last_move = (
+                ConsumableMovement.objects.select_related("destination_location", "destination_location__location_type")
+                .filter(consumable_id=consumable_id)
+                .order_by("-consumable_movement_id")
+                .first()
+            )
+            current_location = last_move.destination_location if last_move else None
+
+            if not current_location or not _is_maintenance_location(current_location):
+                if not destination_location_id:
+                    return Response(
+                        {
+                            "error": "Consumable is not in a maintenance location. destination_location_id is required to move it before creating maintenance.",
+                            "current_location": LocationSerializer(current_location).data if current_location else None,
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id).first()
+                if not destination_location:
+                    return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+                if not _is_maintenance_location(destination_location):
+                    return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+                source_location = current_location or destination_location
+
+                last_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+                next_move_id = (last_global.consumable_movement_id + 1) if last_global else 1
+                _create_consumable_movement_with_translations(
+                    movement_reason="maintenance_create",
+                    consumable_movement_id=next_move_id,
+                    consumable_id=consumable_id,
+                    source_location=source_location,
+                    destination_location=destination_location,
+                    maintenance_step=None,
+                    movement_datetime=timezone.now(),
+                )
+
+            # Update consumable status
+            from api.utils.i18n import bulk_sync_status_translations
+            bulk_sync_status_translations(Consumable, {'consumable_id': consumable_id}, 'under_internal_maintenance')
 
         technician = Person.objects.filter(person_id=technician_person_id).first()
         if not technician:
@@ -1533,17 +2384,24 @@ class MaintenanceViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         last_item = Maintenance.objects.order_by("-maintenance_id").first()
         next_id = (last_item.maintenance_id + 1) if last_item else 1
 
+        create_kwargs = dict(
+            maintenance_id=next_id,
+            performed_by_person=technician,
+            approved_by_maintenance_chief=user_account.person,
+            maintenance_status="pending",
+            description=description,
+            start_datetime=None,
+            end_datetime=None,
+        )
+        if asset_id:
+            create_kwargs["asset_id"] = asset_id
+        elif stock_item_id:
+            create_kwargs["stock_item_id"] = stock_item_id
+        elif consumable_id:
+            create_kwargs["consumable_id"] = consumable_id
+
         try:
-            maintenance = Maintenance.objects.create(
-                maintenance_id=next_id,
-                asset=asset,
-                performed_by_person=technician,
-                approved_by_maintenance_chief=user_account.person,
-                maintenance_status="pending",
-                description=description,
-                start_datetime=None,
-                end_datetime=None,
-            )
+            maintenance = Maintenance.objects.create(**create_kwargs)
         except IntegrityError:
             return Response(
                 {
@@ -1928,6 +2786,24 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
     queryset = MaintenanceStep.objects.all().order_by("maintenance_step_id")
     serializer_class = MaintenanceStepSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = MaintenanceStep.objects.select_related(
+            "maintenance", "maintenance_typical_step", "person"
+        ).all().order_by("maintenance_step_id")
+        maintenance_param = self.request.query_params.get("maintenance")
+        if maintenance_param:
+            qs = qs.filter(maintenance_id=maintenance_param)
+        asset_param = self.request.query_params.get("maintenance__asset")
+        if asset_param:
+            qs = qs.filter(maintenance__asset_id=asset_param)
+        stock_item_param = self.request.query_params.get("maintenance__stock_item")
+        if stock_item_param:
+            qs = qs.filter(maintenance__stock_item_id=stock_item_param)
+        consumable_param = self.request.query_params.get("maintenance__consumable")
+        if consumable_param:
+            qs = qs.filter(maintenance__consumable_id=consumable_param)
+        return qs
 
     _TERMINAL_STEP_STATUSES = {
         "done",
@@ -2474,29 +3350,35 @@ class MaintenanceStepViewSet(viewsets.ModelViewSet):
                 return Response({"error": "Invalid person_id"}, status=status.HTTP_400_BAD_REQUEST)
 
         asset_id = getattr(maintenance, "asset_id", None) if maintenance else None
-        if asset_id:
-            open_external_maintenance_q = (
-                Q(
-                    external_maintenance_status__isnull=True,
-                    item_sent_to_external_maintenance_datetime__isnull=False,
-                    item_received_by_company_datetime__isnull=True,
-                )
-                | (
-                    Q(external_maintenance_status__isnull=False)
-                    & ~Q(external_maintenance_status__in=["DRAFT", "RECEIVED_BY_COMPANY"])
-                )
+        stock_item_id = getattr(maintenance, "stock_item_id", None) if maintenance else None
+        consumable_id = getattr(maintenance, "consumable_id", None) if maintenance else None
+
+        open_external_maintenance_q = (
+            Q(
+                external_maintenance_status__isnull=True,
+                item_sent_to_external_maintenance_datetime__isnull=False,
+                item_received_by_company_datetime__isnull=True,
             )
-            if (
-                ExternalMaintenance.objects.filter(maintenance__asset_id=asset_id)
-                .filter(open_external_maintenance_q)
-                .exists()
-            ):
-                return Response(
-                    {
-                        "error": "Cannot create maintenance steps while the asset has an ongoing external maintenance.",
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            | (
+                Q(external_maintenance_status__isnull=False)
+                & ~Q(external_maintenance_status__in=["DRAFT", "RECEIVED_BY_COMPANY"])
+            )
+        )
+        if asset_id and ExternalMaintenance.objects.filter(maintenance__asset_id=asset_id).filter(open_external_maintenance_q).exists():
+            return Response(
+                {"error": "Cannot create maintenance steps while the asset has an ongoing external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if stock_item_id and ExternalMaintenance.objects.filter(maintenance__stock_item_id=stock_item_id).filter(open_external_maintenance_q).exists():
+            return Response(
+                {"error": "Cannot create maintenance steps while the stock item has an ongoing external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if consumable_id and ExternalMaintenance.objects.filter(maintenance__consumable_id=consumable_id).filter(open_external_maintenance_q).exists():
+            return Response(
+                {"error": "Cannot create maintenance steps while the consumable has an ongoing external maintenance."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         data = dict(serializer.validated_data)
         if not data.get("maintenance_step_status"):
@@ -3213,6 +4095,15 @@ class MaintenanceStepItemRequestViewSet(viewsets.ModelViewSet):
                 "maintenance_step",
                 "maintenance_step__maintenance",
                 "maintenance_step__maintenance__asset",
+                "maintenance_step__maintenance__asset__asset_model",
+                "maintenance_step__maintenance__asset__asset_model__asset_brand",
+                "maintenance_step__maintenance__asset__asset_model__asset_type",
+                "requested_stock_item_model",
+                "requested_stock_item_model__stock_item_brand",
+                "requested_stock_item_model__stock_item_type",
+                "requested_consumable_model",
+                "requested_consumable_model__consumable_brand",
+                "requested_consumable_model__consumable_type",
             )
             .order_by("-created_at")
         )
@@ -3691,7 +4582,12 @@ class ExternalMaintenanceTypicalStepViewSet(SuperuserWriteMixin, viewsets.ModelV
 
 
 class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ExternalMaintenance.objects.select_related("maintenance", "maintenance__asset").all().order_by(
+    queryset = ExternalMaintenance.objects.select_related(
+        "maintenance",
+        "maintenance__asset",
+        "maintenance__stock_item",
+        "maintenance__consumable",
+    ).all().order_by(
         "-external_maintenance_id"
     )
     serializer_class = ExternalMaintenanceSerializer
@@ -3754,7 +4650,7 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({"error": "Invalid ids"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            maintenance = Maintenance.objects.select_related("asset").get(maintenance_id=maintenance_id_int)
+            maintenance = Maintenance.objects.select_related("asset", "stock_item", "consumable").get(maintenance_id=maintenance_id_int)
         except Maintenance.DoesNotExist:
             return Response({"error": "Maintenance not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -3803,16 +4699,26 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                 pass
 
         asset_id = getattr(maintenance, "asset_id", None)
-        if asset_id and ExternalMaintenance.objects.filter(
-            maintenance__asset_id=asset_id,
-        ).filter(
+        stock_item_id = getattr(maintenance, "stock_item_id", None)
+        consumable_id = getattr(maintenance, "consumable_id", None)
+
+        open_em_q = (
             Q(external_maintenance_status__isnull=True, item_received_by_company_datetime__isnull=True)
             | (Q(external_maintenance_status__isnull=False) & ~Q(external_maintenance_status="RECEIVED_BY_COMPANY"))
-        ).exists():
+        )
+        if asset_id and ExternalMaintenance.objects.filter(maintenance__asset_id=asset_id).filter(open_em_q).exists():
             return Response(
-                {
-                    "error": "Cannot create a new external maintenance because an external maintenance is already open for this asset.",
-                },
+                {"error": "Cannot create a new external maintenance because an external maintenance is already open for this asset."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if stock_item_id and ExternalMaintenance.objects.filter(maintenance__stock_item_id=stock_item_id).filter(open_em_q).exists():
+            return Response(
+                {"error": "Cannot create a new external maintenance because an external maintenance is already open for this stock item."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if consumable_id and ExternalMaintenance.objects.filter(maintenance__consumable_id=consumable_id).filter(open_em_q).exists():
+            return Response(
+                {"error": "Cannot create a new external maintenance because an external maintenance is already open for this consumable."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -3952,6 +4858,46 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                     "external_maintenance_provider",
                 ]
             )
+            # Update asset and composed items status
+            from api.utils.i18n import bulk_sync_status_translations
+            bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'sent_to_external_maintenance')
+            stock_item_ids = list(
+                AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+            )
+            consumable_ids = list(
+                AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+            )
+            if stock_item_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'sent_to_external_maintenance')
+                # Also update consumables used in those stock items
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'sent_to_external_maintenance')
+            if consumable_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'sent_to_external_maintenance')
+            # Also update stock items and consumables included as accessories with the asset
+            accessory_si_ids = list(
+                AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+            )
+            accessory_c_ids = list(
+                AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+            )
+            if accessory_si_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'sent_to_external_maintenance')
+                # Also update consumables used in those accessory stock items
+                consumable_in_acc_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_acc_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'sent_to_external_maintenance')
+            if accessory_c_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'sent_to_external_maintenance')
         except IntegrityError:
             return Response(
                 {"error": "Failed to send to external maintenance provider due to database constraints."},
@@ -4096,6 +5042,47 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                     "external_maintenance_status",
                 ]
             )
+            # Update asset and composed items status
+            asset_id = getattr(em.maintenance, "asset_id", None) if getattr(em, "maintenance", None) else None
+            if asset_id:
+                from api.utils.i18n import bulk_sync_status_translations
+                bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'received_by_maintenance_provider')
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'received_by_maintenance_provider')
+                    # Also update consumables used in those stock items
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'received_by_maintenance_provider')
+                if consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'received_by_maintenance_provider')
+                # Also update stock items and consumables included as accessories with the asset
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'received_by_maintenance_provider')
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'received_by_maintenance_provider')
+                if accessory_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'received_by_maintenance_provider')
         except IntegrityError:
             return Response(
                 {"error": "Failed to confirm receipt due to database constraints."},
@@ -4198,6 +5185,45 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             em.item_received_by_company_datetime = now
             em.external_maintenance_status = "RECEIVED_BY_COMPANY"
             em.save(update_fields=["item_received_by_company_datetime", "external_maintenance_status"])
+            # Update asset and composed items status
+            from api.utils.i18n import bulk_sync_status_translations
+            bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'received_by_company_after_external_maintenance')
+            stock_item_ids = list(
+                AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+            )
+            consumable_ids = list(
+                AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+            )
+            if stock_item_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'received_by_company_after_external_maintenance')
+                # Also update consumables used in those stock items
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'received_by_company_after_external_maintenance')
+            if consumable_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'received_by_company_after_external_maintenance')
+            # Also update stock items and consumables included as accessories with the asset
+            accessory_si_ids = list(
+                AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+            )
+            accessory_c_ids = list(
+                AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+            )
+            if accessory_si_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'received_by_company_after_external_maintenance')
+                consumable_in_acc_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_acc_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'received_by_company_after_external_maintenance')
+            if accessory_c_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'received_by_company_after_external_maintenance')
         except IntegrityError:
             return Response(
                 {"error": "Failed to confirm received by company due to database constraints."},
@@ -4242,6 +5268,47 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
             em.item_sent_to_company_datetime = now
             em.external_maintenance_status = "SENT_TO_COMPANY"
             em.save(update_fields=["item_sent_to_company_datetime", "external_maintenance_status"])
+            # Update asset and composed items status
+            asset_id = getattr(em.maintenance, "asset_id", None) if getattr(em, "maintenance", None) else None
+            if asset_id:
+                from api.utils.i18n import bulk_sync_status_translations
+                bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'sent_to_company_after_external_maintenance')
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'sent_to_company_after_external_maintenance')
+                    # Also update consumables used in those stock items
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'sent_to_company_after_external_maintenance')
+                if consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'sent_to_company_after_external_maintenance')
+                # Also update stock items and consumables included as accessories with the asset
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'sent_to_company_after_external_maintenance')
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'sent_to_company_after_external_maintenance')
+                if accessory_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'sent_to_company_after_external_maintenance')
         except IntegrityError:
             return Response(
                 {"error": "Failed to confirm sent to company due to database constraints."},
@@ -4375,9 +5442,36 @@ class ExternalMaintenanceViewSet(viewsets.ReadOnlyModelViewSet):
                 if stock_item_ids:
                     from api.utils.i18n import bulk_sync_status_translations
                     bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'failed')
+                    # Also update consumables used in those stock items
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'failed')
                 if consumable_ids:
                     from api.utils.i18n import bulk_sync_status_translations as _bsct_c
                     _bsct_c(Consumable, {'consumable_id__in': consumable_ids}, 'failed')
+
+                # Also update stock items and consumables included as accessories with the asset
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'failed')
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'failed')
+                if accessory_c_ids:
+                    _bsct_c(Consumable, {'consumable_id__in': accessory_c_ids}, 'failed')
 
                 updated["stock_item_ids"] = stock_item_ids
                 updated["consumable_ids"] = consumable_ids
@@ -4433,32 +5527,37 @@ class MyItemsView(APIView):
 
         current_assets = list(
             Asset.objects.filter(assetisassignedtoperson__person=person, assetisassignedtoperson__is_active=True)
+            .select_related('asset_model', 'asset_model__asset_type', 'asset_model__asset_brand')
             .distinct()
             .order_by("asset_id")
         )
         asset_history = list(
-            AssetIsAssignedToPerson.objects.filter(person=person).select_related("asset").order_by("-start_datetime")
+            AssetIsAssignedToPerson.objects.filter(person=person)
+            .select_related('asset', 'asset__asset_model', 'asset__asset_model__asset_type', 'asset__asset_model__asset_brand')
+            .order_by("-start_datetime")
         )
 
         current_stock_items = list(
             StockItem.objects.filter(stockitemisassignedtoperson__person=person, stockitemisassignedtoperson__is_active=True)
+            .select_related('stock_item_model', 'stock_item_model__stock_item_type', 'stock_item_model__stock_item_brand')
             .distinct()
             .order_by("stock_item_id")
         )
         stock_history = list(
             StockItemIsAssignedToPerson.objects.filter(person=person)
-            .select_related("stock_item")
+            .select_related('stock_item', 'stock_item__stock_item_model', 'stock_item__stock_item_model__stock_item_type', 'stock_item__stock_item_model__stock_item_brand')
             .order_by("-start_datetime")
         )
 
         current_consumables = list(
             Consumable.objects.filter(consumableisassignedtoperson__person=person, consumableisassignedtoperson__is_active=True)
+            .select_related('consumable_model', 'consumable_model__consumable_type', 'consumable_model__consumable_brand')
             .distinct()
             .order_by("consumable_id")
         )
         consumable_history = list(
             ConsumableIsAssignedToPerson.objects.filter(person=person)
-            .select_related("consumable")
+            .select_related('consumable', 'consumable__consumable_model', 'consumable__consumable_model__consumable_type', 'consumable__consumable_model__consumable_brand')
             .order_by("-start_datetime")
         )
 
@@ -5024,20 +6123,24 @@ class ProblemReportViewSet(viewsets.ViewSet):
         if item_type == "stock_item":
             last = PersonReportsProblemOnStockItem.objects.order_by("-report_id").first()
             next_id = (last.report_id + 1) if last else 1
+            now_dt = timezone.now()
             report = PersonReportsProblemOnStockItem.objects.create(
                 report_id=next_id,
                 stock_item_id=item_id,
                 person=person,
+                report_datetime=now_dt,
                 owner_observation=owner_observation,
             )
             return Response(PersonReportsProblemOnStockItemSerializer(report).data, status=status.HTTP_201_CREATED)
 
         last = PersonReportsProblemOnConsumable.objects.order_by("-report_id").first()
         next_id = (last.report_id + 1) if last else 1
+        now_dt = timezone.now()
         report = PersonReportsProblemOnConsumable.objects.create(
             report_id=next_id,
             consumable_id=item_id,
             person=person,
+            report_datetime=now_dt,
             owner_observation=owner_observation,
         )
         return Response(PersonReportsProblemOnConsumableSerializer(report).data, status=status.HTTP_201_CREATED)
@@ -5082,13 +6185,14 @@ class ProblemReportViewSet(viewsets.ViewSet):
         if not technician:
             return Response({"error": "Technician not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if item_type != "asset":
-            return Response(
-                {"error": "Maintenance can only be created for assets in the current schema"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        report = PersonReportsProblemOnAsset.objects.filter(report_id=report_id).first()
+        if item_type == "asset":
+            report = PersonReportsProblemOnAsset.objects.filter(report_id=report_id).first()
+        elif item_type == "stock_item":
+            report = PersonReportsProblemOnStockItem.objects.filter(report_id=report_id).first()
+        elif item_type == "consumable":
+            report = PersonReportsProblemOnConsumable.objects.filter(report_id=report_id).first()
+        else:
+            report = None
         if not report:
             return Response({"error": "Report not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -5096,7 +6200,11 @@ class ProblemReportViewSet(viewsets.ViewSet):
         next_maintenance_id = (last_item.maintenance_id + 1) if last_item else 1
 
         # Create included-item movements ONLY now (at maintenance creation time), using persisted selections.
-        included_ctx = PersonReportsProblemOnAssetIncludedContext.objects.filter(report_id=report.report_id).first()
+        # Only asset reports have included items context.
+        if item_type == "asset":
+            included_ctx = PersonReportsProblemOnAssetIncludedContext.objects.filter(report_id=report.report_id).first()
+        else:
+            included_ctx = None
         included_destination_location_id = getattr(included_ctx, "destination_location_id", None) if included_ctx else None
 
         stock_item_ids_to_include = list(
@@ -5205,66 +6313,156 @@ class ProblemReportViewSet(viewsets.ViewSet):
             except Exception:
                 pass
 
-        # If the asset is not currently in a maintenance location, creating a maintenance should initiate
-        # an asset movement request (pending) to be approved by the asset responsible.
-        asset_id = getattr(report, "asset_id", None)
-        if asset_id:
-            last_move = (
-                AssetMovement.objects.select_related("destination_location", "destination_location__location_type")
-                .filter(asset_id=asset_id)
-                .order_by("-asset_movement_id")
-                .first()
-            )
-            current_location = last_move.destination_location if last_move else None
+        # If the item is not currently in a maintenance location, creating a maintenance should initiate
+        # a movement request (pending) to be approved by the responsible person.
+        def _is_maintenance_location(location: Location | None) -> bool:
+            if not location or not getattr(location, "location_type", None):
+                return False
+            code = getattr(location.location_type, "location_type_code", None)
+            label = (getattr(location.location_type, "location_type_label", None) or "").lower()
+            if code and str(code).upper() in {"MR", "MAINTENANCE", "MAINT"}:
+                return True
+            return "maintenance" in label
 
-            def _is_maintenance_location(location: Location | None) -> bool:
-                if not location or not getattr(location, "location_type", None):
-                    return False
-                code = getattr(location.location_type, "location_type_code", None)
-                label = (getattr(location.location_type, "location_type_label", None) or "").lower()
-                if code and str(code).upper() in {"MR", "MAINTENANCE", "MAINT"}:
-                    return True
-                return "maintenance" in label
+        if item_type == "asset":
+            asset_id = getattr(report, "asset_id", None)
+            if asset_id:
+                last_move = (
+                    AssetMovement.objects.select_related("destination_location", "destination_location__location_type")
+                    .filter(asset_id=asset_id)
+                    .order_by("-asset_movement_id")
+                    .first()
+                )
+                current_location = last_move.destination_location if last_move else None
 
-            # Always require an asset-responsible decision for maintenance creation.
-            # If the asset is already in a maintenance location, we create a no-op movement (source=destination=current)
-            # purely to represent the approval requirement.
-            already_exists = AssetMovement.objects.filter(
-                asset_id=asset_id,
-                movement_reason="maintenance_create",
-                maintenance_id=next_maintenance_id,
-            ).exists()
+                already_exists = AssetMovement.objects.filter(
+                    asset_id=asset_id,
+                    movement_reason="maintenance_create",
+                    maintenance_id=next_maintenance_id,
+                ).exists()
 
-            if not already_exists:
-                if not current_location:
+                if not already_exists:
+                    if not current_location:
+                        if not destination_location_id:
+                            return Response(
+                                {
+                                    "error": "Asset is not in a maintenance location. destination_location_id is required to request moving the asset to a maintenance location.",
+                                    "current_location": None,
+                                },
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+
+                        try:
+                            destination_location_id_int = int(destination_location_id)
+                        except (TypeError, ValueError):
+                            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                        destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id_int).first()
+                        if not destination_location:
+                            return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
+
+                        if not _is_maintenance_location(destination_location):
+                            return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+
+                        dest_location_id = destination_location.location_id
+                        source_location_id = dest_location_id
+                    elif not _is_maintenance_location(current_location):
+                        if not destination_location_id:
+                            return Response(
+                                {
+                                    "error": "Asset is not in a maintenance location. destination_location_id is required to request moving the asset to a maintenance location.",
+                                    "current_location": LocationSerializer(current_location).data if current_location else None,
+                                },
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+
+                        try:
+                            destination_location_id_int = int(destination_location_id)
+                        except (TypeError, ValueError):
+                            return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                        destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id_int).first()
+                        if not destination_location:
+                            return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
+
+                        if not _is_maintenance_location(destination_location):
+                            return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+
+                        dest_location_id = destination_location.location_id
+                        source_location_id = current_location.location_id
+                    else:
+                        dest_location_id = current_location.location_id
+                        source_location_id = current_location.location_id
+
+                    last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
+                    next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
+                    _create_asset_movement_with_translations(
+                        movement_reason_en="maintenance_create",
+                        asset_movement_id=next_asset_move_id,
+                        asset_id=asset_id,
+                        source_location_id=source_location_id,
+                        destination_location_id=dest_location_id,
+                        maintenance_step_id=None,
+                        external_maintenance_step_id=None,
+                        maintenance_id=next_maintenance_id,
+                        movement_datetime=timezone.now(),
+                        status="pending",
+                    )
+
+                from api.utils.i18n import bulk_sync_status_translations
+                bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'under_internal_maintenance')
+                # Cascade to composed items, accessories, and consumables-in-stock-items
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'under_internal_maintenance')
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'under_internal_maintenance')
+                if consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'under_internal_maintenance')
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'under_internal_maintenance')
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'under_internal_maintenance')
+                if accessory_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'under_internal_maintenance')
+
+        elif item_type == "stock_item":
+            stock_item_id = getattr(report, "stock_item_id", None)
+            if stock_item_id:
+                last_move = (
+                    StockItemMovement.objects.select_related("destination_location", "destination_location__location_type")
+                    .filter(stock_item_id=stock_item_id)
+                    .order_by("-stock_item_movement_id")
+                    .first()
+                )
+                current_location = last_move.destination_location if last_move else None
+
+                if not current_location or not _is_maintenance_location(current_location):
                     if not destination_location_id:
                         return Response(
                             {
-                                "error": "Asset is not in a maintenance location. destination_location_id is required to request moving the asset to a maintenance location.",
-                                "current_location": None,
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-
-                    try:
-                        destination_location_id_int = int(destination_location_id)
-                    except (TypeError, ValueError):
-                        return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
-
-                    destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id_int).first()
-                    if not destination_location:
-                        return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
-
-                    if not _is_maintenance_location(destination_location):
-                        return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
-
-                    dest_location_id = destination_location.location_id
-                    source_location_id = dest_location_id
-                elif not _is_maintenance_location(current_location):
-                    if not destination_location_id:
-                        return Response(
-                            {
-                                "error": "Asset is not in a maintenance location. destination_location_id is required to request moving the asset to a maintenance location.",
+                                "error": "Stock item is not in a maintenance location. destination_location_id is required to request moving it.",
                                 "current_location": LocationSerializer(current_location).data if current_location else None,
                             },
                             status=status.HTTP_400_BAD_REQUEST,
@@ -5278,49 +6476,109 @@ class ProblemReportViewSet(viewsets.ViewSet):
                     destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id_int).first()
                     if not destination_location:
                         return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
-
                     if not _is_maintenance_location(destination_location):
                         return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+                    source_location = current_location or destination_location
 
-                    dest_location_id = destination_location.location_id
-                    source_location_id = current_location.location_id
-                else:
-                    dest_location_id = current_location.location_id
-                    source_location_id = current_location.location_id
+                    last_global = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
+                    next_move_id = (last_global.stock_item_movement_id + 1) if last_global else 1
+                    _create_stock_item_movement_with_translations(
+                        movement_reason="maintenance_create",
+                        stock_item_movement_id=next_move_id,
+                        stock_item_id=stock_item_id,
+                        source_location=source_location,
+                        destination_location=destination_location,
+                        maintenance_step=None,
+                        movement_datetime=timezone.now(),
+                        status="pending",
+                        maintenance_id=next_maintenance_id,
+                    )
 
-                last_asset_move = AssetMovement.objects.order_by("-asset_movement_id").first()
-                next_asset_move_id = (last_asset_move.asset_movement_id + 1) if last_asset_move else 1
-                _create_asset_movement_with_translations(
-                    movement_reason_en="maintenance_create",
-                    asset_movement_id=next_asset_move_id,
-                    asset_id=asset_id,
-                    source_location_id=source_location_id,
-                    destination_location_id=dest_location_id,
-                    maintenance_step_id=None,
-                    external_maintenance_step_id=None,
-                    maintenance_id=next_maintenance_id,
-                    movement_datetime=timezone.now(),
-                    status="pending",
+                from api.utils.i18n import bulk_sync_status_translations
+                bulk_sync_status_translations(StockItem, {'stock_item_id': stock_item_id}, 'under_internal_maintenance')
+                # Also update consumables used in this stock item
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id=stock_item_id, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
                 )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'under_internal_maintenance')
+
+        elif item_type == "consumable":
+            consumable_id = getattr(report, "consumable_id", None)
+            if consumable_id:
+                last_move = (
+                    ConsumableMovement.objects.select_related("destination_location", "destination_location__location_type")
+                    .filter(consumable_id=consumable_id)
+                    .order_by("-consumable_movement_id")
+                    .first()
+                )
+                current_location = last_move.destination_location if last_move else None
+
+                if not current_location or not _is_maintenance_location(current_location):
+                    if not destination_location_id:
+                        return Response(
+                            {
+                                "error": "Consumable is not in a maintenance location. destination_location_id is required to request moving it.",
+                                "current_location": LocationSerializer(current_location).data if current_location else None,
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
+
+                    try:
+                        destination_location_id_int = int(destination_location_id)
+                    except (TypeError, ValueError):
+                        return Response({"error": "Invalid destination_location_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    destination_location = Location.objects.select_related("location_type").filter(location_id=destination_location_id_int).first()
+                    if not destination_location:
+                        return Response({"error": "Destination location not found"}, status=status.HTTP_404_NOT_FOUND)
+                    if not _is_maintenance_location(destination_location):
+                        return Response({"error": "destination_location_id must be a maintenance location"}, status=status.HTTP_400_BAD_REQUEST)
+                    source_location = current_location or destination_location
+
+                    last_global = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
+                    next_move_id = (last_global.consumable_movement_id + 1) if last_global else 1
+                    _create_consumable_movement_with_translations(
+                        movement_reason="maintenance_create",
+                        consumable_movement_id=next_move_id,
+                        consumable_id=consumable_id,
+                        source_location=source_location,
+                        destination_location=destination_location,
+                        maintenance_step=None,
+                        movement_datetime=timezone.now(),
+                        status="pending",
+                        maintenance_id=next_maintenance_id,
+                    )
+
+                from api.utils.i18n import bulk_sync_status_translations
+                bulk_sync_status_translations(Consumable, {'consumable_id': consumable_id}, 'under_internal_maintenance')
 
         next_id = next_maintenance_id
+        create_kwargs = dict(
+            maintenance_id=next_id,
+            performed_by_person=technician,
+            approved_by_maintenance_chief=user_account.person,
+            maintenance_status="pending",
+            description=description,
+            start_datetime=None,
+            end_datetime=None,
+            is_approved_by_maintenance_chief=True,
+        )
+        if item_type == "asset":
+            create_kwargs["asset_id"] = report.asset_id
+        elif item_type == "stock_item":
+            create_kwargs["stock_item_id"] = report.stock_item_id
+        elif item_type == "consumable":
+            create_kwargs["consumable_id"] = report.consumable_id
+
         try:
-            maintenance = Maintenance.objects.create(
-                maintenance_id=next_id,
-                performed_by_person=technician,
-                approved_by_maintenance_chief=user_account.person,
-                maintenance_status="pending",
-                description=description,
-                start_datetime=None,
-                end_datetime=None,
-                asset_id=report.asset_id,
-                is_approved_by_maintenance_chief=True,
-            )
+            maintenance = Maintenance.objects.create(**create_kwargs)
         except IntegrityError:
             return Response(
                 {
                     "error": "Failed to create maintenance due to database constraints.",
-                    "details": "Check required fields and uniqueness constraints.",
                     "details": "Check required fields in Maintenance model (approved_by_maintenance_chief, end_datetime, etc.)",
                 },
                 status=status.HTTP_400_BAD_REQUEST,
@@ -5467,6 +6725,16 @@ class UserSessionViewSet(viewsets.ReadOnlyModelViewSet):
         session.logout_datetime = timezone.now()
         session.save()
         return Response({"status": "session terminated"})
+
+    @action(detail=False, methods=["post"])
+    def terminate_all(self, request):
+        current_session_id = request.auth.get("session_id") if request.auth else None
+        sessions = UserSession.objects.filter(
+            user=request.user, logout_datetime__isnull=True
+        ).exclude(session_id=current_session_id)
+        count = sessions.count()
+        sessions.update(logout_datetime=timezone.now())
+        return Response({"status": "all sessions terminated", "count": count})
 
 
 class AuthenticationLogViewSet(viewsets.ReadOnlyModelViewSet):
@@ -5835,6 +7103,13 @@ class AssetModelDefaultStockItemViewSet(viewsets.ModelViewSet):
     serializer_class = AssetModelDefaultStockItemSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        asset_model_id = self.request.query_params.get('asset_model')
+        if asset_model_id is not None:
+            queryset = queryset.filter(asset_model_id=asset_model_id)
+        return queryset
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -5847,6 +7122,33 @@ class AssetModelDefaultConsumableViewSet(viewsets.ModelViewSet):
     queryset = AssetModelDefaultConsumable.objects.all().order_by('asset_model__model_name')
     serializer_class = AssetModelDefaultConsumableSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        asset_model_id = self.request.query_params.get('asset_model')
+        if asset_model_id is not None:
+            queryset = queryset.filter(asset_model_id=asset_model_id)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class StockItemModelDefaultConsumableViewSet(viewsets.ModelViewSet):
+    """ViewSet for managing default consumables included with stock item models"""
+    queryset = StockItemModelDefaultConsumable.objects.all().order_by('stock_item_model__model_name')
+    serializer_class = StockItemModelDefaultConsumableSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        stock_item_model_id = self.request.query_params.get('stock_item_model')
+        if stock_item_model_id is not None:
+            queryset = queryset.filter(stock_item_model_id=stock_item_model_id)
+        return queryset
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -5890,6 +7192,12 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         status_param = self.request.query_params.get("asset_status")
         if status_param is not None:
             queryset = queryset.filter(asset_status=status_param)
+
+        exclude_status = self.request.query_params.get("exclude_status")
+        if exclude_status is not None:
+            excluded = [s.strip() for s in exclude_status.split(",") if s.strip()]
+            if excluded:
+                queryset = queryset.exclude(asset_status__in=excluded)
 
         failed_via_external = self.request.query_params.get("failed_via_external_maintenance")
         if failed_via_external is not None and str(failed_via_external).strip().lower() in {"1", "true", "yes"}:
@@ -6090,14 +7398,32 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             si = mapping.stock_item
             if si.stock_item_id in stock_item_ids:
                 # Suggest for destruction
-                from api.utils.i18n import bulk_sync_status_translations as _bsct_si
-                _bsct_si(StockItem, {'stock_item_id': si.stock_item_id}, 'suggested_for_destruction')
+                bulk_sync_status_translations(StockItem, {'stock_item_id': si.stock_item_id}, 'suggested_for_destruction')
+                # Also update consumables used in this stock item
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id=si.stock_item_id, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'suggested_for_destruction')
             else:
                 # Move to storage (creates pending movement)
                 if storage_location_id:
                     # End composition
                     mapping.end_datetime = now
                     mapping.save()
+                    
+                    # Update status to in_stock
+                    bulk_sync_status_translations(StockItem, {'stock_item_id': si.stock_item_id}, 'in_stock')
+                    # Also update consumables used in this stock item
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id=si.stock_item_id, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
                     
                     # Create movement request
                     last_move = StockItemMovement.objects.order_by("-stock_item_movement_id").first()
@@ -6126,14 +7452,16 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             c = mapping.consumable
             if c.consumable_id in consumable_ids:
                 # Suggest for destruction
-                from api.utils.i18n import bulk_sync_status_translations as _bsct_co
-                _bsct_co(Consumable, {'consumable_id': c.consumable_id}, 'suggested_for_destruction')
+                bulk_sync_status_translations(Consumable, {'consumable_id': c.consumable_id}, 'suggested_for_destruction')
             else:
                 # Move to storage (creates pending movement)
                 if storage_location_id:
                     # End composition
                     mapping.end_datetime = now
                     mapping.save()
+                    
+                    # Update status to in_stock
+                    bulk_sync_status_translations(Consumable, {'consumable_id': c.consumable_id}, 'in_stock')
                     
                     # Create movement request
                     last_move = ConsumableMovement.objects.order_by("-consumable_movement_id").first()
@@ -6154,23 +7482,62 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                             status="pending"
                         )
 
+        # 4. Handle Accessories linked via attribution orders
+        accessory_si_ids = list(
+            AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset.asset_id).values_list("stock_item_id", flat=True)
+        )
+        accessory_c_ids = list(
+            AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset.asset_id).values_list("consumable_id", flat=True)
+        )
+        if accessory_si_ids:
+            bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'suggested_for_destruction')
+            consumable_in_acc_si_ids = list(
+                ConsumableIsUsedInStockItemHistory.objects.filter(
+                    stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                ).values_list("consumable_id", flat=True)
+            )
+            if consumable_in_acc_si_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'suggested_for_destruction')
+        if accessory_c_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'suggested_for_destruction')
+
         asset.refresh_from_db()
         return Response(self.get_serializer(asset).data, status=status.HTTP_200_OK)
 
     def create(self, request):
+        # Debug: log incoming data to file
+        import json as _json
+        try:
+            with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                _f.write(f"\n{'='*60}\n[{timezone.now()}] AssetViewSet.create called\n")
+                _f.write(f"request.data keys: {list(request.data.keys())}\n")
+                _f.write(f"request.data: {_json.dumps(dict(request.data), default=str, indent=2)}\n")
+        except Exception:
+            pass
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Debug: log incoming data
-        print(f"[AssetViewSet.create] request.data: {request.data}")
-        print(f"[AssetViewSet.create] validated_data keys: {list(serializer.validated_data.keys())}")
+        # Debug: log validated data
+        try:
+            with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                _f.write(f"validated_data keys: {list(serializer.validated_data.keys())}\n")
+        except Exception:
+            pass
         
         # Extract included items before creating the asset
         included_stock_items = serializer.validated_data.pop('included_stock_items', [])
         included_consumables = serializer.validated_data.pop('included_consumables', [])
         
-        print(f"[AssetViewSet.create] included_stock_items: {included_stock_items}")
-        print(f"[AssetViewSet.create] included_consumables: {included_consumables}")
+        # Debug: log extracted included items
+        try:
+            with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                _f.write(f"included_stock_items: {_json.dumps(included_stock_items, default=str)}\n")
+                _f.write(f"included_consumables: {_json.dumps(included_consumables, default=str)}\n")
+                _f.write(f"included_stock_items count: {len(included_stock_items)}\n")
+                _f.write(f"included_consumables count: {len(included_consumables)}\n")
+        except Exception:
+            pass
         
         # Extract translations before creating the asset
         translations_data = serializer.validated_data.pop('translations', None)
@@ -6219,17 +7586,40 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 ar_entry['asset_status'] = translate_status(asset.asset_status, 'ar')
             save_translations(asset, {'en': en_entry, 'ar': ar_entry})
         
-        # If asset has an attribution_order, create default composition
+        # If asset has an asset_model, create default composition
         attribution_order_obj = serializer.validated_data.get('attribution_order')
         attribution_order_id = getattr(attribution_order_obj, 'attribution_order_id', attribution_order_obj)
         asset_model_obj = serializer.validated_data.get('asset_model')
         asset_model_id = getattr(asset_model_obj, 'asset_model_id', asset_model_obj)
         
-        if attribution_order_id and asset_model_id:
+        if asset_model_id:
+            # Always create default composition from the asset model
+            try:
+                self._create_default_composition(asset, asset_model_id, attribution_order_id)
+            except Exception as _e:
+                import json as _json
+                try:
+                    with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                        _f.write(f"\n[ERROR] _create_default_composition failed: {_e}\n")
+                        import traceback
+                        _f.write(traceback.format_exc())
+                except Exception:
+                    pass
+            # Additionally create any explicitly included items (extra beyond defaults)
+            try:
+                with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                    _f.write(f"attribution_order_id={attribution_order_id}, asset_model_id={asset_model_id}\n")
+                    _f.write(f"Will call _create_included_items? {bool(included_stock_items or included_consumables)}\n")
+            except Exception:
+                pass
             if included_stock_items or included_consumables:
                 self._create_included_items(asset, attribution_order_id, included_stock_items, included_consumables)
-            else:
-                self._create_default_composition(asset, asset_model_id, attribution_order_id)
+        else:
+            try:
+                with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                    _f.write(f"SKIPPED composition: asset_model_id={asset_model_id}\n")
+            except Exception:
+                pass
 
         _sync_asset_attribute_values(asset)
         
@@ -6239,7 +7629,7 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         now = timezone.now()
 
         for item in (included_stock_items or []):
-            stock_item_model_id = item.get('stock_item_model')
+            stock_item_model_id = int(item.get('stock_item_model')) if item.get('stock_item_model') else None
             quantity = int(item.get('quantity') or 1)
             instances = item.get('instances') if isinstance(item, dict) else None
             if not stock_item_model_id or quantity < 1:
@@ -6253,11 +7643,13 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 if isinstance(instances, list) and len(instances) > 0:
                     inst_payload = instances.pop(0)
 
+                si_name = (inst_payload or {}).get('stock_item_name') or f"Stock item model {stock_item_model_id} (included with {asset})"
+                si_inv = (inst_payload or {}).get('stock_item_inventory_number') or None
                 stock_item = StockItem.objects.create(
                     stock_item_id=next_si_id,
                     stock_item_model_id=stock_item_model_id,
-                    stock_item_name=(inst_payload or {}).get('stock_item_name') or f"Stock item model {stock_item_model_id} (included with {asset})",
-                    stock_item_inventory_number=(inst_payload or {}).get('stock_item_inventory_number') or None,
+                    stock_item_name=si_name[:48] if si_name else None,
+                    stock_item_inventory_number=si_inv[:6] if si_inv else None,
                     stock_item_status='not_delivered_to_company'
                 )
 
@@ -6270,8 +7662,11 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     end_datetime=None
                 )
 
+                # Create default consumables for this stock item model
+                self._create_stock_item_default_consumables(stock_item, attribution_order_id)
+
         for item in (included_consumables or []):
-            consumable_model_id = item.get('consumable_model')
+            consumable_model_id = int(item.get('consumable_model')) if item.get('consumable_model') else None
             quantity = int(item.get('quantity') or 1)
             instances = item.get('instances') if isinstance(item, dict) else None
             if not consumable_model_id or quantity < 1:
@@ -6285,12 +7680,15 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 if isinstance(instances, list) and len(instances) > 0:
                     inst_payload = instances.pop(0)
 
+                cons_name = (inst_payload or {}).get('consumable_name') or f"Consumable model {consumable_model_id} (included with {asset})"
+                cons_serial = (inst_payload or {}).get('consumable_serial_number') or None
+                cons_inv = (inst_payload or {}).get('consumable_inventory_number') or None
                 consumable = Consumable.objects.create(
                     consumable_id=next_cons_id,
                     consumable_model_id=consumable_model_id,
-                    consumable_name=(inst_payload or {}).get('consumable_name') or f"Consumable model {consumable_model_id} (included with {asset})",
-                    consumable_serial_number=(inst_payload or {}).get('consumable_serial_number') or None,
-                    consumable_inventory_number=(inst_payload or {}).get('consumable_inventory_number') or None,
+                    consumable_name=cons_name[:48] if cons_name else None,
+                    consumable_serial_number=cons_serial[:48] if cons_serial else None,
+                    consumable_inventory_number=cons_inv[:6] if cons_inv else None,
                     consumable_status='not_delivered_to_company'
                 )
 
@@ -6303,14 +7701,26 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     end_datetime=None
                 )
     
+    def _create_stock_item_default_consumables(self, stock_item, attribution_order_id=None):
+        return _create_stock_item_default_consumables(stock_item, attribution_order_id)
+
     def _create_default_composition(self, asset, asset_model_id, attribution_order_id):
         """Create stock items/consumables based on asset model defaults and record composition history"""
+        import json as _json
         now = timezone.now()
         
         # Get default stock items for this asset model
         default_stock_items = AssetModelDefaultStockItem.objects.filter(
             asset_model_id=asset_model_id
         ).select_related('stock_item_model')
+
+        # Debug: log default composition
+        try:
+            with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                _f.write(f"\n[_create_default_composition] asset={asset} asset_model_id={asset_model_id}\n")
+                _f.write(f"  default_stock_items count: {default_stock_items.count()}\n")
+        except Exception:
+            pass
         
         for default_item in default_stock_items:
             # Create StockItem records for each quantity
@@ -6318,10 +7728,11 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 last_si = StockItem.objects.order_by("-stock_item_id").first()
                 next_si_id = (last_si.stock_item_id + 1) if last_si else 1
                 
+                si_name = f"{default_item.stock_item_model} (included with {asset})"
                 stock_item = StockItem.objects.create(
                     stock_item_id=next_si_id,
                     stock_item_model_id=default_item.stock_item_model_id,
-                    stock_item_name=f"{default_item.stock_item_model} (included with {asset})",
+                    stock_item_name=si_name[:48] if si_name else None,
                     stock_item_status='not_delivered_to_company'
                 )
                 
@@ -6334,11 +7745,30 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                     start_datetime=now,
                     end_datetime=None
                 )
+
+                # Create default consumables for this stock item model
+                try:
+                    self._create_stock_item_default_consumables(stock_item, attribution_order_id)
+                except Exception as _dc_e:
+                    try:
+                        with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                            _f.write(f"  [ERROR] _create_stock_item_default_consumables failed for stock_item={stock_item}: {_dc_e}\n")
+                            import traceback
+                            _f.write(traceback.format_exc())
+                    except Exception:
+                        pass
         
         # Get default consumables for this asset model
         default_consumables = AssetModelDefaultConsumable.objects.filter(
             asset_model_id=asset_model_id
         ).select_related('consumable_model')
+
+        # Debug: log default consumables
+        try:
+            with open('included_items_debug.log', 'a', encoding='utf-8') as _f:
+                _f.write(f"  default_consumables count: {default_consumables.count()}\n")
+        except Exception:
+            pass
         
         for default_item in default_consumables:
             # Create Consumable records for each quantity
@@ -6346,10 +7776,11 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 last_cons = Consumable.objects.order_by("-consumable_id").first()
                 next_cons_id = (last_cons.consumable_id + 1) if last_cons else 1
                 
+                cons_name = f"{default_item.consumable_model} (included with {asset})"
                 consumable = Consumable.objects.create(
                     consumable_id=next_cons_id,
                     consumable_model_id=default_item.consumable_model_id,
-                    consumable_name=f"{default_item.consumable_model} (included with {asset})",
+                    consumable_name=cons_name[:48] if cons_name else None,
                     consumable_status='not_delivered_to_company'
                 )
                 
@@ -6506,6 +7937,52 @@ class AssetViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         instance = self.get_object()
         _sync_asset_attribute_values(instance)
         return response
+
+    @action(detail=True, methods=["get"], url_path="composition-history")
+    def composition_history(self, request, pk=None):
+        asset = self.get_object()
+        stock_item_history = AssetIsComposedOfStockItemHistory.objects.filter(
+            asset_id=asset.asset_id
+        ).select_related('stock_item', 'maintenance_step', 'attribution_order').order_by('-start_datetime')
+
+        consumable_history = AssetIsComposedOfConsumableHistory.objects.filter(
+            asset_id=asset.asset_id
+        ).select_related('consumable', 'maintenance_step', 'attribution_order').order_by('-start_datetime')
+
+        stock_items = []
+        for h in stock_item_history:
+            stock_items.append({
+                'id': h.id,
+                'stock_item_id': h.stock_item_id,
+                'stock_item_name': getattr(h.stock_item, 'stock_item_name', None),
+                'stock_item_inventory_number': getattr(h.stock_item, 'stock_item_inventory_number', None),
+                'stock_item_status': getattr(h.stock_item, 'stock_item_status', None),
+                'maintenance_step_id': h.maintenance_step_id,
+                'attribution_order_id': h.attribution_order_id,
+                'start_datetime': h.start_datetime.isoformat() if h.start_datetime else None,
+                'end_datetime': h.end_datetime.isoformat() if h.end_datetime else None,
+                'is_current': h.end_datetime is None,
+            })
+
+        consumables = []
+        for h in consumable_history:
+            consumables.append({
+                'id': h.id,
+                'consumable_id': h.consumable_id,
+                'consumable_name': getattr(h.consumable, 'consumable_name', None),
+                'consumable_inventory_number': getattr(h.consumable, 'consumable_inventory_number', None),
+                'consumable_status': getattr(h.consumable, 'consumable_status', None),
+                'maintenance_step_id': h.maintenance_step_id,
+                'attribution_order_id': h.attribution_order_id,
+                'start_datetime': h.start_datetime.isoformat() if h.start_datetime else None,
+                'end_datetime': h.end_datetime.isoformat() if h.end_datetime else None,
+                'is_current': h.end_datetime is None,
+            })
+
+        return Response({
+            'stock_items': stock_items,
+            'consumables': consumables,
+        }, status=status.HTTP_200_OK)
 
 
 class AssetAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -6896,6 +8373,11 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         status_param = self.request.query_params.get("stock_item_status")
         if status_param is not None:
             queryset = queryset.filter(stock_item_status=status_param)
+        exclude_status = self.request.query_params.get("exclude_status")
+        if exclude_status is not None:
+            excluded = [s.strip() for s in exclude_status.split(",") if s.strip()]
+            if excluded:
+                queryset = queryset.exclude(stock_item_status__in=excluded)
         destruction_certificate_id = self.request.query_params.get("destruction_certificate_id")
         if destruction_certificate_id is not None:
             try:
@@ -6930,9 +8412,6 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 if instance.stock_item_status and 'stock_item_status' not in en_data:
                     en_data['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
                     translations_data['en'] = en_data
-                if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in en_data:
-                    en_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
-                    translations_data['en'] = en_data
                 ar_data = translations_data.get('ar', {})
                 if instance.stock_item_name and 'stock_item_name' not in ar_data:
                     ar_data['stock_item_name'] = instance.stock_item_name
@@ -6940,25 +8419,18 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
                 if instance.stock_item_status and 'stock_item_status' not in ar_data:
                     ar_data['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
                     translations_data['ar'] = ar_data
-                if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in ar_data:
-                    ar_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
-                    translations_data['ar'] = ar_data
                 save_translations(instance, translations_data)
-            elif instance.stock_item_name or instance.stock_item_status or instance.stock_item_name_in_administrative_certificate:
+            elif instance.stock_item_name or instance.stock_item_status:
                 en_entry = {}
                 if instance.stock_item_name:
                     en_entry['stock_item_name'] = instance.stock_item_name
                 if instance.stock_item_status:
                     en_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
-                if instance.stock_item_name_in_administrative_certificate:
-                    en_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
                 ar_entry = {}
                 if instance.stock_item_name:
                     ar_entry['stock_item_name'] = instance.stock_item_name
                 if instance.stock_item_status:
                     ar_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
-                if instance.stock_item_name_in_administrative_certificate:
-                    ar_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
                 save_translations(instance, {'en': en_entry, 'ar': ar_entry})
             if "stock_item_status" in request.data:
                 from api.utils.i18n import sync_status_translations
@@ -7001,6 +8473,14 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
 
         from api.utils.i18n import bulk_sync_status_translations
         bulk_sync_status_translations(StockItem, {'stock_item_id': item.stock_item_id}, 'suggested_for_destruction')
+        # Also update consumables used in this stock item
+        consumable_in_si_ids = list(
+            ConsumableIsUsedInStockItemHistory.objects.filter(
+                stock_item_id=item.stock_item_id, end_datetime__isnull=True
+            ).values_list("consumable_id", flat=True)
+        )
+        if consumable_in_si_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'suggested_for_destruction')
         item.refresh_from_db()
         return Response(self.get_serializer(item).data, status=status.HTTP_200_OK)
 
@@ -7046,9 +8526,6 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             if item.stock_item_status and 'stock_item_status' not in en_data:
                 en_data['stock_item_status'] = translate_status(item.stock_item_status, 'en')
                 translations_data['en'] = en_data
-            if item.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in en_data:
-                en_data['stock_item_name_in_administrative_certificate'] = item.stock_item_name_in_administrative_certificate
-                translations_data['en'] = en_data
             ar_data = translations_data.get('ar', {})
             if item.stock_item_name and 'stock_item_name' not in ar_data:
                 ar_data['stock_item_name'] = item.stock_item_name
@@ -7056,27 +8533,21 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             if item.stock_item_status and 'stock_item_status' not in ar_data:
                 ar_data['stock_item_status'] = translate_status(item.stock_item_status, 'ar')
                 translations_data['ar'] = ar_data
-            if item.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in ar_data:
-                ar_data['stock_item_name_in_administrative_certificate'] = item.stock_item_name_in_administrative_certificate
-                translations_data['ar'] = ar_data
             save_translations(item, translations_data)
-        elif item.stock_item_name or item.stock_item_status or item.stock_item_name_in_administrative_certificate:
+        elif item.stock_item_name or item.stock_item_status:
             en_entry = {}
             if item.stock_item_name:
                 en_entry['stock_item_name'] = item.stock_item_name
             if item.stock_item_status:
                 en_entry['stock_item_status'] = translate_status(item.stock_item_status, 'en')
-            if item.stock_item_name_in_administrative_certificate:
-                en_entry['stock_item_name_in_administrative_certificate'] = item.stock_item_name_in_administrative_certificate
             ar_entry = {}
             if item.stock_item_name:
                 ar_entry['stock_item_name'] = item.stock_item_name
             if item.stock_item_status:
                 ar_entry['stock_item_status'] = translate_status(item.stock_item_status, 'ar')
-            if item.stock_item_name_in_administrative_certificate:
-                ar_entry['stock_item_name_in_administrative_certificate'] = item.stock_item_name_in_administrative_certificate
             save_translations(item, {'en': en_entry, 'ar': ar_entry})
         _sync_stock_item_attribute_values(item)
+        _create_stock_item_default_consumables(item)
         return Response(StockItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="split")
@@ -7400,6 +8871,29 @@ class StockItemViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+
+    @action(detail=True, methods=["get"], url_path="composition-history")
+    def composition_history(self, request, pk=None):
+        stock_item = self.get_object()
+        history = AssetIsComposedOfStockItemHistory.objects.filter(
+            stock_item_id=stock_item.stock_item_id
+        ).select_related('asset', 'maintenance_step', 'attribution_order').order_by('-start_datetime')
+
+        result = []
+        for h in history:
+            entry = {
+                'id': h.id,
+                'asset_id': h.asset_id,
+                'asset_name': getattr(h.asset, 'asset_name', None),
+                'asset_inventory_number': getattr(h.asset, 'asset_inventory_number', None),
+                'maintenance_step_id': h.maintenance_step_id,
+                'attribution_order_id': h.attribution_order_id,
+                'start_datetime': h.start_datetime.isoformat() if h.start_datetime else None,
+                'end_datetime': h.end_datetime.isoformat() if h.end_datetime else None,
+                'is_current': h.end_datetime is None,
+            }
+            result.append(entry)
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class StockItemAttributeDefinitionViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
@@ -7798,6 +9292,11 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
         status_param = self.request.query_params.get("consumable_status")
         if status_param is not None:
             queryset = queryset.filter(consumable_status=status_param)
+        exclude_status = self.request.query_params.get("exclude_status")
+        if exclude_status is not None:
+            excluded = [s.strip() for s in exclude_status.split(",") if s.strip()]
+            if excluded:
+                queryset = queryset.exclude(consumable_status__in=excluded)
         destruction_certificate_id = self.request.query_params.get("destruction_certificate_id")
         if destruction_certificate_id is not None:
             try:
@@ -7832,9 +9331,6 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             if instance.consumable_status and 'consumable_status' not in en_data:
                 en_data['consumable_status'] = translate_status(instance.consumable_status, 'en')
                 translations_data['en'] = en_data
-            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in en_data:
-                en_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
-                translations_data['en'] = en_data
             ar_data = translations_data.get('ar', {})
             if instance.consumable_name and 'consumable_name' not in ar_data:
                 ar_data['consumable_name'] = instance.consumable_name
@@ -7842,25 +9338,18 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             if instance.consumable_status and 'consumable_status' not in ar_data:
                 ar_data['consumable_status'] = translate_status(instance.consumable_status, 'ar')
                 translations_data['ar'] = ar_data
-            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in ar_data:
-                ar_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
-                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.consumable_name or instance.consumable_status or instance.consumable_name_in_administrative_certificate:
+        elif instance.consumable_name or instance.consumable_status:
             en_entry = {}
             if instance.consumable_name:
                 en_entry['consumable_name'] = instance.consumable_name
             if instance.consumable_status:
                 en_entry['consumable_status'] = translate_status(instance.consumable_status, 'en')
-            if instance.consumable_name_in_administrative_certificate:
-                en_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
             ar_entry = {}
             if instance.consumable_name:
                 ar_entry['consumable_name'] = instance.consumable_name
             if instance.consumable_status:
                 ar_entry['consumable_status'] = translate_status(instance.consumable_status, 'ar')
-            if instance.consumable_name_in_administrative_certificate:
-                ar_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
             save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         if "consumable_status" in request.data:
             from api.utils.i18n import sync_status_translations
@@ -8287,6 +9776,29 @@ class ConsumableViewSet(SuperuserWriteMixin, viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+    @action(detail=True, methods=["get"], url_path="composition-history")
+    def composition_history(self, request, pk=None):
+        consumable = self.get_object()
+        history = AssetIsComposedOfConsumableHistory.objects.filter(
+            consumable_id=consumable.consumable_id
+        ).select_related('asset', 'maintenance_step', 'attribution_order').order_by('-start_datetime')
+
+        result = []
+        for h in history:
+            entry = {
+                'id': h.id,
+                'asset_id': h.asset_id,
+                'asset_name': getattr(h.asset, 'asset_name', None),
+                'asset_inventory_number': getattr(h.asset, 'asset_inventory_number', None),
+                'maintenance_step_id': h.maintenance_step_id,
+                'attribution_order_id': h.attribution_order_id,
+                'start_datetime': h.start_datetime.isoformat() if h.start_datetime else None,
+                'end_datetime': h.end_datetime.isoformat() if h.end_datetime else None,
+                'is_current': h.end_datetime is None,
+            }
+            result.append(entry)
+        return Response(result, status=status.HTTP_200_OK)
+
 
 class StockItemConsumableDestructionCertificateViewSet(viewsets.ModelViewSet):
     queryset = StockItemConsumableDestructionCertificate.objects.all().order_by("-destruction_certificate_id")
@@ -8407,6 +9919,18 @@ class StockItemConsumableDestructionCertificateViewSet(viewsets.ModelViewSet):
             from api.utils.i18n import bulk_sync_status_translations
             bulk_sync_status_translations(StockItem, {'stock_item_consumable_destruction_certificate_id': cert.destruction_certificate_id}, 'destroyed')
             bulk_sync_status_translations(Consumable, {'stock_item_consumable_destruction_certificate_id': cert.destruction_certificate_id}, 'destroyed')
+            # Also update consumables used in the destroyed stock items
+            destroyed_stock_item_ids = list(
+                StockItem.objects.filter(stock_item_consumable_destruction_certificate_id=cert.destruction_certificate_id).values_list("stock_item_id", flat=True)
+            )
+            if destroyed_stock_item_ids:
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=destroyed_stock_item_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'destroyed')
 
         cert.refresh_from_db()
         return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
@@ -8587,6 +10111,45 @@ class AssetDestructionCertificateViewSet(viewsets.ModelViewSet):
             )
             from api.utils.i18n import bulk_sync_status_translations
             bulk_sync_status_translations(Asset, {'destruction_certificate_id': cert.asset_destruction_certificate_id}, 'destroyed')
+            # Cascade to composed items, accessories, and consumables-in-stock-items
+            asset_ids = list(
+                Asset.objects.filter(destruction_certificate_id=cert.asset_destruction_certificate_id).values_list("asset_id", flat=True)
+            )
+            for asset_id in asset_ids:
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'destroyed')
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'destroyed')
+                if consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'destroyed')
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'destroyed')
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'destroyed')
+                if accessory_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'destroyed')
 
         cert.refresh_from_db()
         return Response(self.get_serializer(cert).data, status=status.HTTP_200_OK)
@@ -9221,6 +10784,49 @@ class AssetIsAssignedToPersonViewSet(viewsets.ModelViewSet):
                 is_active=True, 
                 **data
             )
+
+            # Cascade: assign composing stock items and consumables to the same person
+            _cascade_assign_asset_composition(assignment.asset, assignment.person, person, assignment.start_datetime)
+
+            # Update status to 'assigned' with cascading
+            from api.utils.i18n import bulk_sync_status_translations
+            asset_id = assignment.asset_id
+            bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'assigned')
+            stock_item_ids = list(
+                AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+            )
+            consumable_ids = list(
+                AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+            )
+            if stock_item_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'assigned')
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'assigned')
+            if consumable_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'assigned')
+            accessory_si_ids = list(
+                AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+            )
+            accessory_c_ids = list(
+                AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+            )
+            if accessory_si_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'assigned')
+                consumable_in_acc_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_acc_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'assigned')
+            if accessory_c_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'assigned')
+
             return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
         except Exception as e:
             print(f"--- Asset Assignment Creation ERROR: {str(e)}")
@@ -9245,6 +10851,9 @@ class AssetIsAssignedToPersonViewSet(viewsets.ModelViewSet):
         assignment = self.get_object()
         assignment.is_confirmed_by_exploitation_chief = person
         assignment.save()
+
+        # Cascade: confirm child stock item and consumable assignments
+        _cascade_confirm_asset_composition(assignment.asset, person)
 
         return Response(self.get_serializer(assignment).data)
 
@@ -9279,6 +10888,48 @@ class AssetIsAssignedToPersonViewSet(viewsets.ModelViewSet):
         assignment.end_datetime = timezone.now()
         assignment.is_active = False
         assignment.save()
+
+        # Cascade: discharge composing stock items and consumables
+        _cascade_discharge_asset_composition(assignment.asset, person=assignment.person)
+
+        # Update status to 'in_stock' with cascading
+        from api.utils.i18n import bulk_sync_status_translations
+        asset_id = assignment.asset_id
+        bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'in_stock')
+        stock_item_ids = list(
+            AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+        )
+        consumable_ids = list(
+            AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+        )
+        if stock_item_ids:
+            bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'in_stock')
+            consumable_in_si_ids = list(
+                ConsumableIsUsedInStockItemHistory.objects.filter(
+                    stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                ).values_list("consumable_id", flat=True)
+            )
+            if consumable_in_si_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+        if consumable_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'in_stock')
+        accessory_si_ids = list(
+            AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+        )
+        accessory_c_ids = list(
+            AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+        )
+        if accessory_si_ids:
+            bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'in_stock')
+            consumable_in_acc_si_ids = list(
+                ConsumableIsUsedInStockItemHistory.objects.filter(
+                    stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                ).values_list("consumable_id", flat=True)
+            )
+            if consumable_in_acc_si_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'in_stock')
+        if accessory_c_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'in_stock')
 
         return Response(self.get_serializer(assignment).data)
 
@@ -9355,6 +11006,21 @@ class StockItemIsAssignedToPersonViewSet(viewsets.ModelViewSet):
             is_active=True,
             **data,
         )
+
+        # Cascade: assign consumables used in this stock item to the same person
+        _cascade_assign_stock_item_consumables(assignment.stock_item, assignment.person, person, assignment.start_datetime)
+
+        # Update status to 'assigned' with cascading
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(StockItem, {'stock_item_id': assignment.stock_item_id}, 'assigned')
+        consumable_in_si_ids = list(
+            ConsumableIsUsedInStockItemHistory.objects.filter(
+                stock_item_id=assignment.stock_item_id, end_datetime__isnull=True
+            ).values_list("consumable_id", flat=True)
+        )
+        if consumable_in_si_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'assigned')
+
         return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
@@ -9387,6 +11053,43 @@ class StockItemIsAssignedToPersonViewSet(viewsets.ModelViewSet):
         assignment.end_datetime = timezone.now()
         assignment.is_active = False
         assignment.save()
+
+        # Cascade: discharge consumables used in this stock item
+        _cascade_discharge_stock_item_consumables(assignment.stock_item, person=assignment.person)
+
+        # Update status to 'in_stock' with cascading
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(StockItem, {'stock_item_id': assignment.stock_item_id}, 'in_stock')
+        consumable_in_si_ids = list(
+            ConsumableIsUsedInStockItemHistory.objects.filter(
+                stock_item_id=assignment.stock_item_id, end_datetime__isnull=True
+            ).values_list("consumable_id", flat=True)
+        )
+        if consumable_in_si_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+
+        return Response(self.get_serializer(assignment).data)
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, pk=None):
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        if ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (not user_account.is_superuser()):
+            return Response({"error": "Only Exploitation Chief can confirm assignments"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        assignment.is_confirmed_by_exploitation_chief = person
+        assignment.save()
+
+        # Cascade: confirm child consumable assignments
+        _cascade_confirm_stock_item_consumables(assignment.stock_item, person)
 
         return Response(self.get_serializer(assignment).data)
 
@@ -9463,6 +11166,11 @@ class ConsumableIsAssignedToPersonViewSet(viewsets.ModelViewSet):
             is_active=True,
             **data,
         )
+
+        # Update status to 'assigned'
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(Consumable, {'consumable_id': assignment.consumable_id}, 'assigned')
+
         return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
@@ -9494,6 +11202,429 @@ class ConsumableIsAssignedToPersonViewSet(viewsets.ModelViewSet):
 
         assignment.end_datetime = timezone.now()
         assignment.is_active = False
+        assignment.save()
+
+        # Update status to 'in_stock'
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(Consumable, {'consumable_id': assignment.consumable_id}, 'in_stock')
+
+        return Response(self.get_serializer(assignment).data)
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, pk=None):
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        if ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (not user_account.is_superuser()):
+            return Response({"error": "Only Exploitation Chief can confirm assignments"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        assignment.is_confirmed_by_exploitation_chief = person
+        assignment.save()
+
+        return Response(self.get_serializer(assignment).data)
+
+
+class AssetIsAssignedToOrgStructureViewSet(viewsets.ModelViewSet):
+    queryset = AssetIsAssignedToOrgStructure.objects.all().order_by("-start_datetime")
+    serializer_class = AssetIsAssignedToOrgStructureSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        return AssetIsAssignedToPersonViewSet()._get_user_account(request)
+
+    def get_queryset(self):
+        qs = AssetIsAssignedToOrgStructure.objects.all().order_by("-start_datetime")
+        asset_id = self.request.query_params.get("asset")
+        org_structure_id = self.request.query_params.get("organizational_structure")
+        is_active = self.request.query_params.get("is_active")
+        if asset_id not in (None, ""):
+            try: qs = qs.filter(asset_id=int(asset_id))
+            except (TypeError, ValueError): pass
+        if org_structure_id not in (None, ""):
+            try: qs = qs.filter(organizational_structure_id=int(org_structure_id))
+            except (TypeError, ValueError): pass
+        if is_active in ("true", "false"):
+            qs = qs.filter(is_active=(is_active == "true"))
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+        is_asset_responsible = "asset_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+        is_itbc = "it_bureau_chief" in role_codes
+        if not (is_asset_responsible or is_superuser or is_exploitation_chief or is_itbc):
+            return Response({"error": "Only Asset Responsible or superiors can assign assets"}, status=status.HTTP_403_FORBIDDEN)
+
+        asset_id = request.data.get("asset")
+        if not asset_id:
+            return Response({"error": "Asset ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check for active person assignment OR org assignment
+        if AssetIsAssignedToPerson.objects.filter(asset_id=asset_id, is_active=True).exists():
+            return Response({"error": "This asset is already assigned to a person and active."}, status=status.HTTP_400_BAD_REQUEST)
+        if AssetIsAssignedToOrgStructure.objects.filter(asset_id=asset_id, is_active=True).exists():
+            return Response({"error": "This asset is already assigned to an org structure and active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data.copy()
+
+        last_item = AssetIsAssignedToOrgStructure.objects.order_by("-assignment_id").first()
+        next_id = (last_item.assignment_id + 1) if last_item else 1
+
+        try:
+            assignment = AssetIsAssignedToOrgStructure.objects.create(
+                assignment_id=next_id, assigned_by_person=person, is_active=True, **data
+            )
+
+            # Cascade: assign composing stock items and consumables to the same org structure
+            _cascade_assign_asset_composition_to_org(assignment.asset, assignment.organizational_structure, person, assignment.start_datetime)
+
+            # Update status to 'assigned' with cascading
+            from api.utils.i18n import bulk_sync_status_translations
+            asset_id = assignment.asset_id
+            bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'assigned')
+            stock_item_ids = list(AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True))
+            consumable_ids = list(AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True))
+            if stock_item_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'assigned')
+                consumable_in_si_ids = list(ConsumableIsUsedInStockItemHistory.objects.filter(stock_item_id__in=stock_item_ids, end_datetime__isnull=True).values_list("consumable_id", flat=True))
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'assigned')
+            if consumable_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'assigned')
+            accessory_si_ids = list(AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True))
+            accessory_c_ids = list(AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True))
+            if accessory_si_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'assigned')
+                consumable_in_acc_si_ids = list(ConsumableIsUsedInStockItemHistory.objects.filter(stock_item_id__in=accessory_si_ids, end_datetime__isnull=True).values_list("consumable_id", flat=True))
+                if consumable_in_acc_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'assigned')
+            if accessory_c_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'assigned')
+
+            return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=["post"])
+    def discharge(self, request, pk=None):
+        from django.utils import timezone
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+        is_asset_responsible = "asset_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+        is_itbc = "it_bureau_chief" in role_codes
+        if not (is_asset_responsible or is_superuser or is_exploitation_chief or is_itbc):
+            return Response({"error": "Only Asset Responsible or superiors can discharge assets"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        if not assignment.is_active:
+            return Response({"error": "This assignment is already inactive."}, status=status.HTTP_400_BAD_REQUEST)
+
+        assignment.end_datetime = timezone.now()
+        assignment.is_active = False
+        assignment.save()
+
+        # Cascade discharge composition assigned to org
+        _cascade_discharge_asset_org_composition(assignment.asset, organizational_structure=assignment.organizational_structure)
+
+        # Update status to 'in_stock' with cascading
+        from api.utils.i18n import bulk_sync_status_translations
+        asset_id = assignment.asset_id
+        bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'in_stock')
+        stock_item_ids = list(AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True))
+        consumable_ids = list(AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True))
+        if stock_item_ids:
+            bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'in_stock')
+            consumable_in_si_ids = list(ConsumableIsUsedInStockItemHistory.objects.filter(stock_item_id__in=stock_item_ids, end_datetime__isnull=True).values_list("consumable_id", flat=True))
+            if consumable_in_si_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+        if consumable_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'in_stock')
+
+        return Response(self.get_serializer(assignment).data)
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, pk=None):
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        if ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (not user_account.is_superuser()):
+            return Response({"error": "Only Exploitation Chief can confirm assignments"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        assignment.is_confirmed_by_exploitation_chief = person
+        assignment.save()
+
+        # Cascade: confirm child stock item and consumable org assignments
+        _cascade_confirm_asset_org_composition(assignment.asset, person)
+
+        return Response(self.get_serializer(assignment).data)
+
+
+class StockItemIsAssignedToOrgStructureViewSet(viewsets.ModelViewSet):
+    queryset = StockItemIsAssignedToOrgStructure.objects.all().order_by("-start_datetime")
+    serializer_class = StockItemIsAssignedToOrgStructureSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        return AssetIsAssignedToPersonViewSet()._get_user_account(request)
+
+    def get_queryset(self):
+        qs = StockItemIsAssignedToOrgStructure.objects.all().order_by("-start_datetime")
+        stock_item_id = self.request.query_params.get("stock_item")
+        org_structure_id = self.request.query_params.get("organizational_structure")
+        is_active = self.request.query_params.get("is_active")
+        if stock_item_id not in (None, ""):
+            try: qs = qs.filter(stock_item_id=int(stock_item_id))
+            except (TypeError, ValueError): pass
+        if org_structure_id not in (None, ""):
+            try: qs = qs.filter(organizational_structure_id=int(org_structure_id))
+            except (TypeError, ValueError): pass
+        if is_active in ("true", "false"):
+            qs = qs.filter(is_active=(is_active == "true"))
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+        is_responsible = "stock_consumable_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+        if not (is_responsible or is_superuser or is_exploitation_chief):
+            return Response({"error": "Only Stock/Consumable Responsible or superiors can assign stock items"}, status=status.HTTP_403_FORBIDDEN)
+
+        stock_item_id = request.data.get("stock_item")
+        if not stock_item_id:
+            return Response({"error": "Stock item ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if StockItemIsAssignedToPerson.objects.filter(stock_item_id=stock_item_id, is_active=True).exists():
+            return Response({"error": "This stock item is already assigned to a person and active."}, status=status.HTTP_400_BAD_REQUEST)
+        if StockItemIsAssignedToOrgStructure.objects.filter(stock_item_id=stock_item_id, is_active=True).exists():
+            return Response({"error": "This stock item is already assigned to an org structure and active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data.copy()
+
+        last_item = StockItemIsAssignedToOrgStructure.objects.order_by("-assignment_id").first()
+        next_id = (last_item.assignment_id + 1) if last_item else 1
+
+        assignment = StockItemIsAssignedToOrgStructure.objects.create(
+            assignment_id=next_id, assigned_by_person=person, is_active=True, **data,
+        )
+
+        # Cascade: assign consumables used in this stock item to the same org structure
+        _cascade_assign_stock_item_consumables_to_org(assignment.stock_item, assignment.organizational_structure, person, assignment.start_datetime)
+
+        # Update status to 'assigned' with cascading
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(StockItem, {'stock_item_id': assignment.stock_item_id}, 'assigned')
+        consumable_in_si_ids = list(ConsumableIsUsedInStockItemHistory.objects.filter(stock_item_id=assignment.stock_item_id, end_datetime__isnull=True).values_list("consumable_id", flat=True))
+        if consumable_in_si_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'assigned')
+
+        return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"])
+    def discharge(self, request, pk=None):
+        from django.utils import timezone
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+        is_responsible = "stock_consumable_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+        if not (is_responsible or is_superuser or is_exploitation_chief):
+            return Response({"error": "Only Stock/Consumable Responsible or superiors can discharge stock items"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        if not assignment.is_active:
+            return Response({"error": "This assignment is already inactive."}, status=status.HTTP_400_BAD_REQUEST)
+
+        assignment.end_datetime = timezone.now()
+        assignment.is_active = False
+        assignment.save()
+
+        # Cascade discharge consumables assigned to org via this stock item
+        _cascade_discharge_stock_item_org_consumables(assignment.stock_item, organizational_structure=assignment.organizational_structure)
+
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(StockItem, {'stock_item_id': assignment.stock_item_id}, 'in_stock')
+        consumable_in_si_ids = list(ConsumableIsUsedInStockItemHistory.objects.filter(stock_item_id=assignment.stock_item_id, end_datetime__isnull=True).values_list("consumable_id", flat=True))
+        if consumable_in_si_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+
+        return Response(self.get_serializer(assignment).data)
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, pk=None):
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        if ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (not user_account.is_superuser()):
+            return Response({"error": "Only Exploitation Chief can confirm assignments"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        assignment.is_confirmed_by_exploitation_chief = person
+        assignment.save()
+
+        # Cascade: confirm child consumable org assignments
+        _cascade_confirm_stock_item_org_consumables(assignment.stock_item, person)
+
+        return Response(self.get_serializer(assignment).data)
+
+
+class ConsumableIsAssignedToOrgStructureViewSet(viewsets.ModelViewSet):
+    queryset = ConsumableIsAssignedToOrgStructure.objects.all().order_by("-start_datetime")
+    serializer_class = ConsumableIsAssignedToOrgStructureSerializer
+    permission_classes = [IsAuthenticated]
+
+    def _get_user_account(self, request):
+        return AssetIsAssignedToPersonViewSet()._get_user_account(request)
+
+    def get_queryset(self):
+        qs = ConsumableIsAssignedToOrgStructure.objects.all().order_by("-start_datetime")
+        consumable_id = self.request.query_params.get("consumable")
+        org_structure_id = self.request.query_params.get("organizational_structure")
+        is_active = self.request.query_params.get("is_active")
+        if consumable_id not in (None, ""):
+            try: qs = qs.filter(consumable_id=int(consumable_id))
+            except (TypeError, ValueError): pass
+        if org_structure_id not in (None, ""):
+            try: qs = qs.filter(organizational_structure_id=int(org_structure_id))
+            except (TypeError, ValueError): pass
+        if is_active in ("true", "false"):
+            qs = qs.filter(is_active=(is_active == "true"))
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        user_account = self._get_user_account(request)
+        if not user_account:
+            return Response({"error": "User account not found"}, status=status.HTTP_404_NOT_FOUND)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+        is_responsible = "stock_consumable_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+        if not (is_responsible or is_superuser or is_exploitation_chief):
+            return Response({"error": "Only Stock/Consumable Responsible or superiors can assign consumables"}, status=status.HTTP_403_FORBIDDEN)
+
+        consumable_id = request.data.get("consumable")
+        if not consumable_id:
+            return Response({"error": "Consumable ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if ConsumableIsAssignedToPerson.objects.filter(consumable_id=consumable_id, is_active=True).exists():
+            return Response({"error": "This consumable is already assigned to a person and active."}, status=status.HTTP_400_BAD_REQUEST)
+        if ConsumableIsAssignedToOrgStructure.objects.filter(consumable_id=consumable_id, is_active=True).exists():
+            return Response({"error": "This consumable is already assigned to an org structure and active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data.copy()
+
+        last_item = ConsumableIsAssignedToOrgStructure.objects.order_by("-assignment_id").first()
+        next_id = (last_item.assignment_id + 1) if last_item else 1
+
+        assignment = ConsumableIsAssignedToOrgStructure.objects.create(
+            assignment_id=next_id, assigned_by_person=person, is_active=True, **data,
+        )
+
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(Consumable, {'consumable_id': assignment.consumable_id}, 'assigned')
+
+        return Response(self.get_serializer(assignment).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"])
+    def discharge(self, request, pk=None):
+        from django.utils import timezone
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True))
+        is_responsible = "stock_consumable_responsible" in role_codes
+        is_superuser = user_account.is_superuser()
+        is_exploitation_chief = "exploitation_chief" in role_codes
+        if not (is_responsible or is_superuser or is_exploitation_chief):
+            return Response({"error": "Only Stock/Consumable Responsible or superiors can discharge consumables"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        if not assignment.is_active:
+            return Response({"error": "This assignment is already inactive."}, status=status.HTTP_400_BAD_REQUEST)
+
+        assignment.end_datetime = timezone.now()
+        assignment.is_active = False
+        assignment.save()
+
+        from api.utils.i18n import bulk_sync_status_translations
+        bulk_sync_status_translations(Consumable, {'consumable_id': assignment.consumable_id}, 'in_stock')
+
+        return Response(self.get_serializer(assignment).data)
+
+    @action(detail=True, methods=["post"])
+    def confirm(self, request, pk=None):
+        user_account = self._get_user_account(request)
+        person = getattr(user_account, "person", None)
+        if not person:
+            return Response({"error": "Person profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=person).values_list("role__role_code", flat=True)
+        )
+
+        if ("exploitation_chief" not in role_codes) and ("it_bureau_chief" not in role_codes) and (not user_account.is_superuser()):
+            return Response({"error": "Only Exploitation Chief can confirm assignments"}, status=status.HTTP_403_FORBIDDEN)
+
+        assignment = self.get_object()
+        assignment.is_confirmed_by_exploitation_chief = person
         assignment.save()
 
         return Response(self.get_serializer(assignment).data)
@@ -9954,53 +12085,11 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
             if cursor.fetchone() is None:
                 return Response({"error": "Purchase order not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            cursor.execute(
-                """
-                SELECT stock_item_model_id, COALESCE(quantity_received, 0)
-                FROM public.stock_item_model_is_found_in_purchase_order
-                WHERE purchase_order_id = %s
-                """,
-                [purchase_order_id],
-            )
-            stock_lines = cursor.fetchall()
+        stock_items_qs = StockItem.objects.filter(purchase_order_id=purchase_order_id).select_related('stock_item_model__stock_item_type', 'stock_item_model__stock_item_brand').order_by("stock_item_id")
+        stock_items = [StockItemSerializer(s).data for s in stock_items_qs]
 
-            cursor.execute(
-                """
-                SELECT consumable_model_id, COALESCE(quantity_received, 0)
-                FROM public.consumable_model_is_found_in_purchase_order
-                WHERE purchase_order_id = %s
-                """,
-                [purchase_order_id],
-            )
-            cons_lines = cursor.fetchall()
-
-        stock_items = []
-        for model_id, qty in stock_lines:
-            try:
-                qty_int = int(qty or 0)
-            except (TypeError, ValueError):
-                qty_int = 0
-            if qty_int <= 0:
-                continue
-            qs = list(
-                StockItem.objects.filter(stock_item_model_id=model_id)
-                .order_by("-stock_item_id")[:qty_int]
-            )
-            stock_items.extend([StockItemSerializer(s).data for s in qs])
-
-        consumables = []
-        for model_id, qty in cons_lines:
-            try:
-                qty_int = int(qty or 0)
-            except (TypeError, ValueError):
-                qty_int = 0
-            if qty_int <= 0:
-                continue
-            qs = list(
-                Consumable.objects.filter(consumable_model_id=model_id)
-                .order_by("-consumable_id")[:qty_int]
-            )
-            consumables.extend([ConsumableSerializer(c).data for c in qs])
+        consumables_qs = Consumable.objects.filter(purchase_order_id=purchase_order_id).select_related('consumable_model__consumable_type', 'consumable_model__consumable_brand').order_by("consumable_id")
+        consumables = [ConsumableSerializer(c).data for c in consumables_qs]
 
         return Response(
             {
@@ -10194,6 +12283,11 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 return None
             return int(v)
 
+        created_stock_items = []
+        created_consumables = []
+        created_stock_items_detail = []
+        created_consumables_detail = []
+
         with transaction.atomic():
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -10215,6 +12309,20 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                         )
                     if newly_received < 0:
                         return Response({"error": "quantity_received cannot be negative"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    # Optional per-instance details
+                    si_instances = raw.get("instances")
+                    if si_instances is not None:
+                        if not isinstance(si_instances, list):
+                            return Response(
+                                {"error": "instances must be a list for stock_item_models"},
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+                        if len(si_instances) != newly_received:
+                            return Response(
+                                {"error": f"instances length ({len(si_instances)}) must match quantity_received ({newly_received}) for stock_item_model_id={stock_item_model_id}"},
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
 
                     cursor.execute(
                         """
@@ -10252,6 +12360,37 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                         [qty_received_new, purchase_order_id, stock_item_model_id],
                     )
 
+                    # Create stock_item instances for the newly received quantity
+                    for i in range(newly_received):
+                        cursor.execute("SELECT COALESCE(MAX(stock_item_id), 0) + 1 FROM public.stock_item")
+                        next_si_id = cursor.fetchone()[0]
+                        inst = si_instances[i] if si_instances else {}
+                        si_name = inst.get("stock_item_name") or None
+                        si_serial = inst.get("stock_item_serial_number") or None
+                        si_inv = inst.get("stock_item_inventory_number") or None
+                        cursor.execute(
+                            """
+                            INSERT INTO public.stock_item
+                                (stock_item_id, stock_item_model_id, stock_item_name,
+                                 stock_item_serial_number, stock_item_inventory_number,
+                                 stock_item_status,
+                                 stock_item_arrival_datetime, purchase_order_id)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            """,
+                            [next_si_id, stock_item_model_id, si_name,
+                             si_serial, si_inv, "not_delivered_to_company",
+                             timezone.now(), purchase_order_id],
+                        )
+                        created_stock_items.append(next_si_id)
+                        # Look up type_id for this model
+                        cursor.execute(
+                            "SELECT stock_item_type_id FROM public.stock_item_model WHERE stock_item_model_id = %s",
+                            [stock_item_model_id],
+                        )
+                        si_type_row = cursor.fetchone()
+                        si_type_id = si_type_row[0] if si_type_row else None
+                        created_stock_items_detail.append({"id": next_si_id, "model_id": stock_item_model_id, "type_id": si_type_id})
+
                 for raw in consumable_models:
                     if not isinstance(raw, dict):
                         return Response({"error": "Each consumable_models entry must be an object"}, status=status.HTTP_400_BAD_REQUEST)
@@ -10264,6 +12403,20 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                         )
                     if newly_received < 0:
                         return Response({"error": "quantity_received cannot be negative"}, status=status.HTTP_400_BAD_REQUEST)
+
+                    # Optional per-instance details
+                    c_instances = raw.get("instances")
+                    if c_instances is not None:
+                        if not isinstance(c_instances, list):
+                            return Response(
+                                {"error": "instances must be a list for consumable_models"},
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+                        if len(c_instances) != newly_received:
+                            return Response(
+                                {"error": f"instances length ({len(c_instances)}) must match quantity_received ({newly_received}) for consumable_model_id={consumable_model_id}"},
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
 
                     cursor.execute(
                         """
@@ -10300,6 +12453,38 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                         """,
                         [qty_received_new, purchase_order_id, consumable_model_id],
                     )
+
+                    # Create consumable instances for the newly received quantity
+                    for i in range(newly_received):
+                        cursor.execute("SELECT COALESCE(MAX(consumable_id), 0) + 1 FROM public.consumable")
+                        next_c_id = cursor.fetchone()[0]
+                        inst = c_instances[i] if c_instances else {}
+                        c_name = inst.get("consumable_name") or None
+                        c_serial = inst.get("consumable_serial_number") or None
+                        c_inv = inst.get("consumable_inventory_number") or None
+                        c_tag = inst.get("consumable_service_tag") or None
+                        cursor.execute(
+                            """
+                            INSERT INTO public.consumable
+                                (consumable_id, consumable_model_id, consumable_name,
+                                 consumable_serial_number, consumable_inventory_number,
+                                 consumable_service_tag, consumable_status,
+                                 consumable_arrival_datetime, purchase_order_id)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            """,
+                            [next_c_id, consumable_model_id, c_name,
+                             c_serial, c_inv, c_tag, "not_delivered_to_company",
+                             timezone.now(), purchase_order_id],
+                        )
+                        created_consumables.append(next_c_id)
+                        # Look up type_id for this model
+                        cursor.execute(
+                            "SELECT consumable_type_id FROM public.consumable_model WHERE consumable_model_id = %s",
+                            [consumable_model_id],
+                        )
+                        c_type_row = cursor.fetchone()
+                        c_type_id = c_type_row[0] if c_type_row else None
+                        created_consumables_detail.append({"id": next_c_id, "model_id": consumable_model_id, "type_id": c_type_id})
 
                 cursor.execute(
                     """
@@ -10372,6 +12557,10 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 "purchase_order_id": purchase_order_id,
                 "has_remaining": bool(has_remaining),
                 "backorder_report_id": backorder_report_id,
+                "created_stock_item_ids": created_stock_items,
+                "created_consumable_ids": created_consumables,
+                "created_stock_items": created_stock_items_detail,
+                "created_consumables": created_consumables_detail,
             },
             status=status.HTTP_200_OK,
         )
@@ -11030,6 +13219,18 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                 )
                 flags = cursor.fetchone()
 
+                # If all signatures are complete, update stock items and consumables to in_stock
+                if all(flags):
+                    from api.utils.i18n import bulk_sync_status_translations
+                    bulk_sync_status_translations(StockItem, {
+                        'purchase_order_id': purchase_order_id,
+                        'stock_item_status': 'not_delivered_to_company',
+                    }, 'in_stock')
+                    bulk_sync_status_translations(Consumable, {
+                        'purchase_order_id': purchase_order_id,
+                        'consumable_status': 'not_delivered_to_company',
+                    }, 'in_stock')
+
         return Response(
             {
                 "acceptance_report_id": acceptance_report_id,
@@ -11120,6 +13321,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                        m.model_name,
                        b.brand_name,
                        t.stock_item_type_label,
+                       t.stock_item_type_id,
                        l.quantity_ordered,
                        l.quantity_received,
                        l.unit_price
@@ -11140,6 +13342,7 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                        m.model_name,
                        b.brand_name,
                        t.consumable_type_label,
+                       t.consumable_type_id,
                        l.quantity_ordered,
                        l.quantity_received,
                        l.unit_price
@@ -11167,9 +13370,10 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                         "model_name": r[1],
                         "brand_name": r[2],
                         "type_label": r[3],
-                        "quantity_ordered": r[4],
-                        "quantity_received": r[5],
-                        "unit_price": r[6],
+                        "type_id": r[4],
+                        "quantity_ordered": r[5],
+                        "quantity_received": r[6],
+                        "unit_price": r[7],
                     }
                     for r in stock_rows
                 ],
@@ -11179,9 +13383,10 @@ class PurchaseOrderViewSet(viewsets.ViewSet):
                         "model_name": r[1],
                         "brand_name": r[2],
                         "type_label": r[3],
-                        "quantity_ordered": r[4],
-                        "quantity_received": r[5],
-                        "unit_price": r[6],
+                        "type_id": r[4],
+                        "quantity_ordered": r[5],
+                        "quantity_received": r[6],
+                        "unit_price": r[7],
                     }
                     for r in consumable_rows
                 ],
@@ -11726,6 +13931,7 @@ class AttributionOrderAssetStockItemAccessoryViewSet(viewsets.ModelViewSet):
                 next_id = (last_item.stock_item_id + 1) if last_item else 1
                 item = StockItem.objects.create(stock_item_id=next_id, **serializer_item.validated_data)
                 _sync_stock_item_attribute_values(item)
+                _create_stock_item_default_consumables(item)
                 data['stock_item'] = item.stock_item_id
 
             serializer = self.get_serializer(data=data)
@@ -11881,6 +14087,36 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
                 pass
         return queryset
 
+    SIGNATURE_FIELDS = {
+        'is_signed_by_warehouse_storage_magaziner',
+        'is_signed_by_warehouse_storage_accountant',
+        'is_signed_by_warehouse_storage_marketer',
+        'is_signed_by_warehouse_it_chief',
+        'is_signed_by_warehouse_leader',
+    }
+
+    def partial_update(self, request, *args, **kwargs):
+        user_account = getattr(request, "user", None)
+        if not user_account or not getattr(user_account, "is_superuser", False):
+            return Response(
+                {"error": "Only superusers can sign administrative certificates"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        data = request.data
+        disallowed = set(data.keys()) - self.SIGNATURE_FIELDS
+        if disallowed:
+            return Response(
+                {"error": f"Only signature fields can be updated. Remove: {', '.join(sorted(disallowed))}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        cert = self.get_object()
+        serializer = self.get_serializer(cert, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
     def perform_update(self, serializer):
         instance = serializer.save()
         self._check_signatures_and_update_status(instance)
@@ -11926,6 +14162,45 @@ class AdministrativeCertificateViewSet(viewsets.ModelViewSet):
                         'consumable_id__in': consumable_ids,
                         'consumable_status': 'not_delivered_to_company',
                     }, 'in_stock')
+
+                # Also update composed items of the assets and consumables-in-stock-items
+                asset_ids = list(
+                    Asset.objects.filter(
+                        attribution_order_id=cert.attribution_order_id,
+                        asset_status='in_stock',
+                    ).values_list('asset_id', flat=True)
+                )
+                for asset_id in asset_ids:
+                    composed_si_ids = list(
+                        AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                    )
+                    composed_c_ids = list(
+                        AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                    )
+                    if composed_si_ids:
+                        bulk_sync_status_translations(StockItem, {'stock_item_id__in': composed_si_ids}, 'in_stock')
+                        consumable_in_si_ids = list(
+                            ConsumableIsUsedInStockItemHistory.objects.filter(
+                                stock_item_id__in=composed_si_ids, end_datetime__isnull=True
+                            ).values_list("consumable_id", flat=True)
+                        )
+                        if consumable_in_si_ids:
+                            bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+                    if composed_c_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': composed_c_ids}, 'in_stock')
+
+                # Also update consumables used in accessory stock items
+                if stock_item_ids:
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {
+                            'consumable_id__in': consumable_in_acc_si_ids,
+                            'consumable_status': 'not_delivered_to_company',
+                        }, 'in_stock')
 
     def create(self, request, *args, **kwargs):
         user_account = getattr(request, "user", None)
@@ -12299,14 +14574,8 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
         if report_status != "submitted":
             return
         from api.utils.i18n import bulk_sync_status_translations
-        Asset.objects.filter(asset_id=report.asset_id).update(asset_status=reason_status)
-        # Sync asset status translations
-        try:
-            asset = Asset.objects.get(asset_id=report.asset_id)
-            from api.utils.i18n import sync_status_translations
-            sync_status_translations(asset, reason_status)
-        except Asset.DoesNotExist:
-            pass
+        asset_id = report.asset_id
+        bulk_sync_status_translations(Asset, {'asset_id': asset_id}, reason_status)
         stock_item_status_overrides = stock_item_status_overrides or {}
         consumable_status_overrides = consumable_status_overrides or {}
 
@@ -12345,6 +14614,36 @@ class AssetIncidentReportViewSet(viewsets.ModelViewSet):
                     bulk_sync_status_translations(Consumable, {'consumable_id__in': list(remaining_ids)}, reason_status)
             else:
                 bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, reason_status)
+
+        # Also update consumables used in the composing stock items
+        all_stock_item_ids = stock_item_ids or []
+        if all_stock_item_ids:
+            consumable_in_si_ids = list(
+                ConsumableIsUsedInStockItemHistory.objects.filter(
+                    stock_item_id__in=all_stock_item_ids, end_datetime__isnull=True
+                ).values_list("consumable_id", flat=True)
+            )
+            if consumable_in_si_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, reason_status)
+
+        # Also update accessories linked to the asset via attribution orders
+        accessory_si_ids = list(
+            AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+        )
+        accessory_c_ids = list(
+            AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+        )
+        if accessory_si_ids:
+            bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, reason_status)
+            consumable_in_acc_si_ids = list(
+                ConsumableIsUsedInStockItemHistory.objects.filter(
+                    stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                ).values_list("consumable_id", flat=True)
+            )
+            if consumable_in_acc_si_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, reason_status)
+        if accessory_c_ids:
+            bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, reason_status)
 
     def create(self, request, *args, **kwargs):
         user_account = SuperuserWriteMixin()._get_user_account(request)
@@ -13065,16 +15364,37 @@ class AssignmentsListView(APIView):
             'model': AssetIsAssignedToPerson,
             'item_fk': 'asset',
             'serializer': AssetIsAssignedToPersonSerializer,
+            'assignee_fk': 'person',
         },
         'stock_item': {
             'model': StockItemIsAssignedToPerson,
             'item_fk': 'stock_item',
             'serializer': StockItemIsAssignedToPersonSerializer,
+            'assignee_fk': 'person',
         },
         'consumable': {
             'model': ConsumableIsAssignedToPerson,
             'item_fk': 'consumable',
             'serializer': ConsumableIsAssignedToPersonSerializer,
+            'assignee_fk': 'person',
+        },
+        'asset_org': {
+            'model': AssetIsAssignedToOrgStructure,
+            'item_fk': 'asset',
+            'serializer': AssetIsAssignedToOrgStructureSerializer,
+            'assignee_fk': 'organizational_structure',
+        },
+        'stock_item_org': {
+            'model': StockItemIsAssignedToOrgStructure,
+            'item_fk': 'stock_item',
+            'serializer': StockItemIsAssignedToOrgStructureSerializer,
+            'assignee_fk': 'organizational_structure',
+        },
+        'consumable_org': {
+            'model': ConsumableIsAssignedToOrgStructure,
+            'item_fk': 'consumable',
+            'serializer': ConsumableIsAssignedToOrgStructureSerializer,
+            'assignee_fk': 'organizational_structure',
         },
     }
 
@@ -13093,19 +15413,27 @@ class AssignmentsListView(APIView):
 
     def _get_allowed_types(self, role_codes, is_superuser):
         if is_superuser or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes:
-            return ['asset', 'stock_item', 'consumable']
+            return ['asset', 'stock_item', 'consumable', 'asset_org', 'stock_item_org', 'consumable_org']
         types = []
         if 'asset_responsible' in role_codes:
             types.append('asset')
+            types.append('asset_org')
         if 'stock_consumable_responsible' in role_codes:
             types.extend(['stock_item', 'consumable'])
+            types.extend(['stock_item_org', 'consumable_org'])
         return types
 
     def _build_queryset(self, item_type, params):
         cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
         model = cfg['model']
         item_fk = cfg['item_fk']
-        qs = model.objects.select_related('person', 'assigned_by_person', 'is_confirmed_by_exploitation_chief', item_fk).all()
+        assignee_fk = cfg.get('assignee_fk', 'person')
+        is_org = assignee_fk == 'organizational_structure'
+
+        if is_org:
+            qs = model.objects.select_related('organizational_structure', 'assigned_by_person', 'is_confirmed_by_exploitation_chief', item_fk).all()
+        else:
+            qs = model.objects.select_related('person', 'assigned_by_person', 'is_confirmed_by_exploitation_chief', item_fk).all()
 
         # is_active filter
         is_active = params.get('is_active')
@@ -13141,42 +15469,56 @@ class AssignmentsListView(APIView):
             except (TypeError, ValueError):
                 pass
 
-        # person (assignee) filter
-        person_id = params.get('person')
-        if person_id:
-            try:
-                qs = qs.filter(person_id=int(person_id))
-            except (TypeError, ValueError):
-                pass
+        # person (assignee) filter - only for person assignments
+        if not is_org:
+            person_id = params.get('person')
+            if person_id:
+                try:
+                    qs = qs.filter(person_id=int(person_id))
+                except (TypeError, ValueError):
+                    pass
 
-        # position/department filter
-        position_id = params.get('position')
-        if position_id:
-            try:
-                person_ids = PersonAssignment.objects.filter(
-                    position_id=int(position_id)
-                ).values_list('person_id', flat=True)
-                qs = qs.filter(person_id__in=person_ids)
-            except (TypeError, ValueError):
-                pass
+        # org structure (assignee) filter - only for org assignments
+        if is_org:
+            org_id = params.get('organizational_structure')
+            if org_id:
+                try:
+                    qs = qs.filter(organizational_structure_id=int(org_id))
+                except (TypeError, ValueError):
+                    pass
+
+        # position/department filter - only for person assignments
+        if not is_org:
+            position_id = params.get('position')
+            if position_id:
+                try:
+                    person_ids = PersonAssignment.objects.filter(
+                        position_id=int(position_id)
+                    ).values_list('person_id', flat=True)
+                    qs = qs.filter(person_id__in=person_ids)
+                except (TypeError, ValueError):
+                    pass
 
         # search filter
         search = params.get('search', '').strip()
         if search:
             search_conditions = Q()
-            if item_type == 'asset':
+            if item_type in ('asset', 'asset_org'):
                 search_conditions |= Q(asset__asset_name__icontains=search)
                 search_conditions |= Q(asset__asset_inventory_number__icontains=search)
                 search_conditions |= Q(asset__asset_serial_number__icontains=search)
-            elif item_type == 'stock_item':
+            elif item_type in ('stock_item', 'stock_item_org'):
                 search_conditions |= Q(stock_item__stock_item_name__icontains=search)
                 search_conditions |= Q(stock_item__stock_item_inventory_number__icontains=search)
-            elif item_type == 'consumable':
+            elif item_type in ('consumable', 'consumable_org'):
                 search_conditions |= Q(consumable__consumable_name__icontains=search)
                 search_conditions |= Q(consumable__consumable_inventory_number__icontains=search)
                 search_conditions |= Q(consumable__consumable_serial_number__icontains=search)
-            search_conditions |= Q(person__first_name__icontains=search)
-            search_conditions |= Q(person__last_name__icontains=search)
+            if is_org:
+                search_conditions |= Q(organizational_structure__structure_name__icontains=search)
+            else:
+                search_conditions |= Q(person__first_name__icontains=search)
+                search_conditions |= Q(person__last_name__icontains=search)
             search_conditions |= Q(assigned_by_person__first_name__icontains=search)
             search_conditions |= Q(assigned_by_person__last_name__icontains=search)
             qs = qs.filter(search_conditions)
@@ -13245,15 +15587,19 @@ class AssignmentsListView(APIView):
                 except Exception:
                     continue
                 serialized['item_type'] = item_type
-                # Enrich with person position info
-                person_obj = assignment.person
-                if person_obj:
-                    pa = PersonAssignment.objects.filter(person=person_obj).select_related('position').first()
-                    if pa and pa.position:
-                        serialized['person_position'] = {
-                            'position_id': pa.position.position_id,
-                            'position_label': pa.position.position_label,
-                        }
+                # Enrich with person position info (only for person assignments)
+                is_org = cfg.get('assignee_fk', 'person') == 'organizational_structure'
+                if not is_org:
+                    person_obj = assignment.person
+                    if person_obj:
+                        pa = PersonAssignment.objects.filter(person=person_obj).select_related('position').first()
+                        if pa and pa.position:
+                            serialized['person_position'] = {
+                                'position_id': pa.position.position_id,
+                                'position_label': pa.position.position_label,
+                            }
+                        else:
+                            serialized['person_position'] = None
                     else:
                         serialized['person_position'] = None
                 else:
@@ -13316,14 +15662,15 @@ class AssignmentsListView(APIView):
         is_superuser = user_account.is_superuser()
         if is_superuser:
             return True
-        if item_type == 'asset':
+        if item_type in ('asset', 'asset_org'):
             return 'asset_responsible' in role_codes or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes
         return 'stock_consumable_responsible' in role_codes or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes
 
     def post(self, request):
-        """Handle bulk discharge, item history, and quick reassign actions.
+        """Handle assign, bulk discharge, item history, and quick reassign actions.
 
         Request body must include 'action' field:
+        - 'assign': create a new assignment. Body: {action, item_type, item_id, person_id, start_datetime}
         - 'bulk_discharge': discharge multiple assignments. Body: {action, items: [{assignment_id, item_type}, ...]}
         - 'item_history': get full assignment history for an item. Body: {action, item_type, item_id}
         - 'quick_reassign': discharge current and create new assignment. Body: {action, assignment_id, item_type, new_person_id, start_datetime}
@@ -13338,14 +15685,176 @@ class AssignmentsListView(APIView):
 
         action = request.data.get('action', '')
 
-        if action == 'bulk_discharge':
+        if action == 'assign':
+            return self._quick_assign(request, user_account, person)
+        elif action == 'bulk_discharge':
             return self._bulk_discharge(request, user_account, person)
         elif action == 'item_history':
             return self._item_history(request, user_account)
         elif action == 'quick_reassign':
             return self._quick_reassign(request, user_account, person)
         else:
-            return Response({"error": "Invalid action. Use 'bulk_discharge', 'item_history', or 'quick_reassign'"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid action. Use 'assign', 'bulk_discharge', 'item_history', or 'quick_reassign'"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def _quick_assign(self, request, user_account, person):
+        """Create a new assignment for an item to a person or org structure."""
+        item_type = request.data.get('item_type')
+        item_id = request.data.get('item_id')
+        person_id = request.data.get('person_id')
+        org_structure_id = request.data.get('organizational_structure_id')
+        start_datetime = request.data.get('start_datetime')
+
+        is_org = item_type and item_type.endswith('_org')
+
+        if not item_type or not item_id:
+            return Response({"error": "item_type and item_id are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if is_org and not org_structure_id:
+            return Response({"error": "organizational_structure_id is required for org structure assignments"}, status=status.HTTP_400_BAD_REQUEST)
+        if not is_org and not person_id:
+            return Response({"error": "person_id is required for person assignments"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if item_type not in self.ASSIGNMENT_TYPE_MAP:
+            return Response({"error": "Invalid item_type"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check assign permission
+        role_codes = set(
+            PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
+        )
+        is_superuser = user_account.is_superuser()
+        if item_type in ('asset', 'asset_org'):
+            can_assign = is_superuser or 'asset_responsible' in role_codes or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes
+        else:
+            can_assign = is_superuser or 'stock_consumable_responsible' in role_codes or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes
+        if not can_assign:
+            return Response({"error": f"You do not have permission to assign {item_type}"}, status=status.HTTP_403_FORBIDDEN)
+
+        cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
+        model = cfg['model']
+        item_fk = cfg['item_fk']
+
+        # Check item exists
+        item_model_map = {
+            'asset': Asset, 'asset_org': Asset,
+            'stock_item': StockItem, 'stock_item_org': StockItem,
+            'consumable': Consumable, 'consumable_org': Consumable,
+        }
+        item_model = item_model_map[item_type]
+        try:
+            item_obj = item_model.objects.get(**{f'{item_fk}_id': item_id})
+        except item_model.DoesNotExist:
+            return Response({"error": f"Item not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Check for active assignment across both person and org tables
+        base_type = item_type.replace('_org', '')
+        person_type_cfg = self.ASSIGNMENT_TYPE_MAP.get(base_type)
+        org_type_cfg = self.ASSIGNMENT_TYPE_MAP.get(base_type + '_org')
+        if person_type_cfg and person_type_cfg['model'].objects.filter(**{f'{item_fk}_id': item_id, 'is_active': True}).exists():
+            return Response({"error": f"This item is already assigned to a person and active."}, status=status.HTTP_400_BAD_REQUEST)
+        if org_type_cfg and org_type_cfg['model'].objects.filter(**{f'{item_fk}_id': item_id, 'is_active': True}).exists():
+            return Response({"error": f"This item is already assigned to an org structure and active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        last_item = model.objects.order_by("-assignment_id").first()
+        next_id = (last_item.assignment_id + 1) if last_item else 1
+
+        if is_org:
+            # Verify org structure exists
+            try:
+                target_org = OrganizationalStructure.objects.get(organizational_structure_id=int(org_structure_id))
+            except OrganizationalStructure.DoesNotExist:
+                return Response({"error": "Organizational structure not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            assignment = model.objects.create(
+                assignment_id=next_id,
+                organizational_structure=target_org,
+                assigned_by_person=person,
+                **{f'{item_fk}_id': item_id},
+                start_datetime=start_datetime or timezone.now(),
+                is_active=True,
+            )
+
+            # Cascade assign composition
+            if item_type == 'asset_org':
+                _cascade_assign_asset_composition_to_org(assignment.asset, target_org, person, assignment.start_datetime)
+            elif item_type == 'stock_item_org':
+                _cascade_assign_stock_item_consumables_to_org(assignment.stock_item, target_org, person, assignment.start_datetime)
+        else:
+            # Verify person exists
+            try:
+                target_person = Person.objects.get(person_id=int(person_id))
+            except Person.DoesNotExist:
+                return Response({"error": "Person not found"}, status=status.HTTP_404_NOT_FOUND)
+
+            assignment = model.objects.create(
+                assignment_id=next_id,
+                person=target_person,
+                assigned_by_person=person,
+                **{f'{item_fk}_id': item_id},
+                start_datetime=start_datetime or timezone.now(),
+                is_active=True,
+            )
+
+            # Cascade assign composition
+            if item_type == 'asset':
+                _cascade_assign_asset_composition(assignment.asset, target_person, person, assignment.start_datetime)
+            elif item_type == 'stock_item':
+                _cascade_assign_stock_item_consumables(assignment.stock_item, target_person, person, assignment.start_datetime)
+
+        # Update status to 'assigned' with cascading
+        from api.utils.i18n import bulk_sync_status_translations
+        if item_type in ('asset', 'asset_org'):
+            asset_id = assignment.asset_id
+            bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'assigned')
+            stock_item_ids = list(
+                AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+            )
+            consumable_ids = list(
+                AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+            )
+            if stock_item_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'assigned')
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'assigned')
+            if consumable_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'assigned')
+            accessory_si_ids = list(
+                AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+            )
+            accessory_c_ids = list(
+                AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+            )
+            if accessory_si_ids:
+                bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'assigned')
+                consumable_in_acc_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_acc_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'assigned')
+            if accessory_c_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'assigned')
+        elif item_type in ('stock_item', 'stock_item_org'):
+            bulk_sync_status_translations(StockItem, {'stock_item_id': assignment.stock_item_id}, 'assigned')
+            consumable_in_si_ids = list(
+                ConsumableIsUsedInStockItemHistory.objects.filter(
+                    stock_item_id=assignment.stock_item_id, end_datetime__isnull=True
+                ).values_list("consumable_id", flat=True)
+            )
+            if consumable_in_si_ids:
+                bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'assigned')
+        elif item_type in ('consumable', 'consumable_org'):
+            bulk_sync_status_translations(Consumable, {'consumable_id': assignment.consumable_id}, 'assigned')
+
+        cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
+        serialized = cfg['serializer'](assignment).data
+        serialized['item_type'] = item_type
+        return Response(serialized, status=status.HTTP_201_CREATED)
 
     def _bulk_discharge(self, request, user_account, person):
         """Discharge multiple assignments at once."""
@@ -13384,6 +15893,68 @@ class AssignmentsListView(APIView):
             assignment.end_datetime = now
             assignment.is_active = False
             assignment.save()
+
+            # Cascade discharge for asset and stock item compositions
+            if item_type == 'asset':
+                _cascade_discharge_asset_composition(assignment.asset, person=assignment.person)
+            elif item_type == 'stock_item':
+                _cascade_discharge_stock_item_consumables(assignment.stock_item, person=assignment.person)
+            elif item_type == 'asset_org':
+                _cascade_discharge_asset_org_composition(assignment.asset, organizational_structure=assignment.organizational_structure)
+            elif item_type == 'stock_item_org':
+                _cascade_discharge_stock_item_org_consumables(assignment.stock_item, organizational_structure=assignment.organizational_structure)
+
+            # Update status to 'in_stock' with cascading
+            from api.utils.i18n import bulk_sync_status_translations
+            if item_type in ('asset', 'asset_org'):
+                asset_id = assignment.asset_id
+                bulk_sync_status_translations(Asset, {'asset_id': asset_id}, 'in_stock')
+                stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': stock_item_ids}, 'in_stock')
+                    consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+                if consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_ids}, 'in_stock')
+                accessory_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=asset_id).values_list("stock_item_id", flat=True)
+                )
+                accessory_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=asset_id).values_list("consumable_id", flat=True)
+                )
+                if accessory_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': accessory_si_ids}, 'in_stock')
+                    consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=accessory_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_acc_si_ids}, 'in_stock')
+                if accessory_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': accessory_c_ids}, 'in_stock')
+            elif item_type in ('stock_item', 'stock_item_org'):
+                bulk_sync_status_translations(StockItem, {'stock_item_id': assignment.stock_item_id}, 'in_stock')
+                consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id=assignment.stock_item_id, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': consumable_in_si_ids}, 'in_stock')
+            elif item_type in ('consumable', 'consumable_org'):
+                bulk_sync_status_translations(Consumable, {'consumable_id': assignment.consumable_id}, 'in_stock')
+
             discharged.append(assignment_id)
 
         return Response({
@@ -13414,24 +15985,33 @@ class AssignmentsListView(APIView):
         cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
         model = cfg['model']
         item_fk = cfg['item_fk']
+        is_org = cfg.get('assignee_fk', 'person') == 'organizational_structure'
 
-        qs = model.objects.filter(**{f'{item_fk}_id': item_id}).select_related(
-            'person', 'assigned_by_person', 'is_confirmed_by_exploitation_chief'
-        ).order_by('-start_datetime')
+        if is_org:
+            qs = model.objects.filter(**{f'{item_fk}_id': item_id}).select_related(
+                'organizational_structure', 'assigned_by_person', 'is_confirmed_by_exploitation_chief'
+            ).order_by('-start_datetime')
+        else:
+            qs = model.objects.filter(**{f'{item_fk}_id': item_id}).select_related(
+                'person', 'assigned_by_person', 'is_confirmed_by_exploitation_chief'
+            ).order_by('-start_datetime')
 
         history = []
         for assignment in qs:
             serialized = cfg['serializer'](assignment).data
             serialized['item_type'] = item_type
-            # Enrich with position
-            person_obj = assignment.person
-            if person_obj:
-                pa = PersonAssignment.objects.filter(person=person_obj).select_related('position').first()
-                if pa and pa.position:
-                    serialized['person_position'] = {
-                        'position_id': pa.position.position_id,
-                        'position_label': pa.position.position_label,
-                    }
+            # Enrich with position (only for person assignments)
+            if not is_org:
+                person_obj = assignment.person
+                if person_obj:
+                    pa = PersonAssignment.objects.filter(person=person_obj).select_related('position').first()
+                    if pa and pa.position:
+                        serialized['person_position'] = {
+                            'position_id': pa.position.position_id,
+                            'position_label': pa.position.position_label,
+                        }
+                    else:
+                        serialized['person_position'] = None
                 else:
                     serialized['person_position'] = None
             else:
@@ -13441,13 +16021,21 @@ class AssignmentsListView(APIView):
         return Response({"history": history, "count": len(history)}, status=status.HTTP_200_OK)
 
     def _quick_reassign(self, request, user_account, person):
-        """Discharge current assignment and create a new one for the same item to a different person."""
+        """Discharge current assignment and create a new one for the same item to a different person or org structure."""
         assignment_id = request.data.get('assignment_id')
         item_type = request.data.get('item_type')
         new_person_id = request.data.get('new_person_id')
+        new_org_structure_id = request.data.get('new_organizational_structure_id')
         start_datetime = request.data.get('start_datetime')
-        if not all([assignment_id, item_type, new_person_id, start_datetime]):
-            return Response({"error": "assignment_id, item_type, new_person_id, and start_datetime are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_org = item_type and item_type.endswith('_org')
+
+        if not assignment_id or not item_type or not start_datetime:
+            return Response({"error": "assignment_id, item_type, and start_datetime are required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not is_org and not new_person_id:
+            return Response({"error": "new_person_id is required for person reassignments"}, status=status.HTTP_400_BAD_REQUEST)
+        if is_org and not new_org_structure_id:
+            return Response({"error": "new_organizational_structure_id is required for org structure reassignments"}, status=status.HTTP_400_BAD_REQUEST)
 
         if item_type not in self.ASSIGNMENT_TYPE_MAP:
             return Response({"error": "Invalid item_type"}, status=status.HTTP_400_BAD_REQUEST)
@@ -13460,15 +16048,16 @@ class AssignmentsListView(APIView):
             PersonRoleMapping.objects.filter(person=user_account.person).values_list("role__role_code", flat=True)
         )
         is_superuser = user_account.is_superuser()
-        if item_type == 'asset':
+        if item_type in ('asset', 'asset_org'):
             can_assign = is_superuser or 'asset_responsible' in role_codes or 'exploitation_chief' in role_codes or 'it_bureau_chief' in role_codes
         else:
             can_assign = is_superuser or 'stock_consumable_responsible' in role_codes or 'exploitation_chief' in role_codes
         if not can_assign:
             return Response({"error": f"You do not have permission to assign {item_type}"}, status=status.HTTP_403_FORBIDDEN)
 
-        model = self.ASSIGNMENT_TYPE_MAP[item_type]['model']
-        item_fk = self.ASSIGNMENT_TYPE_MAP[item_type]['item_fk']
+        cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
+        model = cfg['model']
+        item_fk = cfg['item_fk']
 
         try:
             old_assignment = model.objects.get(assignment_id=assignment_id)
@@ -13478,13 +16067,19 @@ class AssignmentsListView(APIView):
         if not old_assignment.is_active:
             return Response({"error": "Cannot reassign an inactive assignment"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Verify new person exists
-        try:
-            new_person = Person.objects.get(person_id=int(new_person_id))
-        except Person.DoesNotExist:
-            return Response({"error": "New person not found"}, status=status.HTTP_404_NOT_FOUND)
+        # Verify new assignee exists
+        if is_org:
+            try:
+                new_org = OrganizationalStructure.objects.get(organizational_structure_id=int(new_org_structure_id))
+            except OrganizationalStructure.DoesNotExist:
+                return Response({"error": "New organizational structure not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            try:
+                new_person = Person.objects.get(person_id=int(new_person_id))
+            except Person.DoesNotExist:
+                return Response({"error": "New person not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Check item isn't already assigned to new person actively
+        # Check item isn't already assigned actively
         item_id = getattr(old_assignment, f'{item_fk}_id')
         active_check = model.objects.filter(**{f'{item_fk}_id': item_id, 'is_active': True}).exclude(assignment_id=assignment_id).exists()
         if active_check:
@@ -13497,18 +16092,151 @@ class AssignmentsListView(APIView):
             old_assignment.is_active = False
             old_assignment.save()
 
+            # Cascade discharge old composition
+            if item_type == 'asset':
+                _cascade_discharge_asset_composition(old_assignment.asset, person=old_assignment.person)
+            elif item_type == 'stock_item':
+                _cascade_discharge_stock_item_consumables(old_assignment.stock_item, person=old_assignment.person)
+            elif item_type == 'asset_org':
+                _cascade_discharge_asset_org_composition(old_assignment.asset, organizational_structure=old_assignment.organizational_structure)
+            elif item_type == 'stock_item_org':
+                _cascade_discharge_stock_item_org_consumables(old_assignment.stock_item, organizational_structure=old_assignment.organizational_structure)
+
+            # Update status to 'in_stock' on old item discharge (briefly, before reassign)
+            from api.utils.i18n import bulk_sync_status_translations
+            if item_type in ('asset', 'asset_org'):
+                old_asset_id = old_assignment.asset_id
+                bulk_sync_status_translations(Asset, {'asset_id': old_asset_id}, 'in_stock')
+                old_stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=old_asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                old_consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=old_asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if old_stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': old_stock_item_ids}, 'in_stock')
+                    old_consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=old_stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if old_consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': old_consumable_in_si_ids}, 'in_stock')
+                if old_consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': old_consumable_ids}, 'in_stock')
+                old_acc_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=old_asset_id).values_list("stock_item_id", flat=True)
+                )
+                old_acc_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=old_asset_id).values_list("consumable_id", flat=True)
+                )
+                if old_acc_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': old_acc_si_ids}, 'in_stock')
+                    old_consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=old_acc_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if old_consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': old_consumable_in_acc_si_ids}, 'in_stock')
+                if old_acc_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': old_acc_c_ids}, 'in_stock')
+            elif item_type in ('stock_item', 'stock_item_org'):
+                bulk_sync_status_translations(StockItem, {'stock_item_id': old_assignment.stock_item_id}, 'in_stock')
+                old_consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id=old_assignment.stock_item_id, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if old_consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': old_consumable_in_si_ids}, 'in_stock')
+            elif item_type in ('consumable', 'consumable_org'):
+                bulk_sync_status_translations(Consumable, {'consumable_id': old_assignment.consumable_id}, 'in_stock')
+
             # Create new
             last_item = model.objects.order_by("-assignment_id").first()
             next_id = (last_item.assignment_id + 1) if last_item else 1
 
-            new_assignment = model.objects.create(
-                assignment_id=next_id,
-                person=new_person,
-                assigned_by_person=person,
-                **{f'{item_fk}_id': item_id},
-                start_datetime=start_datetime,
-                is_active=True,
-            )
+            if is_org:
+                new_assignment = model.objects.create(
+                    assignment_id=next_id,
+                    organizational_structure=new_org,
+                    assigned_by_person=person,
+                    **{f'{item_fk}_id': item_id},
+                    start_datetime=start_datetime,
+                    is_active=True,
+                )
+
+                # Cascade assign new composition
+                if item_type == 'asset_org':
+                    _cascade_assign_asset_composition_to_org(new_assignment.asset, new_org, person, start_datetime)
+                elif item_type == 'stock_item_org':
+                    _cascade_assign_stock_item_consumables_to_org(new_assignment.stock_item, new_org, person, start_datetime)
+            else:
+                new_assignment = model.objects.create(
+                    assignment_id=next_id,
+                    person=new_person,
+                    assigned_by_person=person,
+                    **{f'{item_fk}_id': item_id},
+                    start_datetime=start_datetime,
+                    is_active=True,
+                )
+
+                # Cascade assign new composition
+                if item_type == 'asset':
+                    _cascade_assign_asset_composition(new_assignment.asset, new_person, person, start_datetime)
+                elif item_type == 'stock_item':
+                    _cascade_assign_stock_item_consumables(new_assignment.stock_item, new_person, person, start_datetime)
+
+            # Update status to 'assigned' with cascading for new assignment
+            if item_type in ('asset', 'asset_org'):
+                new_asset_id = new_assignment.asset_id
+                bulk_sync_status_translations(Asset, {'asset_id': new_asset_id}, 'assigned')
+                new_stock_item_ids = list(
+                    AssetIsComposedOfStockItemHistory.objects.filter(asset_id=new_asset_id, end_datetime__isnull=True).values_list("stock_item_id", flat=True)
+                )
+                new_consumable_ids = list(
+                    AssetIsComposedOfConsumableHistory.objects.filter(asset_id=new_asset_id, end_datetime__isnull=True).values_list("consumable_id", flat=True)
+                )
+                if new_stock_item_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': new_stock_item_ids}, 'assigned')
+                    new_consumable_in_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=new_stock_item_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if new_consumable_in_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': new_consumable_in_si_ids}, 'assigned')
+                if new_consumable_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': new_consumable_ids}, 'assigned')
+                new_acc_si_ids = list(
+                    AttributionOrderAssetStockItemAccessory.objects.filter(asset_id=new_asset_id).values_list("stock_item_id", flat=True)
+                )
+                new_acc_c_ids = list(
+                    AttributionOrderAssetConsumableAccessory.objects.filter(asset_id=new_asset_id).values_list("consumable_id", flat=True)
+                )
+                if new_acc_si_ids:
+                    bulk_sync_status_translations(StockItem, {'stock_item_id__in': new_acc_si_ids}, 'assigned')
+                    new_consumable_in_acc_si_ids = list(
+                        ConsumableIsUsedInStockItemHistory.objects.filter(
+                            stock_item_id__in=new_acc_si_ids, end_datetime__isnull=True
+                        ).values_list("consumable_id", flat=True)
+                    )
+                    if new_consumable_in_acc_si_ids:
+                        bulk_sync_status_translations(Consumable, {'consumable_id__in': new_consumable_in_acc_si_ids}, 'assigned')
+                if new_acc_c_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': new_acc_c_ids}, 'assigned')
+            elif item_type in ('stock_item', 'stock_item_org'):
+                bulk_sync_status_translations(StockItem, {'stock_item_id': new_assignment.stock_item_id}, 'assigned')
+                new_consumable_in_si_ids = list(
+                    ConsumableIsUsedInStockItemHistory.objects.filter(
+                        stock_item_id=new_assignment.stock_item_id, end_datetime__isnull=True
+                    ).values_list("consumable_id", flat=True)
+                )
+                if new_consumable_in_si_ids:
+                    bulk_sync_status_translations(Consumable, {'consumable_id__in': new_consumable_in_si_ids}, 'assigned')
+            elif item_type in ('consumable', 'consumable_org'):
+                bulk_sync_status_translations(Consumable, {'consumable_id': new_assignment.consumable_id}, 'assigned')
 
         cfg = self.ASSIGNMENT_TYPE_MAP[item_type]
         serialized = cfg['serializer'](new_assignment).data

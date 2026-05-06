@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft,
     Plus,
     Trash2,
     Package,
@@ -29,6 +28,7 @@ import {
     consumableService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import BackButton from '../components/BackButton';
 import { useTranslation } from 'react-i18next';
 
 const PurchaseOrderCreatePage = () => {
@@ -501,22 +501,7 @@ const PurchaseOrderCreatePage = () => {
             {/* Page Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-8)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/dashboard/purchase-orders')}
-                        disabled={submitting}
-                        style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)',
-                            background: 'transparent', border: 'none', color: 'var(--color-text-muted)',
-                            cursor: 'pointer', padding: 0, fontSize: 'var(--font-size-sm)', fontWeight: 500,
-                            transition: 'color var(--transition-fast)',
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text-primary)'}
-                        onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
-                    >
-                        <ArrowLeft size={16} />
-                        {t('common.back')}
-                    </button>
+                    <BackButton onClick={() => navigate('/dashboard/purchase-orders')} />
                     <div>
                         <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><ShoppingCart size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('poCreate.title')}</h1>
                         <p className="page-subtitle" style={{ fontSize: 'var(--font-size-base)' }}>

@@ -18,6 +18,7 @@ import {
     SlidersHorizontal,
     Filter,
 } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { movementApprovalService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -368,255 +369,6 @@ const AssetMovementsApprovalPage = () => {
                 </div>
             )}
 
-            {/* Search / Filter / Sort Toolbar */}
-            {!loading && totalPending > 0 && (
-                <div style={{
-                    display: 'flex',
-                    gap: 'var(--space-3)',
-                    alignItems: 'center',
-                    marginBottom: 'var(--space-5)',
-                    flexWrap: 'wrap'
-                }}>
-                    {/* Search */}
-                    <div style={{
-                        flex: 1,
-                        minWidth: '240px',
-                        position: 'relative'
-                    }}>
-                        <Search size={18} style={{
-                            position: 'absolute',
-                            left: 'var(--space-3)',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'var(--color-text-muted)',
-                            pointerEvents: 'none'
-                        }} />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder={t('assetMovementsApproval.searchPlaceholder')}
-                            className="form-input"
-                            style={{
-                                width: '100%',
-                                height: '42px',
-                                paddingLeft: 'var(--space-10)',
-                                paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)'
-                            }}
-                        />
-                        {searchTerm && (
-                            <button
-                                onClick={() => setSearchTerm('')}
-                                style={{
-                                    position: 'absolute',
-                                    right: 'var(--space-3)',
-                                    top: '50%',
-                                    transform: 'translateY(-50%)',
-                                    background: 'none',
-                                    border: 'none',
-                                    color: 'var(--color-text-muted)',
-                                    cursor: 'pointer',
-                                    padding: '2px',
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Filter by Status */}
-                    <div style={{ position: 'relative', minWidth: '160px' }}>
-                        <SlidersHorizontal size={16} style={{
-                            position: 'absolute',
-                            left: 'var(--space-3)',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'var(--color-text-muted)',
-                            pointerEvents: 'none',
-                            zIndex: 1
-                        }} />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="form-input"
-                            style={{
-                                width: '100%',
-                                height: '42px',
-                                paddingLeft: 'var(--space-10)',
-                                appearance: 'none',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <option value="all">{t('assetMovementsApproval.allStatuses')}</option>
-                            <option value="pending">{t('assetMovementsApproval.status.pending')}</option>
-                            <option value="accepted">{t('assetMovementsApproval.status.accepted')}</option>
-                            <option value="rejected">{t('assetMovementsApproval.status.rejected')}</option>
-                        </select>
-                    </div>
-
-                    {/* Filter by Reason */}
-                    <div style={{ position: 'relative', minWidth: '180px' }}>
-                        <Filter size={16} style={{
-                            position: 'absolute',
-                            left: 'var(--space-3)',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'var(--color-text-muted)',
-                            pointerEvents: 'none',
-                            zIndex: 1
-                        }} />
-                        <select
-                            value={reasonFilter}
-                            onChange={(e) => setReasonFilter(e.target.value)}
-                            className="form-input"
-                            style={{
-                                width: '100%',
-                                height: '42px',
-                                paddingLeft: 'var(--space-10)',
-                                appearance: 'none',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            <option value="">{t('assetMovementsApproval.allReasons')}</option>
-                            {ALL_REASON_KEYS.map(r => (
-                                <option key={r} value={r}>{getReasonLabel(r, t)}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Sort */}
-                    <div style={{ position: 'relative' }}>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowSortMenu(!showSortMenu);
-                            }}
-                            className="btn"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 'var(--space-2)',
-                                padding: 'var(--space-2) var(--space-4)',
-                                height: '42px',
-                                border: '1px solid var(--color-border)',
-                                background: 'var(--color-bg-card)',
-                                color: 'var(--color-text-secondary)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                fontWeight: '500',
-                                fontSize: 'var(--font-size-sm)',
-                                whiteSpace: 'nowrap'
-                            }}
-                        >
-                            <ArrowUpDown size={16} />
-                            <span>{sortField === 'movement_datetime' ? t('assetMovementsApproval.sortByDate') : sortField === 'asset_name' ? t('assetMovementsApproval.sortByAsset') : t('assetMovementsApproval.sortByReason')}</span>
-                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-                                {sortDirection === 'asc' ? t('common.ascending') : t('common.descending')}
-                            </span>
-                            <ChevronDown size={14} style={{ transform: showSortMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-                        </button>
-                        {showSortMenu && (
-                            <div
-                                onClick={(e) => e.stopPropagation()}
-                                style={{
-                                    position: 'absolute',
-                                    top: 'calc(100% + 4px)',
-                                    right: 0,
-                                    background: 'var(--color-bg-secondary)',
-                                    border: '1px solid var(--color-border)',
-                                    borderRadius: 'var(--radius-md)',
-                                    boxShadow: 'var(--shadow-lg)',
-                                    padding: 'var(--space-2)',
-                                    zIndex: 100,
-                                    minWidth: '200px'
-                                }}
-                            >
-                                <div style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    {t('common.sortBy')}
-                                </div>
-                                {[
-                                    { field: 'movement_datetime', dir: 'desc', label: `${t('assetMovementsApproval.sortByDate')} — ${t('common.descending')}` },
-                                    { field: 'movement_datetime', dir: 'asc', label: `${t('assetMovementsApproval.sortByDate')} — ${t('common.ascending')}` },
-                                    { field: 'asset_name', dir: 'asc', label: `${t('assetMovementsApproval.sortByAsset')} — ${t('common.ascending')}` },
-                                    { field: 'asset_name', dir: 'desc', label: `${t('assetMovementsApproval.sortByAsset')} — ${t('common.descending')}` },
-                                    { field: 'reason', dir: 'asc', label: `${t('assetMovementsApproval.sortByReason')} — ${t('common.ascending')}` },
-                                    { field: 'reason', dir: 'desc', label: `${t('assetMovementsApproval.sortByReason')} — ${t('common.descending')}` },
-                                ].map(opt => (
-                                    <button
-                                        key={`${opt.field}-${opt.dir}`}
-                                        onClick={() => {
-                                            setSortField(opt.field);
-                                            setSortDirection(opt.dir);
-                                            setShowSortMenu(false);
-                                        }}
-                                        style={{
-                                            display: 'block',
-                                            width: '100%',
-                                            textAlign: 'left',
-                                            padding: 'var(--space-2) var(--space-3)',
-                                            border: 'none',
-                                            borderRadius: 'var(--radius-sm)',
-                                            cursor: 'pointer',
-                                            fontSize: 'var(--font-size-sm)',
-                                            fontWeight: sortField === opt.field && sortDirection === opt.dir ? '600' : '400',
-                                            color: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-tertiary)' : 'var(--color-text-primary)',
-                                            background: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-glow)' : 'transparent',
-                                            transition: 'all var(--transition-fast)'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
-                                                e.currentTarget.style.background = 'var(--color-bg-card-hover)';
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (!(sortField === opt.field && sortDirection === opt.dir)) {
-                                                e.currentTarget.style.background = 'transparent';
-                                            }
-                                        }}
-                                    >
-                                        {opt.label}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Clear Filters */}
-                    {(searchTerm || reasonFilter || statusFilter !== 'pending') && (
-                        <button
-                            onClick={() => { setSearchTerm(''); setReasonFilter(''); setStatusFilter('pending'); }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 'var(--space-2)',
-                                padding: 'var(--space-2) var(--space-3)',
-                                height: '42px',
-                                border: '1px solid rgba(239, 68, 68, 0.3)',
-                                background: 'rgba(239, 68, 68, 0.08)',
-                                color: 'var(--color-error)',
-                                borderRadius: 'var(--radius-md)',
-                                cursor: 'pointer',
-                                fontSize: 'var(--font-size-sm)',
-                                fontWeight: '500',
-                                whiteSpace: 'nowrap',
-                                transition: 'all var(--transition-fast)'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)';
-                            }}
-                        >
-                            <X size={14} />
-                            {t('common.clearFilters')}
-                        </button>
-                    )}
-                </div>
-            )}
-
             {/* Results Count */}
             {!loading && totalPending > 0 && (
                 <div style={{
@@ -657,6 +409,54 @@ const AssetMovementsApprovalPage = () => {
                     {filteredMoves.map(renderMovementCard)}
                 </div>
             )}
+            <FilterSortFAB hasActiveFilters={!!searchTerm || !!reasonFilter || statusFilter !== 'pending'}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('assetMovementsApproval.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchTerm && (
+                            <button onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assetMovementsApproval.allStatuses')}</label>
+                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="all">{t('assetMovementsApproval.allStatuses')}</option>
+                            <option value="pending">{t('assetMovementsApproval.status.pending')}</option>
+                            <option value="accepted">{t('assetMovementsApproval.status.accepted')}</option>
+                            <option value="rejected">{t('assetMovementsApproval.status.rejected')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assetMovementsApproval.allReasons')}</label>
+                        <select value={reasonFilter} onChange={(e) => setReasonFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('assetMovementsApproval.allReasons')}</option>
+                            {ALL_REASON_KEYS.map(r => (
+                                <option key={r} value={r}>{getReasonLabel(r, t)}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="movement_datetime">{t('assetMovementsApproval.sortByDate')}</option>
+                                <option value="asset_name">{t('assetMovementsApproval.sortByAsset')}</option>
+                                <option value="reason">{t('assetMovementsApproval.sortByReason')}</option>
+                            </select>
+                            <select className="form-input" value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} style={{ height: '40px', width: '100px' }}>
+                                <option value="asc">↑ {t('common.ascending')}</option>
+                                <option value="desc">↓ {t('common.descending')}</option>
+                            </select>
+                        </div>
+                    </div>
+                    {(searchTerm || reasonFilter || statusFilter !== 'pending') && (
+                        <button onClick={() => { setSearchTerm(''); setReasonFilter(''); setStatusFilter('pending'); }} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

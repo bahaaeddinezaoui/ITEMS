@@ -1,5 +1,6 @@
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl';
 import { useEffect, useRef } from 'react';
+import { usePowerSave } from '../context/usePowerSave';
 
 import './Iridescence.css';
 
@@ -47,6 +48,7 @@ void main() {
 `;
 
 export default function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude = 0.1, mouseReact = true, ...rest }) {
+  const { enabled: powerSave } = usePowerSave();
   const ctnDom = useRef(null);
   const mousePos = useRef({ x: 0.5, y: 0.5 });
 
@@ -123,5 +125,6 @@ export default function Iridescence({ color = [1, 1, 1], speed = 1.0, amplitude 
     };
   }, [color, speed, amplitude, mouseReact]);
 
+  if (powerSave) return <div className="iridescence-container" {...rest} />;
   return <div ref={ctnDom} className="iridescence-container" {...rest} />;
 }

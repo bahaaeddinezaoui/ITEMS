@@ -9,8 +9,9 @@ import {
     warehouseService,
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { FileText } from 'lucide-react';
+import { FileText, Warehouse, ClipboardList, PenLine, Upload, Check, PenTool } from 'lucide-react';
 import ModalPortal from '../components/ModalPortal';
+import Stepper, { Step } from '../components/Stepper';
 
 const getSignatureFields = (t) => [
     { key: 'is_signed_by_warehouse_storage_magaziner', label: t('adminCertificates.magaziner'), short: 'M' },
@@ -31,6 +32,9 @@ const AdministrativeCertificatesPage = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [createModalError, setCreateModalError] = useState(null);
+    const [createStep, setCreateStep] = useState(0);
+    const [stepperDirection, setStepperDirection] = useState(0);
 
     const [certificates, setCertificates] = useState([]);
     const [ordersById, setOrdersById] = useState({});
@@ -161,23 +165,24 @@ const AdministrativeCertificatesPage = () => {
         setSubmitting(true);
         setError(null);
         setSuccess(null);
+        setCreateModalError(null);
 
         try {
             if (!createForm.warehouse) {
-                setError(t('adminCertificates.warehouseRequired'));
+                setCreateModalError(t('adminCertificates.warehouseRequired'));
                 return;
             }
             if (!createForm.attribution_order) {
-                setError(t('adminCertificates.attributionOrderRequired'));
+                setCreateModalError(t('adminCertificates.attributionOrderRequired'));
                 return;
             }
             if (!deducedReceiptReportId) {
-                setError(t('adminCertificates.receiptReportNotFound'));
+                setCreateModalError(t('adminCertificates.receiptReportNotFound'));
                 return;
             }
 
             if (createForm.operation && !['entry', 'exit', 'transfer'].includes(createForm.operation)) {
-                setError(t('adminCertificates.operationInvalid'));
+                setCreateModalError(t('adminCertificates.operationInvalid'));
                 return;
             }
 
@@ -230,20 +235,63 @@ const AdministrativeCertificatesPage = () => {
         } catch (err) {
             const data = err?.response?.data;
             if (data?.error) {
-                setError(data.error);
+                setCreateModalError(data.error);
             } else if (data && typeof data === 'object') {
                 const firstField = Object.keys(data)[0];
                 const firstValue = firstField ? data[firstField] : null;
                 const message = Array.isArray(firstValue)
                     ? `${firstField}: ${firstValue.join(', ')}`
                     : JSON.stringify(data);
-                setError(message);
+                setCreateModalError(message);
             } else {
-                setError(t('adminCertificates.createError'));
+                setCreateModalError(t('adminCertificates.createError'));
             }
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleSign = async (certId, fieldKey) => {
+        setSubmitting(true);
+        setError(null);
+        setSuccess(null);
+        try {
+            await administrativeCertificateService.patch(certId, { [fieldKey]: true });
+            setSuccess(t('adminCertificates.signSuccess'));
+            await fetchData();
+        } catch (err) {
+            const data = err?.response?.data;
+            setError(data?.error || t('adminCertificates.signError'));
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleCreateNext = () => {
+        setCreateModalError(null);
+        if (createStep === 0) {
+            if (!createForm.warehouse) {
+                setCreateModalError(t('adminCertificates.warehouseRequired'));
+                return;
+            }
+            if (!createForm.attribution_order) {
+                setCreateModalError(t('adminCertificates.attributionOrderRequired'));
+                return;
+            }
+            if (!deducedReceiptReportId) {
+                setCreateModalError(t('adminCertificates.receiptReportNotFound'));
+                return;
+            }
+        }
+
+        setStepperDirection(1);
+        setCreateStep((s) => Math.min(s + 1, 3));
+    };
+
+    const handleCreateBack = () => {
+        setCreateModalError(null);
+        setStepperDirection(-1);
+        setCreateStep((s) => Math.max(s - 1, 0));
     };
 
     if (!isAssetResponsible) {
@@ -270,7 +318,12 @@ const AdministrativeCertificatesPage = () => {
                     </div>
                     <button
                         className="btn btn-primary administrative-certificates-create-btn"
-                        onClick={() => setShowCreateForm(true)}
+                        onClick={() => {
+                            setCreateModalError(null);
+                            setCreateStep(0);
+                            setStepperDirection(0);
+                            setShowCreateForm(true);
+                        }}
                     >
                         + {t('adminCertificates.newCertificate')}
                     </button>
@@ -340,46 +393,63 @@ const AdministrativeCertificatesPage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="administrative-certificates-item-grid">
-                                            <div>
-                                                <div className="administrative-certificates-field-label">{t('adminCertificates.orderField')}</div>
-                                                <div className="administrative-certificates-field-value">
-                                                    {o?.attribution_order_full_code || (c.attribution_order ? `#${c.attribution_order}` : '-')}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div className="administrative-certificates-field-label">{t('adminCertificates.reportField')}</div>
-                                                <div className="administrative-certificates-field-value">
-                                                    {rr?.report_full_code || (c.receipt_report ? `#${c.receipt_report}` : '-')}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div className="administrative-certificates-field-label">{t('adminCertificates.orgField')}</div>
-                                                <div className="administrative-certificates-field-value">{c.interested_organization || '-'}</div>
-                                            </div>
-                                            <div>
-                                                <div className="administrative-certificates-field-label">{t('adminCertificates.opField')}</div>
-                                                <div className="administrative-certificates-field-value">{c.operation || '-'}</div>
-                                            </div>
-                                            <div>
-                                                <div className="administrative-certificates-field-label">{t('adminCertificates.formatField')}</div>
-                                                <div className="administrative-certificates-field-value">{c.format || '-'}</div>
-                                            </div>
-                                            <div>
-                                                <div className="administrative-certificates-field-label">{t('adminCertificates.copyField')}</div>
-                                                <div className="administrative-certificates-field-value">{c.digital_copy ? t('common.yes') : t('common.no')}</div>
-                                            </div>
+                                        <div className="administrative-certificates-item-meta">
+                                            <span className="administrative-certificates-meta-pair">
+                                                <span className="administrative-certificates-meta-label">{t('adminCertificates.orderField')}</span>
+                                                {o?.attribution_order_full_code || (c.attribution_order ? `#${c.attribution_order}` : '-')}
+                                            </span>
+                                            <span className="administrative-certificates-meta-pair">
+                                                <span className="administrative-certificates-meta-label">{t('adminCertificates.reportField')}</span>
+                                                {rr?.report_full_code || (c.receipt_report ? `#${c.receipt_report}` : '-')}
+                                            </span>
+                                            <span className="administrative-certificates-meta-pair">
+                                                <span className="administrative-certificates-meta-label">{t('adminCertificates.orgField')}</span>
+                                                {c.interested_organization || '-'}
+                                            </span>
+                                            <span className="administrative-certificates-meta-pair">
+                                                <span className="administrative-certificates-meta-label">{t('adminCertificates.opField')}</span>
+                                                {c.operation || '-'}
+                                            </span>
+                                            <span className="administrative-certificates-meta-pair">
+                                                <span className="administrative-certificates-meta-label">{t('adminCertificates.formatField')}</span>
+                                                {c.format || '-'}
+                                            </span>
+                                            <span className="administrative-certificates-meta-pair">
+                                                <span className="administrative-certificates-meta-label">{t('adminCertificates.copyField')}</span>
+                                                {c.digital_copy ? t('common.yes') : t('common.no')}
+                                            </span>
                                         </div>
 
                                         <div className="administrative-certificates-footer">
                                             <div className="administrative-certificates-signature-pill-list">
                                                 {getSignatureFields(t).map((field) => (
-                                                    <span
-                                                        key={`${c.administrative_certificate_id}-${field.key}`}
-                                                        className={`badge ${c?.[field.key] ? 'badge-success' : 'badge-error'}`}
-                                                    >
-                                                        {field.short}: {c?.[field.key] ? t('common.yes') : t('common.no')}
-                                                    </span>
+                                                    c?.[field.key] ? (
+                                                        <span
+                                                            key={`${c.administrative_certificate_id}-${field.key}`}
+                                                            className="badge badge-success"
+                                                        >
+                                                            {field.short}: {t('common.yes')}
+                                                        </span>
+                                                    ) : isSuperuser ? (
+                                                        <button
+                                                            key={`${c.administrative_certificate_id}-${field.key}`}
+                                                            type="button"
+                                                            className="badge badge-error administrative-certificates-sign-btn"
+                                                            disabled={submitting}
+                                                            onClick={() => handleSign(c.administrative_certificate_id, field.key)}
+                                                            title={t('adminCertificates.signAs', { role: field.label })}
+                                                        >
+                                                            <PenTool size={12} />
+                                                            {field.short}: {t('adminCertificates.sign')}
+                                                        </button>
+                                                    ) : (
+                                                        <span
+                                                            key={`${c.administrative_certificate_id}-${field.key}`}
+                                                            className="badge badge-error"
+                                                        >
+                                                            {field.short}: {t('common.no')}
+                                                        </span>
+                                                    )
                                                 ))}
                                             </div>
                                             {canMoveItems ? (
@@ -405,171 +475,287 @@ const AdministrativeCertificatesPage = () => {
 
             {showCreateForm && (
                 <ModalPortal>
-                <div
-                    className="modal-overlay administrative-certificates-modal-overlay"
-                    onClick={() => {
-                        if (!submitting) setShowCreateForm(false);
-                    }}
-                >
                     <div
-                        className="modal administrative-certificates-modal"
-                        onClick={(e) => e.stopPropagation()}
+                        className="modal-overlay ac-modal-overlay"
+                        onClick={() => {
+                            if (!submitting) setShowCreateForm(false);
+                        }}
                     >
-                        <div className="modal-header administrative-certificates-modal-header">
-                            <div>
-                                <div className="modal-title">{t('adminCertificates.newAdminCertificate')}</div>
-                                <div className="administrative-certificates-subtle-text">{t('adminCertificates.fillAllFields')}</div>
+                        <div className="ac-modal" onClick={(e) => e.stopPropagation()}>
+                            <div className="ac-modal-header">
+                                <div className="ac-modal-header-left">
+                                    <div className="ac-modal-icon">
+                                        <FileText size={20} />
+                                    </div>
+                                    <div>
+                                        <h3 className="ac-modal-title">{t('adminCertificates.newAdminCertificate')}</h3>
+                                        <p className="ac-modal-subtitle">{t('adminCertificates.fillAllFields')}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    className="ac-modal-close"
+                                    disabled={submitting}
+                                    onClick={() => setShowCreateForm(false)}
+                                >
+                                    ✕
+                                </button>
                             </div>
-                            <button
-                                type="button"
-                                className="modal-close"
-                                disabled={submitting}
-                                onClick={() => setShowCreateForm(false)}
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <div className="modal-body administrative-certificates-modal-body">
-                            <form onSubmit={handleCreate}>
-                                {eligibleAttributionOrderIds.size === 0 && (
-                                    <div className="administrative-certificates-modal-warning">
-                                        {t('adminCertificates.noEligibleOrders')}
-                                    </div>
-                                )}
 
-                                <div className="administrative-certificates-form-grid">
-                                    <div className="form-group">
-                                        <select
-                                            className="form-input"
-                                            value={createForm.warehouse}
-                                            onChange={(e) => setCreateForm({ ...createForm, warehouse: e.target.value })}
-                                            aria-label={t('adminCertificates.warehouse')}
-                                        >
-                                            <option value="">{t('adminCertificates.warehouse')}</option>
-                                            {Object.values(warehousesById).map((w) => (
-                                                <option key={w.warehouse_id} value={w.warehouse_id}>
-                                                    {w.warehouse_name || `#${w.warehouse_id}`}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                            <div className="ac-modal-body">
+                                <form onSubmit={handleCreate}>
+                                    {createModalError && (
+                                        <div className="error-message" style={{ marginBottom: 'var(--space-4)' }}>
+                                            {createModalError}
+                                        </div>
+                                    )}
+                                    {eligibleAttributionOrderIds.size === 0 && (
+                                        <div className="ac-modal-warning">
+                                            {t('adminCertificates.noEligibleOrders')}
+                                        </div>
+                                    )}
 
-                                    <div className="form-group">
-                                        <select
-                                            className="form-input"
-                                            value={createForm.attribution_order}
-                                            onChange={(e) => setCreateForm({ ...createForm, attribution_order: e.target.value })}
-                                            aria-label={t('adminCertificates.attributionOrder')}
-                                        >
-                                            <option value="">{t('adminCertificates.attributionOrder')}</option>
-                                            {Object.values(ordersById)
-                                                .filter((o) => eligibleAttributionOrderIds.has(Number(o.attribution_order_id)))
-                                                .map((o) => (
-                                                    <option key={o.attribution_order_id} value={o.attribution_order_id}>
-                                                        {o.attribution_order_full_code || `#${o.attribution_order_id}`}
-                                                    </option>
-                                                ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            value={
-                                                deducedReceiptReportId
-                                                    ? (reportsById?.[deducedReceiptReportId]?.report_full_code || `#${deducedReceiptReportId}`)
-                                                    : ''
-                                            }
-                                            readOnly
-                                            placeholder={t('adminCertificates.receiptReportAuto')}
-                                            aria-label={t('adminCertificates.receiptReport')}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            value={createForm.interested_organization}
-                                            onChange={(e) => setCreateForm({ ...createForm, interested_organization: e.target.value })}
-                                            placeholder={t('adminCertificates.interestedOrganization')}
-                                            aria-label={t('adminCertificates.interestedOrganization')}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <select
-                                            className="form-input"
-                                            value={createForm.operation}
-                                            onChange={(e) => setCreateForm({ ...createForm, operation: e.target.value })}
-                                            aria-label={t('adminCertificates.operation')}
-                                        >
-                                            <option value="">{t('adminCertificates.operation')}</option>
-                                            <option value="entry">{t('adminCertificates.entry')}</option>
-                                            <option value="exit">{t('adminCertificates.exit')}</option>
-                                            <option value="transfer">{t('adminCertificates.transfer')}</option>
-                                        </select>
-                                    </div>
-
-                                    <div className="form-group">
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            value={createForm.format}
-                                            onChange={(e) => setCreateForm({ ...createForm, format: e.target.value })}
-                                            placeholder={t('adminCertificates.format')}
-                                            aria-label={t('adminCertificates.format')}
-                                        />
-                                    </div>
-
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <input
-                                            type="file"
-                                            className="form-input"
-                                            onChange={(e) => setCreateForm({ ...createForm, digital_copy: e.target.files[0] })}
-                                            accept="image/*,application/pdf"
-                                            aria-label={t('adminCertificates.digitalCopyAttachment')}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="administrative-certificates-modal-signatures">
-                                    {getSignatureFields(t).map((field) => (
-                                        <label key={field.key} className="administrative-certificates-signature-chip">
-                                            <input
-                                                type="checkbox"
-                                                checked={!!createForm[field.key]}
-                                                onChange={(e) =>
-                                                    setCreateForm({
-                                                        ...createForm,
-                                                        [field.key]: e.target.checked,
-                                                    })
-                                                }
-                                            />
-                                            <span>{field.label}</span>
-                                        </label>
-                                    ))}
-                                </div>
-
-                                <div className="administrative-certificates-modal-footer">
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        style={{ width: 'auto' }}
-                                        disabled={submitting}
-                                        onClick={() => setShowCreateForm(false)}
+                                    <Stepper
+                                        step={createStep + 1}
+                                        direction={stepperDirection}
+                                        onStepChange={(newStep, dir) => {
+                                            setCreateModalError(null);
+                                            setStepperDirection(dir);
+                                            setCreateStep(newStep - 1);
+                                        }}
+                                        onBeforeStepChange={(newStep, oldStep) => {
+                                            if (newStep > oldStep) return false;
+                                            setCreateModalError(null);
+                                            return true;
+                                        }}
+                                        hideFooter
+                                        disableStepIndicators={submitting}
+                                        stepCircleContainerClassName="ac-stepper"
+                                        contentClassName="ac-stepper-content"
+                                        renderStepIndicator={({ step, currentStep, onStepClick }) => {
+                                            const steps = [
+                                                { key: 'assignment', icon: Warehouse, label: t('adminCertificates.assignmentSection', 'Assignment') },
+                                                { key: 'details', icon: ClipboardList, label: t('adminCertificates.detailsSection', 'Details') },
+                                                { key: 'attachment', icon: Upload, label: t('adminCertificates.attachmentSection', 'Attachment') },
+                                                { key: 'signatures', icon: PenLine, label: t('adminCertificates.signaturesSection', 'Signatures') },
+                                            ];
+                                            const stepConfig = steps[step - 1];
+                                            const StepIcon = stepConfig?.icon;
+                                            const isActive = step === currentStep;
+                                            const isCompleted = step < currentStep;
+                                            const status = isActive ? 'active' : isCompleted ? 'complete' : 'inactive';
+                                            return (
+                                                <div
+                                                    className={`stepper-custom-step-indicator ${status}`}
+                                                    onClick={() => !submitting && isCompleted && onStepClick(step)}
+                                                    style={{ cursor: isCompleted && !submitting ? 'pointer' : 'default', opacity: (!isActive && !isCompleted) ? 0.5 : 1, pointerEvents: submitting ? 'none' : 'auto' }}
+                                                >
+                                                    <div className={`stepper-custom-step-indicator-dot ${status}`}>
+                                                        {isCompleted ? <Check size={14} strokeWidth={3} /> : StepIcon ? <StepIcon size={14} /> : <span className="stepper-step-number">{step}</span>}
+                                                    </div>
+                                                    <span className={`stepper-custom-step-indicator-label ${status}`}>{stepConfig?.label}</span>
+                                                </div>
+                                            );
+                                        }}
                                     >
-                                        {t('common.cancel')}
-                                    </button>
-                                    <button type="submit" className="btn btn-primary administrative-certificates-submit-btn" disabled={submitting}>
-                                        {submitting ? t('common.creating') : t('adminCertificates.createCertificate')}
-                                    </button>
-                                </div>
-                            </form>
+                                        <Step>
+                                            <div className="ac-form-section">
+                                                <div className="ac-form-section-header">
+                                                    <Warehouse size={14} />
+                                                    {t('adminCertificates.assignmentSection', 'Assignment')}
+                                                </div>
+                                                <div className="ac-form-section-fields">
+                                                    <div className="form-group">
+                                                        <label className="form-label">{t('adminCertificates.warehouse')}</label>
+                                                        <select
+                                                            className="form-input"
+                                                            value={createForm.warehouse}
+                                                            onChange={(e) => setCreateForm({ ...createForm, warehouse: e.target.value })}
+                                                        >
+                                                            <option value="">{t('adminCertificates.warehouse')}</option>
+                                                            {Object.values(warehousesById).map((w) => (
+                                                                <option key={w.warehouse_id} value={w.warehouse_id}>
+                                                                    {w.warehouse_name || `#${w.warehouse_id}`}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="form-group">
+                                                        <label className="form-label">{t('adminCertificates.attributionOrder')}</label>
+                                                        <select
+                                                            className="form-input"
+                                                            value={createForm.attribution_order}
+                                                            onChange={(e) => setCreateForm({ ...createForm, attribution_order: e.target.value })}
+                                                        >
+                                                            <option value="">{t('adminCertificates.attributionOrder')}</option>
+                                                            {Object.values(ordersById)
+                                                                .filter((o) => eligibleAttributionOrderIds.has(Number(o.attribution_order_id)))
+                                                                .map((o) => (
+                                                                    <option key={o.attribution_order_id} value={o.attribution_order_id}>
+                                                                        {o.attribution_order_full_code || `#${o.attribution_order_id}`}
+                                                                    </option>
+                                                                ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="form-group">
+                                                        <label className="form-label">{t('adminCertificates.receiptReport')}</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-input"
+                                                            value={
+                                                                deducedReceiptReportId
+                                                                    ? (reportsById?.[deducedReceiptReportId]?.report_full_code || `#${deducedReceiptReportId}`)
+                                                                    : ''
+                                                            }
+                                                            readOnly
+                                                            placeholder={t('adminCertificates.receiptReportAuto')}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Step>
+
+                                        <Step>
+                                            <div className="ac-form-section">
+                                                <div className="ac-form-section-header">
+                                                    <ClipboardList size={14} />
+                                                    {t('adminCertificates.detailsSection', 'Details')}
+                                                </div>
+                                                <div className="ac-form-section-fields">
+                                                    <div className="form-group">
+                                                        <label className="form-label">{t('adminCertificates.interestedOrganization')}</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-input"
+                                                            value={createForm.interested_organization}
+                                                            onChange={(e) => setCreateForm({ ...createForm, interested_organization: e.target.value })}
+                                                            placeholder={t('adminCertificates.interestedOrganization')}
+                                                        />
+                                                    </div>
+
+                                                    <div className="form-group">
+                                                        <label className="form-label">{t('adminCertificates.operation')}</label>
+                                                        <select
+                                                            className="form-input"
+                                                            value={createForm.operation}
+                                                            onChange={(e) => setCreateForm({ ...createForm, operation: e.target.value })}
+                                                        >
+                                                            <option value="">{t('adminCertificates.operation')}</option>
+                                                            <option value="entry">{t('adminCertificates.entry')}</option>
+                                                            <option value="exit">{t('adminCertificates.exit')}</option>
+                                                            <option value="transfer">{t('adminCertificates.transfer')}</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                                        <label className="form-label">{t('adminCertificates.format')}</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-input"
+                                                            value={createForm.format}
+                                                            onChange={(e) => setCreateForm({ ...createForm, format: e.target.value })}
+                                                            placeholder={t('adminCertificates.format')}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Step>
+
+                                        <Step>
+                                            <div className="ac-form-section">
+                                                <div className="ac-form-section-header">
+                                                    <Upload size={14} />
+                                                    {t('adminCertificates.attachmentSection', 'Attachment')}
+                                                </div>
+                                                <div className="ac-form-section-fields">
+                                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                                        <label className="form-label">{t('adminCertificates.digitalCopyAttachment')}</label>
+                                                        <div className="ac-file-upload">
+                                                            <input
+                                                                type="file"
+                                                                className="ac-file-input"
+                                                                id="ac-digital-copy"
+                                                                onChange={(e) => setCreateForm({ ...createForm, digital_copy: e.target.files[0] })}
+                                                                accept="image/*,application/pdf"
+                                                            />
+                                                            <label htmlFor="ac-digital-copy" className="ac-file-label">
+                                                                <Upload size={16} />
+                                                                <span>{createForm.digital_copy ? createForm.digital_copy.name : t('adminCertificates.chooseFile', 'Choose a file')}</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Step>
+
+                                        <Step>
+                                            <div className="ac-form-section">
+                                                <div className="ac-form-section-header">
+                                                    <PenLine size={14} />
+                                                    {t('adminCertificates.signaturesSection', 'Signatures')}
+                                                </div>
+                                                <div className="ac-signature-grid">
+                                                    {getSignatureFields(t).map((field) => (
+                                                        <label key={field.key} className="ac-signature-chip">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={!!createForm[field.key]}
+                                                                onChange={(e) =>
+                                                                    setCreateForm({
+                                                                        ...createForm,
+                                                                        [field.key]: e.target.checked,
+                                                                    })
+                                                                }
+                                                            />
+                                                            <span className="ac-signature-chip-indicator" />
+                                                            <span className="ac-signature-chip-label">{field.label}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </Step>
+                                    </Stepper>
+
+                                    <div className="ac-modal-footer">
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            disabled={submitting}
+                                            onClick={() => setShowCreateForm(false)}
+                                        >
+                                            {t('common.cancel')}
+                                        </button>
+                                        {createStep > 0 && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-secondary"
+                                                disabled={submitting}
+                                                onClick={handleCreateBack}
+                                            >
+                                                {t('common.back', 'Back')}
+                                            </button>
+                                        )}
+                                        {createStep < 3 ? (
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                disabled={submitting}
+                                                onClick={handleCreateNext}
+                                            >
+                                                {t('common.next', 'Next')}
+                                            </button>
+                                        ) : (
+                                            <button type="submit" className="btn btn-primary" disabled={submitting}>
+                                                {submitting ? t('common.creating') : t('adminCertificates.createCertificate')}
+                                            </button>
+                                        )}
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
                 </ModalPortal>
             )}
         </div>

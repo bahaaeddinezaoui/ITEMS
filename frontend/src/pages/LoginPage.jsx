@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import BackButton from '../components/BackButton';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import DarkVeil from '../components/DarkVeil';
+import PowerSaveButton from '../components/PowerSaveButton';
 
 const LoginPage = () => {
     const { t } = useTranslation();
@@ -152,11 +153,11 @@ const LoginPage = () => {
         <div className="login-page">
             {/* Top Bar: Back button + Language Switcher */}
             <div className="login-top-bar">
-                <Link to="/" className="login-back-btn">
-                    <ArrowLeft size={18} />
-                    <span>{t('common.back')}</span>
-                </Link>
-                <LanguageSwitcher />
+                <BackButton onClick={() => navigate('/')} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                    <PowerSaveButton />
+                    <LanguageSwitcher />
+                </div>
             </div>
 
             {/* Left Side - Login Form */}

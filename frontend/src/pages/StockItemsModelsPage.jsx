@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Plus, Search, Pencil, Sliders, Link2, Layers, Box, X, XCircle, Tag, Image, ChevronUp, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { Plus, Search, Pencil, Sliders, Link2, Layers, Box, X, XCircle, Tag, Image, ChevronUp, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { stockItemAttributeDefinitionService, stockItemBrandService, stockItemModelAttributeService, stockItemModelService, stockItemTypeService, authService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { SkeletonListRows } from '../components/SkeletonCard';
 import ModalPortal from '../components/ModalPortal';
 import useModalFeedback from '../components/useModalFeedback';
 import ModalFeedback from '../components/ModalFeedback';
+import BackButton from '../components/BackButton';
 
 const StockItemsModelsPage = () => {
     const navigate = useNavigate();
@@ -31,7 +33,10 @@ const StockItemsModelsPage = () => {
         stock_item_brand: '',
         model_name_en: '',
         model_name_ar: '',
-        model_code: ''
+        model_code: '',
+        warranty_expiry_in_months: '',
+        stock_item_model_name_in_administrative_certificate_en: '',
+        stock_item_model_name_in_administrative_certificate_ar: '',
     });
     const [showModelAttributeForm, setShowModelAttributeForm] = useState(false);
     const [modelAttributeForm, setModelAttributeForm] = useState({
@@ -217,14 +222,17 @@ const StockItemsModelsPage = () => {
         try {
             const modelNameEn = modelForm.model_name_en?.trim() || null;
             const modelNameAr = modelForm.model_name_ar?.trim() || null;
+            const adminCertEn = modelForm.stock_item_model_name_in_administrative_certificate_en?.trim() || null;
+            const adminCertAr = modelForm.stock_item_model_name_in_administrative_certificate_ar?.trim() || null;
             const payload = {
                 stock_item_type: Number(typeId),
                 stock_item_brand: Number(modelForm.stock_item_brand),
                 model_name: modelNameEn,
                 model_code: modelForm.model_code || null,
+                warranty_expiry_in_months: modelForm.warranty_expiry_in_months ? Number(modelForm.warranty_expiry_in_months) : null,
                 translations: {
-                    en: { model_name: modelNameEn },
-                    ar: { model_name: modelNameAr },
+                    en: { model_name: modelNameEn, stock_item_model_name_in_administrative_certificate: adminCertEn },
+                    ar: { model_name: modelNameAr, stock_item_model_name_in_administrative_certificate: adminCertAr },
                 }
             };
             if (editingModel) {
@@ -232,7 +240,7 @@ const StockItemsModelsPage = () => {
             } else {
                 await stockItemModelService.create(payload);
             }
-            setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '' });
+            setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '', warranty_expiry_in_months: '', stock_item_model_name_in_administrative_certificate_en: '', stock_item_model_name_in_administrative_certificate_ar: '' });
             setShowModelForm(false);
             setEditingModel(null);
             showSuccess(editingModel ? t('stockItemModels.updateSuccess', 'Model updated successfully') : t('stockItemModels.createSuccess', 'Model created successfully'));
@@ -265,7 +273,10 @@ const StockItemsModelsPage = () => {
             stock_item_brand: model.stock_item_brand,
             model_name_en: model.model_name_en || model.model_name || '',
             model_name_ar: model.model_name_ar || '',
-            model_code: model.model_code || ''
+            model_code: model.model_code || '',
+            warranty_expiry_in_months: model.warranty_expiry_in_months ?? '',
+            stock_item_model_name_in_administrative_certificate_en: model.stock_item_model_name_in_administrative_certificate_en || '',
+            stock_item_model_name_in_administrative_certificate_ar: model.stock_item_model_name_in_administrative_certificate_ar || '',
         });
         setShowModelForm(true);
     };
@@ -273,7 +284,7 @@ const StockItemsModelsPage = () => {
     const handleCancelModelForm = () => {
         setShowModelForm(false);
         setEditingModel(null);
-        setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '' });
+        setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '', warranty_expiry_in_months: '', stock_item_model_name_in_administrative_certificate_en: '', stock_item_model_name_in_administrative_certificate_ar: '' });
     };
 
     const handleModelAttributeSubmit = async (e) => {
@@ -389,6 +400,10 @@ const StockItemsModelsPage = () => {
         navigate(`/dashboard/stock-items/models/${model.stock_item_model_id}/compatibility?typeId=${typeId}`);
     };
 
+    const goToDefaultConfiguration = (model) => {
+        navigate(`/dashboard/stock-items/models/${model.stock_item_model_id}/default-composition?typeId=${typeId}`);
+    };
+
     if (!typeId) {
         return (
             <div className="page-container" style={{ padding: 'var(--space-6)', maxWidth: '1400px', margin: '0 auto' }}>
@@ -398,7 +413,6 @@ const StockItemsModelsPage = () => {
                         <p className="page-subtitle">{t('stockItemModels.selectTypeFirst')}</p>
                     </div>
                     <button className="btn btn-secondary" onClick={goBack} style={{ padding: 'var(--space-3) var(--space-4)' }}>
-                        <ArrowLeft size={18} />
                         <span>{t('stockItemModels.backToTypes')}</span>
                     </button>
                 </div>
@@ -415,9 +429,7 @@ const StockItemsModelsPage = () => {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                    <button className="btn btn-secondary" onClick={goBack} style={{ padding: 'var(--space-2) var(--space-3)' }}>
-                        <ArrowLeft size={18} />
-                    </button>
+                    <BackButton onClick={goBack} />
                     <div>
                         <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Layers size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItemModels.models', 'Stock Item Models')}</h1>
                         <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -427,7 +439,7 @@ const StockItemsModelsPage = () => {
                     </div>
                 </div>
                 {authService.isSuperuser() && (
-                    <button className="btn btn-primary" onClick={() => { setEditingModel(null); setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '' }); setShowModelForm(true); }} style={{ padding: 'var(--space-3) var(--space-6)', width: 'auto' }}>
+                    <button className="btn btn-primary" onClick={() => { setEditingModel(null); setModelForm({ stock_item_brand: '', model_name_en: '', model_name_ar: '', model_code: '', warranty_expiry_in_months: '', stock_item_model_name_in_administrative_certificate_en: '', stock_item_model_name_in_administrative_certificate_ar: '' }); setShowModelForm(true); }} style={{ padding: 'var(--space-3) var(--space-6)', width: 'auto' }}>
                         <Plus size={18} />
                         <span>{t('stockItemModels.addModel')}</span>
                     </button>
@@ -492,11 +504,35 @@ const StockItemsModelsPage = () => {
                                     <input type="text" name="model_name_ar" value={modelForm.model_name_ar} onChange={handleModelInputChange} placeholder={t('stockItemModels.modelNameArPlaceholder', 'Model name in Arabic')} className="form-input" style={{ height: '44px', flex: 1, direction: 'rtl' }} />
                                 </div>
                             </div>
-                            <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
+                            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
                                 <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
                                     {t('stockItemModels.modelCode')}
                                 </label>
                                 <input type="text" name="model_code" value={modelForm.model_code} onChange={handleModelInputChange} placeholder={t('stockItemModels.modelCode')} className="form-input" style={{ height: '44px' }} />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 'var(--space-5)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                    {t('stockItemModels.warrantyMonths', 'Warranty (Months)')}
+                                </label>
+                                <input type="number" name="warranty_expiry_in_months" value={modelForm.warranty_expiry_in_months} onChange={handleModelInputChange} placeholder={t('stockItemModels.warrantyMonthsPlaceholder', 'e.g. 12')} className="form-input" style={{ height: '44px' }} min="0" />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                    {t('stockItemModels.nameInAdminCert', 'Name in Admin. Certificate (EN)')}
+                                </label>
+                                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                                    <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-accent-primary)', background: 'var(--color-accent-glow)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}>EN</span>
+                                    <input type="text" name="stock_item_model_name_in_administrative_certificate_en" value={modelForm.stock_item_model_name_in_administrative_certificate_en} onChange={handleModelInputChange} placeholder={t('stockItemModels.nameInAdminCertEnPlaceholder', 'Name in administrative certificate (English)')} className="form-input" style={{ height: '44px', flex: 1 }} />
+                                </div>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '600', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)' }}>
+                                    {t('stockItemModels.nameInAdminCertAr', 'Name in Admin. Certificate (AR)')}
+                                </label>
+                                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                                    <span style={{ fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-accent-tertiary)', background: 'var(--color-accent-glow)', padding: '2px 8px', borderRadius: 'var(--radius-sm)', flexShrink: 0 }}>AR</span>
+                                    <input type="text" name="stock_item_model_name_in_administrative_certificate_ar" value={modelForm.stock_item_model_name_in_administrative_certificate_ar} onChange={handleModelInputChange} placeholder={t('stockItemModels.nameInAdminCertArPlaceholder', 'Name in administrative certificate (Arabic)')} className="form-input" style={{ height: '44px', flex: 1, direction: 'rtl' }} />
+                                </div>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--color-border)' }}>
                                 <button type="button" onClick={handleCancelModelForm} className="btn btn-secondary" style={{ padding: 'var(--space-3) var(--space-5)' }}>
@@ -516,31 +552,6 @@ const StockItemsModelsPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
                 {/* Models Panel */}
                 <div className="card" style={{ overflow: 'hidden' }}>
-                    {/* Toolbar */}
-                    <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                        <div style={{ position: 'relative', flex: '0 1 320px', minWidth: '180px' }}>
-                            <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                            <input type="text" placeholder={t('stockItemModels.searchPlaceholder', 'Search models...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
-                        </div>
-                        <select className="form-input" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={{ height: '44px', minWidth: '130px' }}>
-                            <option value="">{t('stockItemModels.allBrands', 'All Brands')}</option>
-                            {stockItemBrands.map(b => <option key={b.stock_item_brand_id} value={b.stock_item_brand_id}>{b.brand_name}</option>)}
-                        </select>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '44px', minWidth: '110px' }}>
-                                <option value="model_name">{t('stockItemModels.sortByName', 'Name')}</option>
-                                <option value="model_code">{t('stockItemModels.sortByCode', 'Code')}</option>
-                                <option value="brand_name">{t('stockItemModels.sortByBrand', 'Brand')}</option>
-                            </select>
-                            <button className="btn btn-secondary" onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
-                                {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                            </button>
-                        </div>
-                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
-                            {filteredModels.length}
-                        </span>
-                    </div>
-
                     {/* Model List */}
                     <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
                         {loading ? (
@@ -610,6 +621,9 @@ const StockItemsModelsPage = () => {
                                         </button>
                                         <button onClick={(e) => { e.stopPropagation(); goToCompatibility(model); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItemModels.compatibility')}>
                                             <Link2 size={14} />
+                                        </button>
+                                        <button onClick={(e) => { e.stopPropagation(); goToDefaultConfiguration(model); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItemModels.defaultConfiguration')}>
+                                            <Layers size={14} />
                                         </button>
                                         <button onClick={(e) => { e.stopPropagation(); goToInstances(model); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItemModels.instances')}>
                                             <Box size={14} />
@@ -776,6 +790,34 @@ const StockItemsModelsPage = () => {
                     </div>
                 )}
             </div>
+            <FilterSortFAB hasActiveFilters={!!searchTerm || !!brandFilter || sortField !== 'model_name' || sortDirection !== 'asc'}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                        <input type="text" placeholder={t('stockItemModels.searchPlaceholder', 'Search models...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('stockItemModels.allBrands', 'All Brands')}</label>
+                        <select className="form-input" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('stockItemModels.allBrands', 'All Brands')}</option>
+                            {stockItemBrands.map(b => <option key={b.stock_item_brand_id} value={b.stock_item_brand_id}>{b.brand_name}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy', 'Sort by')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="model_name">{t('stockItemModels.sortByName', 'Name')}</option>
+                                <option value="model_code">{t('stockItemModels.sortByCode', 'Code')}</option>
+                                <option value="brand_name">{t('stockItemModels.sortByBrand', 'Brand')}</option>
+                            </select>
+                            <button className="btn btn-secondary" onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
+                                {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

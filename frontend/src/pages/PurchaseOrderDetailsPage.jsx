@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { SkeletonCardList } from '../components/SkeletonCard';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { FileText, RefreshCw } from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import BackButton from '../components/BackButton';
 
 const PurchaseOrderDetailsPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -92,10 +93,7 @@ const PurchaseOrderDetailsPage = () => {
                     )}
                 </div>
                 <div className="org-actions">
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        <ArrowLeft size={18} />
-                        {t('common.back')}
-                    </button>
+                    <BackButton onClick={() => navigate('/dashboard/purchase-orders')} />
                     <button type="button" className="btn btn-secondary" onClick={load} disabled={loading}>
                         <RefreshCw size={18} />
                         {t('common.refresh')}

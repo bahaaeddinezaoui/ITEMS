@@ -470,7 +470,6 @@ class AssetTranslation(models.Model):
     asset = models.ForeignKey('Asset', on_delete=models.CASCADE, db_column='asset_id')
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     asset_name = models.CharField(max_length=48, blank=True, null=True, db_column='asset_name')
-    asset_name_in_the_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='asset_name_in_the_administrative_certificate')
     asset_status = models.CharField(max_length=60, blank=True, null=True, db_column='asset_status')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
@@ -485,7 +484,6 @@ class ConsumableTranslation(models.Model):
     consumable = models.ForeignKey('Consumable', on_delete=models.CASCADE, db_column='consumable_id')
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     consumable_name = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name')
-    consumable_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name_in_administrative_certificate')
     consumable_status = models.CharField(max_length=60, blank=True, null=True, db_column='consumable_status')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
@@ -500,7 +498,6 @@ class StockItemTranslation(models.Model):
     stock_item = models.ForeignKey('StockItem', on_delete=models.CASCADE, db_column='stock_item_id')
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     stock_item_name = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name')
-    stock_item_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name_in_administrative_certificate')
     stock_item_status = models.CharField(max_length=60, blank=True, null=True, db_column='stock_item_status')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
@@ -516,6 +513,7 @@ class AssetModelTranslation(models.Model):
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     model_name = models.CharField(max_length=48, blank=True, null=True, db_column='model_name')
     notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    asset_model_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='asset_model_name_in_administrative_certificate')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     class Meta:
@@ -530,6 +528,7 @@ class ConsumableModelTranslation(models.Model):
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     model_name = models.CharField(max_length=48, blank=True, null=True, db_column='model_name')
     notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    consumable_model_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_model_name_in_administrative_certificate')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     class Meta:
@@ -544,6 +543,7 @@ class StockItemModelTranslation(models.Model):
     language_code = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, db_column='language_code')
     model_name = models.CharField(max_length=48, blank=True, null=True, db_column='model_name')
     notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+    stock_item_model_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_model_name_in_administrative_certificate')
     created_at = models.DateTimeField(auto_now_add=True, db_column='created_at')
     updated_at = models.DateTimeField(auto_now=True, db_column='updated_at')
     class Meta:

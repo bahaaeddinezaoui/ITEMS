@@ -7,7 +7,6 @@ import {
     Trash2, 
     ChevronRight, 
     Info, 
-    ArrowLeft,
     Tag,
     Hash,
     CheckCircle2,
@@ -19,6 +18,7 @@ import {
     Settings,
     Image
 } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { stockItemTypeService, stockItemAttributeDefinitionService, stockItemTypeAttributeService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -349,27 +349,6 @@ const StockItemsTypesPage = () => {
             <div style={{ display: 'flex', gap: 'var(--space-6)', alignItems: 'flex-start' }}>
                 {/* Left Column: Types Grid */}
                 <div style={{ flex: '1.2' }}>
-                    <div style={{ marginBottom: 'var(--space-6)', position: 'relative' }}>
-                        <Search 
-                            size={18} 
-                            style={{ 
-                                position: 'absolute', 
-                                left: 'var(--space-4)', 
-                                top: '50%', 
-                                transform: 'translateY(-50%)', 
-                                color: 'var(--color-text-muted)' 
-                            }} 
-                        />
-                        <input 
-                            type="text" 
-                            placeholder={t('stockItemTypes.searchPlaceholder')} 
-                            className="form-input"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{ paddingLeft: 'var(--space-12)', height: '48px', background: 'var(--color-bg-card)' }}
-                        />
-                    </div>
-
                     {loading ? (
                         <div style={{ padding: 'var(--space-16)' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--space-4)' }}>
@@ -482,7 +461,7 @@ const StockItemsTypesPage = () => {
             {/* Modal for Type Attributes */}
             {showAttributesModal && selectedStockItemType && (
                 <ModalPortal>
-                <div className="modal-overlay" onClick={() => setShowAttributesModal(false)}>
+                <div className="modal-overlay" onClick={() => { if (!showAddTypeAttributeForm) setShowAttributesModal(false); }}>
                     <div className="modal" style={{ maxWidth: '700px', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
                         <div className="modal-header" style={{ padding: 'var(--space-5)' }}>
@@ -516,7 +495,7 @@ const StockItemsTypesPage = () => {
                             <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
                             {/* Add Attribute Button */}
                             <button
-                                onClick={() => setShowAddTypeAttributeForm(!showAddTypeAttributeForm)}
+                                onClick={() => setShowAddTypeAttributeForm(true)}
                                 className="btn btn-primary"
                                 style={{ 
                                     width: '100%', 
@@ -529,85 +508,8 @@ const StockItemsTypesPage = () => {
                                 }}
                             >
                                 <Plus size={18} />
-                                <span>{showAddTypeAttributeForm ? t('common.cancel') : t('stockItemTypes.addNewAttribute')}</span>
+                                <span>{t('stockItemTypes.addNewAttribute')}</span>
                             </button>
-
-                            {/* Add Attribute Form */}
-                            {showAddTypeAttributeForm && (
-                                <div style={{ 
-                                    marginBottom: 'var(--space-6)', 
-                                    padding: 'var(--space-5)', 
-                                    background: 'var(--color-bg-secondary)', 
-                                    border: '2px solid var(--color-accent-primary)', 
-                                    borderRadius: 'var(--radius-lg)',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                }}>
-                                    <h4 style={{ margin: '0 0 var(--space-4)', fontSize: 'var(--font-size-md)', color: 'var(--color-accent-primary)' }}>{t('stockItemTypes.newAttribute')}</h4>
-                                    <form onSubmit={handleAddTypeAttributeSubmit} className="form">
-                                        <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-                                            <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>{t('stockItemTypes.attributeDefinition')}</label>
-                                            <select
-                                                name="stock_item_attribute_definition"
-                                                value={typeAttributeForm.stock_item_attribute_definition}
-                                                onChange={handleTypeAttributeInputChange}
-                                                className="form-input"
-                                                style={{ height: '44px' }}
-                                            >
-                                                <option value="">{t('stockItemTypes.selectDefinition')}</option>
-                                                {availableAttributeDefinitions.map((def) => (
-                                                    <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
-                                                        {def.description}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                                            <div className="form-group">
-                                                <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>{t('stockItemTypes.defaultValue')}</label>
-                                                <input
-                                                    type="text"
-                                                    name="default_value"
-                                                    placeholder={t('stockItemTypes.defaultValuePlaceholder')}
-                                                    value={typeAttributeForm.default_value}
-                                                    onChange={handleTypeAttributeInputChange}
-                                                    className="form-input"
-                                                    style={{ height: '44px' }}
-                                                />
-                                            </div>
-                                            <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
-                                                <label style={{ 
-                                                    display: 'flex', 
-                                                    alignItems: 'center', 
-                                                    gap: 'var(--space-3)', 
-                                                    cursor: 'pointer',
-                                                    padding: 'var(--space-3)',
-                                                    background: 'var(--color-bg-card)',
-                                                    borderRadius: 'var(--radius-md)',
-                                                    border: '1px solid var(--color-border)',
-                                                    width: '100%'
-                                                }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        name="is_mandatory"
-                                                        checked={typeAttributeForm.is_mandatory}
-                                                        onChange={handleTypeAttributeInputChange}
-                                                        style={{ width: '18px', height: '18px' }}
-                                                    />
-                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>{t('stockItemTypes.mandatory')}</span>
-                                                </label>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                                            <button type="submit" disabled={saving} className="btn btn-primary" style={{ flex: 1, padding: 'var(--space-3)' }}>
-                                                {saving ? t('common.saving') : t('stockItemTypes.saveAttribute')}
-                                            </button>
-                                            <button type="button" onClick={() => setShowAddTypeAttributeForm(false)} className="btn btn-secondary" style={{ flex: 1, padding: 'var(--space-3)' }}>{t('common.cancel')}</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            )}
 
                             {/* Attributes List */}
                             {attributesLoading ? (
@@ -714,6 +616,102 @@ const StockItemsTypesPage = () => {
                 </ModalPortal>
             )}
 
+            {/* Nested Modal for Adding New Attribute */}
+            {showAddTypeAttributeForm && selectedStockItemType && (
+                <ModalPortal>
+                <div className="modal-overlay" onClick={() => setShowAddTypeAttributeForm(false)} style={{ zIndex: 1001 }}>
+                    <div className="modal" style={{ maxWidth: '500px' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                                <div style={{ 
+                                    width: '40px', 
+                                    height: '40px', 
+                                    background: 'var(--color-accent-glow)', 
+                                    borderRadius: 'var(--radius-md)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--color-accent-primary)'
+                                }}>
+                                    <Plus size={20} />
+                                </div>
+                                <h2 className="modal-title" style={{ margin: 0 }}>{t('stockItemTypes.newAttribute')}</h2>
+                            </div>
+                            <button className="modal-close" onClick={() => setShowAddTypeAttributeForm(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
+                            <form onSubmit={handleAddTypeAttributeSubmit} className="form">
+                                <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+                                    <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>{t('stockItemTypes.attributeDefinition')}</label>
+                                    <select
+                                        name="stock_item_attribute_definition"
+                                        value={typeAttributeForm.stock_item_attribute_definition}
+                                        onChange={handleTypeAttributeInputChange}
+                                        className="form-input"
+                                        style={{ height: '44px' }}
+                                    >
+                                        <option value="">{t('stockItemTypes.selectDefinition')}</option>
+                                        {availableAttributeDefinitions.map((def) => (
+                                            <option key={def.stock_item_attribute_definition_id} value={def.stock_item_attribute_definition_id}>
+                                                {def.description}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ fontWeight: '600', marginBottom: 'var(--space-2)' }}>{t('stockItemTypes.defaultValue')}</label>
+                                        <input
+                                            type="text"
+                                            name="default_value"
+                                            placeholder={t('stockItemTypes.defaultValuePlaceholder')}
+                                            value={typeAttributeForm.default_value}
+                                            onChange={handleTypeAttributeInputChange}
+                                            className="form-input"
+                                            style={{ height: '44px' }}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                                        <label style={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: 'var(--space-3)', 
+                                            cursor: 'pointer',
+                                            padding: 'var(--space-3)',
+                                            background: 'var(--color-bg-card)',
+                                            borderRadius: 'var(--radius-md)',
+                                            border: '1px solid var(--color-border)',
+                                            width: '100%'
+                                        }}>
+                                            <input
+                                                type="checkbox"
+                                                name="is_mandatory"
+                                                checked={typeAttributeForm.is_mandatory}
+                                                onChange={handleTypeAttributeInputChange}
+                                                style={{ width: '18px', height: '18px' }}
+                                            />
+                                            <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: '500' }}>{t('stockItemTypes.mandatory')}</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="modal-footer" style={{ padding: 'var(--space-4) 0 0', border: 'none' }}>
+                                    <button type="button" onClick={() => setShowAddTypeAttributeForm(false)} className="btn btn-secondary">{t('common.cancel')}</button>
+                                    <button type="submit" disabled={saving} className="btn btn-primary">
+                                        {saving ? t('common.saving') : t('stockItemTypes.saveAttribute')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                </ModalPortal>
+            )}
+
             {/* Modal for Creating New Type */}
             {showTypeForm && (
                 <ModalPortal>
@@ -763,6 +761,22 @@ const StockItemsTypesPage = () => {
                 </div>
                 </ModalPortal>
             )}
+            <FilterSortFAB hasActiveFilters={!!searchTerm}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('stockItemTypes.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchTerm && (
+                            <button onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    {searchTerm && (
+                        <button onClick={() => setSearchTerm('')} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

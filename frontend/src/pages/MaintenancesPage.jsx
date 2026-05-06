@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { SkeletonListRows } from '../components/SkeletonCard';
-import { assetService, assetTypeService, assetBrandService, assetModelService, maintenanceService, personService, locationService, maintenanceTypicalStepService, externalMaintenanceTypicalStepService } from '../services/api';
+import FilterSortFAB from '../components/FilterSortFAB';
+import { assetService, assetTypeService, assetBrandService, assetModelService, stockItemService, stockItemTypeService, stockItemBrandService, stockItemModelService, consumableService, consumableTypeService, consumableBrandService, consumableModelService, maintenanceService, personService, locationService, maintenanceTypicalStepService, externalMaintenanceTypicalStepService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import SearchableSelect from '../components/SearchableSelect';
 import TranslatableInput from '../components/TranslatableInput';
@@ -35,6 +35,7 @@ import {
     Check,
     ArrowLeft,
     ArrowRight,
+    X,
 } from 'lucide-react';
 import Stepper, { Step } from '../components/Stepper';
 import ModalPortal from '../components/ModalPortal';
@@ -66,6 +67,11 @@ const MaintenancesPage = () => {
     const [stepperDirection, setStepperDirection] = useState(0);
     const [selectedAsset, setSelectedAsset] = useState('');
     const [createDescription, setCreateDescription] = useState('');
+    const [createItemType, setCreateItemType] = useState('asset');
+    const [selectedStockItem, setSelectedStockItem] = useState('');
+    const [selectedConsumable, setSelectedConsumable] = useState('');
+    const [stockItems, setStockItems] = useState([]);
+    const [consumables, setConsumables] = useState([]);
 
     const [assetCurrentLocation, setAssetCurrentLocation] = useState(null);
     const [maintenanceLocations, setMaintenanceLocations] = useState([]);
@@ -95,6 +101,25 @@ const MaintenancesPage = () => {
     const [filterAssetBrand, setFilterAssetBrand] = useState('');
     const [filterAssetModel, setFilterAssetModel] = useState('');
     const [filterAssetStatus, setFilterAssetStatus] = useState('');
+    const [filterItemType, setFilterItemType] = useState('');
+
+    // Stock Item filter states for Create Maintenance modal
+    const [stockItemTypes, setStockItemTypes] = useState([]);
+    const [stockItemBrands, setStockItemBrands] = useState([]);
+    const [stockItemModels, setStockItemModels] = useState([]);
+    const [filterStockItemType, setFilterStockItemType] = useState('');
+    const [filterStockItemBrand, setFilterStockItemBrand] = useState('');
+    const [filterStockItemModel, setFilterStockItemModel] = useState('');
+    const [filterStockItemStatus, setFilterStockItemStatus] = useState('');
+
+    // Consumable filter states for Create Maintenance modal
+    const [consumableTypes, setConsumableTypes] = useState([]);
+    const [consumableBrands, setConsumableBrands] = useState([]);
+    const [consumableModels, setConsumableModels] = useState([]);
+    const [filterConsumableType, setFilterConsumableType] = useState('');
+    const [filterConsumableBrand, setFilterConsumableBrand] = useState('');
+    const [filterConsumableModel, setFilterConsumableModel] = useState('');
+    const [filterConsumableStatus, setFilterConsumableStatus] = useState('');
 
     const [showTypicalStepsModal, setShowTypicalStepsModal] = useState(false);
     const [typicalStepsTab, setTypicalStepsTab] = useState('internal');
@@ -345,6 +370,28 @@ const MaintenancesPage = () => {
         }
     };
 
+    const loadStockItems = async () => {
+        try {
+            const data = await stockItemService.getAll({ page_size: 1000 });
+            const list = Array.isArray(data) ? data : (data?.results || []);
+            setStockItems(list);
+        } catch (err) {
+            console.error('Failed to load stock items', err);
+            setStockItems([]);
+        }
+    };
+
+    const loadConsumables = async () => {
+        try {
+            const data = await consumableService.getAll({ page_size: 1000 });
+            const list = Array.isArray(data) ? data : (data?.results || []);
+            setConsumables(list);
+        } catch (err) {
+            console.error('Failed to load consumables', err);
+            setConsumables([]);
+        }
+    };
+
     const loadAssetFilters = async () => {
         try {
             const [types, brands, models] = await Promise.all([
@@ -357,6 +404,36 @@ const MaintenancesPage = () => {
             setAssetModels(Array.isArray(models) ? models : (models?.results || []));
         } catch (err) {
             console.error('Failed to load asset filters', err);
+        }
+    };
+
+    const loadStockItemFilters = async () => {
+        try {
+            const [types, brands, models] = await Promise.all([
+                stockItemTypeService.getAll(),
+                stockItemBrandService.getAll(),
+                stockItemModelService.getAll(),
+            ]);
+            setStockItemTypes(Array.isArray(types) ? types : (types?.results || []));
+            setStockItemBrands(Array.isArray(brands) ? brands : (brands?.results || []));
+            setStockItemModels(Array.isArray(models) ? models : (models?.results || []));
+        } catch (err) {
+            console.error('Failed to load stock item filters', err);
+        }
+    };
+
+    const loadConsumableFilters = async () => {
+        try {
+            const [types, brands, models] = await Promise.all([
+                consumableTypeService.getAll(),
+                consumableBrandService.getAll(),
+                consumableModelService.getAll(),
+            ]);
+            setConsumableTypes(Array.isArray(types) ? types : (types?.results || []));
+            setConsumableBrands(Array.isArray(brands) ? brands : (brands?.results || []));
+            setConsumableModels(Array.isArray(models) ? models : (models?.results || []));
+        } catch (err) {
+            console.error('Failed to load consumable filters', err);
         }
     };
 
@@ -423,11 +500,138 @@ const MaintenancesPage = () => {
         return assetBrands.filter((b) => brandIdsWithType.has(String(b.asset_brand_id)));
     }, [assetBrands, assetModels, filterAssetType]);
 
+    // Build a lookup from stock_item_model_id -> { stock_item_type_id, stock_item_brand_id }
+    const stockItemModelLookup = useMemo(() => {
+        const map = {};
+        stockItemModels.forEach((m) => {
+            map[m.stock_item_model_id] = {
+                stock_item_type_id: m.stock_item_type,
+                stock_item_brand_id: m.stock_item_brand,
+            };
+        });
+        return map;
+    }, [stockItemModels]);
+
+    // Unique stock item statuses extracted from loaded stock items
+    const stockItemStatuses = useMemo(() => {
+        const set = new Set();
+        stockItems.forEach((si) => {
+            if (si.stock_item_status) set.add(si.stock_item_status);
+        });
+        return [...set].sort();
+    }, [stockItems]);
+
+    // Filtered stock items based on selected filters
+    const filteredStockItems = useMemo(() => {
+        return stockItems.filter((si) => {
+            if (filterStockItemType) {
+                const modelInfo = stockItemModelLookup[si.stock_item_model];
+                if (!modelInfo || String(modelInfo.stock_item_type_id) !== String(filterStockItemType)) return false;
+            }
+            if (filterStockItemBrand) {
+                const modelInfo = stockItemModelLookup[si.stock_item_model];
+                if (!modelInfo || String(modelInfo.stock_item_brand_id) !== String(filterStockItemBrand)) return false;
+            }
+            if (filterStockItemModel) {
+                if (String(si.stock_item_model) !== String(filterStockItemModel)) return false;
+            }
+            if (filterStockItemStatus) {
+                if (String(si.stock_item_status) !== String(filterStockItemStatus)) return false;
+            }
+            return true;
+        });
+    }, [stockItems, filterStockItemType, filterStockItemBrand, filterStockItemModel, filterStockItemStatus, stockItemModelLookup]);
+
+    // Filter stock item models by selected type/brand for the model dropdown
+    const filteredStockItemModels = useMemo(() => {
+        return stockItemModels.filter((m) => {
+            if (filterStockItemType && String(m.stock_item_type) !== String(filterStockItemType)) return false;
+            if (filterStockItemBrand && String(m.stock_item_brand) !== String(filterStockItemBrand)) return false;
+            return true;
+        });
+    }, [stockItemModels, filterStockItemType, filterStockItemBrand]);
+
+    // Filter stock item brands by selected type (brands that have models with that type)
+    const filteredStockItemBrands = useMemo(() => {
+        if (!filterStockItemType) return stockItemBrands;
+        const brandIdsWithType = new Set(
+            stockItemModels
+                .filter((m) => String(m.stock_item_type) === String(filterStockItemType))
+                .map((m) => String(m.stock_item_brand))
+        );
+        return stockItemBrands.filter((b) => brandIdsWithType.has(String(b.stock_item_brand_id)));
+    }, [stockItemBrands, stockItemModels, filterStockItemType]);
+
+    // Build a lookup from consumable_model_id -> { consumable_type_id, consumable_brand_id }
+    const consumableModelLookup = useMemo(() => {
+        const map = {};
+        consumableModels.forEach((m) => {
+            map[m.consumable_model_id] = {
+                consumable_type_id: m.consumable_type,
+                consumable_brand_id: m.consumable_brand,
+            };
+        });
+        return map;
+    }, [consumableModels]);
+
+    // Unique consumable statuses extracted from loaded consumables
+    const consumableStatuses = useMemo(() => {
+        const set = new Set();
+        consumables.forEach((c) => {
+            if (c.consumable_status) set.add(c.consumable_status);
+        });
+        return [...set].sort();
+    }, [consumables]);
+
+    // Filtered consumables based on selected filters
+    const filteredConsumables = useMemo(() => {
+        return consumables.filter((c) => {
+            if (filterConsumableType) {
+                const modelInfo = consumableModelLookup[c.consumable_model];
+                if (!modelInfo || String(modelInfo.consumable_type_id) !== String(filterConsumableType)) return false;
+            }
+            if (filterConsumableBrand) {
+                const modelInfo = consumableModelLookup[c.consumable_model];
+                if (!modelInfo || String(modelInfo.consumable_brand_id) !== String(filterConsumableBrand)) return false;
+            }
+            if (filterConsumableModel) {
+                if (String(c.consumable_model) !== String(filterConsumableModel)) return false;
+            }
+            if (filterConsumableStatus) {
+                if (String(c.consumable_status) !== String(filterConsumableStatus)) return false;
+            }
+            return true;
+        });
+    }, [consumables, filterConsumableType, filterConsumableBrand, filterConsumableModel, filterConsumableStatus, consumableModelLookup]);
+
+    // Filter consumable models by selected type/brand for the model dropdown
+    const filteredConsumableModels = useMemo(() => {
+        return consumableModels.filter((m) => {
+            if (filterConsumableType && String(m.consumable_type) !== String(filterConsumableType)) return false;
+            if (filterConsumableBrand && String(m.consumable_brand) !== String(filterConsumableBrand)) return false;
+            return true;
+        });
+    }, [consumableModels, filterConsumableType, filterConsumableBrand]);
+
+    // Filter consumable brands by selected type (brands that have models with that type)
+    const filteredConsumableBrands = useMemo(() => {
+        if (!filterConsumableType) return consumableBrands;
+        const brandIdsWithType = new Set(
+            consumableModels
+                .filter((m) => String(m.consumable_type) === String(filterConsumableType))
+                .map((m) => String(m.consumable_brand))
+        );
+        return consumableBrands.filter((b) => brandIdsWithType.has(String(b.consumable_brand_id)));
+    }, [consumableBrands, consumableModels, filterConsumableType]);
+
     const openCreateMaintenance = () => {
         setError('');
         setSelectedAsset('');
         setSelectedTechnician('');
         setCreateDescription('');
+        setCreateItemType('asset');
+        setSelectedStockItem('');
+        setSelectedConsumable('');
         setAssetCurrentLocation(null);
         setMaintenanceLocations([]);
         setAllLocations([]);
@@ -436,6 +640,14 @@ const MaintenancesPage = () => {
         setFilterAssetBrand('');
         setFilterAssetModel('');
         setFilterAssetStatus('');
+        setFilterStockItemType('');
+        setFilterStockItemBrand('');
+        setFilterStockItemModel('');
+        setFilterStockItemStatus('');
+        setFilterConsumableType('');
+        setFilterConsumableBrand('');
+        setFilterConsumableModel('');
+        setFilterConsumableStatus('');
         setCreateStep(0);
         setStepperDirection(0);
         try {
@@ -449,6 +661,10 @@ const MaintenancesPage = () => {
             setDestinationMode('maintenance_room');
         }
         loadAssetFilters();
+        loadStockItemFilters();
+        loadConsumableFilters();
+        loadStockItems();
+        loadConsumables();
         setShowCreateModal(true);
     };
 
@@ -497,8 +713,16 @@ const MaintenancesPage = () => {
 
     const validateCreateStep = (step) => {
         if (step === 0) {
-            if (!selectedAsset) {
+            if (createItemType === 'asset' && !selectedAsset) {
                 setError(t('maintenances.selectAssetError'));
+                return false;
+            }
+            if (createItemType === 'stock_item' && !selectedStockItem) {
+                setError(t('maintenances.selectStockItemError', 'Please select a stock item'));
+                return false;
+            }
+            if (createItemType === 'consumable' && !selectedConsumable) {
+                setError(t('maintenances.selectConsumableError', 'Please select a consumable'));
                 return false;
             }
         }
@@ -540,10 +764,16 @@ const MaintenancesPage = () => {
         setSubmitting(true);
         try {
             const payload = {
-                asset_id: selectedAsset,
                 technician_person_id: selectedTechnician,
                 description: createDescription,
             };
+            if (createItemType === 'asset') {
+                payload.asset_id = selectedAsset;
+            } else if (createItemType === 'stock_item') {
+                payload.stock_item_id = selectedStockItem;
+            } else if (createItemType === 'consumable') {
+                payload.consumable_id = selectedConsumable;
+            }
             const mode = destinationMode;
             if (mode === 'maintenance_room') {
                 if (assetCurrentLocation && !isMaintenanceLocation(assetCurrentLocation) && selectedMaintenanceLocation) {
@@ -654,8 +884,11 @@ const MaintenancesPage = () => {
         const map = {
             'in_stock': 'maintenances.assetStatusInStock',
             'not_delivered_to_company': 'maintenances.assetStatusNotDelivered',
-            'in_use': 'maintenances.assetStatusInUse',
-            'reserved': 'maintenances.assetStatusReserved',
+            'under_internal_maintenance': 'maintenances.assetStatusUnderInternalMaintenance',
+            'sent_to_external_maintenance': 'maintenances.assetStatusSentToExternalMaintenance',
+            'received_by_maintenance_provider': 'maintenances.assetStatusReceivedByMaintenanceProvider',
+            'sent_to_company_after_external_maintenance': 'maintenances.assetStatusSentToCompanyAfterExternalMaintenance',
+            'received_by_company_after_external_maintenance': 'maintenances.assetStatusReceivedByCompanyAfterExternalMaintenance',
             'failed': 'maintenances.assetStatusFailed',
             'lost': 'maintenances.assetStatusLost',
             'stolen': 'maintenances.assetStatusStolen',
@@ -759,6 +992,9 @@ const MaintenancesPage = () => {
             if (filterStatus) {
                 if (String(m?.maintenance_status || '') !== String(filterStatus)) return false;
             }
+            if (filterItemType) {
+                if (String(m?.item_type || '') !== String(filterItemType)) return false;
+            }
             if (filterTechnician) {
                 if (String(m?.performed_by_person_name || '') !== String(filterTechnician)) return false;
             }
@@ -783,6 +1019,9 @@ const MaintenancesPage = () => {
                     getLocalizedField(m, 'asset_brand_name'),
                     m?.asset_model_name,
                     getLocalizedField(m, 'asset_type_label'),
+                    m?.stock_item_name,
+                    m?.consumable_name,
+                    m?.item_type,
                 ].filter(Boolean).join(' ').toLowerCase();
 
                 if (!haystack.includes(q)) return false;
@@ -790,7 +1029,7 @@ const MaintenancesPage = () => {
 
             return true;
         });
-    }, [maintenances, searchQuery, filterStatus, filterTechnician, filterStartFrom, filterStartTo, getLocalizedField]);
+    }, [maintenances, searchQuery, filterStatus, filterItemType, filterTechnician, filterStartFrom, filterStartTo, getLocalizedField]);
 
     const getSortValue = (maintenance, key) => {
         switch (key) {
@@ -893,217 +1132,12 @@ const MaintenancesPage = () => {
                     </div>
                 </div>
 
-                    {createPortal(
-                        <div style={{ position: 'fixed', bottom: '2.5rem', right: '3rem', zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-                            {showFilters && (
-                                <div style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '0.5rem',
-                                    padding: '0.75rem',
-                                    borderRadius: 'var(--radius-lg)',
-                                    border: '1px solid var(--glass-border)',
-                                    background: 'var(--glass-bg)',
-                                    backdropFilter: 'var(--glass-backdrop)',
-                                    WebkitBackdropFilter: 'var(--glass-backdrop)',
-                                    boxShadow: 'var(--glass-shadow)',
-                                    maxWidth: 'calc(100vw - 3rem)',
-                                    minWidth: 240,
-                                }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                            {t('common.search', 'Search')}
-                                        </span>
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.45rem',
-                                            background: 'var(--color-bg-secondary)',
-                                            border: '1px solid var(--color-border)',
-                                            borderRadius: 'var(--radius-md)',
-                                            padding: '0.4rem 0.65rem',
-                                            minHeight: 38,
-                                        }}>
-                                            <Search size={14} style={{ color: 'var(--color-text-secondary)', flexShrink: 0 }} />
-                                            <input
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                                placeholder={t('common.search', 'Search')}
-                                                style={{
-                                                    border: 'none',
-                                                    outline: 'none',
-                                                    background: 'transparent',
-                                                    fontSize: 'var(--font-size-sm)',
-                                                    width: '100%',
-                                                    minWidth: 0,
-                                                    color: 'var(--color-text-primary)',
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                            {t('common.status', 'Status')}
-                                        </span>
-                                        <select
-                                            className="form-input"
-                                            style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', minHeight: 38 }}
-                                            value={filterStatus}
-                                            onChange={(e) => setFilterStatus(e.target.value)}
-                                            title={t('common.status', 'Status')}
-                                        >
-                                            <option value="">{t('common.all', 'All')}</option>
-                                            {statusOptions.map((s) => (
-                                                <option key={s} value={s}>{translateMaintenanceStatus(s)}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                            {t('maintenances.technician', 'Technician')}
-                                        </span>
-                                        <select
-                                            className="form-input"
-                                            style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', minHeight: 38 }}
-                                            value={filterTechnician}
-                                            onChange={(e) => setFilterTechnician(e.target.value)}
-                                            title={t('maintenances.technician', 'Technician')}
-                                        >
-                                            <option value="">{t('common.all', 'All')}</option>
-                                            {technicianOptions.map((n) => (
-                                                <option key={n} value={n}>{n}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                            {t('maintenances.startDate', 'Start date')} ({t('common.from', 'From')})
-                                        </span>
-                                        <input
-                                            type="date"
-                                            className="form-input"
-                                            style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', minHeight: 38 }}
-                                            value={filterStartFrom}
-                                            onChange={(e) => setFilterStartFrom(e.target.value)}
-                                            title={`${t('maintenances.startDate', 'Start date')} (${t('common.from', 'From')})`}
-                                        />
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                            {t('maintenances.startDate', 'Start date')} ({t('common.to', 'To')})
-                                        </span>
-                                        <input
-                                            type="date"
-                                            className="form-input"
-                                            style={{ padding: '0.45rem 0.6rem', fontSize: 'var(--font-size-sm)', minHeight: 38 }}
-                                            value={filterStartTo}
-                                            onChange={(e) => setFilterStartTo(e.target.value)}
-                                            title={`${t('maintenances.startDate', 'Start date')} (${t('common.to', 'To')})`}
-                                        />
-                                    </div>
-
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 600 }}>
-                                            {t('common.sort', 'Sort')}
-                                        </span>
-                                        <div style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '0.35rem',
-                                            background: 'var(--color-bg-secondary)',
-                                            border: '1px solid var(--color-border)',
-                                            borderRadius: 'var(--radius-md)',
-                                            padding: '0.35rem 0.6rem',
-                                            fontSize: 'var(--font-size-xs)',
-                                            color: 'var(--color-text-secondary)',
-                                            fontWeight: 500,
-                                            minHeight: 38,
-                                        }}>
-                                            <ArrowUpDown size={12} />
-                                            <select
-                                                style={{ border: 'none', background: 'transparent', fontSize: 'inherit', color: 'inherit', fontWeight: 'inherit', cursor: 'pointer', outline: 'none', padding: 0 }}
-                                                value={sortKey}
-                                                onChange={(e) => { setSortKey(e.target.value); setSortDirection('desc'); }}
-                                            >
-                                                <option value="start_datetime">{t('maintenances.startDate')}</option>
-                                                <option value="end_datetime">{t('maintenances.endDate')}</option>
-                                                <option value="maintenance_id">{t('common.id', 'ID')}</option>
-                                                <option value="asset">{t('assets.asset')}</option>
-                                                <option value="description">{t('common.description')}</option>
-                                                <option value="maintenance_status">{t('common.status')}</option>
-                                                <option value="performed_by_person_name">{t('maintenances.technician')}</option>
-                                            </select>
-                                            <button
-                                                onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
-                                                title={sortDirection === 'asc' ? t('maintenances.oldestFirst') : t('maintenances.newestFirst')}
-                                                style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--color-text-secondary)', display: 'flex', padding: 0 }}
-                                            >
-                                                {sortDirection === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {(searchQuery || filterStatus || filterTechnician || filterStartFrom || filterStartTo) && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setSearchQuery('');
-                                                setFilterStatus('');
-                                                setFilterTechnician('');
-                                                setFilterStartFrom('');
-                                                setFilterStartTo('');
-                                            }}
-                                            style={{ whiteSpace: 'nowrap', padding: '0.35rem 0.75rem', fontSize: 'var(--font-size-xs)', fontWeight: 500, minHeight: 38 }}
-                                            className="btn btn-sm btn-secondary"
-                                        >
-                                            {t('common.clear', 'Clear')}
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => setShowFilters(v => !v)}
-                                style={{
-                                    width: 48,
-                                    height: 48,
-                                    borderRadius: '50%',
-                                    border: 'none',
-                                    background: showFilters ? 'var(--color-accent-primary)' : 'var(--glass-bg)',
-                                    color: showFilters ? '#fff' : 'var(--color-text-primary)',
-                                    backdropFilter: showFilters ? 'none' : 'var(--glass-backdrop)',
-                                    WebkitBackdropFilter: showFilters ? 'none' : 'var(--glass-backdrop)',
-                                    boxShadow: 'var(--glass-shadow)',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    transition: 'all 0.2s ease',
-                                    position: 'relative',
-                                }}
-                                title={t('common.filters', 'Filters')}
-                            >
-                                <Settings2 size={20} />
-                                {(searchQuery || filterStatus || filterTechnician || filterStartFrom || filterStartTo) && !showFilters && (
-                                    <span style={{
-                                        position: 'absolute',
-                                        top: 2,
-                                        right: 2,
-                                        width: 8,
-                                        height: 8,
-                                        borderRadius: '50%',
-                                        background: 'var(--color-error)',
-                                        border: '2px solid var(--color-bg-secondary)',
-                                    }} />
-                                )}
-                            </button>
-                        </div>,
-                        document.body
-                    )}
+                    {/* Count */}
+                    <div style={{ padding: 'var(--space-3) var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center' }}>
+                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                            {sortedMaintenances.length}/{maintenances.length}
+                        </span>
+                    </div>
 
                 <div className="card-body" style={{ padding: 0 }}>
                     {loading ? (
@@ -1224,9 +1258,22 @@ const MaintenancesPage = () => {
                                                 )}
                                             </div>
 
-                                            {/* Row 2: Asset details as pill badges */}
+                                            {/* Row 2: Item details as pill badges */}
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
-                                                {[getLocalizedField(maintenance, 'asset_brand_name'), maintenance.asset_model_name, getLocalizedField(maintenance, 'asset_type_label')].filter(Boolean).length > 0 && (
+                                                {/* Item type badge */}
+                                                <span style={{
+                                                    display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                                                    padding: '0.2rem 0.55rem', borderRadius: 'var(--radius-sm)',
+                                                    fontSize: 'var(--font-size-xs)', fontWeight: 600,
+                                                    background: maintenance.item_type === 'stock_item' ? 'rgba(139, 92, 246, 0.1)' : maintenance.item_type === 'consumable' ? 'rgba(245, 158, 11, 0.1)' : 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.08)',
+                                                    color: maintenance.item_type === 'stock_item' ? '#8b5cf6' : maintenance.item_type === 'consumable' ? '#f59e0b' : 'var(--color-primary)',
+                                                    border: maintenance.item_type === 'stock_item' ? '1px solid rgba(139, 92, 246, 0.2)' : maintenance.item_type === 'consumable' ? '1px solid rgba(245, 158, 11, 0.2)' : '1px solid rgba(var(--color-primary-rgb, 59, 130, 246), 0.15)',
+                                                }}>
+                                                    {maintenance.item_type === 'stock_item' ? <Layers size={12} /> : maintenance.item_type === 'consumable' ? <Sticker size={12} /> : <Monitor size={12} />}
+                                                    {maintenance.item_type === 'stock_item' ? t('stockItems.stockItem', 'Stock Item') : maintenance.item_type === 'consumable' ? t('consumables.consumable', 'Consumable') : t('assets.asset', 'Asset')}
+                                                </span>
+                                                {/* Asset-specific details */}
+                                                {maintenance.item_type !== 'stock_item' && maintenance.item_type !== 'consumable' && [getLocalizedField(maintenance, 'asset_brand_name'), maintenance.asset_model_name, getLocalizedField(maintenance, 'asset_type_label')].filter(Boolean).length > 0 && (
                                                     <span style={{
                                                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                                                         padding: '0.2rem 0.55rem', borderRadius: 'var(--radius-sm)',
@@ -1236,6 +1283,30 @@ const MaintenancesPage = () => {
                                                     }}>
                                                         <Monitor size={12} />
                                                         {[getLocalizedField(maintenance, 'asset_brand_name'), maintenance.asset_model_name, getLocalizedField(maintenance, 'asset_type_label')].filter(Boolean).join(' · ')}
+                                                    </span>
+                                                )}
+                                                {/* Stock item details */}
+                                                {maintenance.item_type === 'stock_item' && [getLocalizedField(maintenance, 'stock_item_brand_name'), maintenance.stock_item_model_name, getLocalizedField(maintenance, 'stock_item_type_label')].filter(Boolean).length > 0 && (
+                                                    <span style={{
+                                                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                                                        padding: '0.2rem 0.55rem', borderRadius: 'var(--radius-sm)',
+                                                        fontSize: 'var(--font-size-xs)', fontWeight: 500,
+                                                        background: 'rgba(139, 92, 246, 0.08)',
+                                                        color: '#8b5cf6', border: '1px solid rgba(139, 92, 246, 0.15)',
+                                                    }}>
+                                                        {[getLocalizedField(maintenance, 'stock_item_brand_name'), maintenance.stock_item_model_name, getLocalizedField(maintenance, 'stock_item_type_label')].filter(Boolean).join(' · ')}
+                                                    </span>
+                                                )}
+                                                {/* Consumable details */}
+                                                {maintenance.item_type === 'consumable' && [getLocalizedField(maintenance, 'consumable_brand_name'), maintenance.consumable_model_name, getLocalizedField(maintenance, 'consumable_type_label')].filter(Boolean).length > 0 && (
+                                                    <span style={{
+                                                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                                                        padding: '0.2rem 0.55rem', borderRadius: 'var(--radius-sm)',
+                                                        fontSize: 'var(--font-size-xs)', fontWeight: 500,
+                                                        background: 'rgba(245, 158, 11, 0.08)',
+                                                        color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.15)',
+                                                    }}>
+                                                        {[getLocalizedField(maintenance, 'consumable_brand_name'), maintenance.consumable_model_name, getLocalizedField(maintenance, 'consumable_type_label')].filter(Boolean).join(' · ')}
                                                     </span>
                                                 )}
                                                 {maintenance.asset_serial_number && (
@@ -1499,7 +1570,46 @@ const MaintenancesPage = () => {
                                     }}
                                 >
                                 <Step>
-                                <div className="wizard-step-content" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', margin: '0 auto', width: '100%', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
+                                <div className="wizard-step-content" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', margin: '0 auto', width: '100%', flex: 1, minHeight: 0 }}>
+                                    {/* Item Type Selector */}
+                                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                        <label className="form-label" style={{ fontSize: 'var(--font-size-sm)', fontWeight: 600, margin: 0, minWidth: 80 }}>{t('maintenances.itemType', 'Item type')}</label>
+                                        <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                            {[
+                                                { value: 'asset', label: t('assets.asset', 'Asset'), icon: Monitor, color: 'var(--color-primary)' },
+                                                { value: 'stock_item', label: t('stockItems.stockItem', 'Stock Item'), icon: Layers, color: '#8b5cf6' },
+                                                { value: 'consumable', label: t('consumables.consumable', 'Consumable'), icon: Sticker, color: '#f59e0b' },
+                                            ].map(({ value, label, icon: ItemIcon, color }) => (
+                                                <button
+                                                    key={value}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setCreateItemType(value);
+                                                        setSelectedAsset('');
+                                                        setSelectedStockItem('');
+                                                        setSelectedConsumable('');
+                                                        setAssetCurrentLocation(null);
+                                                    }}
+                                                    style={{
+                                                        display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                                                        padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-md)',
+                                                        fontSize: 'var(--font-size-sm)', fontWeight: 600,
+                                                        border: createItemType === value ? `2px solid ${color}` : '2px solid var(--color-border)',
+                                                        background: createItemType === value ? `${color}15` : 'var(--color-bg-secondary)',
+                                                        color: createItemType === value ? color : 'var(--color-text-secondary)',
+                                                        cursor: 'pointer', transition: 'all 0.15s ease',
+                                                    }}
+                                                >
+                                                    <ItemIcon size={14} />
+                                                    {label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Content based on item type */}
+                                    {createItemType === 'asset' ? (
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
                                     {/* Left Column: Asset Filters */}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
                                         <div style={{ padding: '1rem', backgroundColor: 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(var(--color-primary-rgb, 59, 130, 246), 0.12)', flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -1731,6 +1841,438 @@ const MaintenancesPage = () => {
                                             </div>
                                         </div>
                                     </div>
+                                    </div>
+                                    ) : createItemType === 'stock_item' ? (
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
+                                    {/* Left Column: Stock Item Filters */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                                        <div style={{ padding: '1rem', backgroundColor: 'rgba(139, 92, 246, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(139, 92, 246, 0.12)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem', fontSize: 'var(--font-size-sm)', fontWeight: 600, color: '#8b5cf6' }}>
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                                                </svg>
+                                                {t('maintenances.filterStockItems')}
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', flex: 1, minHeight: 0, gridAutoRows: '1fr', alignContent: 'stretch' }}>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterStockItemType')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterStockItemType}
+                                                        onChange={(e) => {
+                                                            setFilterStockItemType(e.target.value);
+                                                            setFilterStockItemBrand('');
+                                                            setFilterStockItemModel('');
+                                                            setSelectedStockItem('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allTypes')}</option>
+                                                        {stockItemTypes.map((st) => (
+                                                            <option key={st.stock_item_type_id} value={st.stock_item_type_id}>
+                                                                {i18n.language === 'ar' ? (st.stock_item_type_label_ar || st.stock_item_type_label) : (st.stock_item_type_label_en || st.stock_item_type_label)}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterStockItemBrand')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterStockItemBrand}
+                                                        onChange={(e) => {
+                                                            setFilterStockItemBrand(e.target.value);
+                                                            setFilterStockItemModel('');
+                                                            setSelectedStockItem('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allBrands')}</option>
+                                                        {filteredStockItemBrands.map((b) => (
+                                                            <option key={b.stock_item_brand_id} value={b.stock_item_brand_id}>
+                                                                {i18n.language === 'ar' ? (b.brand_name_ar || b.brand_name) : (b.brand_name_en || b.brand_name)}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterStockItemModel')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterStockItemModel}
+                                                        onChange={(e) => {
+                                                            setFilterStockItemModel(e.target.value);
+                                                            setSelectedStockItem('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allModels')}</option>
+                                                        {filteredStockItemModels.map((m) => (
+                                                            <option key={m.stock_item_model_id} value={m.stock_item_model_id}>
+                                                                {m.model_name || `Model #${m.stock_item_model_id}`}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                {stockItemStatuses.length > 0 && (
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterStockItemStatus')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterStockItemStatus}
+                                                        onChange={(e) => {
+                                                            setFilterStockItemStatus(e.target.value);
+                                                            setSelectedStockItem('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allStatuses')}</option>
+                                                        {stockItemStatuses.map((s) => (
+                                                            <option key={s} value={s}>{s}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column: Stock Item Selection + Current Location */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                                        <div className="form-group">
+                                            <label className="form-label">{t('stockItems.stockItem', 'Stock Item')}</label>
+                                            <SearchableSelect
+                                                value={selectedStockItem}
+                                                onChange={async (e) => {
+                                                    const value = e.target.value;
+                                                    setSelectedStockItem(value);
+                                                    setAssetCurrentLocation(null);
+                                                    setSelectedMaintenanceLocation('');
+                                                    if (!value) return;
+                                                    try {
+                                                        setLoadingAssetLocation(true);
+                                                        const data = await stockItemService.getCurrentLocation(value);
+                                                        const location = data?.location || null;
+                                                        setAssetCurrentLocation(location);
+                                                        if (destinationMode === 'maintenance_room') {
+                                                            await loadMaintenanceLocations();
+                                                        } else if (destinationMode === 'other') {
+                                                            await loadAllLocations();
+                                                        }
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                        setAssetCurrentLocation(null);
+                                                    } finally {
+                                                        setLoadingAssetLocation(false);
+                                                    }
+                                                }}
+                                                options={filteredStockItems.map((si) => {
+                                                    const modelInfo = stockItemModelLookup[si.stock_item_model];
+                                                    const model = stockItemModels.find(m => m.stock_item_model_id === si.stock_item_model);
+                                                    const brand = modelInfo ? stockItemBrands.find(b => b.stock_item_brand_id === modelInfo.stock_item_brand_id) : null;
+                                                    const lang = i18n.language;
+                                                    const brandName = brand ? (lang === 'ar' ? (brand.brand_name_ar || brand.brand_name) : (brand.brand_name_en || brand.brand_name)) : null;
+                                                    const modelName = model?.model_name;
+                                                    const primaryLabel = si.stock_item_name || [brandName, modelName].filter(Boolean).join(' ') || `#${si.stock_item_id}`;
+                                                    return {
+                                                        value: si.stock_item_id,
+                                                        label: `${primaryLabel} (#${si.stock_item_id})`,
+                                                        searchText: [
+                                                            si.stock_item_name,
+                                                            brandName,
+                                                            modelName,
+                                                            si.stock_item_inventory_number,
+                                                            `#${si.stock_item_id}`,
+                                                        ].filter(Boolean).join(' '),
+                                                        stockItem: si,
+                                                    };
+                                                })}
+                                                renderOption={(option, isSelected) => {
+                                                    const si = option.stockItem;
+                                                    const modelInfo = stockItemModelLookup[si.stock_item_model];
+                                                    const model = stockItemModels.find(m => m.stock_item_model_id === si.stock_item_model);
+                                                    const brand = modelInfo ? stockItemBrands.find(b => b.stock_item_brand_id === modelInfo.stock_item_brand_id) : null;
+                                                    const lang = i18n.language;
+                                                    const brandName = brand ? (lang === 'ar' ? (brand.brand_name_ar || brand.brand_name) : (brand.brand_name_en || brand.brand_name)) : null;
+                                                    const modelName = model?.model_name;
+                                                    const primaryLabel = si.stock_item_name || [brandName, modelName].filter(Boolean).join(' ') || `${t('stockItems.stockItem', 'Stock Item')} #${si.stock_item_id}`;
+                                                    return (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                <span style={{ fontWeight: isSelected ? 600 : 500, fontSize: 'var(--font-size-sm)' }}>
+                                                                    {primaryLabel}
+                                                                </span>
+                                                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 400 }}>
+                                                                    #{si.stock_item_id}
+                                                                </span>
+                                                                {si.stock_item_status && (
+                                                                    <span style={{
+                                                                        fontSize: 'var(--font-size-xs)',
+                                                                        padding: '1px 6px',
+                                                                        borderRadius: 'var(--radius-sm)',
+                                                                        backgroundColor: 'var(--color-bg-secondary)',
+                                                                        color: 'var(--color-text-secondary)',
+                                                                        marginInlineStart: 'auto',
+                                                                    }}>
+                                                                        {si.stock_item_status}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                {si.stock_item_name && brandName && <span>{brandName}</span>}
+                                                                {si.stock_item_name && modelName && <span>· {modelName}</span>}
+                                                                {si.stock_item_inventory_number && <span>{si.stock_item_name ? '· ' : ''}{t('stockItems.inventoryNumber', 'Inv. #')}: {si.stock_item_inventory_number}</span>}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }}
+                                                searchPlaceholder={t('maintenances.searchStockItemPlaceholder', 'Search stock items...')}
+                                                placeholder={t('maintenances.selectStockItem', 'Select stock item')}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">{t('maintenances.currentLocation')}</label>
+                                            <div style={{
+                                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                padding: '0.5rem 0.75rem', backgroundColor: 'var(--color-bg-secondary)',
+                                                border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
+                                                color: 'var(--color-text-primary)', fontSize: 'var(--font-size-sm)', minHeight: 40,
+                                            }}>
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                                    <circle cx="12" cy="10" r="3" />
+                                                </svg>
+                                                {loadingAssetLocation
+                                                    ? <span style={{ color: 'var(--color-text-secondary)' }}>{t('maintenances.loadingLocation')}</span>
+                                                    : assetCurrentLocation
+                                                        ? <span>{assetCurrentLocation.location_name}{(assetCurrentLocation.location_type_label_ar || assetCurrentLocation.location_type_label) ? ` (${getLocalizedField(assetCurrentLocation, 'location_type_label')})` : ''}</span>
+                                                        : <span style={{ color: 'var(--color-text-secondary)' }}>—</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    ) : (
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', flex: 1, minHeight: 0, alignItems: 'stretch' }}>
+                                    {/* Left Column: Consumable Filters */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                                        <div style={{ padding: '1rem', backgroundColor: 'rgba(245, 158, 11, 0.03)', borderRadius: 'var(--radius-md)', border: '1px solid rgba(245, 158, 11, 0.12)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem', fontSize: 'var(--font-size-sm)', fontWeight: 600, color: '#f59e0b' }}>
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+                                                </svg>
+                                                {t('maintenances.filterConsumables')}
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', flex: 1, minHeight: 0, gridAutoRows: '1fr', alignContent: 'stretch' }}>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterConsumableType')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterConsumableType}
+                                                        onChange={(e) => {
+                                                            setFilterConsumableType(e.target.value);
+                                                            setFilterConsumableBrand('');
+                                                            setFilterConsumableModel('');
+                                                            setSelectedConsumable('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allTypes')}</option>
+                                                        {consumableTypes.map((ct) => (
+                                                            <option key={ct.consumable_type_id} value={ct.consumable_type_id}>
+                                                                {i18n.language === 'ar' ? (ct.consumable_type_label_ar || ct.consumable_type_label) : (ct.consumable_type_label_en || ct.consumable_type_label)}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterConsumableBrand')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterConsumableBrand}
+                                                        onChange={(e) => {
+                                                            setFilterConsumableBrand(e.target.value);
+                                                            setFilterConsumableModel('');
+                                                            setSelectedConsumable('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allBrands')}</option>
+                                                        {filteredConsumableBrands.map((b) => (
+                                                            <option key={b.consumable_brand_id} value={b.consumable_brand_id}>
+                                                                {i18n.language === 'ar' ? (b.brand_name_ar || b.brand_name) : (b.brand_name_en || b.brand_name)}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterConsumableModel')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterConsumableModel}
+                                                        onChange={(e) => {
+                                                            setFilterConsumableModel(e.target.value);
+                                                            setSelectedConsumable('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allModels')}</option>
+                                                        {filteredConsumableModels.map((m) => (
+                                                            <option key={m.consumable_model_id} value={m.consumable_model_id}>
+                                                                {m.model_name || `Model #${m.consumable_model_id}`}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                {consumableStatuses.length > 0 && (
+                                                <div className="form-group" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <label className="form-label" style={{ fontSize: 'var(--font-size-xs)' }}>{t('maintenances.filterConsumableStatus')}</label>
+                                                    <select
+                                                        className="form-input"
+                                                        style={{ padding: '0.35rem 0.5rem', fontSize: 'var(--font-size-sm)' }}
+                                                        value={filterConsumableStatus}
+                                                        onChange={(e) => {
+                                                            setFilterConsumableStatus(e.target.value);
+                                                            setSelectedConsumable('');
+                                                            setAssetCurrentLocation(null);
+                                                        }}
+                                                    >
+                                                        <option value="">{t('maintenances.allStatuses')}</option>
+                                                        {consumableStatuses.map((s) => (
+                                                            <option key={s} value={s}>{s}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column: Consumable Selection + Current Location */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', flex: 1 }}>
+                                        <div className="form-group">
+                                            <label className="form-label">{t('consumables.consumable', 'Consumable')}</label>
+                                            <SearchableSelect
+                                                value={selectedConsumable}
+                                                onChange={async (e) => {
+                                                    const value = e.target.value;
+                                                    setSelectedConsumable(value);
+                                                    setAssetCurrentLocation(null);
+                                                    setSelectedMaintenanceLocation('');
+                                                    if (!value) return;
+                                                    try {
+                                                        setLoadingAssetLocation(true);
+                                                        const data = await consumableService.getCurrentLocation(value);
+                                                        const location = data?.location || null;
+                                                        setAssetCurrentLocation(location);
+                                                        if (destinationMode === 'maintenance_room') {
+                                                            await loadMaintenanceLocations();
+                                                        } else if (destinationMode === 'other') {
+                                                            await loadAllLocations();
+                                                        }
+                                                    } catch (err) {
+                                                        console.error(err);
+                                                        setAssetCurrentLocation(null);
+                                                    } finally {
+                                                        setLoadingAssetLocation(false);
+                                                    }
+                                                }}
+                                                options={filteredConsumables.map((c) => {
+                                                    const modelInfo = consumableModelLookup[c.consumable_model];
+                                                    const model = consumableModels.find(m => m.consumable_model_id === c.consumable_model);
+                                                    const brand = modelInfo ? consumableBrands.find(b => b.consumable_brand_id === modelInfo.consumable_brand_id) : null;
+                                                    const lang = i18n.language;
+                                                    const brandName = brand ? (lang === 'ar' ? (brand.brand_name_ar || brand.brand_name) : (brand.brand_name_en || brand.brand_name)) : null;
+                                                    const modelName = model?.model_name;
+                                                    const primaryLabel = c.consumable_name || [brandName, modelName].filter(Boolean).join(' ') || `#${c.consumable_id}`;
+                                                    return {
+                                                        value: c.consumable_id,
+                                                        label: `${primaryLabel} (#${c.consumable_id})`,
+                                                        searchText: [
+                                                            c.consumable_name,
+                                                            brandName,
+                                                            modelName,
+                                                            c.consumable_inventory_number,
+                                                            `#${c.consumable_id}`,
+                                                        ].filter(Boolean).join(' '),
+                                                        consumable: c,
+                                                    };
+                                                })}
+                                                renderOption={(option, isSelected) => {
+                                                    const c = option.consumable;
+                                                    const modelInfo = consumableModelLookup[c.consumable_model];
+                                                    const model = consumableModels.find(m => m.consumable_model_id === c.consumable_model);
+                                                    const brand = modelInfo ? consumableBrands.find(b => b.consumable_brand_id === modelInfo.consumable_brand_id) : null;
+                                                    const lang = i18n.language;
+                                                    const brandName = brand ? (lang === 'ar' ? (brand.brand_name_ar || brand.brand_name) : (brand.brand_name_en || brand.brand_name)) : null;
+                                                    const modelName = model?.model_name;
+                                                    const primaryLabel = c.consumable_name || [brandName, modelName].filter(Boolean).join(' ') || `${t('consumables.consumable', 'Consumable')} #${c.consumable_id}`;
+                                                    return (
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                <span style={{ fontWeight: isSelected ? 600 : 500, fontSize: 'var(--font-size-sm)' }}>
+                                                                    {primaryLabel}
+                                                                </span>
+                                                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)', fontWeight: 400 }}>
+                                                                    #{c.consumable_id}
+                                                                </span>
+                                                                {c.consumable_status && (
+                                                                    <span style={{
+                                                                        fontSize: 'var(--font-size-xs)',
+                                                                        padding: '1px 6px',
+                                                                        borderRadius: 'var(--radius-sm)',
+                                                                        backgroundColor: 'var(--color-bg-secondary)',
+                                                                        color: 'var(--color-text-secondary)',
+                                                                        marginInlineStart: 'auto',
+                                                                    }}>
+                                                                        {c.consumable_status}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)' }}>
+                                                                {c.consumable_name && brandName && <span>{brandName}</span>}
+                                                                {c.consumable_name && modelName && <span>· {modelName}</span>}
+                                                                {c.consumable_inventory_number && <span>{c.consumable_name ? '· ' : ''}{t('consumables.inventoryNumber', 'Inv. #')}: {c.consumable_inventory_number}</span>}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }}
+                                                searchPlaceholder={t('maintenances.searchConsumablePlaceholder', 'Search consumables...')}
+                                                placeholder={t('maintenances.selectConsumable', 'Select consumable')}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">{t('maintenances.currentLocation')}</label>
+                                            <div style={{
+                                                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                                padding: '0.5rem 0.75rem', backgroundColor: 'var(--color-bg-secondary)',
+                                                border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)',
+                                                color: 'var(--color-text-primary)', fontSize: 'var(--font-size-sm)', minHeight: 40,
+                                            }}>
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                                    <circle cx="12" cy="10" r="3" />
+                                                </svg>
+                                                {loadingAssetLocation
+                                                    ? <span style={{ color: 'var(--color-text-secondary)' }}>{t('maintenances.loadingLocation')}</span>
+                                                    : assetCurrentLocation
+                                                        ? <span>{assetCurrentLocation.location_name}{(assetCurrentLocation.location_type_label_ar || assetCurrentLocation.location_type_label) ? ` (${getLocalizedField(assetCurrentLocation, 'location_type_label')})` : ''}</span>
+                                                        : <span style={{ color: 'var(--color-text-secondary)' }}>—</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    )}
                                 </div>
                                 </Step>
 
@@ -2144,6 +2686,70 @@ const MaintenancesPage = () => {
                 </div>
                 </ModalPortal>
             )}
+            <FilterSortFAB hasActiveFilters={!!searchQuery || !!filterStatus || !!filterItemType || !!filterTechnician || !!filterStartFrom || !!filterStartTo || sortKey !== 'start_datetime' || sortDirection !== 'desc'}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" placeholder={t('maintenances.searchPlaceholder', 'Search maintenances...')} className="form-input" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)', width: '100%', paddingRight: searchQuery ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: 2, display: 'flex', alignItems: 'center' }}><X size={14} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortKey} onChange={(e) => { setSortKey(e.target.value); setSortDirection('desc'); }} style={{ height: '40px', flex: 1 }}>
+                                <option value="start_datetime">{t('maintenances.startDate')}</option>
+                                <option value="end_datetime">{t('maintenances.endDate')}</option>
+                                <option value="maintenance_id">{t('common.id', 'ID')}</option>
+                                <option value="asset">{t('assets.asset')}</option>
+                                <option value="description">{t('common.description')}</option>
+                                <option value="maintenance_status">{t('common.status')}</option>
+                                <option value="performed_by_person_name">{t('maintenances.technician')}</option>
+                            </select>
+                            <button className="btn btn-secondary" onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
+                                {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.status', 'Status')}</label>
+                        <select className="form-input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all', 'All')}</option>
+                            {statusOptions.map((s) => (<option key={s} value={s}>{translateMaintenanceStatus(s)}</option>))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('maintenances.technician', 'Technician')}</label>
+                        <select className="form-input" value={filterTechnician} onChange={(e) => setFilterTechnician(e.target.value)} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all', 'All')}</option>
+                            {technicianOptions.map((n) => (<option key={n} value={n}>{n}</option>))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('maintenances.itemType', 'Item type')}</label>
+                        <select className="form-input" value={filterItemType} onChange={(e) => setFilterItemType(e.target.value)} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all', 'All')}</option>
+                            <option value="asset">{t('assets.asset', 'Asset')}</option>
+                            <option value="stock_item">{t('stockItems.stockItem', 'Stock Item')}</option>
+                            <option value="consumable">{t('consumables.consumable', 'Consumable')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('maintenances.startDate', 'Start date')} ({t('common.from', 'From')})</label>
+                        <input type="date" className="form-input" value={filterStartFrom} onChange={(e) => setFilterStartFrom(e.target.value)} style={{ height: '40px', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('maintenances.startDate', 'Start date')} ({t('common.to', 'To')})</label>
+                        <input type="date" className="form-input" value={filterStartTo} onChange={(e) => setFilterStartTo(e.target.value)} style={{ height: '40px', width: '100%' }} />
+                    </div>
+                    {(searchQuery || filterStatus || filterItemType || filterTechnician || filterStartFrom || filterStartTo) && (
+                        <button type="button" onClick={() => { setSearchQuery(''); setFilterStatus(''); setFilterItemType(''); setFilterTechnician(''); setFilterStartFrom(''); setFilterStartTo(''); }} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters', 'Clear filters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </>
     );
 };

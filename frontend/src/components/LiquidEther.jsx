@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { usePowerSave } from '../context/usePowerSave';
 import './LiquidEther.css';
 
 export default function LiquidEther({
@@ -23,6 +24,7 @@ export default function LiquidEther({
   autoResumeDelay = 1000,
   autoRampDuration = 0.6
 }) {
+  const { enabled: powerSave } = usePowerSave();
   const mountRef = useRef(null);
   const webglRef = useRef(null);
   const resizeObserverRef = useRef(null);
@@ -32,6 +34,7 @@ export default function LiquidEther({
   const resizeRafRef = useRef(null);
 
   useEffect(() => {
+    if (powerSave) return;
     if (!mountRef.current) return;
 
     function makePaletteTexture(stops) {
@@ -1105,6 +1108,7 @@ export default function LiquidEther({
       webglRef.current = null;
     };
   }, [
+    powerSave,
     BFECC,
     cursorSize,
     dt,
@@ -1125,6 +1129,7 @@ export default function LiquidEther({
   ]);
 
   useEffect(() => {
+    if (powerSave) return;
     const webgl = webglRef.current;
     if (!webgl) return;
     const sim = webgl.output?.simulation;
@@ -1156,6 +1161,7 @@ export default function LiquidEther({
       sim.resize();
     }
   }, [
+    powerSave,
     mouseForce,
     cursorSize,
     isViscous,
@@ -1174,5 +1180,6 @@ export default function LiquidEther({
     autoRampDuration
   ]);
 
+  if (powerSave) return <div className={`liquid-ether-container ${className || ''}`} style={style} />;
   return <div ref={mountRef} className={`liquid-ether-container ${className || ''}`} style={style} />;
 }

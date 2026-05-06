@@ -3,8 +3,9 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { backorderReportService, purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, RefreshCw, Package, Droplets, Clock, FileText, CheckCircle2, Truck, BarChart3 } from 'lucide-react';
+import { RefreshCw, Package, Droplets, Clock, FileText, CheckCircle2, Truck, BarChart3 } from 'lucide-react';
 import { SkeletonListRows, SkeletonCardList } from '../components/SkeletonCard';
+import BackButton from '../components/BackButton';
 
 const ModelCard = ({ item, type }) => {
     const ordered = Number(item.quantity_ordered ?? 0);
@@ -235,10 +236,7 @@ const PurchaseOrderBackorderReportsPage = () => {
                     <p className="page-subtitle">{t('backorderReports.subtitle')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                        <ArrowLeft size={16} />
-                        {t('common.back')}
-                    </button>
+                    <BackButton onClick={() => navigate('/dashboard/purchase-orders')} />
                     <button type="button" className="btn btn-secondary" onClick={refreshAll} disabled={loading || remainingLoading || reportsLoading}>
                         <RefreshCw size={16} />
                         {t('common.refresh')}

@@ -1,10 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Package, RefreshCw, Send } from 'lucide-react';
+import { CheckCircle2, Edit3, Package, RefreshCw, Send } from 'lucide-react';
 import { purchaseOrderService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { SkeletonCardList } from '../components/SkeletonCard';
+import ModalPortal from '../components/ModalPortal';
+import BackButton from '../components/BackButton';
+
+const emptyStockInstance = () => ({ stock_item_name: '', stock_item_serial_number: '', stock_item_inventory_number: '' });
+const emptyConsumableInstance = () => ({ consumable_name: '', consumable_serial_number: '', consumable_inventory_number: '', consumable_service_tag: '' });
+const syncInstances = (instances, count, emptyFn) => {
+    const n = Math.max(0, count);
+    if (instances.length === n) return instances;
+    if (n > instances.length) return [...instances, ...Array.from({ length: n - instances.length }, emptyFn)];
+    return instances.slice(0, n);
+};
 
 const PurchaseOrderReceivePage = () => {
     const { user, isSuperuser } = useAuth();
@@ -22,6 +33,8 @@ const PurchaseOrderReceivePage = () => {
     const [order, setOrder] = useState(null);
     const [receiveStock, setReceiveStock] = useState([]);
     const [receiveConsumable, setReceiveConsumable] = useState([]);
+    const [createdItems, setCreatedItems] = useState(null);
+    const [modalLine, setModalLine] = useState(null); // { type: 'stock'|'consumable', idx: number }
 
     const allLinesCount = useMemo(() => (receiveStock.length + receiveConsumable.length), [receiveStock.length, receiveConsumable.length]);
 
@@ -29,6 +42,7 @@ const PurchaseOrderReceivePage = () => {
         setLoading(true);
         setError('');
         setSuccess('');
+        setCreatedItems(null);
         try {
             const data = await purchaseOrderService.getById(orderId);
             setOrder(data || null);
@@ -37,18 +51,26 @@ const PurchaseOrderReceivePage = () => {
                 (data?.stock_item_models || []).map((l) => ({
                     stock_item_model_id: l.stock_item_model_id,
                     model_name: l.model_name,
+                    brand_name: l.brand_name,
+                    type_label: l.type_label,
+                    type_id: l.type_id,
                     quantity_ordered: l.quantity_ordered,
                     quantity_received: l.quantity_received ?? 0,
                     newly_received: '',
+                    instances: [],
                 }))
             );
             setReceiveConsumable(
                 (data?.consumable_models || []).map((l) => ({
                     consumable_model_id: l.consumable_model_id,
                     model_name: l.model_name,
+                    brand_name: l.brand_name,
+                    type_label: l.type_label,
+                    type_id: l.type_id,
                     quantity_ordered: l.quantity_ordered,
                     quantity_received: l.quantity_received ?? 0,
                     newly_received: '',
+                    instances: [],
                 }))
             );
         } catch (e) {
@@ -67,6 +89,16 @@ const PurchaseOrderReceivePage = () => {
     if (!isStockConsumableResponsible) {
         return <Navigate to="/dashboard" replace />;
     }
+
+    const openModal = (type, idx) => {
+        setModalLine({ type, idx });
+    };
+    const closeModal = () => {
+        setModalLine(null);
+    };
+    const modalLineData = modalLine
+        ? (modalLine.type === 'stock' ? receiveStock[modalLine.idx] : receiveConsumable[modalLine.idx])
+        : null;
 
     const submit = async () => {
         setSubmitting(true);
@@ -91,14 +123,37 @@ const PurchaseOrderReceivePage = () => {
             }
 
             const payload = {
-                stock_item_models: receiveStock.map((l) => ({
-                    stock_item_model_id: Number(l.stock_item_model_id),
-                    quantity_received: l.newly_received === '' ? 0 : Number(l.newly_received),
-                })),
-                consumable_models: receiveConsumable.map((l) => ({
-                    consumable_model_id: Number(l.consumable_model_id),
-                    quantity_received: l.newly_received === '' ? 0 : Number(l.newly_received),
-                })),
+                stock_item_models: receiveStock.map((l) => {
+                    const qty = l.newly_received === '' ? 0 : Number(l.newly_received);
+                    const entry = {
+                        stock_item_model_id: Number(l.stock_item_model_id),
+                        quantity_received: qty,
+                    };
+                    if (qty > 0 && l.instances.length === qty) {
+                        entry.instances = l.instances.map((inst) => ({
+                            stock_item_name: inst.stock_item_name || null,
+                            stock_item_serial_number: inst.stock_item_serial_number || null,
+                            stock_item_inventory_number: inst.stock_item_inventory_number || null,
+                        }));
+                    }
+                    return entry;
+                }),
+                consumable_models: receiveConsumable.map((l) => {
+                    const qty = l.newly_received === '' ? 0 : Number(l.newly_received);
+                    const entry = {
+                        consumable_model_id: Number(l.consumable_model_id),
+                        quantity_received: qty,
+                    };
+                    if (qty > 0 && l.instances.length === qty) {
+                        entry.instances = l.instances.map((inst) => ({
+                            consumable_name: inst.consumable_name || null,
+                            consumable_serial_number: inst.consumable_serial_number || null,
+                            consumable_inventory_number: inst.consumable_inventory_number || null,
+                            consumable_service_tag: inst.consumable_service_tag || null,
+                        }));
+                    }
+                    return entry;
+                }),
             };
 
             const res = await purchaseOrderService.receive(orderId, payload);
@@ -110,7 +165,12 @@ const PurchaseOrderReceivePage = () => {
                 setSuccess(t('purchaseOrderReceive.saved'));
             }
 
-            navigate(`/dashboard/purchase-orders/${orderId}/backorder-reports`);
+            setCreatedItems({
+                stock_item_ids: res?.created_stock_item_ids || [],
+                consumable_ids: res?.created_consumable_ids || [],
+                stock_items: res?.created_stock_items || [],
+                consumables: res?.created_consumables || [],
+            });
         } catch (e) {
             setError(e?.response?.data?.error || t('purchaseOrderReceive.submitError'));
         } finally {
@@ -168,10 +228,7 @@ const PurchaseOrderReceivePage = () => {
                     )}
                 </div>
                 <div className="org-actions">
-                    <button type="button" className="btn btn-secondary" onClick={() => navigate(`/dashboard/purchase-orders/${orderId}`)} disabled={submitting}>
-                        <ArrowLeft size={18} />
-                        {t('common.back')}
-                    </button>
+                    <BackButton onClick={() => navigate(`/dashboard/purchase-orders/${orderId}`)} />
                     <button type="button" className="btn btn-secondary" onClick={load} disabled={loading || submitting}>
                         <RefreshCw size={18} />
                         {t('common.refresh')}
@@ -187,6 +244,51 @@ const PurchaseOrderReceivePage = () => {
 
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
+
+            {!!createdItems && (createdItems.stock_items.length > 0 || createdItems.consumables.length > 0) && (
+                <div className="card" style={{ borderLeft: '3px solid var(--color-success)' }}>
+                    <div className="card-header">
+                        <h2 className="card-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                            <CheckCircle2 size={18} style={{ color: 'var(--color-success)' }} />
+                            {t('purchaseOrderReceive.createdInstances')}
+                        </h2>
+                    </div>
+                    <div className="card-body">
+                        <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', margin: '0 0 var(--space-4) 0' }}>
+                            {t('purchaseOrderReceive.editInstancesHint')}
+                        </p>
+                        {createdItems.stock_items.length > 0 && (
+                            <div style={{ marginBottom: 'var(--space-4)' }}>
+                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)', fontSize: 'var(--font-size-sm)' }}>
+                                    {t('purchaseOrderReceive.createdStockItems')} ({createdItems.stock_items.length})
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                                    {createdItems.stock_items.map((item) => (
+                                        <span key={`si-${item.id}`} className="badge badge-success" style={{ cursor: 'pointer' }} onClick={() => navigate(`/dashboard/stock-items/instances?typeId=${item.type_id}&modelId=${item.model_id}`)}>
+                                            <Package size={12} style={{ marginRight: 4 }} />
+                                            #{item.id}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {createdItems.consumables.length > 0 && (
+                            <div>
+                                <div style={{ fontWeight: 600, marginBottom: 'var(--space-2)', fontSize: 'var(--font-size-sm)' }}>
+                                    {t('purchaseOrderReceive.createdConsumables')} ({createdItems.consumables.length})
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+                                    {createdItems.consumables.map((item) => (
+                                        <span key={`c-${item.id}`} className="badge badge-success" style={{ cursor: 'pointer' }} onClick={() => navigate(`/dashboard/consumables/instances?typeId=${item.type_id}&modelId=${item.model_id}`)}>
+                                            #{item.id}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {loading ? (
                 <div style={{ padding: 'var(--space-12)' }}>
@@ -270,11 +372,9 @@ const PurchaseOrderReceivePage = () => {
                                     const received = Number(l?.quantity_received ?? 0);
                                     const pct = ordered > 0 ? Math.min(100, Math.round((received / ordered) * 100)) : 0;
                                     const done = received >= ordered;
+                                    const newlyQty = Number(l.newly_received === '' ? 0 : l.newly_received);
                                     return (
                                         <div key={`rs-${l.stock_item_model_id}`} style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 'var(--space-4)',
                                             padding: 'var(--space-4) var(--space-5)',
                                             borderRadius: 'var(--radius-lg)',
                                             border: '1px solid var(--color-border)',
@@ -282,54 +382,68 @@ const PurchaseOrderReceivePage = () => {
                                             borderLeft: `3px solid ${done ? 'var(--color-success)' : 'var(--color-warning)'}`,
                                             transition: 'background var(--transition-fast), border-color var(--transition-fast)',
                                         }}>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontWeight: 600, marginBottom: 2 }}>{l.brand_name ? `${l.brand_name} ` : ''}{l.model_name || `#${l.stock_item_model_id}`}{l.type_label ? ` (${l.type_label})` : ''}</div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: done ? 'var(--color-success)' : 'var(--color-warning)', fontVariantNumeric: 'tabular-nums' }}>
-                                                        {received}/{ordered}
-                                                    </span>
-                                                    <span style={{
-                                                        display: 'inline-block',
-                                                        flex: 1,
-                                                        maxWidth: 120,
-                                                        height: 5,
-                                                        borderRadius: 'var(--radius-full)',
-                                                        background: 'var(--color-border)',
-                                                        overflow: 'hidden',
-                                                    }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontWeight: 600, marginBottom: 2 }}>{l.brand_name ? `${l.brand_name} ` : ''}{l.model_name || `#${l.stock_item_model_id}`}{l.type_label ? ` (${l.type_label})` : ''}</div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+                                                        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: done ? 'var(--color-success)' : 'var(--color-warning)', fontVariantNumeric: 'tabular-nums' }}>
+                                                            {received}/{ordered}
+                                                        </span>
                                                         <span style={{
-                                                            display: 'block',
-                                                            width: `${pct}%`,
-                                                            height: '100%',
+                                                            display: 'inline-block',
+                                                            flex: 1,
+                                                            maxWidth: 120,
+                                                            height: 5,
                                                             borderRadius: 'var(--radius-full)',
-                                                            background: done ? 'var(--color-success)' : 'var(--color-warning)',
-                                                            transition: 'width var(--transition-base)',
-                                                        }} />
-                                                    </span>
-                                                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{pct}%</span>
+                                                            background: 'var(--color-border)',
+                                                            overflow: 'hidden',
+                                                        }}>
+                                                            <span style={{
+                                                                display: 'block',
+                                                                width: `${pct}%`,
+                                                                height: '100%',
+                                                                borderRadius: 'var(--radius-full)',
+                                                                background: done ? 'var(--color-success)' : 'var(--color-warning)',
+                                                                transition: 'width var(--transition-base)',
+                                                            }} />
+                                                        </span>
+                                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{pct}%</span>
+                                                    </div>
+                                                </div>
+                                                <div style={{ flexShrink: 0, width: 140 }}>
+                                                    <input
+                                                        className="form-input"
+                                                        type="number"
+                                                        min="0"
+                                                        max={ordered - received}
+                                                        placeholder={`0 – ${ordered - received}`}
+                                                        value={l.newly_received}
+                                                        onChange={(e) => {
+                                                            let v = e.target.value;
+                                                            if (v !== '') {
+                                                                const num = Number(v);
+                                                                const remaining = ordered - received;
+                                                                if (num > remaining) v = String(remaining);
+                                                                if (num < 0) v = '0';
+                                                            }
+                                                            const newQty = v === '' ? 0 : Number(v);
+                                                            setReceiveStock((prev) => prev.map((x, i) => (i === idx ? { ...x, newly_received: v, instances: syncInstances(x.instances, newQty, emptyStockInstance) } : x)));
+                                                        }}
+                                                        style={{ width: '100%' }}
+                                                    />
                                                 </div>
                                             </div>
-                                            <div style={{ flexShrink: 0, width: 140 }}>
-                                                <input
-                                                    className="form-input"
-                                                    type="number"
-                                                    min="0"
-                                                    max={ordered - received}
-                                                    placeholder={`0 – ${ordered - received}`}
-                                                    value={l.newly_received}
-                                                    onChange={(e) => {
-                                                        let v = e.target.value;
-                                                        if (v !== '') {
-                                                            const num = Number(v);
-                                                            const remaining = ordered - received;
-                                                            if (num > remaining) v = String(remaining);
-                                                            if (num < 0) v = '0';
-                                                        }
-                                                        setReceiveStock((prev) => prev.map((x, i) => (i === idx ? { ...x, newly_received: v } : x)));
-                                                    }}
-                                                    style={{ width: '100%' }}
-                                                />
-                                            </div>
+                                            {newlyQty > 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openModal('stock', idx)}
+                                                    className="btn btn-secondary"
+                                                    style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-sm)', padding: 'var(--space-1) var(--space-3)' }}
+                                                >
+                                                    <Edit3 size={14} />
+                                                    {t('purchaseOrderReceive.instanceDetails')} ({newlyQty})
+                                                </button>
+                                            )}
                                         </div>
                                     );
                                 })
@@ -353,11 +467,9 @@ const PurchaseOrderReceivePage = () => {
                                     const received = Number(l?.quantity_received ?? 0);
                                     const pct = ordered > 0 ? Math.min(100, Math.round((received / ordered) * 100)) : 0;
                                     const done = received >= ordered;
+                                    const newlyQty = Number(l.newly_received === '' ? 0 : l.newly_received);
                                     return (
                                         <div key={`rc-${l.consumable_model_id}`} style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: 'var(--space-4)',
                                             padding: 'var(--space-4) var(--space-5)',
                                             borderRadius: 'var(--radius-lg)',
                                             border: '1px solid var(--color-border)',
@@ -365,54 +477,68 @@ const PurchaseOrderReceivePage = () => {
                                             borderLeft: `3px solid ${done ? 'var(--color-success)' : 'var(--color-warning)'}`,
                                             transition: 'background var(--transition-fast), border-color var(--transition-fast)',
                                         }}>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontWeight: 600, marginBottom: 2 }}>{l.brand_name ? `${l.brand_name} ` : ''}{l.model_name || `#${l.consumable_model_id}`}{l.type_label ? ` (${l.type_label})` : ''}</div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-                                                    <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: done ? 'var(--color-success)' : 'var(--color-warning)', fontVariantNumeric: 'tabular-nums' }}>
-                                                        {received}/{ordered}
-                                                    </span>
-                                                    <span style={{
-                                                        display: 'inline-block',
-                                                        flex: 1,
-                                                        maxWidth: 120,
-                                                        height: 5,
-                                                        borderRadius: 'var(--radius-full)',
-                                                        background: 'var(--color-border)',
-                                                        overflow: 'hidden',
-                                                    }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontWeight: 600, marginBottom: 2 }}>{l.brand_name ? `${l.brand_name} ` : ''}{l.model_name || `#${l.consumable_model_id}`}{l.type_label ? ` (${l.type_label})` : ''}</div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+                                                        <span style={{ fontSize: 'var(--font-size-sm)', fontWeight: 700, color: done ? 'var(--color-success)' : 'var(--color-warning)', fontVariantNumeric: 'tabular-nums' }}>
+                                                            {received}/{ordered}
+                                                        </span>
                                                         <span style={{
-                                                            display: 'block',
-                                                            width: `${pct}%`,
-                                                            height: '100%',
+                                                            display: 'inline-block',
+                                                            flex: 1,
+                                                            maxWidth: 120,
+                                                            height: 5,
                                                             borderRadius: 'var(--radius-full)',
-                                                            background: done ? 'var(--color-success)' : 'var(--color-warning)',
-                                                            transition: 'width var(--transition-base)',
-                                                        }} />
-                                                    </span>
-                                                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{pct}%</span>
+                                                            background: 'var(--color-border)',
+                                                            overflow: 'hidden',
+                                                        }}>
+                                                            <span style={{
+                                                                display: 'block',
+                                                                width: `${pct}%`,
+                                                                height: '100%',
+                                                                borderRadius: 'var(--radius-full)',
+                                                                background: done ? 'var(--color-success)' : 'var(--color-warning)',
+                                                                transition: 'width var(--transition-base)',
+                                                            }} />
+                                                        </span>
+                                                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{pct}%</span>
+                                                    </div>
+                                                </div>
+                                                <div style={{ flexShrink: 0, width: 140 }}>
+                                                    <input
+                                                        className="form-input"
+                                                        type="number"
+                                                        min="0"
+                                                        max={ordered - received}
+                                                        placeholder={`0 – ${ordered - received}`}
+                                                        value={l.newly_received}
+                                                        onChange={(e) => {
+                                                            let v = e.target.value;
+                                                            if (v !== '') {
+                                                                const num = Number(v);
+                                                                const remaining = ordered - received;
+                                                                if (num > remaining) v = String(remaining);
+                                                                if (num < 0) v = '0';
+                                                            }
+                                                            const newQty = v === '' ? 0 : Number(v);
+                                                            setReceiveConsumable((prev) => prev.map((x, i) => (i === idx ? { ...x, newly_received: v, instances: syncInstances(x.instances, newQty, emptyConsumableInstance) } : x)));
+                                                        }}
+                                                        style={{ width: '100%' }}
+                                                    />
                                                 </div>
                                             </div>
-                                            <div style={{ flexShrink: 0, width: 140 }}>
-                                                <input
-                                                    className="form-input"
-                                                    type="number"
-                                                    min="0"
-                                                    max={ordered - received}
-                                                    placeholder={`0 – ${ordered - received}`}
-                                                    value={l.newly_received}
-                                                    onChange={(e) => {
-                                                        let v = e.target.value;
-                                                        if (v !== '') {
-                                                            const num = Number(v);
-                                                            const remaining = ordered - received;
-                                                            if (num > remaining) v = String(remaining);
-                                                            if (num < 0) v = '0';
-                                                        }
-                                                        setReceiveConsumable((prev) => prev.map((x, i) => (i === idx ? { ...x, newly_received: v } : x)));
-                                                    }}
-                                                    style={{ width: '100%' }}
-                                                />
-                                            </div>
+                                            {newlyQty > 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => openModal('consumable', idx)}
+                                                    className="btn btn-secondary"
+                                                    style={{ marginTop: 'var(--space-2)', fontSize: 'var(--font-size-sm)', padding: 'var(--space-1) var(--space-3)' }}
+                                                >
+                                                    <Edit3 size={14} />
+                                                    {t('purchaseOrderReceive.instanceDetails')} ({newlyQty})
+                                                </button>
+                                            )}
                                         </div>
                                     );
                                 })
@@ -429,6 +555,180 @@ const PurchaseOrderReceivePage = () => {
                         </button>
                     </div>
                 </>
+            )}
+
+            {!!modalLine && modalLineData && (
+                <ModalPortal>
+                    <div className="modal-overlay" onClick={closeModal}>
+                        <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '640px' }}>
+                            <div className="modal-header">
+                                <h3 className="modal-title">
+                                    {t('purchaseOrderReceive.instanceDetails')} — {modalLineData.brand_name ? `${modalLineData.brand_name} ` : ''}{modalLineData.model_name || `#${modalLineData[modalLine.type === 'stock' ? 'stock_item_model_id' : 'consumable_model_id']}`}
+                                </h3>
+                                <button className="modal-close" onClick={closeModal}>&times;</button>
+                            </div>
+                            <div className="modal-body">
+                                {modalLine.type === 'stock' && modalLineData.instances.map((inst, instIdx) => (
+                                    <div key={`m-si-${instIdx}`} style={{
+                                        display: 'flex', gap: 'var(--space-3)', alignItems: 'center',
+                                        padding: 'var(--space-3)',
+                                        borderRadius: 'var(--radius-md)',
+                                        background: instIdx % 2 === 0 ? 'var(--color-bg-secondary)' : 'transparent',
+                                        fontSize: 'var(--font-size-sm)',
+                                    }}>
+                                        <span style={{ fontWeight: 700, color: 'var(--color-text-muted)', minWidth: 32 }}>#{instIdx + 1}</span>
+                                        <div style={{ flex: 1, display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                                            <div style={{ flex: 1, minWidth: 120 }}>
+                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('purchaseOrderReceive.itemName')}</label>
+                                                <input
+                                                    className="form-input"
+                                                    type="text"
+                                                    placeholder={t('purchaseOrderReceive.itemName')}
+                                                    value={inst.stock_item_name}
+                                                    onChange={(e) => {
+                                                        setReceiveStock((prev) => prev.map((x, i) => {
+                                                            if (i !== modalLine.idx) return x;
+                                                            const newInstances = [...x.instances];
+                                                            newInstances[instIdx] = { ...newInstances[instIdx], stock_item_name: e.target.value };
+                                                            return { ...x, instances: newInstances };
+                                                        }));
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </div>
+                                            <div style={{ width: 140 }}>
+                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('purchaseOrderReceive.serialNumber')}</label>
+                                                <input
+                                                    className="form-input"
+                                                    type="text"
+                                                    placeholder={t('purchaseOrderReceive.serialNumber')}
+                                                    value={inst.stock_item_serial_number}
+                                                    onChange={(e) => {
+                                                        setReceiveStock((prev) => prev.map((x, i) => {
+                                                            if (i !== modalLine.idx) return x;
+                                                            const newInstances = [...x.instances];
+                                                            newInstances[instIdx] = { ...newInstances[instIdx], stock_item_serial_number: e.target.value };
+                                                            return { ...x, instances: newInstances };
+                                                        }));
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </div>
+                                            <div style={{ width: 120 }}>
+                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('purchaseOrderReceive.inventoryNumber')}</label>
+                                                <input
+                                                    className="form-input"
+                                                    type="text"
+                                                    placeholder={t('purchaseOrderReceive.inventoryNumber')}
+                                                    value={inst.stock_item_inventory_number}
+                                                    onChange={(e) => {
+                                                        setReceiveStock((prev) => prev.map((x, i) => {
+                                                            if (i !== modalLine.idx) return x;
+                                                            const newInstances = [...x.instances];
+                                                            newInstances[instIdx] = { ...newInstances[instIdx], stock_item_inventory_number: e.target.value };
+                                                            return { ...x, instances: newInstances };
+                                                        }));
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {modalLine.type === 'consumable' && modalLineData.instances.map((inst, instIdx) => (
+                                    <div key={`m-ci-${instIdx}`} style={{
+                                        display: 'flex', gap: 'var(--space-3)', alignItems: 'flex-start',
+                                        padding: 'var(--space-3)',
+                                        borderRadius: 'var(--radius-md)',
+                                        background: instIdx % 2 === 0 ? 'var(--color-bg-secondary)' : 'transparent',
+                                        fontSize: 'var(--font-size-sm)',
+                                    }}>
+                                        <span style={{ fontWeight: 700, color: 'var(--color-text-muted)', minWidth: 32, paddingTop: 'var(--space-5)' }}>#{instIdx + 1}</span>
+                                        <div style={{ flex: 1, display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                                            <div style={{ flex: 1, minWidth: 120 }}>
+                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('purchaseOrderReceive.itemName')}</label>
+                                                <input
+                                                    className="form-input"
+                                                    type="text"
+                                                    placeholder={t('purchaseOrderReceive.itemName')}
+                                                    value={inst.consumable_name}
+                                                    onChange={(e) => {
+                                                        setReceiveConsumable((prev) => prev.map((x, i) => {
+                                                            if (i !== modalLine.idx) return x;
+                                                            const newInstances = [...x.instances];
+                                                            newInstances[instIdx] = { ...newInstances[instIdx], consumable_name: e.target.value };
+                                                            return { ...x, instances: newInstances };
+                                                        }));
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </div>
+                                            <div style={{ width: 120 }}>
+                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('purchaseOrderReceive.serialNumber')}</label>
+                                                <input
+                                                    className="form-input"
+                                                    type="text"
+                                                    placeholder={t('purchaseOrderReceive.serialNumber')}
+                                                    value={inst.consumable_serial_number}
+                                                    onChange={(e) => {
+                                                        setReceiveConsumable((prev) => prev.map((x, i) => {
+                                                            if (i !== modalLine.idx) return x;
+                                                            const newInstances = [...x.instances];
+                                                            newInstances[instIdx] = { ...newInstances[instIdx], consumable_serial_number: e.target.value };
+                                                            return { ...x, instances: newInstances };
+                                                        }));
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </div>
+                                            <div style={{ width: 100 }}>
+                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('purchaseOrderReceive.inventoryNumber')}</label>
+                                                <input
+                                                    className="form-input"
+                                                    type="text"
+                                                    placeholder={t('purchaseOrderReceive.inventoryNumber')}
+                                                    value={inst.consumable_inventory_number}
+                                                    onChange={(e) => {
+                                                        setReceiveConsumable((prev) => prev.map((x, i) => {
+                                                            if (i !== modalLine.idx) return x;
+                                                            const newInstances = [...x.instances];
+                                                            newInstances[instIdx] = { ...newInstances[instIdx], consumable_inventory_number: e.target.value };
+                                                            return { ...x, instances: newInstances };
+                                                        }));
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </div>
+                                            <div style={{ width: 120 }}>
+                                                <label className="form-label" style={{ fontSize: 'var(--font-size-xs)', marginBottom: 'var(--space-1)' }}>{t('purchaseOrderReceive.serviceTag')}</label>
+                                                <input
+                                                    className="form-input"
+                                                    type="text"
+                                                    placeholder={t('purchaseOrderReceive.serviceTag')}
+                                                    value={inst.consumable_service_tag}
+                                                    onChange={(e) => {
+                                                        setReceiveConsumable((prev) => prev.map((x, i) => {
+                                                            if (i !== modalLine.idx) return x;
+                                                            const newInstances = [...x.instances];
+                                                            newInstances[instIdx] = { ...newInstances[instIdx], consumable_service_tag: e.target.value };
+                                                            return { ...x, instances: newInstances };
+                                                        }));
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="modal-footer">
+                                <button type="button" onClick={closeModal} className="btn btn-primary">
+                                    {t('common.done', 'Done')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalPortal>
             )}
         </div>
     );

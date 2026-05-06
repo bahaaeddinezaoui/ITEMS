@@ -411,21 +411,29 @@ STATUS_TRANSLATIONS = {
         'en': 'In Stock',
         'ar': 'في المخزون',
     },
-    'in_use': {
-        'en': 'In Use',
-        'ar': 'قيد الاستخدام',
-    },
     'assigned': {
         'en': 'Assigned',
         'ar': 'معين',
     },
-    'maintenance': {
-        'en': 'Maintenance',
-        'ar': 'قيد الصيانة',
+    'under_internal_maintenance': {
+        'en': 'Under Internal Maintenance',
+        'ar': 'قيد الصيانة الداخلية',
     },
-    'reserved': {
-        'en': 'Reserved',
-        'ar': 'محجوز',
+    'sent_to_external_maintenance': {
+        'en': 'Sent to External Maintenance',
+        'ar': 'مرسل إلى صيانة خارجية',
+    },
+    'received_by_maintenance_provider': {
+        'en': 'Received by Maintenance Provider',
+        'ar': 'مستلم من قبل مزود الصيانة',
+    },
+    'sent_to_company_after_external_maintenance': {
+        'en': 'Sent to Company After External Maintenance',
+        'ar': 'مرسل إلى المؤسسة بعد الصيانة الخارجية',
+    },
+    'received_by_company_after_external_maintenance': {
+        'en': 'Received by Company After External Maintenance',
+        'ar': 'مستلم من قبل المؤسسة بعد الصيانة الخارجية',
     },
     'failed': {
         'en': 'Failed',

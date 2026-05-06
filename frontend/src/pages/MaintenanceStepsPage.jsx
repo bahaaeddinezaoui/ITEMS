@@ -9,9 +9,8 @@ import { SkeletonListRows } from '../components/SkeletonCard';
 import ModalPortal from '../components/ModalPortal';
 import useModalFeedback from '../components/useModalFeedback';
 import ModalFeedback from '../components/ModalFeedback';
+import BackButton from '../components/BackButton';
 import {
-    ChevronLeft,
-    ChevronRight,
     Wrench,
     Flame,
     CheckCircle2,
@@ -169,15 +168,7 @@ const MaintenanceStepsPage = () => {
             <div className="page-header">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <button
-                            className="btn btn-secondary"
-                            onClick={() => navigate('/dashboard/maintenances')}
-                            title={t('common.back')}
-                            aria-label={t('common.back')}
-                            style={{ padding: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                        >
-                            {i18n.language === 'ar' ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-                        </button>
+                        <BackButton onClick={() => navigate('/dashboard/maintenances')} />
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <div>
                                 <h1 className="page-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Wrench size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('maintenanceSteps.title')}</h1>

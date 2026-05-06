@@ -8,3 +8,7 @@
 [data-theme="light"] .darkveil-canvas {
   opacity: 0;
 }
+
+.darkveil-canvas--static {
+  opacity: 0 !important;
+}

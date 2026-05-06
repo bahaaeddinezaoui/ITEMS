@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react';
 import { Renderer, Program, Mesh, Triangle, Vec2 } from 'ogl';
+import { usePowerSave } from '../context/usePowerSave';
 import './DarkVeil.css';
 
 const vertex = `
@@ -83,8 +84,10 @@ export default function DarkVeil({
   warpAmount = 0,
   resolutionScale = 1
 }) {
+  const { enabled: powerSave } = usePowerSave();
   const ref = useRef(null);
   useEffect(() => {
+    if (powerSave) return;
     const canvas = ref.current;
     const parent = canvas.parentElement;
 
@@ -142,6 +145,7 @@ export default function DarkVeil({
       cancelAnimationFrame(frame);
       window.removeEventListener('resize', resize);
     };
-  }, [hueShift, noiseIntensity, scanlineIntensity, speed, scanlineFrequency, warpAmount, resolutionScale]);
+  }, [powerSave, hueShift, noiseIntensity, scanlineIntensity, speed, scanlineFrequency, warpAmount, resolutionScale]);
+  if (powerSave) return <canvas ref={ref} className="darkveil-canvas darkveil-canvas--static" />;
   return <canvas ref={ref} className="darkveil-canvas" />;
 }

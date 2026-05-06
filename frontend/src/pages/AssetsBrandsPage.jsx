@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Plus, Search, Pencil, Trash2, X, XCircle, Tag, Image, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, X, XCircle, Tag, Image, ChevronUp, ChevronDown } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import { assetBrandService, authService } from '../services/api';
 import BrandModal from '../components/BrandModal';
 import { SkeletonListRows } from '../components/SkeletonCard';
 import useModalFeedback from '../components/useModalFeedback';
+import BackButton from '../components/BackButton';
 
 const getBilingualBrandName = (item, currentLang) => {
     const nameAr = item.brand_name_ar;
@@ -198,9 +200,7 @@ const AssetsBrandsPage = () => {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                    <button className="btn btn-secondary" onClick={() => navigate(-1)} style={{ padding: 'var(--space-2) var(--space-3)' }}>
-                        <ArrowLeft size={18} />
-                    </button>
+                    <BackButton onClick={() => navigate(-1)} />
                     <div>
                         <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Tag size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetBrands.title', 'Asset Brands')}</h1>
                         <p className="page-subtitle" style={{ color: 'var(--color-text-secondary)' }}>
@@ -209,7 +209,7 @@ const AssetsBrandsPage = () => {
                     </div>
                 </div>
                 {authService.isSuperuser() && (
-                    <button className="btn btn-primary" onClick={() => { resetForm(); setShowForm(true); }} style={{ padding: 'var(--space-3) var(--space-6)' }}>
+                    <button className="btn btn-primary" onClick={() => { resetForm(); setShowForm(true); }} style={{ padding: 'var(--space-3) var(--space-6)', width: 'fit-content' }}>
                         <Plus size={18} />
                         <span>{t('assetBrands.addBrand', 'Add Brand')}</span>
                     </button>
@@ -277,29 +277,9 @@ const AssetsBrandsPage = () => {
                     </span>
                 </div>
 
-                {/* Toolbar */}
-                <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                    <div style={{ position: 'relative', flex: '0 1 320px', minWidth: '180px' }}>
-                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                        <input type="text" placeholder={t('assetBrands.searchPlaceholder', 'Search brands...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
-                    </div>
-                    <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', minWidth: '120px' }}>
-                        <option value="">{t('assetBrands.allStatuses', 'All Statuses')}</option>
-                        <option value="active">{t('assetBrands.active', 'Active')}</option>
-                        <option value="inactive">{t('assetBrands.inactive', 'Inactive')}</option>
-                    </select>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                        <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', minWidth: '110px' }}>
-                            <option value="brand_name">{t('assetBrands.sortByName', 'Name')}</option>
-                            <option value="brand_code">{t('assetBrands.sortByCode', 'Code')}</option>
-                        </select>
-                        <button className="btn btn-secondary" onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
-                            {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-                    </div>
-                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
-                        {filteredBrands.length}
-                    </span>
+                {/* Count badge */}
+                <div style={{ padding: 'var(--space-3) var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center' }}>
+                    <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', fontWeight: '600' }}>{filteredBrands.length} {t('common.total', 'total')}</span>
                 </div>
 
                 {/* Brand List */}
@@ -378,6 +358,34 @@ const AssetsBrandsPage = () => {
                     )}
                 </div>
             </div>
+            <FilterSortFAB hasActiveFilters={!!searchTerm || !!statusFilter || sortField !== 'brand_name' || sortDirection !== 'asc'}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                        <input type="text" placeholder={t('assetBrands.searchPlaceholder', 'Search brands...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('assetBrands.allStatuses', 'All Statuses')}</label>
+                        <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('assetBrands.allStatuses', 'All Statuses')}</option>
+                            <option value="active">{t('assetBrands.active', 'Active')}</option>
+                            <option value="inactive">{t('assetBrands.inactive', 'Inactive')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy', 'Sort by')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="brand_name">{t('assetBrands.sortByName', 'Name')}</option>
+                                <option value="brand_code">{t('assetBrands.sortByCode', 'Code')}</option>
+                            </select>
+                            <button className="btn btn-secondary" onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
+                                {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/useTheme';
+import { usePowerSave } from '../context/usePowerSave';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import PageTransition from './PageTransition';
@@ -28,7 +29,8 @@ const NavSection = ({ title, isSidebarCollapsed, isCollapsed, onToggle, children
 
 const DashboardLayout = () => {
     const { user, logout, isSuperuser } = useAuth();
-    const { isDark } = useTheme();
+    const { preference, setPreference, isDark } = useTheme();
+    const { enabled: powerSaveEnabled, setEnabled: setPowerSaveEnabled } = usePowerSave();
     const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -507,7 +509,7 @@ const DashboardLayout = () => {
                                 </NavLink>
                             )}
                             {(isSuperuser || isMaintenanceChief) && (
-                                <NavLink to="/dashboard/asset-maintenance-history" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('assetMaintenanceHistory.title') : undefined}>
+                                <NavLink to="/dashboard/maintenance-history" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} title={isSidebarCollapsed ? t('maintenanceHistory.title') : undefined}>
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <rect x="3" y="4" width="18" height="16" rx="2" />
                                         <path d="M8 2v4M16 2v4" />
@@ -515,7 +517,7 @@ const DashboardLayout = () => {
                                         <path d="M8 14h8" />
                                         <path d="M8 18h6" />
                                     </svg>
-                                    {!isSidebarCollapsed && t('assetMaintenanceHistory.title')}
+                                    {!isSidebarCollapsed && t('maintenanceHistory.title')}
                                 </NavLink>
                             )}
                             {(isMaintenanceChief || isItBureauChief || isSuperuser) && (
@@ -540,8 +542,33 @@ const DashboardLayout = () => {
                     gap: 'var(--space-3)',
                 }}>
                     {!isSidebarCollapsed && (
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
                             <ThemeToggle />
+                            <button
+                                type="button"
+                                onClick={() => setPowerSaveEnabled(!powerSaveEnabled)}
+                                title={powerSaveEnabled ? t('options.powerSaveOff') : t('options.powerSaveMode')}
+                                aria-label={powerSaveEnabled ? t('options.powerSaveOff') : t('options.powerSaveMode')}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: 'var(--radius-md)',
+                                    border: '1px solid',
+                                    borderColor: powerSaveEnabled ? 'var(--color-accent-primary)' : 'var(--color-border)',
+                                    background: powerSaveEnabled ? 'var(--color-accent-glow)' : 'transparent',
+                                    color: powerSaveEnabled ? 'var(--color-accent-tertiary)' : 'var(--color-text-muted)',
+                                    cursor: 'pointer',
+                                    padding: 0,
+                                }}
+                            >
+                                {powerSaveEnabled
+                                    ? <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                                    : <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0" /><line x1="12" y1="2" x2="12" y2="12" /></svg>
+                                }
+                            </button>
                         </div>
                     )}
                     <div

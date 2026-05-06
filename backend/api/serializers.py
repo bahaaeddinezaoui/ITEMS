@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
-from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, LocationRelation, Position, PositionRoleMapping, OrganizationalStructureType, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, MaintenanceStepStatus, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable, AuthenticationLog, UserSession
+from .models import Person, UserAccount, Role, PhysicalCondition, AssetType, AssetBrand, AssetModel, AssetModelDefaultStockItem, AssetModelDefaultConsumable, StockItemModelDefaultConsumable, StockItemType, StockItemBrand, StockItemModel, ConsumableType, ConsumableBrand, ConsumableModel, LocationType, Location, LocationRelation, Position, PositionRoleMapping, OrganizationalStructureType, OrganizationalStructure, OrganizationalStructureRelation, Asset, StockItem, Consumable, AssetIsAssignedToPerson, StockItemIsAssignedToPerson, ConsumableIsAssignedToPerson, AssetIsAssignedToOrgStructure, StockItemIsAssignedToOrgStructure, ConsumableIsAssignedToOrgStructure, PersonReportsProblemOnAsset, PersonReportsProblemOnStockItem, PersonReportsProblemOnConsumable, MaintenanceTypicalStep, MaintenanceStep, MaintenanceStepStatus, Maintenance, AssetAttributeDefinition, AssetTypeAttribute, AssetModelAttributeValue, AssetAttributeValue, StockItemAttributeDefinition, StockItemTypeAttribute, StockItemModelAttributeValue, StockItemAttributeValue, ConsumableAttributeDefinition, ConsumableTypeAttribute, ConsumableModelAttributeValue, ConsumableAttributeValue, Warehouse, AttributionOrder, ReceiptReport, AdministrativeCertificate, StockItemConsumableDestructionCertificate, AssetDestructionCertificate, AssetDestructionCertificateAsset, AssetFailedExternalMaintenance, CompanyAssetRequest, MaintenanceStepItemRequest, ExternalMaintenanceProvider, ExternalMaintenance, ExternalMaintenanceStep, ExternalMaintenanceTypicalStep, ExternalMaintenanceDocument, AttributionOrderAssetStockItemAccessory, AttributionOrderAssetConsumableAccessory, AssetIncidentReport, AssetIncidentReportStockItem, AssetIncidentReportConsumable, AuthenticationLog, UserSession
 from .translations import LocationTranslation, LocationTypeTranslation, OrganizationalStructureTypeTranslation, OrganizationalStructureTranslation, PositionTranslation, RoleTranslation, AssetTypeTranslation, StockItemTypeTranslation, ConsumableTypeTranslation, AssetBrandTranslation, StockItemBrandTranslation, ConsumableBrandTranslation, PersonTranslation, AssetAttributeDefinitionTranslation, ConsumableAttributeDefinitionTranslation, StockItemAttributeDefinitionTranslation, AssetTranslation, StockItemTranslation, ConsumableTranslation, AssetModelTranslation, StockItemModelTranslation, ConsumableModelTranslation, MaintenanceStepStatusTranslation
 
 
@@ -261,6 +261,8 @@ class AssetModelSerializer(serializers.ModelSerializer):
     model_name_en = serializers.SerializerMethodField()
     notes_ar = serializers.SerializerMethodField()
     notes_en = serializers.SerializerMethodField()
+    asset_model_name_in_administrative_certificate_ar = serializers.SerializerMethodField()
+    asset_model_name_in_administrative_certificate_en = serializers.SerializerMethodField()
     translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
@@ -268,8 +270,10 @@ class AssetModelSerializer(serializers.ModelSerializer):
         fields = [
             'asset_model_id', 'asset_brand', 'brand_name', 'asset_type', 'asset_type_label',
             'model_name', 'model_code', 'release_year', 'discontinued_year',
-            'is_active', 'notes', 'warranty_expiry_in_months',
-            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en', 'translations'
+            'is_active', 'notes', 'warranty_expiry_in_months', 'asset_model_name_in_administrative_certificate',
+            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en',
+            'asset_model_name_in_administrative_certificate_ar', 'asset_model_name_in_administrative_certificate_en',
+            'translations'
         ]
         read_only_fields = ['asset_model_id']
 
@@ -291,6 +295,12 @@ class AssetModelSerializer(serializers.ModelSerializer):
 
     def get_notes_en(self, obj):
         return self._get_translation_field(obj, 'en', 'notes')
+
+    def get_asset_model_name_in_administrative_certificate_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'asset_model_name_in_administrative_certificate')
+
+    def get_asset_model_name_in_administrative_certificate_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'asset_model_name_in_administrative_certificate')
 
     def create(self, validated_data):
         translations_data = validated_data.pop('translations', None)
@@ -399,6 +409,8 @@ class StockItemModelSerializer(serializers.ModelSerializer):
     model_name_en = serializers.SerializerMethodField()
     notes_ar = serializers.SerializerMethodField()
     notes_en = serializers.SerializerMethodField()
+    stock_item_model_name_in_administrative_certificate_ar = serializers.SerializerMethodField()
+    stock_item_model_name_in_administrative_certificate_en = serializers.SerializerMethodField()
     translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
@@ -406,8 +418,10 @@ class StockItemModelSerializer(serializers.ModelSerializer):
         fields = [
             'stock_item_model_id', 'stock_item_brand', 'brand_name', 'stock_item_type', 'stock_item_type_label',
             'model_name', 'model_code', 'release_year', 'discontinued_year',
-            'is_active', 'notes', 'warranty_expiry_in_months',
-            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en', 'translations'
+            'is_active', 'notes', 'warranty_expiry_in_months', 'stock_item_model_name_in_administrative_certificate',
+            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en',
+            'stock_item_model_name_in_administrative_certificate_ar', 'stock_item_model_name_in_administrative_certificate_en',
+            'translations'
         ]
         read_only_fields = ['stock_item_model_id']
 
@@ -429,6 +443,12 @@ class StockItemModelSerializer(serializers.ModelSerializer):
 
     def get_notes_en(self, obj):
         return self._get_translation_field(obj, 'en', 'notes')
+
+    def get_stock_item_model_name_in_administrative_certificate_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'stock_item_model_name_in_administrative_certificate')
+
+    def get_stock_item_model_name_in_administrative_certificate_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'stock_item_model_name_in_administrative_certificate')
 
     def create(self, validated_data):
         translations_data = validated_data.pop('translations', None)
@@ -537,6 +557,8 @@ class ConsumableModelSerializer(serializers.ModelSerializer):
     model_name_en = serializers.SerializerMethodField()
     notes_ar = serializers.SerializerMethodField()
     notes_en = serializers.SerializerMethodField()
+    consumable_model_name_in_administrative_certificate_ar = serializers.SerializerMethodField()
+    consumable_model_name_in_administrative_certificate_en = serializers.SerializerMethodField()
     translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
@@ -544,8 +566,10 @@ class ConsumableModelSerializer(serializers.ModelSerializer):
         fields = [
             'consumable_model_id', 'consumable_brand', 'brand_name', 'consumable_type', 'consumable_type_label',
             'model_name', 'model_code', 'release_year', 'discontinued_year',
-            'is_active', 'notes', 'warranty_expiry_in_months',
-            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en', 'translations'
+            'is_active', 'notes', 'warranty_expiry_in_months', 'consumable_model_name_in_administrative_certificate',
+            'model_name_ar', 'model_name_en', 'notes_ar', 'notes_en',
+            'consumable_model_name_in_administrative_certificate_ar', 'consumable_model_name_in_administrative_certificate_en',
+            'translations'
         ]
         read_only_fields = ['consumable_model_id']
 
@@ -567,6 +591,12 @@ class ConsumableModelSerializer(serializers.ModelSerializer):
 
     def get_notes_en(self, obj):
         return self._get_translation_field(obj, 'en', 'notes')
+
+    def get_consumable_model_name_in_administrative_certificate_ar(self, obj):
+        return self._get_translation_field(obj, 'ar', 'consumable_model_name_in_administrative_certificate')
+
+    def get_consumable_model_name_in_administrative_certificate_en(self, obj):
+        return self._get_translation_field(obj, 'en', 'consumable_model_name_in_administrative_certificate')
 
     def create(self, validated_data):
         translations_data = validated_data.pop('translations', None)
@@ -604,6 +634,17 @@ class AssetModelDefaultConsumableSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssetModelDefaultConsumable
         fields = ['id', 'asset_model', 'asset_model_name', 'consumable_model', 'consumable_model_name', 'quantity', 'notes']
+        read_only_fields = ['id']
+
+
+class StockItemModelDefaultConsumableSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemModelDefaultConsumable model"""
+    consumable_model_name = serializers.CharField(source='consumable_model.model_name', read_only=True)
+    stock_item_model_name = serializers.CharField(source='stock_item_model.model_name', read_only=True)
+    
+    class Meta:
+        model = StockItemModelDefaultConsumable
+        fields = ['id', 'stock_item_model', 'stock_item_model_name', 'consumable_model', 'consumable_model_name', 'quantity', 'notes']
         read_only_fields = ['id']
 
 
@@ -758,6 +799,16 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
     maintenance_step_status_code = serializers.SerializerMethodField()
     maintenance_step_status_label_en = serializers.SerializerMethodField()
     maintenance_step_status_label_ar = serializers.SerializerMethodField()
+    requested_stock_item_model_name = serializers.SerializerMethodField()
+    requested_consumable_model_name = serializers.SerializerMethodField()
+    requested_model_brand_name = serializers.SerializerMethodField()
+    requested_model_type_label = serializers.SerializerMethodField()
+    requested_model_code = serializers.SerializerMethodField()
+    asset_inventory_number = serializers.SerializerMethodField()
+    asset_serial_number = serializers.SerializerMethodField()
+    asset_model_name = serializers.SerializerMethodField()
+    asset_brand_name = serializers.SerializerMethodField()
+    asset_type_label = serializers.SerializerMethodField()
 
     def get_maintenance_id(self, obj):
         try:
@@ -813,6 +864,78 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
+    def get_requested_stock_item_model_name(self, obj):
+        try:
+            return obj.requested_stock_item_model.model_name if obj.requested_stock_item_model else None
+        except Exception:
+            return None
+
+    def get_requested_consumable_model_name(self, obj):
+        try:
+            return obj.requested_consumable_model.model_name if obj.requested_consumable_model else None
+        except Exception:
+            return None
+
+    def get_requested_model_brand_name(self, obj):
+        try:
+            if obj.request_type == 'stock_item' and obj.requested_stock_item_model:
+                return obj.requested_stock_item_model.stock_item_brand.brand_name
+            if obj.request_type == 'consumable' and obj.requested_consumable_model:
+                return obj.requested_consumable_model.consumable_brand.brand_name
+        except Exception:
+            pass
+        return None
+
+    def get_requested_model_type_label(self, obj):
+        try:
+            if obj.request_type == 'stock_item' and obj.requested_stock_item_model:
+                return obj.requested_stock_item_model.stock_item_type.stock_item_type_label
+            if obj.request_type == 'consumable' and obj.requested_consumable_model:
+                return obj.requested_consumable_model.consumable_type.consumable_type_label
+        except Exception:
+            pass
+        return None
+
+    def get_requested_model_code(self, obj):
+        try:
+            if obj.request_type == 'stock_item' and obj.requested_stock_item_model:
+                return obj.requested_stock_item_model.model_code
+            if obj.request_type == 'consumable' and obj.requested_consumable_model:
+                return obj.requested_consumable_model.model_code
+        except Exception:
+            pass
+        return None
+
+    def get_asset_inventory_number(self, obj):
+        try:
+            return obj.maintenance_step.maintenance.asset.asset_inventory_number
+        except Exception:
+            return None
+
+    def get_asset_serial_number(self, obj):
+        try:
+            return obj.maintenance_step.maintenance.asset.asset_serial_number
+        except Exception:
+            return None
+
+    def get_asset_model_name(self, obj):
+        try:
+            return obj.maintenance_step.maintenance.asset.asset_model.model_name
+        except Exception:
+            return None
+
+    def get_asset_brand_name(self, obj):
+        try:
+            return obj.maintenance_step.maintenance.asset.asset_model.asset_brand.brand_name
+        except Exception:
+            return None
+
+    def get_asset_type_label(self, obj):
+        try:
+            return obj.maintenance_step.maintenance.asset.asset_model.asset_type.asset_type_label
+        except Exception:
+            return None
+
     def get_maintenance_step_status_label_en(self, obj):
         return self._get_step_status_label(obj, 'en')
 
@@ -847,6 +970,16 @@ class MaintenanceStepItemRequestSerializer(serializers.ModelSerializer):
             'maintenance_step_status_code',
             'maintenance_step_status_label_en',
             'maintenance_step_status_label_ar',
+            'requested_stock_item_model_name',
+            'requested_consumable_model_name',
+            'requested_model_brand_name',
+            'requested_model_type_label',
+            'requested_model_code',
+            'asset_inventory_number',
+            'asset_serial_number',
+            'asset_model_name',
+            'asset_brand_name',
+            'asset_type_label',
         ]
 
 
@@ -1142,14 +1275,24 @@ class AssetSerializer(serializers.ModelSerializer):
     failed_external_maintenance_id = serializers.IntegerField(read_only=True, required=False)
 
     included_stock_items = serializers.ListField(
-        child=serializers.DictField(), required=False, write_only=True, default=list
+        child=serializers.DictField(child=serializers.JSONField()), required=False, write_only=True, default=list
     )
     included_consumables = serializers.ListField(
-        child=serializers.DictField(), required=False, write_only=True, default=list
+        child=serializers.DictField(child=serializers.JSONField()), required=False, write_only=True, default=list
     )
 
     stock_item_composition = serializers.SerializerMethodField()
     consumable_composition = serializers.SerializerMethodField()
+
+    model_name = serializers.CharField(source='asset_model.model_name', read_only=True, default=None)
+    model_name_ar = serializers.SerializerMethodField()
+    model_name_en = serializers.SerializerMethodField()
+    type_label = serializers.CharField(source='asset_model.asset_type.asset_type_label', read_only=True, default=None)
+    type_label_ar = serializers.SerializerMethodField()
+    type_label_en = serializers.SerializerMethodField()
+    brand_name = serializers.CharField(source='asset_model.asset_brand.brand_name', read_only=True, default=None)
+    brand_name_ar = serializers.SerializerMethodField()
+    brand_name_en = serializers.SerializerMethodField()
 
     asset_name_ar = serializers.SerializerMethodField()
     asset_name_en = serializers.SerializerMethodField()
@@ -1165,6 +1308,9 @@ class AssetSerializer(serializers.ModelSerializer):
             'failed_external_maintenance_id',
             'included_stock_items', 'included_consumables',
             'stock_item_composition', 'consumable_composition',
+            'model_name', 'model_name_ar', 'model_name_en',
+            'type_label', 'type_label_ar', 'type_label_en',
+            'brand_name', 'brand_name_ar', 'brand_name_en',
             'asset_name_ar', 'asset_name_en', 'asset_status_ar', 'asset_status_en', 'translations'
         ]
         read_only_fields = ['asset_id']
@@ -1245,6 +1391,63 @@ class AssetSerializer(serializers.ModelSerializer):
 
     def get_asset_status_en(self, obj):
         return self._get_translated_field(obj, 'en', 'asset_status')
+
+    def _get_model_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.asset_model
+            if not model:
+                return None
+            from api.translations import AssetModelTranslation
+            translation = AssetModelTranslation.objects.get(asset_model=model, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_model_name_ar(self, obj):
+        return self._get_model_translation(obj, 'ar', 'model_name')
+
+    def get_model_name_en(self, obj):
+        return self._get_model_translation(obj, 'en', 'model_name')
+
+    def _get_type_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.asset_model
+            if not model:
+                return None
+            asset_type = model.asset_type
+            if not asset_type:
+                return None
+            from api.translations import AssetTypeTranslation
+            translation = AssetTypeTranslation.objects.get(asset_type=asset_type, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_type_label_ar(self, obj):
+        return self._get_type_translation(obj, 'ar', 'asset_type_label')
+
+    def get_type_label_en(self, obj):
+        return self._get_type_translation(obj, 'en', 'asset_type_label')
+
+    def _get_brand_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.asset_model
+            if not model:
+                return None
+            brand = model.asset_brand
+            if not brand:
+                return None
+            from api.translations import AssetBrandTranslation
+            translation = AssetBrandTranslation.objects.get(asset_brand=brand, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_brand_name_ar(self, obj):
+        return self._get_brand_translation(obj, 'ar', 'brand_name')
+
+    def get_brand_name_en(self, obj):
+        return self._get_brand_translation(obj, 'en', 'brand_name')
 
     def create(self, validated_data):
         # Remove non-model fields before creating the Asset
@@ -1800,12 +2003,49 @@ class StockItemSerializer(serializers.ModelSerializer):
     stock_item_name_en = serializers.SerializerMethodField()
     stock_item_status_ar = serializers.SerializerMethodField()
     stock_item_status_en = serializers.SerializerMethodField()
+    model_name = serializers.CharField(source='stock_item_model.model_name', read_only=True, default=None)
+    model_name_ar = serializers.SerializerMethodField()
+    model_name_en = serializers.SerializerMethodField()
+    type_label = serializers.CharField(source='stock_item_model.stock_item_type.stock_item_type_label', read_only=True, default=None)
+    type_label_ar = serializers.SerializerMethodField()
+    type_label_en = serializers.SerializerMethodField()
+    brand_name = serializers.CharField(source='stock_item_model.stock_item_brand.brand_name', read_only=True, default=None)
+    brand_name_ar = serializers.SerializerMethodField()
+    brand_name_en = serializers.SerializerMethodField()
+    consumable_composition = serializers.SerializerMethodField()
     translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = StockItem
-        fields = ['stock_item_id', 'stock_item_model', 'stock_item_inventory_number', 'stock_item_name', 'stock_item_status', 'stock_item_consumable_destruction_certificate_id', 'stock_item_name_in_administrative_certificate', 'stock_item_name_ar', 'stock_item_name_en', 'stock_item_status_ar', 'stock_item_status_en', 'translations']
+        fields = ['stock_item_id', 'stock_item_model', 'stock_item_inventory_number', 'stock_item_serial_number', 'stock_item_name', 'stock_item_status', 'stock_item_consumable_destruction_certificate_id', 'stock_item_name_ar', 'stock_item_name_en', 'stock_item_status_ar', 'stock_item_status_en', 'purchase_order_id', 'model_name', 'model_name_ar', 'model_name_en', 'type_label', 'type_label_ar', 'type_label_en', 'brand_name', 'brand_name_ar', 'brand_name_en', 'consumable_composition', 'translations']
         read_only_fields = ['stock_item_id']
+
+    def get_consumable_composition(self, obj):
+        from .models import ConsumableIsUsedInStockItemHistory
+        items = ConsumableIsUsedInStockItemHistory.objects.filter(stock_item=obj, end_datetime__isnull=True).select_related('consumable')
+        result = []
+        for item in items:
+            c = item.consumable
+            c_status_ar = None
+            c_status_en = None
+            try:
+                t = ConsumableTranslation.objects.get(consumable=c, language_code='ar')
+                c_status_ar = t.consumable_status
+            except Exception:
+                pass
+            try:
+                t = ConsumableTranslation.objects.get(consumable=c, language_code='en')
+                c_status_en = t.consumable_status
+            except Exception:
+                pass
+            result.append({
+                'consumable_id': c.consumable_id,
+                'consumable_name': c.consumable_name,
+                'consumable_status': c.consumable_status,
+                'consumable_status_ar': c_status_ar,
+                'consumable_status_en': c_status_en,
+            })
+        return result
 
     def _get_translated_field(self, obj, lang_code, field_name):
         try:
@@ -1826,6 +2066,63 @@ class StockItemSerializer(serializers.ModelSerializer):
     def get_stock_item_status_en(self, obj):
         return self._get_translated_field(obj, 'en', 'stock_item_status')
 
+    def _get_model_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.stock_item_model
+            if not model:
+                return None
+            from api.translations import StockItemModelTranslation
+            translation = StockItemModelTranslation.objects.get(stock_item_model=model, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_model_name_ar(self, obj):
+        return self._get_model_translation(obj, 'ar', 'model_name')
+
+    def get_model_name_en(self, obj):
+        return self._get_model_translation(obj, 'en', 'model_name')
+
+    def _get_type_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.stock_item_model
+            if not model:
+                return None
+            stock_type = model.stock_item_type
+            if not stock_type:
+                return None
+            from api.translations import StockItemTypeTranslation
+            translation = StockItemTypeTranslation.objects.get(stock_item_type=stock_type, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_type_label_ar(self, obj):
+        return self._get_type_translation(obj, 'ar', 'stock_item_type_label')
+
+    def get_type_label_en(self, obj):
+        return self._get_type_translation(obj, 'en', 'stock_item_type_label')
+
+    def _get_brand_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.stock_item_model
+            if not model:
+                return None
+            brand = model.stock_item_brand
+            if not brand:
+                return None
+            from api.translations import StockItemBrandTranslation
+            translation = StockItemBrandTranslation.objects.get(stock_item_brand=brand, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_brand_name_ar(self, obj):
+        return self._get_brand_translation(obj, 'ar', 'brand_name')
+
+    def get_brand_name_en(self, obj):
+        return self._get_brand_translation(obj, 'en', 'brand_name')
+
     def create(self, validated_data):
         translations_data = validated_data.pop('translations', None)
         instance = StockItem.objects.create(**validated_data)
@@ -1841,19 +2138,13 @@ class StockItemSerializer(serializers.ModelSerializer):
             if instance.stock_item_status and 'stock_item_status' not in en_data:
                 en_data['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
                 translations_data['en'] = en_data
-            if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in en_data:
-                en_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
-                translations_data['en'] = en_data
             # Ensure Arabic version also gets the status
             ar_data = translations_data.get('ar', {})
             if instance.stock_item_status and 'stock_item_status' not in ar_data:
                 ar_data['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
                 translations_data['ar'] = ar_data
-            if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in ar_data:
-                ar_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
-                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.stock_item_name or instance.stock_item_status or instance.stock_item_name_in_administrative_certificate:
+        elif instance.stock_item_name or instance.stock_item_status:
             # No translations provided, but save name and status in both en and ar translation rows
             from api.utils.i18n import save_translations, translate_status
             en_entry = {}
@@ -1861,15 +2152,11 @@ class StockItemSerializer(serializers.ModelSerializer):
                 en_entry['stock_item_name'] = instance.stock_item_name
             if instance.stock_item_status:
                 en_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
-            if instance.stock_item_name_in_administrative_certificate:
-                en_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
             ar_entry = {}
             if instance.stock_item_name:
                 ar_entry['stock_item_name'] = instance.stock_item_name
             if instance.stock_item_status:
                 ar_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
-            if instance.stock_item_name_in_administrative_certificate:
-                ar_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
             save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
@@ -1884,34 +2171,24 @@ class StockItemSerializer(serializers.ModelSerializer):
             if instance.stock_item_status and 'stock_item_status' not in en_data:
                 en_data['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
                 translations_data['en'] = en_data
-            if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in en_data:
-                en_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
-                translations_data['en'] = en_data
             # Ensure Arabic version also gets the status
             ar_data = translations_data.get('ar', {})
             if instance.stock_item_status and 'stock_item_status' not in ar_data:
                 ar_data['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
                 translations_data['ar'] = ar_data
-            if instance.stock_item_name_in_administrative_certificate and 'stock_item_name_in_administrative_certificate' not in ar_data:
-                ar_data['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
-                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.stock_item_name or instance.stock_item_status or instance.stock_item_name_in_administrative_certificate:
+        elif instance.stock_item_name or instance.stock_item_status:
             from api.utils.i18n import save_translations, translate_status
             en_entry = {}
             if instance.stock_item_name:
                 en_entry['stock_item_name'] = instance.stock_item_name
             if instance.stock_item_status:
                 en_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'en')
-            if instance.stock_item_name_in_administrative_certificate:
-                en_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
             ar_entry = {}
             if instance.stock_item_name:
                 ar_entry['stock_item_name'] = instance.stock_item_name
             if instance.stock_item_status:
                 ar_entry['stock_item_status'] = translate_status(instance.stock_item_status, 'ar')
-            if instance.stock_item_name_in_administrative_certificate:
-                ar_entry['stock_item_name_in_administrative_certificate'] = instance.stock_item_name_in_administrative_certificate
             save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
@@ -1948,11 +2225,20 @@ class ConsumableSerializer(serializers.ModelSerializer):
     consumable_name_en = serializers.SerializerMethodField()
     consumable_status_ar = serializers.SerializerMethodField()
     consumable_status_en = serializers.SerializerMethodField()
+    model_name = serializers.CharField(source='consumable_model.model_name', read_only=True, default=None)
+    model_name_ar = serializers.SerializerMethodField()
+    model_name_en = serializers.SerializerMethodField()
+    type_label = serializers.CharField(source='consumable_model.consumable_type.consumable_type_label', read_only=True, default=None)
+    type_label_ar = serializers.SerializerMethodField()
+    type_label_en = serializers.SerializerMethodField()
+    brand_name = serializers.CharField(source='consumable_model.consumable_brand.brand_name', read_only=True, default=None)
+    brand_name_ar = serializers.SerializerMethodField()
+    brand_name_en = serializers.SerializerMethodField()
     translations = serializers.DictField(write_only=True, required=False)
 
     class Meta:
         model = Consumable
-        fields = ['consumable_id', 'consumable_model', 'consumable_serial_number', 'consumable_inventory_number', 'consumable_name', 'consumable_status', 'stock_item_consumable_destruction_certificate_id', 'consumable_name_in_administrative_certificate', 'consumable_name_ar', 'consumable_name_en', 'consumable_status_ar', 'consumable_status_en', 'translations']
+        fields = ['consumable_id', 'consumable_model', 'consumable_serial_number', 'consumable_inventory_number', 'consumable_service_tag', 'consumable_name', 'consumable_status', 'stock_item_consumable_destruction_certificate_id', 'consumable_name_ar', 'consumable_name_en', 'consumable_status_ar', 'consumable_status_en', 'purchase_order_id', 'model_name', 'model_name_ar', 'model_name_en', 'type_label', 'type_label_ar', 'type_label_en', 'brand_name', 'brand_name_ar', 'brand_name_en', 'translations']
         read_only_fields = ['consumable_id']
 
     def _get_translated_field(self, obj, lang_code, field_name):
@@ -1974,6 +2260,63 @@ class ConsumableSerializer(serializers.ModelSerializer):
     def get_consumable_status_en(self, obj):
         return self._get_translated_field(obj, 'en', 'consumable_status')
 
+    def _get_model_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.consumable_model
+            if not model:
+                return None
+            from api.translations import ConsumableModelTranslation
+            translation = ConsumableModelTranslation.objects.get(consumable_model=model, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_model_name_ar(self, obj):
+        return self._get_model_translation(obj, 'ar', 'model_name')
+
+    def get_model_name_en(self, obj):
+        return self._get_model_translation(obj, 'en', 'model_name')
+
+    def _get_type_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.consumable_model
+            if not model:
+                return None
+            cons_type = model.consumable_type
+            if not cons_type:
+                return None
+            from api.translations import ConsumableTypeTranslation
+            translation = ConsumableTypeTranslation.objects.get(consumable_type=cons_type, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_type_label_ar(self, obj):
+        return self._get_type_translation(obj, 'ar', 'consumable_type_label')
+
+    def get_type_label_en(self, obj):
+        return self._get_type_translation(obj, 'en', 'consumable_type_label')
+
+    def _get_brand_translation(self, obj, lang_code, field_name):
+        try:
+            model = obj.consumable_model
+            if not model:
+                return None
+            brand = model.consumable_brand
+            if not brand:
+                return None
+            from api.translations import ConsumableBrandTranslation
+            translation = ConsumableBrandTranslation.objects.get(consumable_brand=brand, language_code=lang_code)
+            return getattr(translation, field_name, None)
+        except Exception:
+            return None
+
+    def get_brand_name_ar(self, obj):
+        return self._get_brand_translation(obj, 'ar', 'brand_name')
+
+    def get_brand_name_en(self, obj):
+        return self._get_brand_translation(obj, 'en', 'brand_name')
+
     def create(self, validated_data):
         translations_data = validated_data.pop('translations', None)
         instance = Consumable.objects.create(**validated_data)
@@ -1989,19 +2332,13 @@ class ConsumableSerializer(serializers.ModelSerializer):
             if instance.consumable_status and 'consumable_status' not in en_data:
                 en_data['consumable_status'] = translate_status(instance.consumable_status, 'en')
                 translations_data['en'] = en_data
-            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in en_data:
-                en_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
-                translations_data['en'] = en_data
             # Ensure Arabic version also gets the status
             ar_data = translations_data.get('ar', {})
             if instance.consumable_status and 'consumable_status' not in ar_data:
                 ar_data['consumable_status'] = translate_status(instance.consumable_status, 'ar')
                 translations_data['ar'] = ar_data
-            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in ar_data:
-                ar_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
-                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.consumable_name or instance.consumable_status or instance.consumable_name_in_administrative_certificate:
+        elif instance.consumable_name or instance.consumable_status:
             # No translations provided, but save name and status in both en and ar translation rows
             from api.utils.i18n import save_translations, translate_status
             en_entry = {}
@@ -2009,15 +2346,11 @@ class ConsumableSerializer(serializers.ModelSerializer):
                 en_entry['consumable_name'] = instance.consumable_name
             if instance.consumable_status:
                 en_entry['consumable_status'] = translate_status(instance.consumable_status, 'en')
-            if instance.consumable_name_in_administrative_certificate:
-                en_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
             ar_entry = {}
             if instance.consumable_name:
                 ar_entry['consumable_name'] = instance.consumable_name
             if instance.consumable_status:
                 ar_entry['consumable_status'] = translate_status(instance.consumable_status, 'ar')
-            if instance.consumable_name_in_administrative_certificate:
-                ar_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
             save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
@@ -2032,34 +2365,24 @@ class ConsumableSerializer(serializers.ModelSerializer):
             if instance.consumable_status and 'consumable_status' not in en_data:
                 en_data['consumable_status'] = translate_status(instance.consumable_status, 'en')
                 translations_data['en'] = en_data
-            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in en_data:
-                en_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
-                translations_data['en'] = en_data
             # Ensure Arabic version also gets the status
             ar_data = translations_data.get('ar', {})
             if instance.consumable_status and 'consumable_status' not in ar_data:
                 ar_data['consumable_status'] = translate_status(instance.consumable_status, 'ar')
                 translations_data['ar'] = ar_data
-            if instance.consumable_name_in_administrative_certificate and 'consumable_name_in_administrative_certificate' not in ar_data:
-                ar_data['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
-                translations_data['ar'] = ar_data
             save_translations(instance, translations_data)
-        elif instance.consumable_name or instance.consumable_status or instance.consumable_name_in_administrative_certificate:
+        elif instance.consumable_name or instance.consumable_status:
             from api.utils.i18n import save_translations, translate_status
             en_entry = {}
             if instance.consumable_name:
                 en_entry['consumable_name'] = instance.consumable_name
             if instance.consumable_status:
                 en_entry['consumable_status'] = translate_status(instance.consumable_status, 'en')
-            if instance.consumable_name_in_administrative_certificate:
-                en_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
             ar_entry = {}
             if instance.consumable_name:
                 ar_entry['consumable_name'] = instance.consumable_name
             if instance.consumable_status:
                 ar_entry['consumable_status'] = translate_status(instance.consumable_status, 'ar')
-            if instance.consumable_name_in_administrative_certificate:
-                ar_entry['consumable_name_in_administrative_certificate'] = instance.consumable_name_in_administrative_certificate
             save_translations(instance, {'en': en_entry, 'ar': ar_entry})
         return instance
 
@@ -2083,6 +2406,78 @@ class ConsumableIsAssignedToPersonSerializer(serializers.ModelSerializer):
         # Nest person details
         if instance.person:
             representation['person'] = PersonSerializer(instance.person).data
+        if instance.assigned_by_person:
+            representation['assigned_by_person'] = PersonSerializer(instance.assigned_by_person).data
+        if instance.is_confirmed_by_exploitation_chief:
+            representation['is_confirmed_by_exploitation_chief'] = PersonSerializer(instance.is_confirmed_by_exploitation_chief).data
+        return representation
+
+
+class AssetIsAssignedToOrgStructureSerializer(serializers.ModelSerializer):
+    """Serializer for AssetIsAssignedToOrgStructure model"""
+
+    class Meta:
+        model = AssetIsAssignedToOrgStructure
+        fields = ['assignment_id', 'organizational_structure', 'asset', 'assigned_by_person', 'start_datetime', 'end_datetime', 'is_active', 'is_confirmed_by_exploitation_chief']
+        read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
+        extra_kwargs = {
+            'is_active': {'required': False},
+        }
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.asset:
+            representation['asset'] = AssetSerializer(instance.asset).data
+        if instance.organizational_structure:
+            representation['organizational_structure'] = OrganizationalStructureSerializer(instance.organizational_structure).data
+        if instance.assigned_by_person:
+            representation['assigned_by_person'] = PersonSerializer(instance.assigned_by_person).data
+        if instance.is_confirmed_by_exploitation_chief:
+            representation['is_confirmed_by_exploitation_chief'] = PersonSerializer(instance.is_confirmed_by_exploitation_chief).data
+        return representation
+
+
+class StockItemIsAssignedToOrgStructureSerializer(serializers.ModelSerializer):
+    """Serializer for StockItemIsAssignedToOrgStructure model"""
+
+    class Meta:
+        model = StockItemIsAssignedToOrgStructure
+        fields = ['assignment_id', 'organizational_structure', 'stock_item', 'assigned_by_person', 'start_datetime', 'end_datetime', 'is_active', 'is_confirmed_by_exploitation_chief']
+        read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
+        extra_kwargs = {
+            'is_active': {'required': False},
+        }
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.stock_item:
+            representation['stock_item'] = StockItemSerializer(instance.stock_item).data
+        if instance.organizational_structure:
+            representation['organizational_structure'] = OrganizationalStructureSerializer(instance.organizational_structure).data
+        if instance.assigned_by_person:
+            representation['assigned_by_person'] = PersonSerializer(instance.assigned_by_person).data
+        if instance.is_confirmed_by_exploitation_chief:
+            representation['is_confirmed_by_exploitation_chief'] = PersonSerializer(instance.is_confirmed_by_exploitation_chief).data
+        return representation
+
+
+class ConsumableIsAssignedToOrgStructureSerializer(serializers.ModelSerializer):
+    """Serializer for ConsumableIsAssignedToOrgStructure model"""
+
+    class Meta:
+        model = ConsumableIsAssignedToOrgStructure
+        fields = ['assignment_id', 'organizational_structure', 'consumable', 'assigned_by_person', 'start_datetime', 'end_datetime', 'is_active', 'is_confirmed_by_exploitation_chief']
+        read_only_fields = ['assignment_id', 'assigned_by_person', 'end_datetime']
+        extra_kwargs = {
+            'is_active': {'required': False},
+        }
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.consumable:
+            representation['consumable'] = ConsumableSerializer(instance.consumable).data
+        if instance.organizational_structure:
+            representation['organizational_structure'] = OrganizationalStructureSerializer(instance.organizational_structure).data
         if instance.assigned_by_person:
             representation['assigned_by_person'] = PersonSerializer(instance.assigned_by_person).data
         if instance.is_confirmed_by_exploitation_chief:
@@ -2318,6 +2713,20 @@ class MaintenanceSerializer(serializers.ModelSerializer):
     asset_type_label = serializers.SerializerMethodField()
     asset_type_label_ar = serializers.SerializerMethodField()
     asset_type_label_en = serializers.SerializerMethodField()
+    item_type = serializers.SerializerMethodField()
+    stock_item_name = serializers.SerializerMethodField()
+    stock_item_serial_number = serializers.SerializerMethodField()
+    stock_item_inventory_number = serializers.SerializerMethodField()
+    stock_item_status = serializers.SerializerMethodField()
+    stock_item_model_name = serializers.SerializerMethodField()
+    stock_item_brand_name = serializers.SerializerMethodField()
+    consumable_name = serializers.SerializerMethodField()
+    consumable_serial_number = serializers.SerializerMethodField()
+    consumable_inventory_number = serializers.SerializerMethodField()
+    consumable_service_tag = serializers.SerializerMethodField()
+    consumable_status = serializers.SerializerMethodField()
+    consumable_model_name = serializers.SerializerMethodField()
+    consumable_brand_name = serializers.SerializerMethodField()
     has_steps = serializers.SerializerMethodField()
     has_external_maintenances = serializers.SerializerMethodField()
     total_cost = serializers.SerializerMethodField()
@@ -2338,11 +2747,37 @@ class MaintenanceSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate(self, data):
+        asset = data.get('asset')
+        stock_item = data.get('stock_item')
+        consumable = data.get('consumable')
+        # For updates, use existing values if not provided
+        if self.instance:
+            if asset is None and 'asset' not in data:
+                asset = self.instance.asset
+            if stock_item is None and 'stock_item' not in data:
+                stock_item = self.instance.stock_item
+            if consumable is None and 'consumable' not in data:
+                consumable = self.instance.consumable
+        linked = [bool(asset), bool(stock_item), bool(consumable)]
+        if sum(linked) == 0:
+            raise serializers.ValidationError(
+                'A maintenance must be linked to exactly one of: asset, stock_item, or consumable.'
+            )
+        if sum(linked) > 1:
+            raise serializers.ValidationError(
+                'A maintenance can only be linked to one of: asset, stock_item, or consumable at a time.'
+            )
+        return data
+
     class Meta:
         model = Maintenance
         fields = [
             'maintenance_id',
             'asset',
+            'stock_item',
+            'consumable',
+            'item_type',
             'description',
             'maintenance_status',
             'start_datetime',
@@ -2364,6 +2799,19 @@ class MaintenanceSerializer(serializers.ModelSerializer):
             'asset_type_label',
             'asset_type_label_ar',
             'asset_type_label_en',
+            'stock_item_name',
+            'stock_item_serial_number',
+            'stock_item_inventory_number',
+            'stock_item_status',
+            'stock_item_model_name',
+            'stock_item_brand_name',
+            'consumable_name',
+            'consumable_serial_number',
+            'consumable_inventory_number',
+            'consumable_service_tag',
+            'consumable_status',
+            'consumable_model_name',
+            'consumable_brand_name',
             'has_steps',
             'has_external_maintenances',
             'total_cost',
@@ -2396,6 +2844,9 @@ class MaintenanceSerializer(serializers.ModelSerializer):
 
     def get_performed_by_person_name_en(self, obj):
         return self._get_person_name(obj, 'en')
+
+    def get_item_type(self, obj):
+        return obj.item_type
 
     def get_asset_name(self, obj):
         asset = getattr(obj, 'asset', None)
@@ -2505,6 +2956,106 @@ class MaintenanceSerializer(serializers.ModelSerializer):
             return translation.asset_type_label or None
         except AssetTypeTranslation.DoesNotExist:
             return None
+
+    # --- Stock item info methods ---
+
+    def get_stock_item_name(self, obj):
+        stock_item = getattr(obj, 'stock_item', None)
+        if not stock_item:
+            return None
+        return getattr(stock_item, 'stock_item_name', None) or None
+
+    def get_stock_item_serial_number(self, obj):
+        stock_item = getattr(obj, 'stock_item', None)
+        if not stock_item:
+            return None
+        return getattr(stock_item, 'stock_item_serial_number', None) or None
+
+    def get_stock_item_inventory_number(self, obj):
+        stock_item = getattr(obj, 'stock_item', None)
+        if not stock_item:
+            return None
+        return getattr(stock_item, 'stock_item_inventory_number', None) or None
+
+    def get_stock_item_status(self, obj):
+        stock_item = getattr(obj, 'stock_item', None)
+        if not stock_item:
+            return None
+        return getattr(stock_item, 'stock_item_status', None) or None
+
+    def get_stock_item_model_name(self, obj):
+        stock_item = getattr(obj, 'stock_item', None)
+        if not stock_item:
+            return None
+        model = getattr(stock_item, 'stock_item_model', None)
+        if not model:
+            return None
+        return getattr(model, 'model_name', None) or None
+
+    def get_stock_item_brand_name(self, obj):
+        stock_item = getattr(obj, 'stock_item', None)
+        if not stock_item:
+            return None
+        model = getattr(stock_item, 'stock_item_model', None)
+        if not model:
+            return None
+        brand = getattr(model, 'stock_item_brand', None)
+        if not brand:
+            return None
+        return getattr(brand, 'brand_name', None) or None
+
+    # --- Consumable info methods ---
+
+    def get_consumable_name(self, obj):
+        consumable = getattr(obj, 'consumable', None)
+        if not consumable:
+            return None
+        return getattr(consumable, 'consumable_name', None) or None
+
+    def get_consumable_serial_number(self, obj):
+        consumable = getattr(obj, 'consumable', None)
+        if not consumable:
+            return None
+        return getattr(consumable, 'consumable_serial_number', None) or None
+
+    def get_consumable_inventory_number(self, obj):
+        consumable = getattr(obj, 'consumable', None)
+        if not consumable:
+            return None
+        return getattr(consumable, 'consumable_inventory_number', None) or None
+
+    def get_consumable_service_tag(self, obj):
+        consumable = getattr(obj, 'consumable', None)
+        if not consumable:
+            return None
+        return getattr(consumable, 'consumable_service_tag', None) or None
+
+    def get_consumable_status(self, obj):
+        consumable = getattr(obj, 'consumable', None)
+        if not consumable:
+            return None
+        return getattr(consumable, 'consumable_status', None) or None
+
+    def get_consumable_model_name(self, obj):
+        consumable = getattr(obj, 'consumable', None)
+        if not consumable:
+            return None
+        model = getattr(consumable, 'consumable_model', None)
+        if not model:
+            return None
+        return getattr(model, 'model_name', None) or None
+
+    def get_consumable_brand_name(self, obj):
+        consumable = getattr(obj, 'consumable', None)
+        if not consumable:
+            return None
+        model = getattr(consumable, 'consumable_model', None)
+        if not model:
+            return None
+        brand = getattr(model, 'consumable_brand', None)
+        if not brand:
+            return None
+        return getattr(brand, 'brand_name', None) or None
 
     def get_has_steps(self, obj):
         return obj.steps.exists()
@@ -3059,6 +3610,11 @@ class ExternalMaintenanceDocumentSerializer(serializers.ModelSerializer):
 class ExternalMaintenanceSerializer(serializers.ModelSerializer):
     maintenance_asset_id = serializers.IntegerField(source='maintenance.asset_id', read_only=True)
     maintenance_asset_name = serializers.CharField(source='maintenance.asset.asset_name', read_only=True)
+    maintenance_stock_item_id = serializers.IntegerField(source='maintenance.stock_item_id', read_only=True)
+    maintenance_stock_item_name = serializers.CharField(source='maintenance.stock_item.stock_item_name', read_only=True)
+    maintenance_consumable_id = serializers.IntegerField(source='maintenance.consumable_id', read_only=True)
+    maintenance_consumable_name = serializers.CharField(source='maintenance.consumable.consumable_name', read_only=True)
+    maintenance_item_type = serializers.SerializerMethodField()
 
     class Meta:
         model = ExternalMaintenance
@@ -3067,6 +3623,11 @@ class ExternalMaintenanceSerializer(serializers.ModelSerializer):
             'maintenance',
             'maintenance_asset_id',
             'maintenance_asset_name',
+            'maintenance_stock_item_id',
+            'maintenance_stock_item_name',
+            'maintenance_consumable_id',
+            'maintenance_consumable_name',
+            'maintenance_item_type',
             'external_maintenance_provider',
             'external_maintenance_status',
             'item_received_by_maintenance_provider_datetime',
@@ -3074,3 +3635,9 @@ class ExternalMaintenanceSerializer(serializers.ModelSerializer):
             'item_sent_to_external_maintenance_datetime',
             'item_received_by_company_datetime',
         ]
+
+    def get_maintenance_item_type(self, obj):
+        maintenance = getattr(obj, 'maintenance', None)
+        if maintenance:
+            return maintenance.item_type
+        return None

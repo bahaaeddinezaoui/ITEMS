@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { PowerSaveProvider } from './context/PowerSaveContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -21,6 +22,7 @@ import StockItemsTypesPage from './pages/StockItemsTypesPage';
 import StockItemsTypeAttributesPage from './pages/StockItemsTypeAttributesPage';
 import StockItemsModelsPage from './pages/StockItemsModelsPage';
 import StockItemModelCompatibilityPage from './pages/StockItemModelCompatibilityPage';
+import StockItemModelDefaultCompositionSelectPage from './pages/StockItemModelDefaultCompositionSelectPage';
 import StockItemsAttributeDefinitionsPage from './pages/StockItemsAttributeDefinitionsPage';
 import StockItemInstanceCreatePage from './pages/StockItemInstanceCreatePage';
 import ConsumablesPage from './pages/ConsumablesPage';
@@ -41,6 +43,7 @@ import MyItemsPage from './pages/MyItemsPage';
 import MySubmittedReportsPage from './pages/MySubmittedReportsPage';
 import OptionsPage from './pages/OptionsPage';
 import OptionsAccessHistoryPage from './pages/OptionsAccessHistoryPage';
+import OptionsSessionsPage from './pages/OptionsSessionsPage';
 import ReportsPage from './pages/ReportsPage';
 import AssetIncidentReportsPage from './pages/AssetIncidentReportsPage';
 import AttributionOrdersPage from './pages/AttributionOrdersPage';
@@ -56,10 +59,11 @@ import AssetDestructionCertificatesPage from './pages/AssetDestructionCertificat
 import ItemRequestsInboxPage from './pages/ItemRequestsInboxPage';
 import MaintenanceStepsPage from './pages/MaintenanceStepsPage';
 import ExternalMaintenancesPage from './pages/ExternalMaintenancesPage';
+import CompositionHistoryPage from './pages/CompositionHistoryPage';
 import AssetMaintenanceTimelinePage from './pages/AssetMaintenanceTimelinePage';
 import IncludedItemMovementsApprovalPage from './pages/IncludedItemMovementsApprovalPage';
 import AssetMovementsApprovalPage from './pages/AssetMovementsApprovalPage';
-import AssetMaintenanceHistoryPage from './pages/AssetMaintenanceHistoryPage';
+import MaintenanceHistoryPage from './pages/MaintenanceHistoryPage';
 import MaintenanceItemRequestsPage from './pages/MaintenanceItemRequestsPage';
 import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
 import PurchaseOrderCreatePage from './pages/PurchaseOrderCreatePage';
@@ -73,6 +77,9 @@ import StockConsumablesInventoryPage from './pages/StockConsumablesInventoryPage
 import MaintenanceStatsPage from './pages/MaintenanceStatsPage';
 import MyMaintenanceStatsPage from './pages/MyMaintenanceStatsPage';
 import AssignmentsPage from './pages/AssignmentsPage';
+import AssetInstanceDetailPage from './pages/AssetInstanceDetailPage';
+import StockItemInstanceDetailPage from './pages/StockItemInstanceDetailPage';
+import ConsumableInstanceDetailPage from './pages/ConsumableInstanceDetailPage';
 import './index.css';
 
 // Protected route wrapper
@@ -127,6 +134,7 @@ const PublicRoute = ({ children }) => {
 function App() {
     return (
         <ThemeProvider>
+        <PowerSaveProvider>
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
@@ -247,6 +255,22 @@ function App() {
                             }
                         />
                         <Route
+                            path="assets/instances/:itemId"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <AssetInstanceDetailPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="assets/instances/:itemId/composition-history"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <CompositionHistoryPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
                             path="assets/brands"
                             element={
                                 <RoleProtectedRoute allowedRoles={['asset_responsible', 'exploitation_chief', 'it_bureau_chief']}>
@@ -314,10 +338,42 @@ function App() {
                             }
                         />
                         <Route
+                            path="stock-items/models/default-composition"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <StockItemModelDefaultCompositionSelectPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/models/:modelId/default-composition"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <StockItemModelDefaultCompositionSelectPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
                             path="stock-items/instances"
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
                                     <StockItemsPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/instances/:itemId"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <StockItemInstanceDetailPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="stock-items/instances/:itemId/composition-history"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <CompositionHistoryPage />
                                 </RoleProtectedRoute>
                             }
                         />
@@ -395,6 +451,22 @@ function App() {
                             }
                         />
                         <Route
+                            path="consumables/instances/:itemId"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <ConsumableInstanceDetailPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="consumables/instances/:itemId/composition-history"
+                            element={
+                                <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
+                                    <CompositionHistoryPage />
+                                </RoleProtectedRoute>
+                            }
+                        />
+                        <Route
                             path="consumables/instances/create"
                             element={
                                 <RoleProtectedRoute allowedRoles={['stock_consumable_responsible', 'exploitation_chief', 'it_bureau_chief']}>
@@ -423,6 +495,7 @@ function App() {
                         <Route path="my-items/assets/:assetId/maintenance-timeline" element={<AssetMaintenanceTimelinePage />} />
                         <Route path="options" element={<OptionsPage />} />
                         <Route path="options/access-history" element={<OptionsAccessHistoryPage />} />
+                        <Route path="options/sessions" element={<OptionsSessionsPage />} />
 
                         <Route
                             path="reports"
@@ -588,10 +661,10 @@ function App() {
                         
 
                         <Route
-                            path="asset-maintenance-history"
+                            path="maintenance-history"
                             element={
                                 <RoleProtectedRoute allowedRoles={['maintenance_chief']}>
-                                    <AssetMaintenanceHistoryPage />
+                                    <MaintenanceHistoryPage />
                                 </RoleProtectedRoute>
                             }
                         />
@@ -752,6 +825,7 @@ function App() {
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
+        </PowerSaveProvider>
         </ThemeProvider>
     );
 }

@@ -3,8 +3,8 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { assetModelService, authService, consumableModelService, stockItemModelService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { Link2 } from 'lucide-react';
-import ModalPortal from '../components/ModalPortal';
 import SearchableSelect from '../components/SearchableSelect';
+import BackButton from '../components/BackButton';
 
 const StockItemModelCompatibilityPage = () => {
     const navigate = useNavigate();
@@ -108,23 +108,7 @@ const StockItemModelCompatibilityPage = () => {
             )}
 
             <div className="card" style={{ padding: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                <button
-                    onClick={goBack}
-                    style={{
-                        padding: 'var(--space-2) var(--space-3)',
-                        border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg-tertiary)',
-                        color: 'var(--color-text)',
-                        borderRadius: 'var(--radius-sm)',
-                        cursor: 'pointer'
-                    }}
-                    title={t('common.back')}
-                    aria-label={t('common.back')}
-                >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
+                <BackButton onClick={goBack} />
             </div>
 
             <div className="card" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>

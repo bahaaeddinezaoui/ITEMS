@@ -1,0 +1,126 @@
+
+============================================================
+[2026-05-05 17:21:18.940248+00:00] AssetViewSet.create called
+request.data keys: ['asset_type', 'asset_model', 'asset_serial_number', 'asset_inventory_number', 'asset_name', 'attribution_order', 'asset_status', 'included_stock_items', 'included_consumables']
+request.data: {
+  "asset_type": "10",
+  "asset_model": "78",
+  "asset_serial_number": "ccc",
+  "asset_inventory_number": "ccc",
+  "asset_name": "ccc",
+  "attribution_order": 59,
+  "asset_status": "not_delivered_to_company",
+  "included_stock_items": [],
+  "included_consumables": []
+}
+validated_data keys: ['asset_model', 'attribution_order', 'asset_serial_number', 'asset_inventory_number', 'asset_name', 'asset_status', 'included_stock_items', 'included_consumables']
+included_stock_items: []
+included_consumables: []
+included_stock_items count: 0
+included_consumables count: 0
+
+[_create_default_composition] asset=ccc asset_model_id=78
+  default_stock_items count: 1
+  [_create_stock_item_default_consumables] stock_item=M1 (included with ccc) (model_id=1), defaults=1
+  default_consumables count: 0
+attribution_order_id=59, asset_model_id=78
+Will call _create_included_items? False
+
+============================================================
+[2026-05-05 18:40:45.716402+00:00] AssetViewSet.create called
+request.data keys: ['asset_name', 'asset_serial_number', 'asset_inventory_number', 'asset_service_tag', 'asset_status', 'asset_purchase_date', 'asset_purchase_price', 'administrative_certificate_id', 'destruction_certificate_id', 'maintenance_step_id', 'asset_model', 'attribution_order_id', 'translations']
+request.data: {
+  "asset_name": "testest",
+  "asset_serial_number": "4785",
+  "asset_inventory_number": "444",
+  "asset_service_tag": "",
+  "asset_status": "not_delivered_to_company",
+  "asset_purchase_date": "",
+  "asset_purchase_price": "",
+  "administrative_certificate_id": "",
+  "destruction_certificate_id": null,
+  "maintenance_step_id": null,
+  "asset_model": 78,
+  "attribution_order_id": null,
+  "translations": {
+    "en": {
+      "asset_name": "testest"
+    }
+  }
+}
+validated_data keys: ['asset_model', 'asset_serial_number', 'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag', 'destruction_certificate_id', 'included_stock_items', 'included_consumables', 'translations']
+included_stock_items: []
+included_consumables: []
+included_stock_items count: 0
+included_consumables count: 0
+SKIPPED composition: attribution_order_id=None, asset_model_id=78
+
+============================================================
+[2026-05-05 18:46:51.637067+00:00] AssetViewSet.create called
+request.data keys: ['asset_name', 'asset_serial_number', 'asset_inventory_number', 'asset_service_tag', 'asset_status', 'asset_purchase_date', 'asset_purchase_price', 'administrative_certificate_id', 'destruction_certificate_id', 'maintenance_step_id', 'asset_model', 'attribution_order', 'translations']
+request.data: {
+  "asset_name": "ccc",
+  "asset_serial_number": "333",
+  "asset_inventory_number": "333",
+  "asset_service_tag": "",
+  "asset_status": "not_delivered_to_company",
+  "asset_purchase_date": "",
+  "asset_purchase_price": "",
+  "administrative_certificate_id": "",
+  "destruction_certificate_id": null,
+  "maintenance_step_id": null,
+  "asset_model": 78,
+  "attribution_order": null,
+  "translations": {
+    "ar": {
+      "asset_name": "ccc"
+    },
+    "en": {
+      "asset_name": "ccc"
+    }
+  }
+}
+validated_data keys: ['asset_model', 'attribution_order', 'asset_serial_number', 'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag', 'destruction_certificate_id', 'included_stock_items', 'included_consumables', 'translations']
+included_stock_items: []
+included_consumables: []
+included_stock_items count: 0
+included_consumables count: 0
+SKIPPED composition: attribution_order_id=None, asset_model_id=78
+
+============================================================
+[2026-05-05 18:56:08.777900+00:00] AssetViewSet.create called
+request.data keys: ['asset_name', 'asset_serial_number', 'asset_inventory_number', 'asset_service_tag', 'asset_status', 'asset_purchase_date', 'asset_purchase_price', 'administrative_certificate_id', 'destruction_certificate_id', 'maintenance_step_id', 'asset_model', 'attribution_order', 'translations']
+request.data: {
+  "asset_name": "fff",
+  "asset_serial_number": "789",
+  "asset_inventory_number": "789",
+  "asset_service_tag": "",
+  "asset_status": "not_delivered_to_company",
+  "asset_purchase_date": "",
+  "asset_purchase_price": "",
+  "administrative_certificate_id": "",
+  "destruction_certificate_id": null,
+  "maintenance_step_id": null,
+  "asset_model": 78,
+  "attribution_order": null,
+  "translations": {
+    "ar": {
+      "asset_name": "\u0628\u0628\u0628"
+    },
+    "en": {
+      "asset_name": "fff"
+    }
+  }
+}
+validated_data keys: ['asset_model', 'attribution_order', 'asset_serial_number', 'asset_inventory_number', 'asset_name', 'asset_status', 'asset_service_tag', 'destruction_certificate_id', 'included_stock_items', 'included_consumables', 'translations']
+included_stock_items: []
+included_consumables: []
+included_stock_items count: 0
+included_consumables count: 0
+
+[_create_default_composition] asset=fff asset_model_id=78
+  default_stock_items count: 1
+  [_create_stock_item_default_consumables] stock_item=M1 (included with fff) (model_id=1), defaults=1
+  default_consumables count: 0
+attribution_order_id=None, asset_model_id=78
+Will call _create_included_items? False

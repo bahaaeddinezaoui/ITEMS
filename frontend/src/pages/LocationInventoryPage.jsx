@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { locationInventoryService, locationService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { MapPin } from 'lucide-react';
+import { MapPin, Search, X } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import i18n from '../i18n';
 import { SkeletonListRows } from '../components/SkeletonCard';
 
@@ -191,65 +192,8 @@ const LocationInventoryPage = () => {
                 <p className="page-subtitle">{t('locationInventory.subtitle')}</p>
             </div>
 
-            <div className="filters-bar">
-                <div className="filter-item" style={{ maxWidth: 520 }}>
-                    <label className="form-label">{t('common.search')}</label>
-                    <input
-                        type="text"
-                        placeholder={t('locationInventory.searchPlaceholder')}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="form-input"
-                    />
-                </div>
-
-                <div className="filter-item" style={{ maxWidth: 240 }}>
-                    <label className="form-label">{t('locationInventory.itemType')}</label>
-                    <select
-                        value={itemTypeFilter}
-                        onChange={(e) => {
-                            setItemTypeFilter(e.target.value);
-                            setStatusFilter('');
-                        }}
-                        className="form-input"
-                    >
-                        <option value="">{t('locationInventory.allItems')}</option>
-                        <option value="asset">{t('locationInventory.assets')}</option>
-                        <option value="stock_item">{t('locationInventory.stockItems')}</option>
-                        <option value="consumable">{t('locationInventory.consumables')}</option>
-                    </select>
-                </div>
-
-                <div className="filter-item" style={{ maxWidth: 260 }}>
-                    <label className="form-label">{t('common.status')}</label>
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        disabled={statusOptions.length === 0}
-                        className="form-input"
-                    >
-                        <option value="">{t('locationInventory.allStatuses')}</option>
-                        {statusOptions.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="filter-item" style={{ maxWidth: 300 }}>
-                    <label className="form-label">{t('locationInventory.location')}</label>
-                    <select
-                        value={locationFilter}
-                        onChange={(e) => setLocationFilter(e.target.value)}
-                        className="form-input"
-                    >
-                        {hasFullAccess ? <option value="">{t('locationInventory.allLocations')}</option> : (locations.length > 1 ? <option value="">{t('locationInventory.allMaintenanceRooms')}</option> : null)}
-                        {locations.map(loc => (
-                            <option key={loc.location_id} value={loc.location_id}>
-                                {getLocalizedLocationName(loc, currentLang)}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+            <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+                {filteredItems.length} {t('locationInventory.items')}
             </div>
 
             {inventoryData && (
@@ -378,6 +322,50 @@ const LocationInventoryPage = () => {
                     )}
                 </div>
             </div>
+
+            <FilterSortFAB hasActiveFilters={!!searchQuery || !!itemTypeFilter || !!statusFilter || !!locationFilter}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('locationInventory.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: searchQuery ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('locationInventory.itemType')}</label>
+                        <select value={itemTypeFilter} onChange={(e) => { setItemTypeFilter(e.target.value); setStatusFilter(''); }} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('locationInventory.allItems')}</option>
+                            <option value="asset">{t('locationInventory.assets')}</option>
+                            <option value="stock_item">{t('locationInventory.stockItems')}</option>
+                            <option value="consumable">{t('locationInventory.consumables')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.status')}</label>
+                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }} disabled={statusOptions.length === 0}>
+                            <option value="">{t('locationInventory.allStatuses')}</option>
+                            {statusOptions.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('locationInventory.location')}</label>
+                        <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            {hasFullAccess ? <option value="">{t('locationInventory.allLocations')}</option> : (locations.length > 1 ? <option value="">{t('locationInventory.allMaintenanceRooms')}</option> : null)}
+                            {locations.map(loc => (
+                                <option key={loc.location_id} value={loc.location_id}>{getLocalizedLocationName(loc, currentLang)}</option>
+                            ))}
+                        </select>
+                    </div>
+                    {(searchQuery || itemTypeFilter || statusFilter || locationFilter) && (
+                        <button onClick={() => { setSearchQuery(''); setItemTypeFilter(''); setStatusFilter(''); setLocationFilter(''); }} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </>
     );
 };

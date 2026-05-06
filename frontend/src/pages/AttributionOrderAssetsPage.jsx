@@ -8,6 +8,7 @@ import {
 } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { Monitor } from 'lucide-react';
+import BackButton from '../components/BackButton';
 
 const AttributionOrderAssetsPage = () => {
     const { orderId } = useParams();
@@ -72,16 +73,7 @@ const AttributionOrderAssetsPage = () => {
                             : t('attributionOrderAssets.subtitle')}
                     </p>
                 </div>
-                <button
-                    className="btn btn-secondary"
-                    onClick={() => navigate(`/dashboard/attribution-orders?orderId=${orderId}`)}
-                    title={t('attributionOrderAssets.backToOrder')}
-                    aria-label={t('attributionOrderAssets.backToOrder')}
-                >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
+                <BackButton onClick={() => navigate(`/dashboard/attribution-orders?orderId=${orderId}`)} label={t('attributionOrderAssets.backToOrder')} />
             </div>
 
             {error && <div className="error-message">{error}</div>}

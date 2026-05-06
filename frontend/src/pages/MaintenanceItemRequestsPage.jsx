@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, Search, X } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 
 import { maintenanceStepItemRequestService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -217,103 +218,13 @@ const MaintenanceItemRequestsPage = () => {
 
             {error && <div className="error-message">{error}</div>}
 
-            <div className="card" style={{ marginBottom: 'var(--space-4)' }}>
-                <div className="card-body" style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                    <div className="form-group" style={{ marginBottom: 0, minWidth: 260, flex: '1 1 260px' }}>
-                        <label className="form-label" htmlFor="mir-search">{t('common.search', 'Search')}</label>
-                        <input
-                            id="mir-search"
-                            className="form-input"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder={t('maintenanceItemRequests.searchPlaceholder', 'Search by asset, maintenance, status, note...')}
-                        />
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 0, minWidth: 240 }}>
-                        <label className="form-label" htmlFor="mir-status">{t('common.status', 'Status')}</label>
-                        <select id="mir-status" className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                            <option value="">{t('common.all', 'All')}</option>
-                            {statusOptions.map((s) => (
-                                <option key={s} value={s}>
-                                    {translateEnum(t, s, STATUS_KEY_MAP)}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 0, minWidth: 240 }}>
-                        <label className="form-label" htmlFor="mir-type">{t('maintenanceItemRequests.type', 'Type')}</label>
-                        <select id="mir-type" className="form-input" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                            <option value="">{t('common.all', 'All')}</option>
-                            {typeOptions.map((s) => (
-                                <option key={s} value={s}>
-                                    {translateEnum(t, s, REQUEST_TYPE_KEY_MAP)}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 0, minWidth: 240 }}>
-                        <label className="form-label" htmlFor="mir-maint-status">{t('maintenanceItemRequests.maintenanceStatus', 'Maintenance status')}</label>
-                        <select id="mir-maint-status" className="form-input" value={maintenanceStatusFilter} onChange={(e) => setMaintenanceStatusFilter(e.target.value)}>
-                            <option value="">{t('common.all', 'All')}</option>
-                            {maintenanceStatusOptions.map((s) => (
-                                <option key={s} value={s}>
-                                    {translateEnum(t, s, MAINTENANCE_STATUS_KEY_MAP)}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 0, minWidth: 240 }}>
-                        <label className="form-label" htmlFor="mir-step-status">{t('maintenanceItemRequests.stepStatus', 'Step status')}</label>
-                        <select id="mir-step-status" className="form-input" value={maintenanceStepStatusFilter} onChange={(e) => setMaintenanceStepStatusFilter(e.target.value)}>
-                            <option value="">{t('common.all', 'All')}</option>
-                            {stepStatusOptions.map(([code, label]) => (
-                                <option key={code} value={code}>
-                                    {label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 0, minWidth: 220 }}>
-                        <label className="form-label" htmlFor="mir-sort-key">{t('common.sortBy', 'Sort by')}</label>
-                        <select id="mir-sort-key" className="form-input" value={sortKey} onChange={(e) => setSortKey(e.target.value)}>
-                            <option value="created_at">{t('maintenanceItemRequests.sortCreatedAt', 'Created date')}</option>
-                            <option value="status">{t('maintenanceItemRequests.sortStatus', 'Status')}</option>
-                            <option value="type">{t('maintenanceItemRequests.sortType', 'Type')}</option>
-                            <option value="asset">{t('maintenanceItemRequests.sortAsset', 'Asset')}</option>
-                            <option value="maintenance">{t('maintenanceItemRequests.sortMaintenance', 'Maintenance')}</option>
-                        </select>
-                    </div>
-
-                    <div className="form-group" style={{ marginBottom: 0, minWidth: 140 }}>
-                        <label className="form-label" htmlFor="mir-sort-dir">{t('common.direction', 'Direction')}</label>
-                        <select id="mir-sort-dir" className="form-input" value={sortDir} onChange={(e) => setSortDir(e.target.value)}>
-                            <option value="desc">{t('common.desc', 'Desc')}</option>
-                            <option value="asc">{t('common.asc', 'Asc')}</option>
-                        </select>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-                        <button
-                            className="btn btn-secondary"
-                            onClick={() => {
-                                setSearchTerm('');
-                                setStatusFilter('');
-                                setTypeFilter('');
-                                setMaintenanceStatusFilter('');
-                                setMaintenanceStepStatusFilter('');
-                                setSortKey('created_at');
-                                setSortDir('desc');
-                            }}
-                        >
-                            {t('common.reset', 'Reset')}
-                        </button>
-                    </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap', marginBottom: 'var(--space-4)' }}>
+                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)' }}>
+                    {t('maintenanceItemRequests.count', '{{count}} item(s)', { count: filtered.length })}
                 </div>
+                <button className="btn btn-secondary" onClick={fetchData}>
+                    {t('common.refresh', 'Refresh')}
+                </button>
             </div>
 
             <div className="card">
@@ -398,6 +309,74 @@ const MaintenanceItemRequestsPage = () => {
                     )}
                 </div>
             </div>
+            <FilterSortFAB hasActiveFilters={!!searchTerm || !!statusFilter || !!typeFilter || !!maintenanceStatusFilter || !!maintenanceStepStatusFilter}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={t('maintenanceItemRequests.searchPlaceholder', 'Search by asset, maintenance, status, note...')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: searchTerm ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchTerm && (
+                            <button onClick={() => setSearchTerm('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.status', 'Status')}</label>
+                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all', 'All')}</option>
+                            {statusOptions.map((s) => (
+                                <option key={s} value={s}>{translateEnum(t, s, STATUS_KEY_MAP)}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('maintenanceItemRequests.type', 'Type')}</label>
+                        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all', 'All')}</option>
+                            {typeOptions.map((s) => (
+                                <option key={s} value={s}>{translateEnum(t, s, REQUEST_TYPE_KEY_MAP)}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('maintenanceItemRequests.maintenanceStatus', 'Maintenance status')}</label>
+                        <select value={maintenanceStatusFilter} onChange={(e) => setMaintenanceStatusFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all', 'All')}</option>
+                            {maintenanceStatusOptions.map((s) => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('maintenanceItemRequests.stepStatus', 'Step status')}</label>
+                        <select value={maintenanceStepStatusFilter} onChange={(e) => setMaintenanceStepStatusFilter(e.target.value)} className="form-input" style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('common.all', 'All')}</option>
+                            {stepStatusOptions.map(([code, label]) => (
+                                <option key={code} value={code}>{label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy', 'Sort by')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortKey} onChange={(e) => setSortKey(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="created_at">{t('maintenanceItemRequests.sortCreatedAt', 'Created date')}</option>
+                                <option value="status">{t('maintenanceItemRequests.sortStatus', 'Status')}</option>
+                                <option value="type">{t('maintenanceItemRequests.sortType', 'Type')}</option>
+                                <option value="asset">{t('maintenanceItemRequests.sortAsset', 'Asset')}</option>
+                                <option value="maintenance">{t('maintenanceItemRequests.sortMaintenance', 'Maintenance')}</option>
+                            </select>
+                            <select className="form-input" value={sortDir} onChange={(e) => setSortDir(e.target.value)} style={{ height: '40px', width: '100px' }}>
+                                <option value="asc">↑ {t('common.asc', 'Asc')}</option>
+                                <option value="desc">↓ {t('common.desc', 'Desc')}</option>
+                            </select>
+                        </div>
+                    </div>
+                    {(searchTerm || statusFilter || typeFilter || maintenanceStatusFilter || maintenanceStepStatusFilter) && (
+                        <button onClick={() => { setSearchTerm(''); setStatusFilter(''); setTypeFilter(''); setMaintenanceStatusFilter(''); setMaintenanceStepStatusFilter(''); setSortKey('created_at'); setSortDir('desc'); }} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: 500, whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('common.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </>
     );
 };

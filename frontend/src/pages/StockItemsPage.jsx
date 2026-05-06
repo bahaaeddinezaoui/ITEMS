@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Package, Hash, UserPlus } from 'lucide-react';
+import { Search, Plus, Box, Pencil, X, XCircle, Sliders, Tag, Scissors, Package, Hash, UserPlus, Clock, ShoppingCart, AlertTriangle, Droplets, ChevronUp, ChevronDown } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
+import BackButton from '../components/BackButton';
 import TranslatableInput from '../components/TranslatableInput';
 import {
     authService,
@@ -75,6 +77,8 @@ const StockItemsPage = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [sortField, setSortField] = useState('stock_item_name');
+    const [sortDirection, setSortDirection] = useState('asc');
     const [showSplitModal, setShowSplitModal] = useState(false);
     const [splittingStockItem, setSplittingStockItem] = useState(null);
     const [splitAttributeOptions, setSplitAttributeOptions] = useState([]);
@@ -120,6 +124,7 @@ const StockItemsPage = () => {
     const [showTypeForm, setShowTypeForm] = useState(false);
     const [showModelForm, setShowModelForm] = useState(false);
     const [showStockItemForm, setShowStockItemForm] = useState(false);
+    const [modelDefaultConsumables, setModelDefaultConsumables] = useState([]);
     
     // Selection states
     const [selectedStockItemType, setSelectedStockItemType] = useState(null);
@@ -139,14 +144,12 @@ const StockItemsPage = () => {
         discontinued_year: '',
         is_active: true,
         notes: '',
-        warranty_expiry_in_months: '',
     });
     const [formTranslations, setFormTranslations] = useState({});
     const [stockItemFormData, setStockItemFormData] = useState({
         stock_item_name: '',
         stock_item_inventory_number: '',
         stock_item_status: 'in_stock',
-        stock_item_name_in_administrative_certificate: '',
         destruction_certificate_id: '',
         maintenance_step_id: null
     });
@@ -183,7 +186,6 @@ const StockItemsPage = () => {
             stock_item_name: '',
             stock_item_inventory_number: '',
             stock_item_status: 'in_stock',
-            stock_item_name_in_administrative_certificate: '',
             destruction_certificate_id: 0,
             maintenance_step_id: null
         });
@@ -280,10 +282,18 @@ const StockItemsPage = () => {
     useEffect(() => {
         if (selectedStockItemModel) {
             fetchStockItems(selectedStockItemModel.stock_item_model_id);
+            // Fetch default consumables for awareness message
+            stockItemModelService.getDefaultConsumables(selectedStockItemModel.stock_item_model_id)
+                .then(data => {
+                    const items = Array.isArray(data) ? data : (data?.results || []);
+                    setModelDefaultConsumables(items);
+                })
+                .catch(() => setModelDefaultConsumables([]));
         } else {
             setStockItems([]);
             setSelectedStockItem(null);
             setStockItemAttributes([]);
+            setModelDefaultConsumables([]);
         }
     }, [selectedStockItemModel]);
 
@@ -467,7 +477,6 @@ const StockItemsPage = () => {
                 stock_item_type: selectedStockItemType.stock_item_type_id,
                 release_year: modelFormData.release_year ? Number(modelFormData.release_year) : null,
                 discontinued_year: modelFormData.discontinued_year ? Number(modelFormData.discontinued_year) : null,
-                warranty_expiry_in_months: modelFormData.warranty_expiry_in_months ? Number(modelFormData.warranty_expiry_in_months) : null,
             };
             await stockItemModelService.create(payload);
             setModelFormData({
@@ -479,7 +488,6 @@ const StockItemsPage = () => {
                 discontinued_year: '',
                 is_active: true,
                 notes: '',
-                warranty_expiry_in_months: '',
             });
             setShowModelForm(false);
             showSuccess(t('stockItems.createModelSuccess', 'Stock item model created successfully'));
@@ -536,7 +544,6 @@ const StockItemsPage = () => {
                 stock_item_name: '',
                 stock_item_inventory_number: '',
                 stock_item_status: 'in_stock',
-                stock_item_name_in_administrative_certificate: '',
                 destruction_certificate_id: '',
                 maintenance_step_id: null
             });
@@ -561,7 +568,6 @@ const StockItemsPage = () => {
             stock_item_name: item.stock_item_name || '',
             stock_item_inventory_number: item.stock_item_inventory_number || '',
             stock_item_status: item.stock_item_status || 'active',
-            stock_item_name_in_administrative_certificate: item.stock_item_name_in_administrative_certificate || '',
             destruction_certificate_id: item.destruction_certificate_id ?? '',
             maintenance_step_id: item.maintenance_step_id || null
         });
@@ -905,7 +911,7 @@ const StockItemsPage = () => {
     };
 
     const filteredStockItems = useMemo(() => {
-        let result = stockItems;
+        let result = [...stockItems];
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             result = result.filter(item =>
@@ -916,8 +922,19 @@ const StockItemsPage = () => {
         if (statusFilter) {
             result = result.filter(item => item.stock_item_status === statusFilter);
         }
+        result.sort((a, b) => {
+            let aVal, bVal;
+            switch (sortField) {
+                case 'stock_item_name': aVal = (a.stock_item_name || '').toLowerCase(); bVal = (b.stock_item_name || '').toLowerCase(); break;
+                case 'stock_item_inventory_number': aVal = (a.stock_item_inventory_number || '').toLowerCase(); bVal = (b.stock_item_inventory_number || '').toLowerCase(); break;
+                case 'stock_item_status': aVal = a.stock_item_status || ''; bVal = b.stock_item_status || ''; break;
+                default: aVal = (a.stock_item_name || '').toLowerCase(); bVal = (b.stock_item_name || '').toLowerCase();
+            }
+            const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+            return sortDirection === 'asc' ? cmp : -cmp;
+        });
         return result;
-    }, [stockItems, searchTerm, statusFilter]);
+    }, [stockItems, searchTerm, statusFilter, sortField, sortDirection]);
 
     const formatStatus = (value, item) => {
         if (!value) return '';
@@ -938,15 +955,13 @@ const StockItemsPage = () => {
                 {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-6)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                        <button className="btn btn-secondary" onClick={() => {
+                        <BackButton onClick={() => {
                             if (typeIdParam) {
                                 navigate(`/dashboard/stock-items/models?typeId=${typeIdParam}`);
                             } else {
                                 navigate('/dashboard/stock-items/types');
                             }
-                        }} style={{ padding: 'var(--space-2) var(--space-3)' }}>
-                            <ArrowLeft size={18} />
-                        </button>
+                        }} />
                         <div>
                             <h1 className="page-title" style={{ fontSize: 'var(--font-size-3xl)', marginBottom: 'var(--space-1)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Package size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('stockItems.title')}</h1>
                             <p className="page-subtitle" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -962,7 +977,6 @@ const StockItemsPage = () => {
                             stock_item_name: '',
                             stock_item_inventory_number: '',
                             stock_item_status: 'not_delivered_to_company',
-                            stock_item_name_in_administrative_certificate: '',
                             destruction_certificate_id: 0,
                             maintenance_step_id: null
                         });
@@ -1022,6 +1036,22 @@ const StockItemsPage = () => {
                             <form onSubmit={handleStockItemSubmit}>
                                 <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
                                     <ModalFeedback type={feedbackType} message={feedbackMessage} onClose={clearFeedback} />
+                                    {!editingStockItem && modelDefaultConsumables.length > 0 && (
+                                        <div style={{
+                                            display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
+                                            fontSize: 'var(--font-size-xs)', color: 'var(--color-text-secondary)',
+                                            background: 'rgba(245, 158, 11, 0.06)', border: '1px solid rgba(245, 158, 11, 0.15)',
+                                            borderRadius: 'var(--radius-md)', padding: 'var(--space-2) var(--space-3)',
+                                        }}>
+                                            <Droplets size={12} style={{ color: '#f59e0b', flexShrink: 0 }} />
+                                            <span>
+                                                {t('stockItems.modelHasDefaultConsumables', {
+                                                    count: modelDefaultConsumables.length,
+                                                    names: modelDefaultConsumables.map(dc => `${dc.consumable_model_name || '?'} (×${dc.quantity || 1})`).join(', ')
+                                                })}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="form-group">
                                         <TranslatableInput
                                             label={t('stockItems.name')}
@@ -1043,7 +1073,7 @@ const StockItemsPage = () => {
                                                 <option value="not_delivered_to_company">{t('stockItems.statusNotDelivered')}</option>
                                                 <option value="in_stock">{t('stockItems.statusInStock')}</option>
                                                 <option value="assigned">{t('stockItems.statusAssigned')}</option>
-                                                <option value="maintenance">{t('stockItems.statusMaintenance')}</option>
+                                                <option value="under_internal_maintenance">{t('stockItems.statusUnderInternalMaintenance')}</option>
                                                 <option value="failed">{t('stockItems.statusFailed')}</option>
                                                 <option value="lost">{t('stockItems.statusLost')}</option>
                                                 <option value="stolen">{t('stockItems.statusStolen')}</option>
@@ -1076,27 +1106,6 @@ const StockItemsPage = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
                     {/* Stock Items Panel */}
                     <div className="card" style={{ overflow: 'hidden' }}>
-                        {/* Toolbar */}
-                        <div style={{ padding: 'var(--space-4)', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-                            <div style={{ position: 'relative', flex: '0 1 320px', minWidth: '180px' }}>
-                                <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
-                                <input type="text" placeholder={t('stockItems.searchPlaceholder', 'Search stock items...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)' }} />
-                            </div>
-                            <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '44px', minWidth: '130px' }}>
-                                <option value="">{t('stockItems.allStatuses', 'All Statuses')}</option>
-                                <option value="in_stock">{t('stockItems.statusInStock')}</option>
-                                <option value="assigned">{t('stockItems.statusAssigned')}</option>
-                                <option value="maintenance">{t('stockItems.statusMaintenance')}</option>
-                                <option value="failed">{t('stockItems.statusFailed')}</option>
-                                <option value="not_delivered_to_company">{t('stockItems.statusNotDelivered')}</option>
-                                <option value="lost">{t('stockItems.statusLost')}</option>
-                                <option value="destroyed">{t('stockItems.statusDestroyed')}</option>
-                            </select>
-                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)', whiteSpace: 'nowrap', fontWeight: '600' }}>
-                                {filteredStockItems.length}
-                            </span>
-                        </div>
-
                         {/* Stock Item List */}
                         <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 340px)' }}>
                             {loading ? (
@@ -1123,7 +1132,7 @@ const StockItemsPage = () => {
                                             cursor: 'pointer',
                                             transition: 'background 0.15s ease'
                                         }}
-                                        onClick={() => openStockItemDetailsModal(item)}
+                                        onClick={() => navigate(`/dashboard/stock-items/instances/${item.stock_item_id}?typeId=${typeIdParam || ''}&modelId=${modelIdParam || ''}`)}
                                         onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }}
                                         onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                                     >
@@ -1162,7 +1171,7 @@ const StockItemsPage = () => {
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', flexShrink: 0 }}>
-                                            <button onClick={(e) => { e.stopPropagation(); openStockItemDetailsModal(item); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItems.attributes')}>
+                                            <button onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/stock-items/instances/${item.stock_item_id}?typeId=${typeIdParam || ''}&modelId=${modelIdParam || ''}`); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('stockItems.attributes')}>
                                                 <Sliders size={14} />
                                             </button>
                                             <button onClick={(e) => { e.stopPropagation(); handleEditStockItem(item); }} className="btn btn-secondary" style={{ padding: 'var(--space-1)', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={t('common.edit')}>
@@ -1345,6 +1354,18 @@ const StockItemsPage = () => {
                                             );
                                         })
                                     )}
+                                </div>
+
+                                {/* Composition History Link */}
+                                <div style={{ marginTop: 'var(--space-4)' }}>
+                                    <button
+                                        onClick={() => navigate(`/dashboard/stock-items/instances/${selectedStockItem.stock_item_id}/composition-history`)}
+                                        className="btn btn-secondary"
+                                        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2)' }}
+                                    >
+                                        <Clock size={16} />
+                                        {t('stockItems.compositionHistory')}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1547,6 +1568,39 @@ const StockItemsPage = () => {
                                         <label className="form-label">{t('stockItems.startDateAuto')}</label>
                                         <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required readOnly className="form-input" />
                                     </div>
+                                    {/* Consumable composition preview */}
+                                    {(() => {
+                                        const cComp = assigningStockItem.consumable_composition || [];
+                                        const hasComp = cComp.length > 0;
+                                        return (
+                                            <div style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-md, 8px)', border: '1px solid var(--color-border)' }}>
+                                                {hasComp ? (
+                                                    <>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                            <AlertTriangle size={14} style={{ color: 'var(--color-warning)' }} />
+                                                            <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{t('stockItems.cascadeAssignNotice', 'The following consumables will also be assigned:')}</span>
+                                                        </div>
+                                                        <div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
+                                                                <ShoppingCart size={12} style={{ color: 'var(--color-warning)' }} />
+                                                                <span style={{ fontWeight: 500, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{t('stockItems.consumables', 'Consumables')} ({cComp.length})</span>
+                                                            </div>
+                                                            <ul style={{ margin: 0, paddingLeft: 'var(--space-5)', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                                                                {cComp.map(c => (
+                                                                    <li key={c.consumable_id}>{c.consumable_name || `Consumable ${c.consumable_id}`}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                        <ShoppingCart size={14} style={{ color: 'var(--color-text-muted)' }} />
+                                                        <span style={{ fontWeight: 500, fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{t('stockItems.noConsumablesInUse', 'No consumables are currently in use in this stock item.')}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                                 <div className="am-modal-footer">
                                     <button type="button" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }} className="am-btn-cancel">{t('stockItems.cancel')}</button>
@@ -1812,16 +1866,10 @@ const StockItemsPage = () => {
                                             <input type="text" name="model_code" value={modelFormData.model_code} onChange={handleModelInputChange} required style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
                                         </div>
                                     </div>
-                                    {/* Year & Warranty */}
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>{t('stockItems.releaseYear')}</label>
-                                            <input type="number" name="release_year" value={modelFormData.release_year} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
-                                        </div>
-                                        <div>
-                                            <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>{t('stockItems.warrantyMonths')}</label>
-                                            <input type="number" name="warranty_expiry_in_months" value={modelFormData.warranty_expiry_in_months} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
-                                        </div>
+                                    {/* Year */}
+                                    <div style={{ marginBottom: 'var(--space-4)' }}>
+                                        <label style={{ display: 'block', marginBottom: 'var(--space-2)', fontWeight: '500' }}>{t('stockItems.releaseYear')}</label>
+                                        <input type="number" name="release_year" value={modelFormData.release_year} onChange={handleModelInputChange} style={{ width: '100%', padding: 'var(--space-2)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }} />
                                     </div>
                                     {/* Notes */}
                                     <div style={{ marginBottom: 'var(--space-4)' }}>
@@ -1866,7 +1914,6 @@ const StockItemsPage = () => {
                                             stock_item_name: '',
                                             stock_item_inventory_number: '',
                                             stock_item_status: 'not_delivered_to_company',
-                                            stock_item_name_in_administrative_certificate: '',
                                             destruction_certificate_id: 0,
                                             maintenance_step_id: null
                                         });
@@ -1908,8 +1955,6 @@ const StockItemsPage = () => {
                                                     <select name="stock_item_status" value={stockItemFormData.stock_item_status} onChange={handleStockItemInputChange} style={{ width: '100%', padding: 'var(--space-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}>
                                                         <option value="not_delivered_to_company">{t('stockItems.statusNotDelivered')}</option>
                                                         <option value="in_stock">{t('stockItems.statusInStock')}</option>
-                                                        <option value="in_use">{t('stockItems.statusInUse')}</option>
-                                                        <option value="reserved">{t('stockItems.statusReserved')}</option>
                                                         <option value="failed">{t('stockItems.statusFailed')}</option>
                                                         <option value="lost">{t('stockItems.statusLost')}</option>
                                                         <option value="stolen">{t('stockItems.statusStolen')}</option>
@@ -2549,6 +2594,39 @@ const StockItemsPage = () => {
                                     <label className="form-label">{t('stockItems.startDateAuto')}</label>
                                     <input type="datetime-local" name="start_datetime" value={assignFormData.start_datetime} onChange={handleAssignInputChange} required readOnly className="form-input" />
                                 </div>
+                                {/* Consumable composition preview */}
+                                {(() => {
+                                    const cComp = assigningStockItem.consumable_composition || [];
+                                    const hasComp = cComp.length > 0;
+                                    return (
+                                        <div style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-md, 8px)', border: '1px solid var(--color-border)' }}>
+                                            {hasComp ? (
+                                                <>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+                                                        <AlertTriangle size={14} style={{ color: 'var(--color-warning)' }} />
+                                                        <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{t('stockItems.cascadeAssignNotice', 'The following consumables will also be assigned:')}</span>
+                                                    </div>
+                                                    <div>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', marginBottom: 'var(--space-1)' }}>
+                                                            <ShoppingCart size={12} style={{ color: 'var(--color-warning)' }} />
+                                                            <span style={{ fontWeight: 500, fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>{t('stockItems.consumables', 'Consumables')} ({cComp.length})</span>
+                                                        </div>
+                                                        <ul style={{ margin: 0, paddingLeft: 'var(--space-5)', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                                                            {cComp.map(c => (
+                                                                <li key={c.consumable_id}>{c.consumable_name || `Consumable ${c.consumable_id}`}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                                                    <ShoppingCart size={14} style={{ color: 'var(--color-text-muted)' }} />
+                                                    <span style={{ fontWeight: 500, fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{t('stockItems.noConsumablesInUse', 'No consumables are currently in use in this stock item.')}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
                             </div>
                             <div className="am-modal-footer">
                                 <button type="button" onClick={() => { setShowAssignForm(false); setAssigningStockItem(null); }} className="am-btn-cancel">{t('stockItems.cancel')}</button>
@@ -2609,6 +2687,44 @@ const StockItemsPage = () => {
                     </div>
                 </div>
             )}
+            <FilterSortFAB hasActiveFilters={!!searchTerm || !!statusFilter || sortField !== 'stock_item_name' || sortDirection !== 'asc'}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)' }} />
+                        <input type="text" placeholder={t('stockItems.searchPlaceholder', 'Search stock items...')} className="form-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ paddingLeft: 'var(--space-10)', height: '40px', background: 'var(--color-bg-card)', width: '100%' }} />
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('stockItems.allStatuses', 'All Statuses')}</label>
+                        <select className="form-input" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ height: '40px', width: '100%' }}>
+                            <option value="">{t('stockItems.allStatuses', 'All Statuses')}</option>
+                            <option value="in_stock">{t('stockItems.statusInStock')}</option>
+                            <option value="assigned">{t('stockItems.statusAssigned')}</option>
+                            <option value="under_internal_maintenance">{t('stockItems.statusUnderInternalMaintenance')}</option>
+                            <option value="sent_to_external_maintenance">{t('stockItems.statusSentToExternalMaintenance')}</option>
+                            <option value="received_by_maintenance_provider">{t('stockItems.statusReceivedByMaintenanceProvider')}</option>
+                            <option value="sent_to_company_after_external_maintenance">{t('stockItems.statusSentToCompanyAfterExternalMaintenance')}</option>
+                            <option value="received_by_company_after_external_maintenance">{t('stockItems.statusReceivedByCompanyAfterExternalMaintenance')}</option>
+                            <option value="failed">{t('stockItems.statusFailed')}</option>
+                            <option value="not_delivered_to_company">{t('stockItems.statusNotDelivered')}</option>
+                            <option value="lost">{t('stockItems.statusLost')}</option>
+                            <option value="destroyed">{t('stockItems.statusDestroyed')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy', 'Sort by')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="stock_item_name">{t('stockItems.sortByName', 'Name')}</option>
+                                <option value="stock_item_inventory_number">{t('stockItems.sortByInventoryNumber', 'Inventory Number')}</option>
+                                <option value="stock_item_status">{t('stockItems.sortByStatus', 'Status')}</option>
+                            </select>
+                            <button className="btn btn-secondary" onClick={() => setSortDirection(d => d === 'asc' ? 'desc' : 'asc')} style={{ padding: 'var(--space-2)', height: '40px', width: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title={sortDirection === 'asc' ? t('common.ascending', 'Ascending') : t('common.descending', 'Descending')}>
+                                {sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

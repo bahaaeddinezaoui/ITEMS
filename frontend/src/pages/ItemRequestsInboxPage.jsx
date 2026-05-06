@@ -8,7 +8,7 @@ import {
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import { Inbox } from 'lucide-react';
+import { Inbox, CheckCircle, XCircle, Shuffle, Users } from 'lucide-react';
 import { SkeletonCardList } from '../components/SkeletonCard';
 
 const ItemRequestsInboxPage = () => {
@@ -308,10 +308,29 @@ const ItemRequestsInboxPage = () => {
                                 const id = req.maintenance_step_item_request_id;
                                 const form = fulfillFormsById[id] || {};
 
+                                const requestedModelName =
+                                    req.request_type === 'stock_item'
+                                        ? req.requested_stock_item_model_name
+                                        : req.requested_consumable_model_name;
+
                                 const requestedModelId =
                                     req.request_type === 'stock_item'
                                         ? req.requested_stock_item_model
                                         : req.requested_consumable_model;
+
+                                const typeLabel = req.request_type === 'stock_item'
+                                    ? t('itemRequestsInbox.typeStockItem')
+                                    : req.request_type === 'consumable'
+                                        ? t('itemRequestsInbox.typeConsumable')
+                                        : req.request_type;
+
+                                const statusLabel = req.status?.toLowerCase() === 'pending'
+                                    ? t('itemRequestsInbox.statusPending')
+                                    : req.status?.toLowerCase() === 'fulfilled'
+                                        ? t('itemRequestsInbox.statusFulfilled')
+                                        : req.status?.toLowerCase() === 'rejected'
+                                            ? t('itemRequestsInbox.statusRejected')
+                                            : req.status;
 
                                 return (
                                     <div
@@ -319,19 +338,28 @@ const ItemRequestsInboxPage = () => {
                                         className="card"
                                         style={{ border: '1px solid var(--color-border)', background: 'var(--color-bg-tertiary)' }}
                                     >
-                                        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div>
+                                        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div style={{ flex: 1 }}>
                                                 <div className="card-title" style={{ marginBottom: 4 }}>
-                                                    {t('itemRequestsInbox.request')} #{id}
+                                                    {requestedModelName || t('itemRequestsInbox.unknownModel')}
                                                 </div>
-                                                <div style={{ fontSize: 12, opacity: 0.85 }}>
-                                                    {t('itemRequestsInbox.type')}: <b>{req.request_type}</b> | {t('itemRequestsInbox.step')}: <b>{req.maintenance_step}</b> | {t('itemRequestsInbox.requestedModelId')}{' '}
-                                                    <b>{requestedModelId || '-'}</b>
+                                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2) var(--space-4)', fontSize: 12, opacity: 0.85, marginBottom: 2 }}>
+                                                    <span>{typeLabel}</span>
+                                                    {req.requested_model_brand_name && <span>{req.requested_model_brand_name}</span>}
+                                                    {req.requested_model_type_label && <span>{req.requested_model_type_label}</span>}
+                                                    {req.requested_model_code && <span style={{ opacity: 0.7 }}>{req.requested_model_code}</span>}
                                                 </div>
                                             </div>
-                                            <div style={{ fontSize: 12, opacity: 0.85 }}>
-                                                {t('common.status')}: <b>{req.status}</b>
+                                            <div style={{ fontSize: 12, opacity: 0.85, textAlign: 'right' }}>
+                                                <b>{statusLabel}</b>
                                             </div>
+                                        </div>
+
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2) var(--space-4)', fontSize: 12, opacity: 0.85, padding: '0 var(--space-4) var(--space-3)', borderBottom: '1px solid var(--color-border)' }}>
+                                            <span><b>{req.asset_name || '-'}</b>{req.asset_inventory_number ? ` (${req.asset_inventory_number})` : ''}{req.asset_serial_number ? ` · ${req.asset_serial_number}` : ''}</span>
+                                            {req.asset_brand_name && <span>{req.asset_brand_name} {req.asset_model_name}</span>}
+                                            {req.asset_type_label && <span>{req.asset_type_label}</span>}
+                                            <span style={{ opacity: 0.7 }}>#{req.maintenance_id || '-'} · {t('itemRequestsInbox.step')} {req.maintenance_step}</span>
                                         </div>
 
                                         <div className="card-body">
@@ -439,33 +467,40 @@ const ItemRequestsInboxPage = () => {
                                                 </div>
                                             </div>
 
-                                            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+                                            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', flexWrap: 'wrap' }}>
                                                 <button
                                                     className="btn btn-primary"
+                                                    style={{ width: 'auto', gap: 'var(--space-2)' }}
                                                     disabled={submittingId === id}
                                                     onClick={() => handleFulfill(req)}
                                                 >
+                                                    <CheckCircle size={16} />
                                                     {submittingId === id ? t('itemRequestsInbox.fulfilling') : t('itemRequestsInbox.fulfill')}
                                                 </button>
 
                                                 <button
-                                                    className="btn btn-secondary"
+                                                    className="btn btn-danger"
+                                                    style={{ width: 'auto', gap: 'var(--space-2)' }}
                                                     disabled={submittingId === id}
                                                     onClick={() => handleReject(req)}
                                                 >
+                                                    <XCircle size={16} />
                                                     {submittingId === id ? t('itemRequestsInbox.rejecting') : t('common.reject')}
                                                 </button>
 
                                                 <button
                                                     className="btn btn-secondary"
+                                                    style={{ width: 'auto', gap: 'var(--space-2)' }}
                                                     disabled={submittingId === id}
                                                     onClick={() => handleSelectRandom(req)}
                                                 >
+                                                    <Shuffle size={16} />
                                                     {t('itemRequestsInbox.selectRandomly')}
                                                 </button>
 
                                                 <button
-                                                    className="btn btn-secondary"
+                                                    className="btn btn-ghost"
+                                                    style={{ width: 'auto', gap: 'var(--space-2)' }}
                                                     disabled={submittingId === id}
                                                     onClick={async () => {
                                                         const candidates = await loadCandidates(req);
@@ -481,6 +516,7 @@ const ItemRequestsInboxPage = () => {
                                                         window.alert(list || t('itemRequestsInbox.noCandidates'));
                                                     }}
                                                 >
+                                                    <Users size={16} />
                                                     {t('itemRequestsInbox.showCandidates')}
                                                 </button>
                                             </div>

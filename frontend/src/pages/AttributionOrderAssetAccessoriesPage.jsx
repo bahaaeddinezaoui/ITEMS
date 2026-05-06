@@ -9,7 +9,8 @@ import {
     attributionOrderAssetConsumableAccessoryService,
 } from '../services/api';
 import { useTranslation } from 'react-i18next';
-import { Wrench } from 'lucide-react';
+import BackButton from '../components/BackButton';
+import { Wrench, Package, Droplets, Info, AlertCircle, Trash2, Plus } from 'lucide-react';
 
 const AttributionOrderAssetAccessoriesPage = () => {
     const navigate = useNavigate();
@@ -168,69 +169,77 @@ const AttributionOrderAssetAccessoriesPage = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-            {/* Header Card */}
+            {/* Header */}
             <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                    <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Wrench size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetAccessories.title')}</h1>
-                    <p className="page-subtitle">
-                        {t('assetAccessories.order')} #{orderIdNum} • {asset?.asset_name ? asset.asset_name : `${t('assetAccessories.asset')} #${assetIdNum}`}
-                    </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                    <BackButton onClick={() => navigate(`/dashboard/attribution-orders?orderId=${orderIdNum}`)} />
+                    <div>
+                        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><Wrench size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('assetAccessories.title')}</h1>
+                        <p className="page-subtitle">
+                            {t('assetAccessories.order')} #{orderIdNum} • {asset?.asset_name ? asset.asset_name : `${t('assetAccessories.asset')} #${assetIdNum}`}
+                        </p>
+                    </div>
                 </div>
-                <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => navigate(`/dashboard/attribution-orders?orderId=${orderIdNum}`)}
-                    title={t('common.back')}
-                    aria-label={t('common.back')}
-                >
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                </button>
             </div>
 
             {isAssetCreated && (
-                <div className="card" style={{ padding: 'var(--space-6)', borderLeft: '4px solid var(--color-info)', backgroundColor: 'var(--color-bg-alt)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
-                        <div style={{ color: 'var(--color-info)' }}>
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <line x1="12" y1="16" x2="12" y2="12" />
-                                <line x1="12" y1="8" x2="12.01" y2="8" />
-                            </svg>
-                        </div>
-                        <div>
-                            <div style={{ fontWeight: '600' }}>{t('assetAccessories.assetCreated')}</div>
-                            <div style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-sm)' }}>
-                                {t('assetAccessories.assetCreatedMessage')}
-                            </div>
-                        </div>
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                    background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.25)',
+                    borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                    color: 'var(--color-info)', fontSize: 'var(--font-size-sm)',
+                }}>
+                    <Info size={18} style={{ flexShrink: 0 }} />
+                    <div>
+                        <div style={{ fontWeight: '600', color: 'var(--color-text-primary)' }}>{t('assetAccessories.assetCreated')}</div>
+                        <div style={{ color: 'var(--color-text-secondary)' }}>{t('assetAccessories.assetCreatedMessage')}</div>
                     </div>
                 </div>
             )}
 
-            {error && <div className="error-message">{error}</div>}
+            {error && (
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 'var(--space-3)',
+                    background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)',
+                    borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                    color: 'var(--color-error)', fontSize: 'var(--font-size-sm)',
+                }}>
+                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                    {error}
+                </div>
+            )}
 
-            {/* Stock Items Card */}
-            <div className="card" style={{ borderLeft: '4px solid var(--color-primary)' }}>
-                <div className="card-header" style={{ borderBottom: '1px solid var(--color-border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                        <div style={{ color: 'var(--color-primary)' }}>
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                                <line x1="12" y1="22.08" x2="12" y2="12"/>
-                            </svg>
+            {/* Stock Item Accessories Card */}
+            <div className="card">
+                <div className="card-header" style={{ padding: 'var(--space-4) var(--space-6)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+                            <div style={{
+                                width: 32, height: 32, borderRadius: 'var(--radius-md)',
+                                background: 'rgba(59, 130, 246, 0.12)', border: '1px solid rgba(59, 130, 246, 0.25)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                                <Package size={16} style={{ color: '#3b82f6' }} />
+                            </div>
+                            <div>
+                                <h2 className="card-title" style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('assetAccessories.stockItemAccessories')}</h2>
+                                <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{stockAccessories.length} item(s)</span>
+                            </div>
                         </div>
-                        <h2 className="card-title" style={{ margin: 0 }}>{t('assetAccessories.stockItemAccessories')}</h2>
-                        <span className="badge" style={{ marginLeft: 'auto' }}>{stockAccessories.length}</span>
                     </div>
                 </div>
-                <div className="card-body" style={{ padding: 'var(--space-6)' }}>
+                <div className="card-body" style={{ padding: 'var(--space-4) var(--space-6)' }}>
                     {!isAssetCreated && (
-                        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap', marginBottom: 'var(--space-6)', paddingBottom: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
-                            <div className="form-group" style={{ flex: 1, minWidth: 260 }}>
-                                <label className="form-label">{t('assetAccessories.addStockItem')}</label>
+                        <div style={{
+                            display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap',
+                            marginBottom: 'var(--space-5)', paddingBottom: 'var(--space-5)',
+                            borderBottom: '1px solid var(--color-border)',
+                        }}>
+                            <div className="form-group" style={{ flex: 1, minWidth: 260, marginBottom: 0 }}>
+                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)' }}>
+                                    <Plus size={11} style={{ color: 'var(--color-text-muted)' }} />
+                                    {t('assetAccessories.addStockItem')}
+                                </label>
                                 <select
                                     className="form-input"
                                     value={selectedStockItemId}
@@ -257,49 +266,42 @@ const AttributionOrderAssetAccessoriesPage = () => {
                     )}
 
                     {stockAccessories.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-light)' }}>
-                            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1" style={{ marginBottom: 'var(--space-4)' }}>
-                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                                <line x1="12" y1="22.08" x2="12" y2="12"/>
-                            </svg>
+                        <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>
+                            <Package size={28} style={{ marginBottom: 'var(--space-2)', opacity: 0.3 }} />
                             <p>{t('assetAccessories.noStockItemAccessoriesLinked')}</p>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                            {stockAccessories.map((a) => {
+                            {stockAccessories.map((a, idx) => {
                                 const s = stockItemLookup.get(Number(a.stock_item));
                                 const label = s?.stock_item_name || `${t('assetAccessories.stockItem')} #${a.stock_item}`;
                                 return (
-                                    <div 
+                                    <div
                                         key={a.id}
                                         style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            padding: 'var(--space-4) var(--space-6)',
-                                            backgroundColor: 'var(--color-bg-alt)',
-                                            borderRadius: 'var(--radius-md)',
-                                            border: '1px solid var(--color-border)'
+                                            background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                                            display: 'flex', alignItems: 'center', gap: 'var(--space-4)',
                                         }}
                                     >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontWeight: 500 }}>
-                                            <div style={{ color: 'var(--color-primary)' }}>
-                                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                                </svg>
-                                            </div>
-                                            {label}
+                                        <div style={{
+                                            width: 28, height: 28, borderRadius: 'var(--radius-full)',
+                                            background: 'rgba(59, 130, 246, 0.12)', border: '1px solid rgba(59, 130, 246, 0.25)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 'var(--font-size-xs)', fontWeight: 700, flexShrink: 0, color: '#3b82f6',
+                                        }}>
+                                            {idx + 1}
                                         </div>
+                                        <div style={{ flex: 1, fontWeight: '500' }}>{label}</div>
                                         {!isAssetCreated && (
                                             <button
                                                 type="button"
-                                                className="logout-btn"
-                                                style={{ padding: '6px 12px', width: 'auto', fontSize: 'var(--font-size-sm)' }}
+                                                className="btn btn-danger"
                                                 disabled={saving}
                                                 onClick={() => removeStockAccessory(a.id)}
+                                                style={{ padding: 'var(--space-2) var(--space-3)', width: 'auto', fontSize: 'var(--font-size-sm)', gap: 'var(--space-2)' }}
                                             >
-                                                {t('common.remove')}
+                                                <Trash2 size={14} /> {t('common.remove')}
                                             </button>
                                         )}
                                     </div>
@@ -310,25 +312,35 @@ const AttributionOrderAssetAccessoriesPage = () => {
                 </div>
             </div>
 
-            {/* Consumables Card */}
-            <div className="card" style={{ borderLeft: '4px solid var(--color-warning)' }}>
-                <div className="card-header" style={{ borderBottom: '1px solid var(--color-border)' }}>
+            {/* Consumable Accessories Card */}
+            <div className="card">
+                <div className="card-header" style={{ padding: 'var(--space-4) var(--space-6)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-                        <div style={{ color: 'var(--color-warning)' }}>
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 2v6m0 0v14m0-14c-2 0-6 1-6 5s4 5 6 5 6-1 6-5-4-5-6-5z"/>
-                                <path d="M6 12c0 4 2.5 8 6 10 3.5-2 6-6 6-10" fill="none"/>
-                            </svg>
+                        <div style={{
+                            width: 32, height: 32, borderRadius: 'var(--radius-md)',
+                            background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.25)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <Droplets size={16} style={{ color: '#f59e0b' }} />
                         </div>
-                        <h2 className="card-title" style={{ margin: 0 }}>{t('assetAccessories.consumableAccessories')}</h2>
-                        <span className="badge" style={{ marginLeft: 'auto' }}>{consumableAccessories.length}</span>
+                        <div>
+                            <h2 className="card-title" style={{ margin: 0, fontSize: 'var(--font-size-base)' }}>{t('assetAccessories.consumableAccessories')}</h2>
+                            <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{consumableAccessories.length} item(s)</span>
+                        </div>
                     </div>
                 </div>
-                <div className="card-body" style={{ padding: 'var(--space-6)' }}>
+                <div className="card-body" style={{ padding: 'var(--space-4) var(--space-6)' }}>
                     {!isAssetCreated && (
-                        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap', marginBottom: 'var(--space-6)', paddingBottom: 'var(--space-6)', borderBottom: '1px solid var(--color-border)' }}>
-                            <div className="form-group" style={{ flex: 1, minWidth: 260 }}>
-                                <label className="form-label">{t('assetAccessories.addConsumable')}</label>
+                        <div style={{
+                            display: 'flex', gap: 'var(--space-3)', alignItems: 'end', flexWrap: 'wrap',
+                            marginBottom: 'var(--space-5)', paddingBottom: 'var(--space-5)',
+                            borderBottom: '1px solid var(--color-border)',
+                        }}>
+                            <div className="form-group" style={{ flex: 1, minWidth: 260, marginBottom: 0 }}>
+                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--font-size-xs)' }}>
+                                    <Plus size={11} style={{ color: 'var(--color-text-muted)' }} />
+                                    {t('assetAccessories.addConsumable')}
+                                </label>
                                 <select
                                     className="form-input"
                                     value={selectedConsumableId}
@@ -355,48 +367,42 @@ const AttributionOrderAssetAccessoriesPage = () => {
                     )}
 
                     {consumableAccessories.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-light)' }}>
-                            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1" style={{ marginBottom: 'var(--space-4)' }}>
-                                <path d="M12 2v6m0 0v14m0-14c-2 0-6 1-6 5s4 5 6 5 6-1 6-5-4-5-6-5z"/>
-                                <path d="M6 12c0 4 2.5 8 6 10 3.5-2 6-6 6-10" fill="none"/>
-                            </svg>
+                        <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>
+                            <Droplets size={28} style={{ marginBottom: 'var(--space-2)', opacity: 0.3 }} />
                             <p>{t('assetAccessories.noConsumableAccessoriesLinked')}</p>
                         </div>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
-                            {consumableAccessories.map((a) => {
+                            {consumableAccessories.map((a, idx) => {
                                 const c = consumableLookup.get(Number(a.consumable));
                                 const label = c?.consumable_name || `${t('assetAccessories.consumable')} #${a.consumable}`;
                                 return (
-                                    <div 
+                                    <div
                                         key={a.id}
                                         style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            padding: 'var(--space-4) var(--space-6)',
-                                            backgroundColor: 'var(--color-bg-alt)',
-                                            borderRadius: 'var(--radius-md)',
-                                            border: '1px solid var(--color-border)'
+                                            background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)',
+                                            borderRadius: 'var(--radius-lg)', padding: 'var(--space-4) var(--space-5)',
+                                            display: 'flex', alignItems: 'center', gap: 'var(--space-4)',
                                         }}
                                     >
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', fontWeight: 500 }}>
-                                            <div style={{ color: 'var(--color-warning)' }}>
-                                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                                                    <path d="M12 2v6m0 0v14m0-14c-2 0-6 1-6 5s4 5 6 5 6-1 6-5-4-5-6-5z"/>
-                                                </svg>
-                                            </div>
-                                            {label}
+                                        <div style={{
+                                            width: 28, height: 28, borderRadius: 'var(--radius-full)',
+                                            background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.25)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 'var(--font-size-xs)', fontWeight: 700, flexShrink: 0, color: '#f59e0b',
+                                        }}>
+                                            {idx + 1}
                                         </div>
+                                        <div style={{ flex: 1, fontWeight: '500' }}>{label}</div>
                                         {!isAssetCreated && (
                                             <button
                                                 type="button"
-                                                className="logout-btn"
-                                                style={{ padding: '6px 12px', width: 'auto', fontSize: 'var(--font-size-sm)' }}
+                                                className="btn btn-danger"
                                                 disabled={saving}
                                                 onClick={() => removeConsumableAccessory(a.id)}
+                                                style={{ padding: 'var(--space-2) var(--space-3)', width: 'auto', fontSize: 'var(--font-size-sm)', gap: 'var(--space-2)' }}
                                             >
-                                                {t('common.remove')}
+                                                <Trash2 size={14} /> {t('common.remove')}
                                             </button>
                                         )}
                                     </div>

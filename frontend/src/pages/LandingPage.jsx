@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import DarkVeil from '../components/DarkVeil';
 import ThemeToggle from '../components/ThemeToggle';
+import PowerSaveButton from '../components/PowerSaveButton';
 
 export default function LandingPage() {
     const { t } = useTranslation();
@@ -130,6 +131,7 @@ export default function LandingPage() {
 
                 <nav className="landing-actions">
                     <ThemeToggle />
+                    <PowerSaveButton />
                     <Link className="btn btn-secondary landing-btn" to="/login">
                         {t('landingPage.signIn')}
                     </Link>

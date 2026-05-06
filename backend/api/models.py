@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 
 class Person(models.Model):
@@ -152,6 +153,7 @@ class AssetModel(models.Model):
     is_active = models.BooleanField(default=True, db_column='is_active')
     notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
     warranty_expiry_in_months = models.IntegerField(blank=True, null=True, db_column='warranty_expiry_in_months')
+    asset_model_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='asset_model_name_in_administrative_certificate')
 
     class Meta:
         managed = False
@@ -191,6 +193,22 @@ class AssetModelDefaultConsumable(models.Model):
 
     def __str__(self):
         return f"{self.asset_model} includes {self.quantity}x {self.consumable_model}"
+
+
+class StockItemModelDefaultConsumable(models.Model):
+    """Maps to stock_item_model_default_consumable table - defines default consumables included with a stock item model"""
+    id = models.AutoField(primary_key=True, db_column='id')
+    stock_item_model = models.ForeignKey('StockItemModel', on_delete=models.CASCADE, db_column='stock_item_model_id', related_name='default_consumables')
+    consumable_model = models.ForeignKey('ConsumableModel', on_delete=models.CASCADE, db_column='consumable_model_id', related_name='default_for_stock_item_models')
+    quantity = models.IntegerField(default=1, db_column='quantity')
+    notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_model_default_consumable'
+
+    def __str__(self):
+        return f"{self.stock_item_model} includes {self.quantity}x {self.consumable_model}"
 
 
 class StockItemType(models.Model):
@@ -234,6 +252,7 @@ class StockItemModel(models.Model):
     is_active = models.BooleanField(default=True, db_column='is_active')
     notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
     warranty_expiry_in_months = models.IntegerField(blank=True, null=True, db_column='warranty_expiry_in_months')
+    stock_item_model_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_model_name_in_administrative_certificate')
 
     class Meta:
         managed = False
@@ -284,6 +303,7 @@ class ConsumableModel(models.Model):
     is_active = models.BooleanField(default=True, db_column='is_active')
     notes = models.CharField(max_length=256, blank=True, null=True, db_column='notes')
     warranty_expiry_in_months = models.IntegerField(blank=True, null=True, db_column='warranty_expiry_in_months')
+    consumable_model_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_model_name_in_administrative_certificate')
 
     class Meta:
         managed = False
@@ -707,10 +727,14 @@ class StockItem(models.Model):
         null=True,
         db_column='stock_item_consumable_destruction_certificate_id',
     )
+    stock_item_fabrication_datetime = models.DateTimeField(blank=True, null=True, db_column='stock_item_fabrication_datetime')
     stock_item_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='stock_item_inventory_number')
+    stock_item_warranty_expiry_in_months = models.IntegerField(blank=True, null=True, db_column='stock_item_warranty_expiry_in_months')
     stock_item_name = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name')
+    stock_item_serial_number = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_serial_number')
     stock_item_status = models.CharField(max_length=30, blank=True, null=True, db_column='stock_item_status')
-    stock_item_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='stock_item_name_in_administrative_certificate')
+    stock_item_arrival_datetime = models.DateTimeField(blank=True, null=True, db_column='stock_item_arrival_datetime')
+    purchase_order_id = models.IntegerField(blank=True, null=True, db_column='purchase_order_id')
 
     class Meta:
         managed = False
@@ -755,11 +779,14 @@ class Consumable(models.Model):
         null=True,
         db_column='stock_item_consumable_destruction_certificate_id',
     )
-    consumable_serial_number = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_serial_number')
-    consumable_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='consumable_inventory_number')
     consumable_name = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name')
+    consumable_serial_number = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_serial_number')
+    consumable_fabrication_datetime = models.DateTimeField(blank=True, null=True, db_column='consumable_fabrication_datetime')
+    consumable_inventory_number = models.CharField(max_length=6, blank=True, null=True, db_column='consumable_inventory_number')
+    consumable_service_tag = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_service_tag')
+    consumable_arrival_datetime = models.DateTimeField(blank=True, null=True, db_column='consumable_arrival_datetime')
     consumable_status = models.CharField(max_length=30, blank=True, null=True, db_column='consumable_status')
-    consumable_name_in_administrative_certificate = models.CharField(max_length=48, blank=True, null=True, db_column='consumable_name_in_administrative_certificate')
+    purchase_order_id = models.IntegerField(blank=True, null=True, db_column='purchase_order_id')
 
     class Meta:
         managed = False
@@ -793,6 +820,84 @@ class ConsumableIsAssignedToPerson(models.Model):
 
     def __str__(self):
         return f'Consumable {self.consumable_id} assigned to {self.person}'
+
+
+class AssetIsAssignedToOrgStructure(models.Model):
+    """Maps to asset_is_assigned_to_org_structure table"""
+    assignment_id = models.AutoField(primary_key=True, db_column='assignment_id')
+    organizational_structure = models.ForeignKey(OrganizationalStructure, on_delete=models.CASCADE, db_column='organizational_structure_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id')
+    assigned_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='assigned_by_person_id', related_name='asset_org_assignments_given')
+    start_datetime = models.DateTimeField(db_column='start_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime', null=True, blank=True)
+    is_active = models.BooleanField(db_column='is_active')
+    is_confirmed_by_exploitation_chief = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL,
+        db_column='is_confirmed_by_exploitation_chief_id',
+        null=True,
+        blank=True,
+        related_name='confirmed_asset_org_assignments'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'asset_is_assigned_to_org_structure'
+
+    def __str__(self):
+        return f'Asset {self.asset_id} assigned to org structure {self.organizational_structure_id}'
+
+
+class StockItemIsAssignedToOrgStructure(models.Model):
+    """Maps to stock_item_is_assigned_to_org_structure table"""
+    assignment_id = models.AutoField(primary_key=True, db_column='assignment_id')
+    organizational_structure = models.ForeignKey(OrganizationalStructure, on_delete=models.CASCADE, db_column='organizational_structure_id')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id')
+    assigned_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='assigned_by_person_id', related_name='stock_item_org_assignments_given')
+    start_datetime = models.DateTimeField(db_column='start_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime', null=True, blank=True)
+    is_active = models.BooleanField(db_column='is_active')
+    is_confirmed_by_exploitation_chief = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL,
+        db_column='is_confirmed_by_exploitation_chief_id',
+        null=True,
+        blank=True,
+        related_name='confirmed_stock_item_org_assignments'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'stock_item_is_assigned_to_org_structure'
+
+    def __str__(self):
+        return f'Stock Item {self.stock_item_id} assigned to org structure {self.organizational_structure_id}'
+
+
+class ConsumableIsAssignedToOrgStructure(models.Model):
+    """Maps to consumable_is_assigned_to_org_structure table"""
+    assignment_id = models.AutoField(primary_key=True, db_column='assignment_id')
+    organizational_structure = models.ForeignKey(OrganizationalStructure, on_delete=models.CASCADE, db_column='organizational_structure_id')
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id')
+    assigned_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='assigned_by_person_id', related_name='consumable_org_assignments_given')
+    start_datetime = models.DateTimeField(db_column='start_datetime')
+    end_datetime = models.DateTimeField(db_column='end_datetime', null=True, blank=True)
+    is_active = models.BooleanField(db_column='is_active')
+    is_confirmed_by_exploitation_chief = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL,
+        db_column='is_confirmed_by_exploitation_chief_id',
+        null=True,
+        blank=True,
+        related_name='confirmed_consumable_org_assignments'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'consumable_is_assigned_to_org_structure'
+
+    def __str__(self):
+        return f'Consumable {self.consumable_id} assigned to org structure {self.organizational_structure_id}'
 
 
 class PersonReportsProblemOnAsset(models.Model):
@@ -914,7 +1019,7 @@ class MaintenanceTypicalStep(models.Model):
 class Maintenance(models.Model):
     """Maps to maintenance table"""
     maintenance_id = models.IntegerField(primary_key=True, db_column='maintenance_id')
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id')
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, db_column='asset_id', blank=True, null=True)
     performed_by_person = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='performed_by_person_id', related_name='maintenance_performed')
     approved_by_maintenance_chief = models.ForeignKey(Person, on_delete=models.CASCADE, db_column='approved_by_maintenance_chief_id', related_name='maintenance_approved')
     is_approved_by_maintenance_chief = models.BooleanField(blank=True, null=True, db_column='is_approved_by_maintenance_chief')
@@ -924,13 +1029,40 @@ class Maintenance(models.Model):
     description = models.CharField(max_length=256, blank=True, null=True, db_column='description')
     is_successful = models.BooleanField(blank=True, null=True, db_column='is_successful')
     digital_copy = models.TextField(blank=True, null=True, db_column='digital_copy')
+    stock_item = models.ForeignKey(StockItem, on_delete=models.CASCADE, db_column='stock_item_id', blank=True, null=True, related_name='maintenances')
+    consumable = models.ForeignKey(Consumable, on_delete=models.CASCADE, db_column='consumable_id', blank=True, null=True, related_name='maintenances')
 
     class Meta:
         managed = False
         db_table = 'maintenance'
 
+    def clean(self):
+        super().clean()
+        linked = [bool(self.asset_id), bool(self.stock_item_id), bool(self.consumable_id)]
+        if sum(linked) == 0:
+            raise ValidationError('A maintenance must be linked to exactly one of: asset, stock_item, or consumable.')
+        if sum(linked) > 1:
+            raise ValidationError('A maintenance can only be linked to one of: asset, stock_item, or consumable at a time.')
+
+    @property
+    def item_type(self):
+        if self.asset_id:
+            return 'asset'
+        if self.stock_item_id:
+            return 'stock_item'
+        if self.consumable_id:
+            return 'consumable'
+        return None
+
     def __str__(self):
-        return f'Maintenance {self.maintenance_id} on asset {self.asset_id}'
+        target = None
+        if self.asset_id:
+            target = f'asset {self.asset_id}'
+        elif self.stock_item_id:
+            target = f'stock_item {self.stock_item_id}'
+        elif self.consumable_id:
+            target = f'consumable {self.consumable_id}'
+        return f'Maintenance {self.maintenance_id} on {target or "unknown"}'
 
 
 class MaintenanceStepStatus(models.Model):

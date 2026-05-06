@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Globe, ArrowLeft } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { authenticationLogService } from '../services/api';
+import BackButton from '../components/BackButton';
 
 const OptionsAccessHistoryPage = () => {
     const { t } = useTranslation();
@@ -38,15 +39,7 @@ const OptionsAccessHistoryPage = () => {
                     <p className="page-subtitle">{t('options.security')}</p>
                 </div>
 
-                <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => navigate('/dashboard/options')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
-                >
-                    <ArrowLeft size={16} />
-                    Back
-                </button>
+                <BackButton onClick={() => navigate('/dashboard/options')} />
             </header>
 
             <div className="card">

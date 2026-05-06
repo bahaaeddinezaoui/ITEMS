@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { SkeletonListRows } from '../components/SkeletonCard';
+import BackButton from '../components/BackButton';
 
 const DeliveryNoteConsultPage = () => {
     const { user, isSuperuser } = useAuth();
@@ -71,9 +72,7 @@ const DeliveryNoteConsultPage = () => {
                     <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}><FileText size={22} style={{ color: 'var(--color-accent-primary)' }} />{t('deliveryNote.title')}</h1>
                     <p className="page-subtitle">{t('deliveryNote.purchaseOrder')} #{orderId}{info?.delivery_note_code ? ` • ${t('deliveryNote.code')}: ${info.delivery_note_code}` : ''}</p>
                 </div>
-                <button type="button" className="btn btn-secondary" onClick={() => navigate('/dashboard/purchase-orders')}>
-                    {t('common.back')}
-                </button>
+                <BackButton onClick={() => navigate('/dashboard/purchase-orders')} />
             </div>
 
             {error && (

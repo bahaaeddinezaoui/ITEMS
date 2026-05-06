@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { positionService, positionRoleMappingService, roleService } from '../services/api';
 import { Search, ArrowUpDown, Briefcase, Plus, X, Pencil, Trash2, ChevronDown, XCircle, Shield } from 'lucide-react';
+import FilterSortFAB from '../components/FilterSortFAB';
 import TranslatableInput from '../components/TranslatableInput';
 import { SkeletonListRows } from '../components/SkeletonCard';
 import ModalPortal from '../components/ModalPortal';
@@ -360,47 +361,6 @@ const PositionsPage = () => {
                 </div>
             )}
 
-            {/* Search / Sort Toolbar */}
-            <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', marginBottom: 'var(--space-5)', flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, minWidth: '240px', position: 'relative' }}>
-                    <Search size={18} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
-                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('positions.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '42px', paddingLeft: 'var(--space-10)', paddingRight: searchQuery ? 'var(--space-10)' : 'var(--space-4)' }} />
-                    {searchQuery && (
-                        <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
-                    )}
-                </div>
-                <div style={{ position: 'relative' }}>
-                    <button onClick={(e) => { e.stopPropagation(); setShowSortMenu(!showSortMenu); }} className="btn" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-4)', height: '42px', border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-text-secondary)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: '500', fontSize: 'var(--font-size-sm)', whiteSpace: 'nowrap' }}>
-                        <ArrowUpDown size={16} />
-                        <span>{sortField === 'label' ? t('positions.sortByLabel') : sortField === 'code' ? t('positions.sortByCode') : t('positions.sortByRoles')}</span>
-                        <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                        <ChevronDown size={14} style={{ transform: showSortMenu ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-                    </button>
-                    {showSortMenu && (
-                        <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: 'calc(100% + 4px)', right: 0, background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-lg)', padding: 'var(--space-2)', zIndex: 100, minWidth: '200px' }}>
-                            <div style={{ padding: 'var(--space-1) var(--space-3)', fontSize: 'var(--font-size-xs)', fontWeight: '700', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('common.sortBy')}</div>
-                            {[
-                                { field: 'label', dir: 'asc', label: `${t('positions.sortByLabel')} — ↑` },
-                                { field: 'label', dir: 'desc', label: `${t('positions.sortByLabel')} — ↓` },
-                                { field: 'code', dir: 'asc', label: `${t('positions.sortByCode')} — ↑` },
-                                { field: 'code', dir: 'desc', label: `${t('positions.sortByCode')} — ↓` },
-                                { field: 'roles', dir: 'asc', label: `${t('positions.sortByRoles')} — ↑` },
-                                { field: 'roles', dir: 'desc', label: `${t('positions.sortByRoles')} — ↓` },
-                            ].map(opt => (
-                                <button key={`${opt.field}-${opt.dir}`} onClick={() => { setSortField(opt.field); setSortDirection(opt.dir); setShowSortMenu(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: 'var(--space-2) var(--space-3)', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: sortField === opt.field && sortDirection === opt.dir ? '600' : '400', color: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-tertiary)' : 'var(--color-text-primary)', background: sortField === opt.field && sortDirection === opt.dir ? 'var(--color-accent-glow)' : 'transparent', transition: 'all var(--transition-fast)' }} onMouseEnter={(e) => { if (!(sortField === opt.field && sortDirection === opt.dir)) e.currentTarget.style.background = 'var(--color-bg-card-hover)'; }} onMouseLeave={(e) => { if (!(sortField === opt.field && sortDirection === opt.dir)) e.currentTarget.style.background = 'transparent'; }}>
-                                    {opt.label}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-                {hasActiveFilters && (
-                    <button onClick={clearAllFilters} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '42px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: '500', whiteSpace: 'nowrap', transition: 'all var(--transition-fast)' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.08)'; }}>
-                        <X size={14} /> {t('positions.clearFilters')}
-                    </button>
-                )}
-            </div>
-
             {/* Results Count */}
             {!loading && positions.length > 0 && (
                 <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
@@ -408,15 +368,8 @@ const PositionsPage = () => {
                 </div>
             )}
 
-            {/* Positions Card List */}
-            <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', overflow: 'hidden', backdropFilter: 'blur(10px)', boxShadow: 'var(--shadow-md)' }}>
-                <div style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 'var(--space-3)', background: 'var(--color-bg-secondary)' }}>
-                    <Briefcase size={20} style={{ color: 'var(--color-accent-primary)' }} />
-                    <h2 style={{ fontSize: 'var(--font-size-lg)', fontWeight: '600', margin: 0 }}>{t('positions.allPositions')}</h2>
-                    <span style={{ marginLeft: 'auto', fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', background: 'var(--color-bg-card)', padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-full)' }}>
-                        {filteredPositions.length} {t('common.total')}
-                    </span>
-                </div>
+            {/* Positions List */}
+            <div className="card" style={{ overflow: 'hidden' }}>
                 <div style={{ maxHeight: '600px', overflowY: 'auto' }}>
                     {loading ? (
                         <div style={{ padding: 'var(--space-12)' }}>
@@ -511,6 +464,36 @@ const PositionsPage = () => {
                 feedbackMessage={feedbackMessage}
                 clearFeedback={clearFeedback}
             />
+            <FilterSortFAB hasActiveFilters={!!searchQuery.trim() || sortField !== 'label' || sortDirection !== 'asc'}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={16} style={{ position: 'absolute', left: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none' }} />
+                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t('positions.searchPlaceholder')} className="form-input" style={{ width: '100%', height: '40px', paddingLeft: 'var(--space-10)', paddingRight: searchQuery ? 'var(--space-10)' : 'var(--space-4)' }} />
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: 'var(--space-3)', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }}><X size={16} /></button>
+                        )}
+                    </div>
+                    <div>
+                        <label className="form-label" style={{ marginBottom: 'var(--space-1)' }}>{t('common.sortBy')}</label>
+                        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                            <select className="form-input" value={sortField} onChange={(e) => setSortField(e.target.value)} style={{ height: '40px', flex: 1 }}>
+                                <option value="label">{t('positions.sortByLabel')}</option>
+                                <option value="code">{t('positions.sortByCode')}</option>
+                                <option value="roles">{t('positions.sortByRoles')}</option>
+                            </select>
+                            <select className="form-input" value={sortDirection} onChange={(e) => setSortDirection(e.target.value)} style={{ height: '40px', width: '100px' }}>
+                                <option value="asc">↑ {t('common.ascending', 'Ascending')}</option>
+                                <option value="desc">↓ {t('common.descending', 'Descending')}</option>
+                            </select>
+                        </div>
+                    </div>
+                    {hasActiveFilters && (
+                        <button onClick={clearAllFilters} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-2) var(--space-3)', height: '40px', border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.08)', color: 'var(--color-error)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-size-sm)', fontWeight: '500', whiteSpace: 'nowrap', width: '100%', justifyContent: 'center' }}>
+                            <X size={14} /> {t('positions.clearFilters')}
+                        </button>
+                    )}
+                </div>
+            </FilterSortFAB>
         </div>
     );
 };

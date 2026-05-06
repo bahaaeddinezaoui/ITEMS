@@ -1135,6 +1135,26 @@ export const stockItemModelService = {
         const response = await api.delete(`stock-item-models/${stockItemModelId}/compatible-asset-models/${assetModelId}/`);
         return response.data;
     },
+
+    // Default composition management
+    getDefaultConsumables: async (stockItemModelId) => {
+        const response = await api.get(`stock-item-model-default-consumables/?stock_item_model=${stockItemModelId}`);
+        return response.data;
+    },
+
+    addDefaultConsumable: async (stockItemModelId, consumableModelId, quantity = 1, notes = '') => {
+        const response = await api.post('stock-item-model-default-consumables/', {
+            stock_item_model: stockItemModelId,
+            consumable_model: consumableModelId,
+            quantity,
+            notes,
+        });
+        return response.data;
+    },
+
+    removeDefaultConsumable: async (id) => {
+        await api.delete(`stock-item-model-default-consumables/${id}/`);
+    },
 };
 
 // Consumable Type service
@@ -1523,6 +1543,11 @@ export const assetService = {
         const response = await api.post(`assets/${id}/suggest-for-destruction/`);
         return response.data;
     },
+
+    getCompositionHistory: async (id) => {
+        const response = await api.get(`assets/${id}/composition-history/`);
+        return response.data;
+    },
 };
 
 // Stock Item service
@@ -1570,6 +1595,11 @@ export const stockItemService = {
         const response = await api.post(`stock-items/${id}/split/`, data);
         return response.data;
     },
+
+    getCompositionHistory: async (id) => {
+        const response = await api.get(`stock-items/${id}/composition-history/`);
+        return response.data;
+    },
 };
 
 // Consumable service
@@ -1615,6 +1645,11 @@ export const consumableService = {
 
     split: async (id, data) => {
         const response = await api.post(`consumables/${id}/split/`, data);
+        return response.data;
+    },
+
+    getCompositionHistory: async (id) => {
+        const response = await api.get(`consumables/${id}/composition-history/`);
         return response.data;
     },
 };
@@ -1863,6 +1898,11 @@ export const stockItemAssignmentService = {
         return response.data;
     },
 
+    confirm: async (id) => {
+        const response = await api.post(`stock-item-assignments/${id}/confirm/`);
+        return response.data;
+    },
+
     discharge: async (id) => {
         const response = await api.post(`stock-item-assignments/${id}/discharge/`);
         return response.data;
@@ -1880,8 +1920,82 @@ export const consumableAssignmentService = {
         return response.data;
     },
 
+    confirm: async (id) => {
+        const response = await api.post(`consumable-assignments/${id}/confirm/`);
+        return response.data;
+    },
+
     discharge: async (id) => {
         const response = await api.post(`consumable-assignments/${id}/discharge/`);
+        return response.data;
+    },
+};
+
+// Asset Org Structure Assignment service
+export const assetOrgAssignmentService = {
+    getAll: async (params) => {
+        const response = await api.get('asset-org-assignments/', { params });
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('asset-org-assignments/', data);
+        return response.data;
+    },
+
+    confirm: async (id) => {
+        const response = await api.post(`asset-org-assignments/${id}/confirm/`);
+        return response.data;
+    },
+
+    discharge: async (id) => {
+        const response = await api.post(`asset-org-assignments/${id}/discharge/`);
+        return response.data;
+    },
+};
+
+// Stock Item Org Structure Assignment service
+export const stockItemOrgAssignmentService = {
+    getAll: async (params) => {
+        const response = await api.get('stock-item-org-assignments/', { params });
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('stock-item-org-assignments/', data);
+        return response.data;
+    },
+
+    confirm: async (id) => {
+        const response = await api.post(`stock-item-org-assignments/${id}/confirm/`);
+        return response.data;
+    },
+
+    discharge: async (id) => {
+        const response = await api.post(`stock-item-org-assignments/${id}/discharge/`);
+        return response.data;
+    },
+};
+
+// Consumable Org Structure Assignment service
+export const consumableOrgAssignmentService = {
+    getAll: async (params) => {
+        const response = await api.get('consumable-org-assignments/', { params });
+        return response.data;
+    },
+
+    create: async (data) => {
+        const response = await api.post('consumable-org-assignments/', data);
+        return response.data;
+    },
+
+    confirm: async (id) => {
+        const response = await api.post(`consumable-org-assignments/${id}/confirm/`);
+        return response.data;
+    },
+
+    discharge: async (id) => {
+        const response = await api.post(`consumable-org-assignments/${id}/discharge/`);
         return response.data;
     },
 };
@@ -1890,6 +2004,10 @@ export const consumableAssignmentService = {
 export const assignmentsService = {
     getAll: async (params) => {
         const response = await api.get('assignments/', { params });
+        return response.data;
+    },
+    assign: async (data) => {
+        const response = await api.post('assignments/', { action: 'assign', ...data });
         return response.data;
     },
     bulkDischarge: async (items) => {
@@ -1921,7 +2039,7 @@ export const warehouseService = {
 // Attribution Order service
 export const attributionOrderService = {
     getAll: async () => {
-        const response = await api.get('attribution-orders/');
+        const response = await api.get('attribution-orders/', { params: { page_size: 2000 } });
         return response.data;
     },
     getById: async (id) => {
@@ -2027,6 +2145,10 @@ export const userSessionService = {
     },
     terminate: async (sessionId) => {
         const response = await api.post(`user-sessions/${sessionId}/terminate/`);
+        return response.data;
+    },
+    terminateAll: async () => {
+        const response = await api.post('user-sessions/terminate_all/');
         return response.data;
     },
 };
