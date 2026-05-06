@@ -3166,7 +3166,7 @@ margin: var(--space-1) 0;
 }
 
 [data-theme="light"] .dashboard-iridescence-bg {
-    opacity: 0.25;
+    opacity: 1;
 }
 
 /* Sidebar - Glassmorphism */

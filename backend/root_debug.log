@@ -124899,3 +124899,73 @@ s/
 [2026-05-06 20:40:47.413298] END   GET /api/dashboard/kpis/ -> 200
 [2026-05-06 20:40:47.426627] START GET /api/dashboard/kpis/
 [2026-05-06 20:40:47.575103] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 20:41:59.469532] START POST /api/auth/login/
+[2026-05-06 20:41:59.654269] END   POST /api/auth/login/ -> 200
+[2026-05-06 20:42:00.115880] START GET /api/dashboard/kpis/
+[2026-05-06 20:42:00.252802] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 20:42:00.264220] START GET /api/dashboard/kpis/
+[2026-05-06 20:42:00.372364] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 20:42:12.621740] START GET /api/user-sessions/
+[2026-05-06 20:42:12.623032] START GET /api/auth-logs/
+[2026-05-06 20:42:12.770139] END   GET /api/user-sessions/ -> 200
+[2026-05-06 20:42:12.770284] END   GET /api/auth-logs/ -> 200
+[2026-05-06 20:42:12.778615] START GET /api/user-sessions/
+[2026-05-06 20:42:12.780181] START GET /api/auth-logs/
+[2026-05-06 20:42:12.863508] END   GET /api/user-sessions/ -> 200
+[2026-05-06 20:42:12.880240] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:04:16.096428] START GET /api/user-sessions/
+[2026-05-06 22:04:16.094069] START GET /api/auth-logs/
+[2026-05-06 22:04:16.690540] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:04:16.705971] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:04:16.715995] START GET /api/auth-logs/
+[2026-05-06 22:04:16.720630] START GET /api/user-sessions/
+[2026-05-06 22:04:16.765232] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:04:16.878281] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:06:54.683446] START GET /api/dashboard/kpis/
+[2026-05-06 22:06:55.623548] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 22:06:55.658574] START GET /api/dashboard/kpis/
+[2026-05-06 22:06:55.853982] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 22:07:14.662075] START GET /api/user-sessions/
+[2026-05-06 22:07:14.683656] START GET /api/auth-logs/
+[2026-05-06 22:07:14.878996] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:07:14.898273] START GET /api/auth-logs/
+[2026-05-06 22:07:14.943901] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:07:14.953497] START GET /api/user-sessions/
+[2026-05-06 22:07:15.006789] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:07:15.057391] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:07:18.976362] START GET /api/dashboard/kpis/
+[2026-05-06 22:07:19.138228] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 22:07:19.148453] START GET /api/dashboard/kpis/
+[2026-05-06 22:07:19.301870] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 22:07:37.578745] START GET /api/user-sessions/
+[2026-05-06 22:07:37.585397] START GET /api/auth-logs/
+[2026-05-06 22:07:37.692899] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:07:37.705141] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:07:37.718737] START GET /api/user-sessions/
+[2026-05-06 22:07:37.721962] START GET /api/auth-logs/
+[2026-05-06 22:07:37.839645] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:07:37.840584] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:07:54.674381] START GET /api/dashboard/kpis/
+[2026-05-06 22:07:54.827428] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 22:07:54.838969] START GET /api/dashboard/kpis/
+[2026-05-06 22:07:55.004220] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 22:08:21.484383] START GET /api/user-sessions/
+[2026-05-06 22:08:21.495247] START GET /api/auth-logs/
+[2026-05-06 22:08:21.591739] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:08:21.601928] START GET /api/auth-logs/
+[2026-05-06 22:08:21.702787] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:08:21.717051] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:08:21.733066] START GET /api/user-sessions/
+[2026-05-06 22:08:21.822718] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:08:26.768372] START GET /api/dashboard/kpis/
+[2026-05-06 22:08:26.904565] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 22:08:26.915006] START GET /api/dashboard/kpis/
+[2026-05-06 22:08:27.056219] END   GET /api/dashboard/kpis/ -> 200
+[2026-05-06 22:08:33.498917] START GET /api/auth-logs/
+[2026-05-06 22:08:33.499511] START GET /api/user-sessions/
+[2026-05-06 22:08:33.715923] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:08:33.716260] END   GET /api/user-sessions/ -> 200
+[2026-05-06 22:08:33.731201] START GET /api/auth-logs/
+[2026-05-06 22:08:33.735481] START GET /api/user-sessions/
+[2026-05-06 22:08:33.835107] END   GET /api/auth-logs/ -> 200
+[2026-05-06 22:08:33.836468] END   GET /api/user-sessions/ -> 200
